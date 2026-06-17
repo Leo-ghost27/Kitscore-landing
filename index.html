@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kitscore · sponsorship trust infrastructure</title>
+    <meta name="description" content="Kitscore turns creator performance and evidence into a sponsorship readiness score sponsors can trust. Join the waitlist for early access." />
+    <meta property="og:title" content="Kitscore — Sponsorship trust infrastructure" />
+    <meta property="og:description" content="A readiness score and confidence rating backed by real evidence, so sponsors stop relying on self-reported media kits." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Kitscore — Sponsorship trust infrastructure" />
+    <meta name="twitter:description" content="A readiness score and confidence rating backed by real evidence, so sponsors stop relying on self-reported media kits." />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMwYjBkMTAiLz48dGV4dCB4PSIzMiIgeT0iNDQiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzNCIgZm9udC13ZWlnaHQ9IjcwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2I2YzhmZiI+SzwvdGV4dD48L3N2Zz4=" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#0b0d10;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;color:#e8edf2;line-height:1.5;-webkit-font-smoothing:antialiased;padding:0 0 2rem 0}
+        .container{max-width:1280px;margin:0 auto;padding:0 1.2rem}
+        a,button,.card,.btn{transition:all .2s ease}
+        .navbar{padding:1.2rem 0 .5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.04)}
+        .logo{font-weight:600;font-size:1.5rem;letter-spacing:-.02em;background:linear-gradient(135deg,#f0f5ff 0,#b6c8ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .nav-links a{color:#e8edf2;text-decoration:none;padding:.4rem 1rem;border-radius:40px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);font-weight:500;font-size:.8rem;white-space:nowrap}
+        .btn{display:inline-block;padding:.6rem 1.5rem;border-radius:40px;font-weight:500;font-size:.95rem;border:none;cursor:pointer;text-decoration:none;text-align:center}
+        .btn-primary{background:#fff;color:#0b0d10;box-shadow:0 4px 12px rgba(0,20,80,.08)}
+        .btn-outline{border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.02);color:#e8edf2}
+        .btn-ghost{color:#b0c8e5;border:1px solid rgba(255,255,255,.06)}
+        .btn-accent{background:#3b6bff;color:#fff;box-shadow:0 4px 14px rgba(59,107,255,.25)}
+        .btn-accent:hover{background:#2f5ae0}
+        .hero{padding:2.5rem 0 3rem;display:flex;flex-direction:column;align-items:center;text-align:center}
+        .hero h1{font-size:clamp(2.2rem,10vw,4.8rem);font-weight:600;letter-spacing:-.025em;max-width:900px;background:linear-gradient(180deg,#fff 20%,#b6ccff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;margin-bottom:1rem}
+        .hero-sub{font-size:1.1rem;max-width:720px;color:#b6cbe0;font-weight:350;line-height:1.6;margin-bottom:2rem}
+        .hero-actions{display:flex;flex-wrap:wrap;gap:.8rem;justify-content:center;margin-bottom:1.5rem;width:100%}
+        .hero-actions .btn{font-size:1rem;padding:.75rem 1.5rem;min-width:130px}
+        .waitlist-mini{display:flex;flex-direction:column;gap:.5rem;background:rgba(255,255,255,.02);padding:.8rem;border-radius:40px;border:1px solid rgba(255,255,255,.06);width:100%;max-width:400px}
+        .waitlist-mini input{background:transparent;border:none;color:#fff;padding:.8rem .5rem;font-size:.95rem;width:100%;outline:none;border-bottom:1px solid rgba(255,255,255,.05)}
+        .waitlist-mini input::placeholder{color:#7a8fa8}
+        .waitlist-mini .btn{padding:.7rem;background:#3b6bff;color:#fff;border-radius:40px;font-weight:500;border:none;width:100%}
+        .section-title{font-size:1.8rem;font-weight:500;letter-spacing:-.02em;margin-bottom:1rem;color:#f0f5ff}
+        .section-desc{color:#a0b9d2;max-width:640px;font-size:1rem;margin-bottom:2rem;line-height:1.6}
+        .grid-2col{display:grid;grid-template-columns:1fr;gap:1.5rem;margin:2rem 0 2.5rem}
+        .card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:28px;padding:1.8rem 1.5rem}
+        .card h3{font-weight:500;font-size:1.3rem;margin-bottom:.75rem;color:#e8f0fe}
+        .card ul{list-style:none;margin-top:1rem;color:#b0c6dd;font-size:.95rem;line-height:1.8}
+        .card ul li::before{content:"• ";color:#5a7abf}
+        .trust-grid{display:grid;grid-template-columns:1fr;gap:.8rem;margin:1.5rem 0}
+        .trust-badge{background:rgba(255,255,255,.02);border-radius:40px;padding:.6rem .8rem;display:flex;align-items:center;gap:.4rem;font-size:.75rem;border:1px solid rgba(255,255,255,.04);color:#c0d4ec;justify-content:center;flex-wrap:wrap}
+        .trust-badge strong{color:#e8efff;font-weight:500;font-size:.8rem}
+        .badge-blue{background:rgba(59,107,255,.08);border-color:rgba(59,107,255,.12);color:#b6ccff}
+        .preview-card{background:#13171e;border-radius:32px;padding:1.8rem 1.5rem 2rem;border:1px solid rgba(255,255,255,.05);max-width:100%;margin:1.5rem 0;box-shadow:0 20px 40px -16px rgba(0,0,0,.6)}
+        .preview-card .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem}
+        .score-big{font-size:2.8rem;font-weight:600;letter-spacing:-.03em;background:linear-gradient(135deg,#fff,#b6ccff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .confidence{background:#1f2937;padding:.2rem 1rem;border-radius:40px;font-size:.75rem;font-weight:500;color:#b6d0f0;border:1px solid #2a3648;white-space:nowrap}
+        .evidence-count{color:#90a8c5;font-size:.85rem}
+        .breakdown{display:flex;flex-wrap:wrap;gap:.5rem 1rem;margin-top:.8rem;padding-top:.8rem;border-top:1px solid rgba(255,255,255,.04)}
+        .breakdown span{font-size:.75rem;color:#a0b9d2}
+        .breakdown strong{color:#d0e0f5;font-weight:450}
+        .source-label{display:inline-block;font-size:.6rem;background:rgba(255,255,255,.02);padding:.1rem .4rem;border-radius:20px;border:1px solid rgba(255,255,255,.04);color:#8099b5;margin-left:.1rem}
+        .waitlist-section{background:rgba(255,255,255,.01);border:1px solid rgba(255,255,255,.04);border-radius:40px;padding:2rem 1.5rem;margin:2.5rem 0 2rem}
+        .waitlist-section h2{font-size:1.6rem;font-weight:500;margin-bottom:.5rem}
+        .waitlist-section p{color:#8aa3be;margin-bottom:1.5rem}
+        .waitlist-form{display:flex;flex-direction:column;gap:.8rem;width:100%}
+        .waitlist-form input,.waitlist-form select{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:60px;padding:.8rem 1.2rem;font-size:.95rem;color:#fff;outline:none;width:100%}
+        .waitlist-form input::placeholder{color:#7a8fa8}
+        .waitlist-form select option{background:#0b0d10;color:#fff}
+        .waitlist-form .btn{padding:.8rem;width:100%;border-radius:60px}
+        .hp-field{position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0;pointer-events:none}
+        .footnote{font-size:.8rem;color:#6a83a0;text-align:center;margin-top:.5rem}
+        .footer{border-top:1px solid rgba(255,255,255,.03);padding:2rem 0 1.5rem;display:flex;flex-direction:column;gap:1rem;align-items:center;color:#6a83a0;font-size:.8rem;text-align:center}
+        .footer span,.footer a{color:#b6ccff;text-decoration:none}
+        @media(min-width:600px){.container{padding:0 2rem}.grid-2col{grid-template-columns:repeat(2,1fr)}.trust-grid{grid-template-columns:repeat(3,1fr)}.waitlist-mini{flex-direction:row;align-items:center;padding:.3rem .3rem .3rem 1.5rem}.waitlist-mini input{width:auto;border-bottom:none;padding:.6rem .2rem}.waitlist-mini .btn{width:auto;padding:.5rem 1.4rem}.waitlist-form{flex-direction:row;flex-wrap:wrap}.waitlist-form input,.waitlist-form select{width:auto;flex:1 1 160px}.waitlist-form .btn{width:auto;flex:0 1 auto}.footer{flex-direction:row;justify-content:space-between;text-align:left}}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="navbar">
+            <div class="logo">Kitscore.io</div>
+            <div class="nav-links"><a href="#waitlist">Get early access</a></div>
+        </div>
+        <div class="hero">
+            <h1>Prove creator readiness.<br />Reduce sponsor risk.</h1>
+            <p class="hero-sub">Kitscore turns creator performance, evidence, and track record into a readiness score with a visible confidence rating, so every number comes with proof.</p>
+            <div class="hero-actions">
+                <a href="#waitlist" class="btn btn-primary" data-role="creator">I'm a creator</a>
+                <a href="#waitlist" class="btn btn-outline" data-role="sponsor">I'm a sponsor</a>
+                <a href="#waitlist" class="btn btn-ghost">Join the waitlist →</a>
+            </div>
+            <form class="waitlist-mini" id="heroWaitlistForm" novalidate>
+                <input type="text" name="company" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
+                <input type="email" name="email" placeholder="work@email.com" aria-label="email" required />
+                <button class="btn" type="submit">Join waitlist</button>
+            </form>
+        </div>
+        <div style="margin:1.5rem 0 .5rem">
+            <h2 class="section-title">Sponsorship trust infrastructure</h2>
+            <p class="section-desc">Kitscore is a sponsorship trust infrastructure platform. It combines <strong>readiness score</strong>, <strong>confidence rating</strong>, an <strong>evidence system</strong>, and <strong>track record</strong> into a single, auditable profile.<br /><span style="color:#b6ccff">Never show a score without showing data provenance.</span></p>
+        </div>
+        <div class="grid-2col">
+            <div class="card"><h3>✨ Creator benefits</h3><ul><li>Upload evidence · performance, mentions, analytics</li><li>See score breakdown · component-level clarity</li><li>Get an action plan · improve weak areas</li><li>Export a sponsor-ready proof packet</li></ul></div>
+            <div class="card"><h3>📊 Sponsor benefits</h3><ul><li>Browse creators · verified profiles</li><li>Filter by niche, location, and score</li><li>Compare creators side by side</li><li>Generate decision memos</li></ul></div>
+        </div>
+        <div style="margin:1.5rem 0 1rem">
+            <h2 class="section-title" style="font-size:1.6rem">Trust, visible in every metric</h2>
+            <div class="trust-grid">
+                <div class="trust-badge"><strong>Self-Reported</strong> <span style="color:#6a83a0">·</span> <span>user</span></div>
+                <div class="trust-badge badge-blue"><strong>Evidence Submitted</strong> <span style="color:#6a83a0">·</span> <span>uploaded</span></div>
+                <div class="trust-badge" style="border-color:rgba(59,107,255,.2);opacity:.65"><strong>Live Verified</strong> <span style="color:#6a83a0">·</span> <span>coming soon</span></div>
+            </div>
+            <p style="color:#8aa3be;font-size:.9rem;max-width:600px">Every metric shows its source label — <strong>Self-Reported</strong>, <strong>Evidence Submitted</strong>, or <strong>Live Verified</strong> (rolling out as platform integrations connect). Source labels are always visible.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.5rem;margin:1.5rem 0 2rem">
+            <h2 style="font-weight:450;font-size:1.4rem;letter-spacing:-.02em">Dashboard preview</h2>
+            <p style="color:#a0b9d2;max-width:320px;font-size:.95rem">Readiness score, confidence rating, evidence count, and component breakdown.</p>
+            <div class="preview-card">
+                <div class="row"><span class="score-big">84</span><span class="confidence">⏺ High</span></div>
+                <div class="row" style="margin-bottom:.2rem"><span class="evidence-count">📎 12 evidence items</span><span style="color:#6a83a0;font-size:.7rem">updated 2h ago</span></div>
+                <div class="breakdown"><span><strong>Reach</strong> 87 <span class="source-label">Evidence</span></span><span><strong>Engagement</strong> 82 <span class="source-label">Evidence</span></span><span><strong>Brand fit</strong> 79 <span class="source-label">Self</span></span><span><strong>Consistency</strong> 91 <span class="source-label">Evidence</span></span></div>
+                <div style="margin-top:1rem;font-size:.7rem;color:#5f7a98;border-top:1px solid rgba(255,255,255,.03);padding-top:.8rem">⚡ Readiness score · confidence · evidence count · breakdown</div>
+            </div>
+        </div>
+        <div class="waitlist-section" id="waitlist">
+            <div><h2>Get early access</h2><p>Join the waitlist — be the first to use Kitscore.</p></div>
+            <form class="waitlist-form" id="mainWaitlistForm" novalidate>
+                <input type="text" name="company" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
+                <input type="email" name="email" placeholder="work@email.com" aria-label="Email" required />
+                <select name="role" aria-label="Role"><option value="">I'm a...</option><option value="creator">Creator</option><option value="sponsor">Sponsor</option></select>
+                <button type="submit" class="btn btn-accent">Join waitlist</button>
+                <div class="footnote">🔒 Get early access when Kitscore opens.</div>
+            </form>
+        </div>
+        <div class="footer"><div><span>Kitscore.io</span> · sponsorship trust, verification &amp; reputation system</div><div><span>Trust</span><a href="privacy.html">Privacy</a><span>© 2026</span></div></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        var SUPABASE_URL = 'https://tpcriphrfrrgywycviqv.supabase.co';
+        var SUPABASE_ANON_KEY = 'sb_publishable_p-UiF9XVEEw-fch8l7Z6sA_xgZqkgDQ';
+        var pageLoadedAt = Date.now();
+        var supabaseClient = null;
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (e) {
+            console.error('Supabase client failed to initialize:', e);
+        }
+
+        function saveSignup(email, role, source) {
+            if (!supabaseClient) return Promise.reject(new Error('Supabase unavailable'));
+            return supabaseClient.from('waitlist_signups').insert({
+                email: email,
+                role: role || null,
+                source: source
+            }).then(function (res) {
+                // 23505 = unique_violation (already on the list) — treat as success,
+                // never reveal whether an email is already registered.
+                if (res.error && res.error.code !== '23505') {
+                    throw res.error;
+                }
+            });
+        }
+
+        function wireWaitlistForm(form, source, onSuccess, onError) {
+            if (!form) return;
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                // Spam check 1: honeypot field real visitors never see or fill.
+                var honeypot = form.querySelector('.hp-field');
+                // Spam check 2: bots that fill+submit near-instantly on page load.
+                var tooFast = Date.now() - pageLoadedAt < 1500;
+                if ((honeypot && honeypot.value) || tooFast) {
+                    onSuccess(form); // fake success, nothing saved — don't tip off the bot
+                    return;
+                }
+
+                var emailInput = form.querySelector('input[type="email"]');
+                var email = emailInput.value.trim();
+                var valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                if (!valid) {
+                    emailInput.style.borderColor = '#ff6b6b';
+                    emailInput.focus();
+                    emailInput.addEventListener('input', function () {
+                        emailInput.style.borderColor = '';
+                    }, { once: true });
+                    return;
+                }
+
+                var roleSelect = form.querySelector('select[name="role"]');
+                var submitBtn = form.querySelector('button[type="submit"]');
+                var role = roleSelect ? roleSelect.value : '';
+                var originalLabel = submitBtn ? submitBtn.textContent : '';
+                if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Joining…'; }
+
+                saveSignup(email, role, source).then(function () {
+                    onSuccess(form);
+                }).catch(function (err) {
+                    console.error('Waitlist signup failed:', err);
+                    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalLabel; }
+                    if (onError) onError(form);
+                });
+            });
+        }
+
+        wireWaitlistForm(document.getElementById('heroWaitlistForm'), 'hero', function (form) {
+            form.innerHTML = '<span style="padding:.8rem .5rem;color:#9be6b0;font-size:.9rem;width:100%;text-align:center">✓ You\'re on the list</span>';
+        }, function (form) {
+            var btn = form.querySelector('button[type="submit"]');
+            if (btn) btn.textContent = 'Try again';
+        });
+
+        wireWaitlistForm(document.getElementById('mainWaitlistForm'), 'main', function (form) {
+            form.innerHTML = '<div style="padding:1.2rem 0;text-align:center;width:100%"><div style="font-size:1.05rem;color:#9be6b0;margin-bottom:.3rem">✓ You\'re on the list</div><div style="font-size:.85rem;color:#8aa3be">We\'ll email you when Kitscore opens.</div></div>';
+        }, function (form) {
+            var note = form.querySelector('.footnote');
+            if (note) note.textContent = 'Something went wrong — please try again in a moment.';
+        });
+
+        // "I'm a creator" / "I'm a sponsor" jump to the waitlist with role preselected.
+        document.querySelectorAll('[data-role]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                var roleSelect = document.querySelector('#mainWaitlistForm select[name="role"]');
+                if (roleSelect) roleSelect.value = this.getAttribute('data-role');
+            });
+        });
+    </script>
+</body>
+</html>
