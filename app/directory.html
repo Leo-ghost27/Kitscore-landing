@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creator directory — Kitscore</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  body{padding:20px;max-width:880px;margin:0 auto}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .signout{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none}
+  .controls{display:flex;gap:8px;margin-bottom:14px}
+  .controls select{padding:7px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:12px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .ccard{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;cursor:pointer;transition:box-shadow .15s}
+  .ccard:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .ccard .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:12px;color:#185FA5}
+  .name{font-size:12px;font-weight:500}
+  .niche{font-size:10px;color:var(--color-text-secondary)}
+  .pbar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .pbar-row span:first-child{font-size:10px;color:var(--color-text-secondary)}
+  .pbar-track{flex:1;height:6px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
+  .pbar-fill{height:100%;background:#2563EB;border-radius:3px}
+  .pbar-val{font-size:11px;font-weight:500;color:#2563EB}
+  .verified-badge{font-size:10px;background:#E9F7EE;color:#1C7C3F;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px;margin-top:6px}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:20px;text-align:center}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="ptitle" style="font-size:16px;font-weight:500">Creator directory</div>
+    <div style="display:flex;gap:14px;align-items:center"><a href="pricing.html" style="font-size:11px;color:#2563EB;text-decoration:none">Upgrade plan</a><button class="signout" onclick="signOut()">Sign out</button></div>
+  </div>
+  <div class="controls">
+    <select id="sortSel" onchange="render()">
+      <option value="trust_score">Sort: highest trust score</option>
+      <option value="verified">Sort: most verified campaigns</option>
+    </select>
+  </div>
+  <div id="content" class="loading">Loading creators from Supabase…</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script>
+let creators = [];
+
+async function load() {
+  const profile = await requireRole('sponsor');
+  if (!profile) return;
+
+  const { data: rows, error } = await sb.from('creators').select('*, profiles!inner(display_name)');
+  if (error) { document.getElementById('content').textContent = 'Could not load creators: ' + error.message; return; }
+
+  const { data: campaigns } = await sb.from('campaigns').select('creator_id, status').eq('status', 'verified');
+  const verifiedCounts = {};
+  (campaigns || []).forEach(c => verifiedCounts[c.creator_id] = (verifiedCounts[c.creator_id] || 0) + 1);
+
+  creators = rows.map(r => ({ ...r, name: r.profiles.display_name, verified: verifiedCounts[r.id] || 0 }));
+  render();
+}
+
+function render() {
+  const sortBy = document.getElementById('sortSel').value;
+  const sorted = [...creators].sort((a, b) => sortBy === 'verified' ? b.verified - a.verified : b.trust_score - a.trust_score);
+  document.getElementById('content').innerHTML = `<div class="grid">${sorted.map(c => `
+    <div class="ccard" onclick="window.location.href='evaluate.html?creator=${c.id}'">
+      <div class="head">
+        <div class="avatar">${c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+        <div><div class="name">${c.name}</div><div class="niche">${c.niche||''} · ${c.location||''}</div></div>
+      </div>
+      <div class="pbar-row"><span>Trust score</span><div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div><span class="pbar-val">${c.trust_score}</span></div>
+      <div class="verified-badge"><i class="ti ti-rosette-discount-check"></i>${c.verified} verified</div>
+    </div>
+  `).join('')}</div>`;
+}
+
+async function signOut() { await sb.auth.signOut(); window.location.href = 'auth.html'; }
+
+load();
+</script>
+</body>
+</html>

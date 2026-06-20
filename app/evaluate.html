@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluation — Kitscore</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  body{padding:20px;max-width:680px;margin:0 auto}
+  .back{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none;margin-bottom:10px;display:inline-block}
+  .verdict{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .badge{font-size:13px;padding:5px 12px;border-radius:14px;font-weight:500}
+  .b-green{background:#E9F7EE;color:#1C7C3F}
+  .b-blue{background:var(--color-background-info);color:#185FA5}
+  .b-amber{background:#FEF6E7;color:#92600A}
+  .b-red{background:#FDECEC;color:#B42318}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:12px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+  .row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px}
+  .locked-row{filter:blur(3px);user-select:none;pointer-events:none}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:20px;text-align:center}
+  .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer}
+  .cta:disabled{opacity:.6;cursor:default}
+  .banner{font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:12px}
+  .banner.ok{background:#E9F7EE;color:#1C7C3F}
+  .banner.pending{background:#FEF6E7;color:#92600A}
+</style>
+</head>
+<body>
+  <button class="back" onclick="window.location.href='directory.html'">&larr; Back to directory</button>
+  <div id="content" class="loading">Loading evaluation…</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script>
+const VERDICT_STYLE = { approve: ['b-green','ti-circle-check','Approve'], caution: ['b-amber','ti-alert-triangle','Caution'], avoid: ['b-red','ti-circle-x','Avoid'] };
+let creatorId, profile;
+
+async function authedFetch(url, body) {
+  const { data: { session } } = await sb.auth.getSession();
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+    body: JSON.stringify(body),
+  }).then(r => r.json().then(json => ({ ok: r.ok, json })));
+}
+
+async function load() {
+  profile = await requireRole('sponsor');
+  if (!profile) return;
+
+  const params = new URLSearchParams(window.location.search);
+  creatorId = params.get('creator');
+  if (!creatorId) { document.getElementById('content').textContent = 'No creator specified.'; return; }
+
+  const checkoutState = params.get('checkout');
+
+  const [{ data: creator }, { data: profileRow }, { data: components }, { data: campaigns }, { data: evalRow }] = await Promise.all([
+    sb.from('creators').select('*').eq('id', creatorId).single(),
+    sb.from('profiles').select('display_name').eq('id', creatorId).single(),
+    sb.from('score_components').select('*').eq('creator_id', creatorId),
+    sb.from('campaigns').select('status').eq('creator_id', creatorId).eq('status', 'verified'),
+    sb.from('evaluations').select('*').eq('creator_id', creatorId).eq('sponsor_id', profile.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+  ]);
+
+  const verifiedCount = (campaigns || []).length;
+  const compMap = {};
+  (components || []).forEach(c => compMap[c.component_key] = c.value);
+
+  let banner = '';
+  if (checkoutState === 'success' && evalRow && !evalRow.unlocked) {
+    banner = `<div class="banner pending">Payment received — waiting for confirmation (usually a few seconds). <a href="#" onclick="load();return false;" style="color:inherit">Refresh</a></div>`;
+  } else if (checkoutState === 'cancelled') {
+    banner = `<div class="banner pending">Checkout was cancelled — no charge was made.</div>`;
+  }
+
+  if (!evalRow) {
+    document.getElementById('content').innerHTML = `
+      <div class="card">
+        <div class="sec">${profileRow.display_name}</div>
+        <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:10px">No evaluation has been generated for this creator yet.</p>
+        <button class="cta" onclick="generateEvaluation()">Generate evaluation</button>
+      </div>`;
+    return;
+  }
+
+  const [style_class, icon, label] = VERDICT_STYLE[evalRow.recommendation_verdict] || VERDICT_STYLE.caution;
+  const locked = !evalRow.unlocked;
+
+  document.getElementById('content').innerHTML = `
+    ${banner}
+    <div class="card">
+      <div class="verdict">
+        <span class="badge b-blue">Trust score: ${creator.trust_score}</span>
+        <span class="badge ${locked ? 'b-amber' : style_class}">${locked ? 'Recommendation: locked' : `<i class="ti ${icon}"></i> Recommendation: ${label}`}</span>
+      </div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:8px">${profileRow.display_name} · ${creator.niche||''} · ${creator.location||''}</div>
+      <div class="${locked?'locked-row':''}" style="font-size:12px;color:var(--color-text-secondary);line-height:1.7">${evalRow.recommendation_summary || ''}</div>
+      ${locked ? `<button class="cta" style="margin-top:10px" onclick="unlock()">Unlock full report — £29</button>` : ''}
+    </div>
+    <div class="card ${locked?'locked-row':''}">
+      <div class="sec">Key reasons</div>
+      <div class="row"><i class="ti ti-rosette-discount-check" style="color:#1C7C3F"></i>${verifiedCount} mutually verified campaigns</div>
+      <div class="row"><i class="ti ti-shield-check" style="color:#1C7C3F"></i>Brand safety score: ${compMap.brand_safety ?? '—'}</div>
+      <div class="row"><i class="ti ti-users" style="color:#1C7C3F"></i>Audience authenticity: ${compMap.audience_authenticity ?? '—'}</div>
+    </div>
+    <div class="card ${locked?'locked-row':''}">
+      <div class="sec">Score breakdown</div>
+      ${(components||[]).map(c => `<div class="row"><span style="width:160px;color:var(--color-text-secondary)">${c.label}</span><strong>${c.value}</strong></div>`).join('')}
+    </div>
+  `;
+}
+
+async function generateEvaluation() {
+  const { ok, json } = await authedFetch('/api/generate-evaluation', { creatorId });
+  if (!ok) { alert('Could not generate evaluation: ' + (json.error || 'unknown error')); return; }
+  load();
+}
+
+async function unlock() {
+  const params = new URLSearchParams(window.location.search);
+  const { data: evalRow } = await sb.from('evaluations').select('id').eq('creator_id', creatorId).eq('sponsor_id', profile.id).order('created_at', { ascending: false }).limit(1).single();
+  const { ok, json } = await authedFetch('/api/create-checkout-session', { product: 'report', evaluationId: evalRow.id, creatorId });
+  if (!ok) { alert('Could not start checkout: ' + (json.error || 'unknown error')); return; }
+  window.location.href = json.url;
+}
+
+load();
+</script>
+</body>
+</html>
