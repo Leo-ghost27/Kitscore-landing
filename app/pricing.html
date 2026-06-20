@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing — Kitscore</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  body{padding:20px;max-width:600px;margin:0 auto}
+  .back{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none;margin-bottom:16px;display:inline-block}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .plan{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:16px}
+  .plan.featured{border:2px solid #2563EB}
+  .plan h3{font-size:13px;font-weight:500;margin-bottom:4px}
+  .plan .price{font-size:22px;font-weight:500;margin-bottom:10px}
+  .plan .price span{font-size:11px;font-weight:400;color:var(--color-text-secondary)}
+  .plan ul{list-style:none;font-size:11px;color:var(--color-text-secondary);margin-bottom:12px;display:flex;flex-direction:column;gap:5px}
+  .plan button{width:100%;padding:9px;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer}
+  .btn-primary{background:#2563EB;color:#fff}
+  .btn-outline{background:#fff;border:0.5px solid var(--color-border-tertiary)!important;color:var(--color-text-primary)}
+  .banner{font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:14px;background:#E9F7EE;color:#1C7C3F}
+</style>
+</head>
+<body>
+  <button class="back" onclick="window.location.href='directory.html'">&larr; Back to directory</button>
+  <div id="banner"></div>
+  <div class="g2">
+    <div class="plan featured">
+      <h3>Starter</h3>
+      <div class="price">£149<span>/mo</span></div>
+      <ul><li>25 evaluations/mo</li><li>✓ Saved evaluations &amp; history</li><li>✓ Creator watchlists</li><li>✓ Comparison tools</li></ul>
+      <button class="btn-primary" onclick="subscribe('starter')">Start Starter</button>
+    </div>
+    <div class="plan">
+      <h3>Team</h3>
+      <div class="price">£499<span>/mo</span></div>
+      <ul><li>150 evaluations/mo</li><li>✓ Team collaboration &amp; shared notes</li><li>✓ Creator monitoring</li><li>✓ Internal approval workflows</li></ul>
+      <button class="btn-outline" onclick="subscribe('team')">Start Team</button>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script>
+(async () => {
+  const profile = await requireRole('sponsor');
+  if (!profile) return;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('checkout') === 'success') {
+    document.getElementById('banner').innerHTML = '<div class="banner">Subscription started — thank you! It may take a few seconds to reflect.</div>';
+  }
+})();
+
+async function subscribe(product) {
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch('/api/create-checkout-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+    body: JSON.stringify({ product }),
+  });
+  const json = await res.json();
+  if (!res.ok) { alert('Could not start checkout: ' + (json.error || 'unknown error')); return; }
+  window.location.href = json.url;
+}
+</script>
+</body>
+</html>
