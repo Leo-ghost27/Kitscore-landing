@@ -25,18 +25,25 @@
 </style>
 </head>
 <body>
-  <button class="back" onclick="window.location.href='dashboard.html'">&larr; Back to dashboard</button>
-  <div id="banner"></div>
-  <div class="g2" id="plans">Loading…</div>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <button class="back" onclick="window.location.href='dashboard.html'">&larr; Back to dashboard</button>
+    <div id="banner"></div>
+    <div class="g2" id="plans">Loading…</div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
+<script src="nav.js"></script>
 <script>
 let profile, creator;
 
 (async () => {
   profile = await requireRole('creator');
   if (!profile) return;
+  renderSidebar('creator', 'pricing-creator');
   const { data: c } = await sb.from('creators').select('plan').eq('id', profile.id).single();
   creator = c;
 

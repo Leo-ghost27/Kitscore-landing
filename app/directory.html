@@ -29,26 +29,32 @@
 </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="ptitle" style="font-size:16px;font-weight:500">Creator directory</div>
-    <div style="display:flex;gap:14px;align-items:center"><a href="pricing.html" style="font-size:11px;color:#2563EB;text-decoration:none">Upgrade plan</a><button class="signout" onclick="signOut()">Sign out</button></div>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="topbar">
+      <div class="ptitle" style="font-size:16px;font-weight:500">Creator directory</div>
+    </div>
+    <div class="controls">
+      <select id="sortSel" onchange="render()">
+        <option value="trust_score">Sort: highest trust score</option>
+        <option value="verified">Sort: most verified campaigns</option>
+      </select>
+    </div>
+    <div id="content" class="loading">Loading creators from Supabase…</div>
   </div>
-  <div class="controls">
-    <select id="sortSel" onchange="render()">
-      <option value="trust_score">Sort: highest trust score</option>
-      <option value="verified">Sort: most verified campaigns</option>
-    </select>
-  </div>
-  <div id="content" class="loading">Loading creators from Supabase…</div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
+<script src="nav.js"></script>
 <script>
 let creators = [];
 
 async function load() {
   const profile = await requireRole('sponsor');
   if (!profile) return;
+  renderSidebar('sponsor', 'directory');
 
   const { data: rows, error } = await sb.from('creators').select('*, profiles!inner(display_name)');
   if (error) { document.getElementById('content').textContent = 'Could not load creators: ' + error.message; return; }

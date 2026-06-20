@@ -31,17 +31,22 @@
 </style>
 </head>
 <body>
-  <div class="topbar">
-    <div>
-      <div class="ptitle" style="font-size:16px;font-weight:500">Dashboard</div>
-      <div class="who" id="whoami">Loading…</div>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="topbar">
+      <div>
+        <div class="ptitle" style="font-size:16px;font-weight:500">Dashboard</div>
+        <div class="who" id="whoami">Loading…</div>
+      </div>
     </div>
-    <button class="signout" onclick="signOut()">Sign out</button>
+    <div id="content" class="loading">Loading your live data from Supabase…</div>
   </div>
-  <div id="content" class="loading">Loading your live data from Supabase…</div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
+<script src="nav.js"></script>
 <script>
 const BADGE_EMOJI = { none:'—', bronze:'🥉', silver:'🥈', gold:'🥇' };
 const QUESTIONS = [
@@ -57,6 +62,7 @@ let profile, creator;
 async function load() {
   profile = await requireRole('creator');
   if (!profile) return;
+  renderSidebar('creator', 'dashboard');
   document.getElementById('whoami').textContent = `${profile.display_name} · ${profile.email || ''}`;
 
   const [{ data: c }, { data: components }, { data: evidence }, { data: answers }, { data: campaigns }] = await Promise.all([

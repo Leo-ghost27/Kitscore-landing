@@ -22,29 +22,36 @@
 </style>
 </head>
 <body>
-  <button class="back" onclick="window.location.href='directory.html'">&larr; Back to directory</button>
-  <div id="banner"></div>
-  <div class="g2">
-    <div class="plan featured">
-      <h3>Starter</h3>
-      <div class="price">£149<span>/mo</span></div>
-      <ul><li>25 evaluations/mo</li><li>✓ Saved evaluations &amp; history</li><li>✓ Creator watchlists</li><li>✓ Comparison tools</li></ul>
-      <button class="btn-primary" onclick="subscribe('starter')">Start Starter</button>
-    </div>
-    <div class="plan">
-      <h3>Team</h3>
-      <div class="price">£499<span>/mo</span></div>
-      <ul><li>150 evaluations/mo</li><li>✓ Team collaboration &amp; shared notes</li><li>✓ Creator monitoring</li><li>✓ Internal approval workflows</li></ul>
-      <button class="btn-outline" onclick="subscribe('team')">Start Team</button>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <button class="back" onclick="window.location.href='directory.html'">&larr; Back to directory</button>
+    <div id="banner"></div>
+    <div class="g2">
+      <div class="plan featured">
+        <h3>Starter</h3>
+        <div class="price">£149<span>/mo</span></div>
+        <ul><li>25 evaluations/mo</li><li>✓ Saved evaluations &amp; history</li><li>✓ Creator watchlists</li><li>✓ Comparison tools</li></ul>
+        <button class="btn-primary" onclick="subscribe('starter')">Start Starter</button>
+      </div>
+      <div class="plan">
+        <h3>Team</h3>
+        <div class="price">£499<span>/mo</span></div>
+        <ul><li>150 evaluations/mo</li><li>✓ Team collaboration &amp; shared notes</li><li>✓ Creator monitoring</li><li>✓ Internal approval workflows</li></ul>
+        <button class="btn-outline" onclick="subscribe('team')">Start Team</button>
+      </div>
     </div>
   </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
+<script src="nav.js"></script>
 <script>
 (async () => {
   const profile = await requireRole('sponsor');
   if (!profile) return;
+  renderSidebar('sponsor', 'pricing');
   const params = new URLSearchParams(window.location.search);
   if (params.get('checkout') === 'success') {
     document.getElementById('banner').innerHTML = '<div class="banner">Subscription started — thank you! It may take a few seconds to reflect.</div>';
