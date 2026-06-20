@@ -4,43 +4,81 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign in — Kitscore</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="shared.css">
 <style>
-  body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--color-background-tertiary)}
-  .auth-card{width:340px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:24px}
-  .auth-card h1{font-size:18px;font-weight:500;margin-bottom:4px}
-  .auth-card p{font-size:12px;color:var(--color-text-secondary);margin-bottom:16px}
-  .field{margin-bottom:10px}
-  .field label{display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
-  .field input,.field select{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
-  .tabs{display:flex;gap:4px;margin-bottom:16px;background:var(--color-background-secondary);border-radius:var(--border-radius-sm);padding:3px}
-  .tabs button{flex:1;padding:6px;border:none;background:transparent;border-radius:6px;font-size:12px;cursor:pointer;color:var(--color-text-secondary)}
-  .tabs button.active{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500}
-  .submit{width:100%;padding:9px;background:#2563EB;color:#fff;border:none;border-radius:var(--border-radius-sm);font-size:13px;font-weight:500;cursor:pointer;margin-top:4px}
+  body{display:flex;min-height:100vh;background:var(--color-background-primary)}
+  .brand-panel{flex:1;background:linear-gradient(160deg,#11131A 0%,#1C2030 100%);color:#fff;display:flex;flex-direction:column;justify-content:center;padding:48px;position:relative;overflow:hidden}
+  .brand-panel::after{content:'';position:absolute;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.35),transparent 70%);top:-120px;right:-100px}
+  .brand-logo{font-size:20px;font-weight:600;margin-bottom:28px;position:relative;z-index:1}
+  .brand-logo span{color:#7C9CFF}
+  .brand-tag{display:inline-flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.5px;text-transform:uppercase;background:rgba(124,156,255,.15);color:#9DB6FF;padding:5px 10px;border-radius:12px;margin-bottom:16px;width:fit-content;position:relative;z-index:1}
+  .brand-headline{font-size:28px;font-weight:600;line-height:1.25;margin-bottom:14px;position:relative;z-index:1;max-width:380px}
+  .brand-sub{font-size:13px;color:#A8AEC2;line-height:1.6;max-width:340px;margin-bottom:32px;position:relative;z-index:1}
+  .preview-card{background:rgba(255,255,255,.06);border:0.5px solid rgba(255,255,255,.12);border-radius:var(--border-radius-md);padding:14px;width:220px;position:relative;z-index:1;backdrop-filter:blur(6px)}
+  .preview-card .ml{font-size:10px;color:#9098B0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+  .preview-card .mv{font-size:24px;font-weight:600;color:#fff}
+  .preview-card .vb{font-size:10px;background:rgba(28,124,63,.25);color:#7EE2A0;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px;margin-top:8px}
+  .form-panel{width:420px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:32px}
+  .auth-card{width:100%;max-width:340px}
+  .auth-card h1{font-size:19px;font-weight:600;margin-bottom:4px;color:var(--color-text-primary)}
+  .auth-card p{font-size:12px;color:var(--color-text-secondary);margin-bottom:20px}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:5px}
+  .field-icon{position:relative}
+  .field-icon i{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--color-text-tertiary)}
+  .field-icon input,.field-icon select{padding-left:32px}
+  .field input,.field select{width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px;background:var(--color-background-primary);transition:border-color .15s}
+  .field input:focus,.field select:focus{outline:none;border-color:#2563EB}
+  .tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--color-background-secondary);border-radius:var(--border-radius-sm);padding:3px}
+  .tabs button{flex:1;padding:7px;border:none;background:transparent;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--color-text-secondary)}
+  .tabs button.active{background:var(--color-background-primary);color:var(--color-text-primary);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  .submit{width:100%;padding:10px;background:#2563EB;color:#fff;border:none;border-radius:var(--border-radius-sm);font-size:13px;font-weight:500;cursor:pointer;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:6px}
+  .submit:hover{background:#1d4ed8}
   .submit:disabled{opacity:.6;cursor:default}
-  .msg{font-size:11px;margin-top:10px;padding:8px;border-radius:var(--border-radius-sm)}
+  .msg{font-size:11px;margin-top:12px;padding:9px 10px;border-radius:var(--border-radius-sm)}
   .msg.error{background:#FDECEC;color:#B42318}
   .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  @media (max-width:760px){.brand-panel{display:none}.form-panel{width:100%}}
 </style>
 </head>
 <body>
-  <div class="auth-card">
-    <h1>Kitscore</h1>
-    <p id="modeSub">Sign in to your account</p>
-    <div class="tabs">
-      <button id="tabLogin" class="active" onclick="setMode('login')">Sign in</button>
-      <button id="tabSignup" onclick="setMode('signup')">Create account</button>
+  <div class="brand-panel">
+    <div class="brand-logo">Kit<span>score</span></div>
+    <div class="brand-tag"><i class="ti ti-shield-check" aria-hidden="true"></i> Sponsorship intelligence</div>
+    <div class="brand-headline">Evaluate any creator before you sponsor them.</div>
+    <div class="brand-sub">Kitscore turns creator performance, evidence, and verified track record into a trust score with a visible confidence rating — so every number comes with proof.</div>
+    <div class="preview-card">
+      <div class="ml">Trust score</div>
+      <div class="mv">80</div>
+      <div class="vb"><i class="ti ti-rosette-discount-check" aria-hidden="true"></i>7 verified campaigns</div>
     </div>
-    <div id="signupOnly" style="display:none">
-      <div class="field"><label>I am a</label>
-        <select id="role"><option value="creator">Creator</option><option value="sponsor">Sponsor</option></select>
+  </div>
+  <div class="form-panel">
+    <div class="auth-card">
+      <h1>Welcome</h1>
+      <p id="modeSub">Sign in to your account</p>
+      <div class="tabs">
+        <button id="tabLogin" class="active" onclick="setMode('login')">Sign in</button>
+        <button id="tabSignup" onclick="setMode('signup')">Create account</button>
       </div>
-      <div class="field"><label>Name / Company</label><input id="displayName" placeholder="Aaliya Ahmed"></div>
+      <div id="signupOnly" style="display:none">
+        <div class="field"><label>I am a</label>
+          <div class="field-icon"><i class="ti ti-user-circle" aria-hidden="true"></i><select id="role"><option value="creator">Creator</option><option value="sponsor">Sponsor</option></select></div>
+        </div>
+        <div class="field"><label>Name / Company</label>
+          <div class="field-icon"><i class="ti ti-id" aria-hidden="true"></i><input id="displayName" placeholder="Aaliya Ahmed"></div>
+        </div>
+      </div>
+      <div class="field"><label>Email</label>
+        <div class="field-icon"><i class="ti ti-mail" aria-hidden="true"></i><input id="email" type="email" placeholder="you@example.com"></div>
+      </div>
+      <div class="field"><label>Password</label>
+        <div class="field-icon"><i class="ti ti-lock" aria-hidden="true"></i><input id="password" type="password" placeholder="••••••••"></div>
+      </div>
+      <button class="submit" id="submitBtn" onclick="submitForm()"><i class="ti ti-arrow-right" aria-hidden="true"></i>Sign in</button>
+      <div id="msg"></div>
     </div>
-    <div class="field"><label>Email</label><input id="email" type="email" placeholder="you@example.com"></div>
-    <div class="field"><label>Password</label><input id="password" type="password" placeholder="••••••••"></div>
-    <button class="submit" id="submitBtn" onclick="submitForm()">Sign in</button>
-    <div id="msg"></div>
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -53,7 +91,7 @@ function setMode(m) {
   document.getElementById('tabSignup').classList.toggle('active', m==='signup');
   document.getElementById('signupOnly').style.display = m==='signup' ? 'block' : 'none';
   document.getElementById('modeSub').textContent = m==='login' ? 'Sign in to your account' : 'Set up your Kitscore account';
-  document.getElementById('submitBtn').textContent = m==='login' ? 'Sign in' : 'Create account';
+  document.getElementById('submitBtn').innerHTML = m==='login' ? '<i class="ti ti-arrow-right"></i>Sign in' : '<i class="ti ti-arrow-right"></i>Create account';
   document.getElementById('msg').innerHTML = '';
 }
 
@@ -75,7 +113,6 @@ async function submitForm() {
     return;
   }
 
-  // Signup
   const role = document.getElementById('role').value;
   const displayName = document.getElementById('displayName').value.trim();
   if (!displayName) { showMsg('Name / company is required.', 'error'); btn.disabled = false; return; }
@@ -88,7 +125,6 @@ async function submitForm() {
     return;
   }
 
-  // Create the profile row, then the role-specific row
   const { data: profile, error: profileErr } = await sb.from('profiles')
     .insert({ auth_user_id: data.user.id, role, display_name: displayName, email })
     .select().single();
@@ -108,7 +144,6 @@ async function routeToDashboard() {
   window.location.href = profile.role === 'creator' ? 'dashboard.html' : 'directory.html';
 }
 
-// If already signed in, skip straight to the right dashboard
 (async () => {
   const profile = await getCurrentProfile();
   if (profile) await routeToDashboard();
