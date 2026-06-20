@@ -65,15 +65,21 @@
 })();
 
 async function subscribe(product) {
-  const { data: { session } } = await sb.auth.getSession();
-  const res = await fetch('/api/create-checkout-session', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
-    body: JSON.stringify({ product }),
-  });
-  const json = await res.json();
-  if (!res.ok) { alert('Could not start checkout: ' + (json.error || 'unknown error')); return; }
-  window.location.href = json.url;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ product }),
+    });
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); } catch { alert('Server did not return JSON (status ' + res.status + '):\n' + text.slice(0, 300)); return; }
+    if (!res.ok) { alert('Could not start checkout: ' + (json.error || 'unknown error')); return; }
+    window.location.href = json.url;
+  } catch (err) {
+    alert('Checkout request failed: ' + err.message);
+  }
 }
 </script>
 </body>

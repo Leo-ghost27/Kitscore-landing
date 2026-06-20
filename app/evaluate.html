@@ -45,11 +45,17 @@ let creatorId, profile;
 
 async function authedFetch(url, body) {
   const { data: { session } } = await sb.auth.getSession();
-  return fetch(url, {
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
     body: JSON.stringify(body),
-  }).then(r => r.json().then(json => ({ ok: r.ok, json })));
+  });
+  const text = await res.text();
+  try {
+    return { ok: res.ok, json: JSON.parse(text) };
+  } catch {
+    return { ok: false, json: { error: `Server returned non-JSON response (status ${res.status}): ${text.slice(0, 200)}` } };
+  }
 }
 
 async function load() {
@@ -126,11 +132,14 @@ async function generateEvaluation() {
 }
 
 async function unlock() {
-  const params = new URLSearchParams(window.location.search);
-  const { data: evalRow } = await sb.from('evaluations').select('id').eq('creator_id', creatorId).eq('sponsor_id', profile.id).order('created_at', { ascending: false }).limit(1).single();
-  const { ok, json } = await authedFetch('/api/create-checkout-session', { product: 'report', evaluationId: evalRow.id, creatorId });
-  if (!ok) { alert('Could not start checkout: ' + (json.error || 'unknown error')); return; }
-  window.location.href = json.url;
+  try {
+    const { data: evalRow } = await sb.from('evaluations').select('id').eq('creator_id', creatorId).eq('sponsor_id', profile.id).order('created_at', { ascending: false }).limit(1).single();
+    const { ok, json } = await authedFetch('/api/create-checkout-session', { product: 'report', evaluationId: evalRow.id, creatorId });
+    if (!ok) { alert('Could not start checkout: ' + (json.error || 'unknown error')); return; }
+    window.location.href = json.url;
+  } catch (err) {
+    alert('Checkout request failed: ' + err.message);
+  }
 }
 
 load();
