@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Kitscore</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  body{padding:20px;max-width:760px;margin:0 auto}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .topbar .who{font-size:12px;color:var(--color-text-secondary)}
+  .signout{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .ml{font-size:10px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+  .mv{font-size:20px;font-weight:500}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+  .pbar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .pbar-row span:first-child{width:130px;font-size:11px;color:var(--color-text-secondary)}
+  .pbar-track{flex:1;height:6px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
+  .pbar-fill{height:100%;background:#2563EB;border-radius:3px;transition:width .3s}
+  .pbar-val{width:28px;text-align:right;font-size:11px;font-weight:500}
+  .qrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .qrow:last-child{border-bottom:none}
+  .qrow .opts{display:flex;gap:4px}
+  .qrow button{font-size:10px;padding:4px 8px;border-radius:6px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);cursor:pointer;color:var(--color-text-secondary)}
+  .qrow button.sel{background:#2563EB;color:#fff;border-color:#2563EB}
+  .verified-badge{font-size:10px;background:#E9F7EE;color:#1C7C3F;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:20px;text-align:center}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div>
+      <div class="ptitle" style="font-size:16px;font-weight:500">Dashboard</div>
+      <div class="who" id="whoami">Loading…</div>
+    </div>
+    <button class="signout" onclick="signOut()">Sign out</button>
+  </div>
+  <div id="content" class="loading">Loading your live data from Supabase…</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script>
+const BADGE_EMOJI = { none:'—', bronze:'🥉', silver:'🥈', gold:'🥇' };
+const QUESTIONS = [
+  {key:'family_safe', label:'Is your content generally family-safe?', opts:['Yes','Mostly','No']},
+  {key:'political', label:'How often do you post political content?', opts:['None','Occasional','Frequent']},
+  {key:'gambling', label:'Gambling promotion history?', opts:['Never','Past','Active']},
+  {key:'adult', label:'Adult/mature content?', opts:['None','Mild','Explicit']},
+  {key:'profanity', label:'Profanity frequency?', opts:['None','Occasional','Frequent']},
+];
+
+let profile, creator;
+
+async function load() {
+  profile = await requireRole('creator');
+  if (!profile) return;
+  document.getElementById('whoami').textContent = `${profile.display_name} · ${profile.email || ''}`;
+
+  const [{ data: c }, { data: components }, { data: evidence }, { data: answers }, { data: campaigns }] = await Promise.all([
+    sb.from('creators').select('*').eq('id', profile.id).single(),
+    sb.from('score_components').select('*').eq('creator_id', profile.id).order('component_key'),
+    sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at', { ascending: false }),
+    sb.from('brand_safety_answers').select('*').eq('creator_id', profile.id),
+    sb.from('campaigns').select('*').eq('creator_id', profile.id).order('created_at', { ascending: false }),
+  ]);
+  creator = c;
+
+  const answerMap = {};
+  (answers || []).forEach(a => answerMap[a.question_key] = a.answer);
+
+  const verifiedCount = (campaigns || []).filter(x => x.status === 'verified').length;
+
+  document.getElementById('content').innerHTML = `
+    <div class="g3">
+      <div class="card-sm" style="padding:12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
+        <div class="ml">Trust score</div>
+        <div class="mv" style="color:#2563EB">${creator.trust_score}</div>
+        <div class="verified-badge" style="margin-top:4px"><i class="ti ti-rosette-discount-check"></i>${verifiedCount} verified</div>
+      </div>
+      <div class="card-sm" style="padding:12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
+        <div class="ml">Trust level</div>
+        <div class="mv">${BADGE_EMOJI[creator.badge_tier]} ${creator.badge_tier}</div>
+      </div>
+      <div class="card-sm" style="padding:12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
+        <div class="ml">Plan</div>
+        <div class="mv" style="text-transform:capitalize">${creator.plan}</div>
+      </div>
+    </div>
+
+    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:14px">
+      <div class="sec">Score breakdown</div>
+      ${(components || []).map(c => `
+        <div class="pbar-row">
+          <span>${c.label}</span>
+          <div class="pbar-track"><div class="pbar-fill" style="width:${c.value}%"></div></div>
+          <span class="pbar-val">${c.value}</span>
+        </div>`).join('')}
+    </div>
+
+    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:14px">
+      <div class="sec">Brand safety questionnaire <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— updates your score live</span></div>
+      ${QUESTIONS.map(q => `
+        <div class="qrow">
+          <span style="font-size:12px">${q.label}</span>
+          <span class="opts">${q.opts.map(o => `<button class="${answerMap[q.key]===o?'sel':''}" onclick="answerQuestion('${q.key}','${o}')">${o}</button>`).join('')}</span>
+        </div>`).join('')}
+    </div>
+
+    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
+      <div class="sec">Evidence</div>
+      ${(evidence||[]).length ? (evidence||[]).map(e => `
+        <div class="qrow"><span style="font-size:12px">${e.file_name} <span style="color:var(--color-text-tertiary)">· ${e.platform||''}</span></span><span style="font-size:10px;color:var(--color-text-secondary)">${e.status.replace('_',' ')}</span></div>
+      `).join('') : '<div style="font-size:12px;color:var(--color-text-secondary)">No evidence uploaded yet.</div>'}
+    </div>
+  `;
+}
+
+async function answerQuestion(key, answer) {
+  const { error } = await sb.from('brand_safety_answers')
+    .upsert({ creator_id: profile.id, question_key: key, answer }, { onConflict: 'creator_id,question_key' });
+  if (error) { alert('Could not save answer: ' + error.message); return; }
+  await load(); // re-fetch so the recalculated score (via DB trigger) shows immediately
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  window.location.href = 'auth.html';
+}
+
+load();
+</script>
+</body>
+</html>

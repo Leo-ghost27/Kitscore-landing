@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluation — Kitscore</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  body{padding:20px;max-width:680px;margin:0 auto}
+  .back{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none;margin-bottom:10px;display:inline-block}
+  .verdict{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .badge{font-size:13px;padding:5px 12px;border-radius:14px;font-weight:500}
+  .b-green{background:#E9F7EE;color:#1C7C3F}
+  .b-blue{background:var(--color-background-info);color:#185FA5}
+  .b-amber{background:#FEF6E7;color:#92600A}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:12px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+  .row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:20px;text-align:center}
+</style>
+</head>
+<body>
+  <button class="back" onclick="window.location.href='directory.html'">&larr; Back to directory</button>
+  <div id="content" class="loading">Loading evaluation…</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script>
+const VERDICT_STYLE = { approve: ['b-green','ti-circle-check','Approve'], caution: ['b-amber','ti-alert-triangle','Caution'], avoid: ['b-red','ti-circle-x','Avoid'] };
+
+async function load() {
+  const profile = await requireRole('sponsor');
+  if (!profile) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const creatorId = params.get('creator');
+  if (!creatorId) { document.getElementById('content').textContent = 'No creator specified.'; return; }
+
+  const [{ data: creator }, { data: profileRow }, { data: components }, { data: campaigns }, { data: evalRow }] = await Promise.all([
+    sb.from('creators').select('*').eq('id', creatorId).single(),
+    sb.from('profiles').select('display_name').eq('id', creatorId).single(),
+    sb.from('score_components').select('*').eq('creator_id', creatorId),
+    sb.from('campaigns').select('status').eq('creator_id', creatorId).eq('status', 'verified'),
+    sb.from('evaluations').select('*').eq('creator_id', creatorId).eq('sponsor_id', profile.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+  ]);
+
+  const verifiedCount = (campaigns || []).length;
+  const compMap = {};
+  (components || []).forEach(c => compMap[c.component_key] = c.value);
+
+  if (!evalRow) {
+    document.getElementById('content').innerHTML = `
+      <div class="card">
+        <div class="sec">${profileRow.display_name}</div>
+        <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:10px">No evaluation has been generated for this creator yet.</p>
+        <button onclick="createEvaluation('${creatorId}','${profile.id}')" style="padding:8px 14px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer">Generate evaluation</button>
+      </div>`;
+    return;
+  }
+
+  const [style_class, icon, label] = VERDICT_STYLE[evalRow.recommendation_verdict] || VERDICT_STYLE.caution;
+  document.getElementById('content').innerHTML = `
+    <div class="card">
+      <div class="verdict">
+        <span class="badge ${style_class}"><i class="ti ${icon}"></i> Recommendation: ${label}</span>
+        <span class="badge b-blue">Trust score: ${creator.trust_score}</span>
+      </div>
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:8px">${profileRow.display_name} · ${creator.niche||''} · ${creator.location||''}</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.7">${evalRow.recommendation_summary || ''}</div>
+    </div>
+    <div class="card">
+      <div class="sec">Key reasons</div>
+      <div class="row"><i class="ti ti-rosette-discount-check" style="color:#1C7C3F"></i>${verifiedCount} mutually verified campaigns</div>
+      <div class="row"><i class="ti ti-shield-check" style="color:#1C7C3F"></i>Brand safety score: ${compMap.brand_safety ?? '—'}</div>
+      <div class="row"><i class="ti ti-users" style="color:#1C7C3F"></i>Audience authenticity: ${compMap.audience_authenticity ?? '—'}</div>
+      <div class="row"><i class="ti ti-target-arrow" style="color:#1C7C3F"></i>Audience fit: ${evalRow.audience_fit ?? '—'}</div>
+    </div>
+    <div class="card">
+      <div class="sec">Score breakdown</div>
+      ${(components||[]).map(c => `<div class="row"><span style="width:160px;color:var(--color-text-secondary)">${c.label}</span><strong>${c.value}</strong></div>`).join('')}
+    </div>
+  `;
+}
+
+async function createEvaluation(creatorId, sponsorId) {
+  // Minimal real verdict logic: approve if trust score and brand safety both clear a bar,
+  // caution otherwise. This is intentionally simple — see status doc for what a production
+  // rules engine should consider (campaign disputes, recency, category fit, etc).
+  const { data: creator } = await sb.from('creators').select('trust_score').eq('id', creatorId).single();
+  const { data: components } = await sb.from('score_components').select('*').eq('creator_id', creatorId);
+  const brandSafety = (components || []).find(c => c.component_key === 'brand_safety')?.value || 0;
+  const verdict = (creator.trust_score >= 70 && brandSafety >= 70) ? 'approve' : (creator.trust_score >= 50 ? 'caution' : 'avoid');
+  const summary = verdict === 'approve'
+    ? 'This creator demonstrates strong credibility, a verified track record, and brand-safe content history.'
+    : verdict === 'caution'
+    ? 'This creator shows reasonable credibility but has some unverified or borderline factors worth reviewing before committing.'
+    : 'This creator currently falls below the recommended trust and brand-safety thresholds for this evaluation.';
+
+  const { error } = await sb.from('evaluations').insert({
+    sponsor_id: sponsorId, creator_id: creatorId, unlocked: true,
+    recommendation_verdict: verdict, recommendation_summary: summary,
+  });
+  if (error) { alert('Could not generate evaluation: ' + error.message); return; }
+  load();
+}
+</script>
+</body>
+</html>
