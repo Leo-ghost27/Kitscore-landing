@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile — Kitscore</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:16px;max-width:420px}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+  .field input{width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
+  .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer}
+  .cta:disabled{opacity:.6}
+  .msg{font-size:11px;margin-top:10px;padding:8px;border-radius:6px}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  .loading{font-size:12px;color:var(--color-text-secondary)}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Profile</div>
+    <div class="card" id="formWrap"><div class="loading">Loading…</div></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="nav.js"></script>
+<script>
+let profile, creator;
+
+async function load() {
+  profile = await requireRole('creator');
+  if (!profile) return;
+  renderSidebar('creator', 'profile');
+
+  const { data: c } = await sb.from('creators').select('*').eq('id', profile.id).single();
+  creator = c;
+
+  document.getElementById('formWrap').innerHTML = `
+    <div class="field"><label>Display name</label><input id="displayName" value="${profile.display_name || ''}"></div>
+    <div class="field"><label>Niche</label><input id="niche" value="${creator.niche || ''}"></div>
+    <div class="field"><label>Location</label><input id="location" value="${creator.location || ''}"></div>
+    <div class="field"><label>Business email</label><input id="businessEmail" value="${creator.business_email || ''}"></div>
+    <button class="cta" id="saveBtn" onclick="save()">Save changes</button>
+    <div id="msg"></div>
+  `;
+}
+
+async function save() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+
+  const displayName = document.getElementById('displayName').value.trim();
+  const niche = document.getElementById('niche').value.trim();
+  const location = document.getElementById('location').value.trim();
+  const businessEmail = document.getElementById('businessEmail').value.trim();
+
+  const [{ error: pErr }, { error: cErr }] = await Promise.all([
+    sb.from('profiles').update({ display_name: displayName }).eq('id', profile.id),
+    sb.from('creators').update({ niche, location, business_email: businessEmail }).eq('id', profile.id),
+  ]);
+
+  const msg = document.getElementById('msg');
+  if (pErr || cErr) {
+    msg.innerHTML = `<div class="msg error">Could not save: ${(pErr || cErr).message}</div>`;
+  } else {
+    msg.innerHTML = `<div class="msg ok">Saved.</div>`;
+  }
+  btn.disabled = false;
+}
+
+load();
+</script>
+</body>
+</html>

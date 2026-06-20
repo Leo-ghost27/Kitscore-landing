@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compare — Kitscore</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .picker{display:flex;gap:10px;margin-bottom:16px;align-items:center}
+  .picker select{padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:12px;flex:1}
+  .cmp-table{display:grid;grid-template-columns:1fr 1fr 1fr;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden}
+  .cmp-cell{padding:10px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+  .cmp-head{font-weight:500;background:var(--color-background-secondary)}
+  .win{color:#3B6D11;font-weight:500}
+  .loading{font-size:12px;color:var(--color-text-secondary)}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Compare creators</div>
+    <div class="picker">
+      <select id="creatorA"></select>
+      <span style="font-size:11px;color:var(--color-text-tertiary)">vs</span>
+      <select id="creatorB"></select>
+      <button onclick="renderCompare()" style="padding:8px 14px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer">Compare</button>
+    </div>
+    <div id="result"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="nav.js"></script>
+<script>
+let allCreators = [];
+
+async function load() {
+  const profile = await requireRole('sponsor');
+  if (!profile) return;
+  renderSidebar('sponsor', 'compare');
+
+  const { data, error } = await sb.from('creators').select('*, profiles!inner(display_name)');
+  if (error) { document.getElementById('result').textContent = 'Could not load: ' + error.message; return; }
+  allCreators = data;
+
+  const opts = data.map(c => `<option value="${c.id}">${c.profiles.display_name}</option>`).join('');
+  document.getElementById('creatorA').innerHTML = opts;
+  document.getElementById('creatorB').innerHTML = opts;
+  if (data.length > 1) document.getElementById('creatorB').selectedIndex = 1;
+
+  renderCompare();
+}
+
+async function renderCompare() {
+  const idA = document.getElementById('creatorA').value;
+  const idB = document.getElementById('creatorB').value;
+  if (!idA || !idB) return;
+
+  const [{ data: compA }, { data: compB }, { data: campA }, { data: campB }] = await Promise.all([
+    sb.from('score_components').select('*').eq('creator_id', idA),
+    sb.from('score_components').select('*').eq('creator_id', idB),
+    sb.from('campaigns').select('status').eq('creator_id', idA).eq('status', 'verified'),
+    sb.from('campaigns').select('status').eq('creator_id', idB).eq('status', 'verified'),
+  ]);
+
+  const a = allCreators.find(c => c.id === idA), b = allCreators.find(c => c.id === idB);
+  const mapA = {}, mapB = {};
+  (compA || []).forEach(c => mapA[c.component_key] = c.value);
+  (compB || []).forEach(c => mapB[c.component_key] = c.value);
+
+  const rows = [
+    ['Trust score', a.trust_score, b.trust_score],
+    ['Audience authenticity', mapA.audience_authenticity, mapB.audience_authenticity],
+    ['Engagement quality', mapA.engagement_quality, mapB.engagement_quality],
+    ['Brand safety', mapA.brand_safety, mapB.brand_safety],
+    ['Content consistency', mapA.content_consistency, mapB.content_consistency],
+    ['Verified campaigns', (campA||[]).length, (campB||[]).length],
+  ];
+
+  document.getElementById('result').innerHTML = `
+    <div class="cmp-table">
+      <div class="cmp-cell cmp-head">Metric</div>
+      <div class="cmp-cell cmp-head">${a.profiles.display_name}</div>
+      <div class="cmp-cell cmp-head">${b.profiles.display_name}</div>
+      ${rows.map(([label, va, vb]) => `
+        <div class="cmp-cell">${label}</div>
+        <div class="cmp-cell ${va > vb ? 'win' : ''}">${va ?? '—'}</div>
+        <div class="cmp-cell ${vb > va ? 'win' : ''}">${vb ?? '—'}</div>
+      `).join('')}
+    </div>
+  `;
+}
+
+load();
+</script>
+</body>
+</html>

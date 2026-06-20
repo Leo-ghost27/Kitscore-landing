@@ -4,10 +4,14 @@
 const NAV = {
   creator: [
     { key: 'dashboard', href: 'dashboard.html', icon: 'ti-layout-dashboard', label: 'Dashboard' },
+    { key: 'campaigns', href: 'campaigns.html', icon: 'ti-flag', label: 'Campaigns' },
+    { key: 'evidence', href: 'evidence.html', icon: 'ti-file-upload', label: 'Evidence' },
+    { key: 'profile', href: 'profile.html', icon: 'ti-user', label: 'Profile' },
     { key: 'pricing-creator', href: 'pricing-creator.html', icon: 'ti-credit-card', label: 'Upgrade' },
   ],
   sponsor: [
     { key: 'directory', href: 'directory.html', icon: 'ti-users', label: 'Directory' },
+    { key: 'compare', href: 'compare.html', icon: 'ti-arrows-exchange', label: 'Compare' },
     { key: 'pricing', href: 'pricing.html', icon: 'ti-credit-card', label: 'Plans' },
   ],
 };

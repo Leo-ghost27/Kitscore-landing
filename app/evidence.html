@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evidence — Kitscore</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .field{margin-bottom:10px}
+  .field label{display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+  .field input,.field select{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer}
+  .cta:disabled{opacity:.6}
+  .row-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+  .row-item:last-child{border-bottom:none}
+  .status-tag{font-size:10px;padding:3px 8px;border-radius:10px;text-transform:capitalize}
+  .st-live_verified{background:#E9F7EE;color:#1C7C3F}
+  .st-submitted{background:#FEF6E7;color:#92600A}
+  .st-self_reported{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .link-btn{font-size:11px;color:#2563EB;background:none;border:none;cursor:pointer}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
+  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:6px}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#1C7C3F}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Evidence</div>
+    <div class="card">
+      <div class="sec">Upload new evidence</div>
+      <div class="g2">
+        <div class="field"><label>Platform</label>
+          <select id="platform"><option>Instagram</option><option>YouTube</option><option>TikTok</option><option>Multi</option></select>
+        </div>
+        <div class="field"><label>Type</label>
+          <select id="evidenceType"><option>Analytics</option><option>Audience</option><option>Campaign</option><option>Other</option></select>
+        </div>
+      </div>
+      <div class="field"><label>File</label><input type="file" id="fileInput"></div>
+      <button class="cta" id="uploadBtn" onclick="upload()">Upload</button>
+      <div id="msg"></div>
+    </div>
+    <div class="card">
+      <div class="sec">Your evidence</div>
+      <div id="list" class="loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="nav.js"></script>
+<script>
+let profile;
+
+async function load() {
+  profile = await requireRole('creator');
+  if (!profile) return;
+  renderSidebar('creator', 'evidence');
+
+  const { data: items, error } = await sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at', { ascending: false });
+  if (error) { document.getElementById('list').textContent = 'Could not load: ' + error.message; return; }
+
+  document.getElementById('list').innerHTML = (items && items.length) ? items.map(e => `
+    <div class="row-item">
+      <span>${e.file_name} <span style="color:var(--color-text-tertiary)">· ${e.platform || ''} · ${e.evidence_type || ''}</span></span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span class="status-tag st-${e.status}">${e.status.replace('_',' ')}</span>
+        ${e.storage_path ? `<button class="link-btn" onclick="download('${e.storage_path}')">Download</button>` : ''}
+      </span>
+    </div>
+  `).join('') : '<p style="font-size:12px;color:var(--color-text-secondary)">No evidence uploaded yet.</p>';
+}
+
+async function upload() {
+  const file = document.getElementById('fileInput').files[0];
+  if (!file) { showMsg('Choose a file first.', 'error'); return; }
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true;
+
+  const path = `${profile.id}/${Date.now()}_${file.name}`;
+  const { error: upErr } = await sb.storage.from('evidence-uploads').upload(path, file);
+  if (upErr) { showMsg('Upload failed: ' + upErr.message, 'error'); btn.disabled = false; return; }
+
+  const { error: insErr } = await sb.from('evidence_uploads').insert({
+    creator_id: profile.id, file_name: file.name,
+    evidence_type: document.getElementById('evidenceType').value,
+    platform: document.getElementById('platform').value,
+    status: 'self_reported', storage_path: path,
+  });
+  if (insErr) { showMsg('File uploaded but record failed: ' + insErr.message, 'error'); btn.disabled = false; return; }
+
+  showMsg('Uploaded.', 'ok');
+  document.getElementById('fileInput').value = '';
+  btn.disabled = false;
+  load();
+}
+
+async function download(path) {
+  const { data, error } = await sb.storage.from('evidence-uploads').createSignedUrl(path, 60);
+  if (error) { alert('Could not get file: ' + error.message); return; }
+  window.open(data.signedUrl, '_blank');
+}
+
+function showMsg(text, type) { document.getElementById('msg').innerHTML = `<div class="msg ${type}">${text}</div>`; }
+
+load();
+</script>
+</body>
+</html>
