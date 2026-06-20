@@ -30,13 +30,15 @@ const handler = async (req, res) => {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    const { sponsorId, product, evaluationId } = session.metadata || {};
+    const { profileId, profileRole, product, evaluationId } = session.metadata || {};
     const admin = adminClient();
 
     if (product === 'report' && evaluationId) {
       await admin.from('evaluations').update({ unlocked: true }).eq('id', evaluationId);
-    } else if ((product === 'starter' || product === 'team') && sponsorId) {
-      await admin.from('sponsors').update({ plan: product }).eq('id', sponsorId);
+    } else if (product === 'starter' || product === 'team') {
+      await admin.from('sponsors').update({ plan: product }).eq('id', profileId);
+    } else if (product === 'creator_pro') {
+      await admin.from('creators').update({ plan: 'pro' }).eq('id', profileId);
     }
   }
 

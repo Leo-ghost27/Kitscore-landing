@@ -87,6 +87,7 @@ async function load() {
       <div class="card-sm" style="padding:12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
         <div class="ml">Plan</div>
         <div class="mv" style="text-transform:capitalize">${creator.plan}</div>
+        ${creator.plan !== 'pro' ? `<a href="pricing-creator.html" style="font-size:11px;color:#2563EB;text-decoration:none;display:inline-block;margin-top:4px">Upgrade →</a>` : ''}
       </div>
     </div>
 

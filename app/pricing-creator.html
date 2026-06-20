@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plans — Kitscore</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  body{padding:20px;max-width:600px;margin:0 auto}
+  .back{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none;margin-bottom:16px;display:inline-block}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .plan{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:16px;position:relative}
+  .plan.featured{border:2px solid #2563EB}
+  .plan .badge-pop{position:absolute;top:-9px;left:14px;background:var(--color-background-info);color:#185FA5;font-size:10px;padding:3px 8px;border-radius:10px}
+  .plan h3{font-size:13px;font-weight:500;margin-bottom:4px;margin-top:4px}
+  .plan .price{font-size:22px;font-weight:500;margin-bottom:10px}
+  .plan .price span{font-size:11px;font-weight:400;color:var(--color-text-secondary)}
+  .plan ul{list-style:none;font-size:11px;color:var(--color-text-secondary);margin-bottom:12px;display:flex;flex-direction:column;gap:5px}
+  .plan ul li.off{color:var(--color-text-tertiary)}
+  .plan button{width:100%;padding:9px;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer}
+  .btn-primary{background:#2563EB;color:#fff}
+  .btn-current{background:var(--color-background-secondary);color:var(--color-text-secondary);cursor:default}
+  .banner{font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:14px;background:#E9F7EE;color:#1C7C3F}
+</style>
+</head>
+<body>
+  <button class="back" onclick="window.location.href='dashboard.html'">&larr; Back to dashboard</button>
+  <div id="banner"></div>
+  <div class="g2" id="plans">Loading…</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script>
+let profile, creator;
+
+(async () => {
+  profile = await requireRole('creator');
+  if (!profile) return;
+  const { data: c } = await sb.from('creators').select('plan').eq('id', profile.id).single();
+  creator = c;
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('checkout') === 'success') {
+    document.getElementById('banner').innerHTML = '<div class="banner">Upgrade started — thank you! It may take a few seconds to reflect below.</div>';
+  }
+
+  const isPro = creator.plan === 'pro';
+  document.getElementById('plans').innerHTML = `
+    <div class="plan">
+      <h3>Free</h3>
+      <div class="price">£0<span>/mo</span></div>
+      <ul>
+        <li>✓ 1 platform · Trust score</li>
+        <li>✓ Watermarked Proof Packet</li>
+        <li class="off">✗ Score history · PDF export</li>
+        <li class="off">✗ Public profile listing</li>
+      </ul>
+      <button class="${isPro ? '' : 'btn-current'}" ${isPro ? '' : 'disabled'}>${isPro ? '' : 'Current plan'}</button>
+    </div>
+    <div class="plan featured">
+      <span class="badge-pop">Most popular</span>
+      <h3>Pro</h3>
+      <div class="price">£19<span>/mo</span></div>
+      <ul>
+        <li>✓ Unlimited platforms</li>
+        <li>✓ Full PDF · Score history</li>
+        <li>✓ Public profile listing</li>
+      </ul>
+      <button class="${isPro ? 'btn-current' : 'btn-primary'}" ${isPro ? 'disabled' : ''} onclick="${isPro ? '' : 'upgrade()'}">${isPro ? 'Current plan' : 'Upgrade to Pro'}</button>
+    </div>
+  `;
+})();
+
+async function upgrade() {
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch('/api/create-checkout-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+    body: JSON.stringify({ product: 'creator_pro' }),
+  });
+  const json = await res.json();
+  if (!res.ok) { alert('Could not start checkout: ' + (json.error || 'unknown error')); return; }
+  window.location.href = json.url;
+}
+</script>
+</body>
+</html>

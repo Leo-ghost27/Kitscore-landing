@@ -9,10 +9,10 @@ function adminClient() {
 }
 
 // Verifies the caller's Supabase session token (sent from the browser) and
-// returns their sponsor profile row, or null if not a valid, authenticated sponsor.
-// This is what stops one sponsor from spending another sponsor's money or
-// reading/unlocking someone else's evaluation.
-async function getAuthedSponsor(req) {
+// returns their profile row if it matches expectedRole, or null otherwise.
+// This is what stops one user from spending another user's money or
+// reading/unlocking someone else's data.
+async function getAuthedProfile(req, expectedRole) {
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.replace('Bearer ', '');
   if (!token) return null;
@@ -23,8 +23,13 @@ async function getAuthedSponsor(req) {
 
   const admin = adminClient();
   const { data: profile } = await admin.from('profiles').select('*')
-    .eq('auth_user_id', user.id).eq('role', 'sponsor').maybeSingle();
+    .eq('auth_user_id', user.id).eq('role', expectedRole).maybeSingle();
   return profile;
 }
 
-module.exports = { adminClient, getAuthedSponsor };
+// Back-compat alias used by existing sponsor-only endpoints.
+async function getAuthedSponsor(req) {
+  return getAuthedProfile(req, 'sponsor');
+}
+
+module.exports = { adminClient, getAuthedSponsor, getAuthedProfile };
