@@ -28,6 +28,14 @@
   .qrow button.sel{background:#2563EB;color:#fff;border-color:#2563EB}
   .verified-badge{font-size:10px;background:#E9F7EE;color:#1C7C3F;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
   .loading{font-size:12px;color:var(--color-text-secondary);padding:20px;text-align:center}
+  .info-ic{font-size:11px;color:var(--color-text-tertiary);cursor:help;margin-left:3px}
+  .progress-track{height:8px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin:8px 0 10px}
+  .progress-fill{height:100%;background:#2563EB;border-radius:4px;transition:width .3s}
+  .step-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;color:var(--color-text-secondary)}
+  .step-row.done{color:var(--color-text-primary)}
+  .step-row i{font-size:14px}
+  .empty-tip{font-size:12px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-sm);padding:10px;line-height:1.5}
+  .empty-tip a{color:#2563EB;text-decoration:none;font-weight:500}
 </style>
 </head>
 <body>
@@ -48,7 +56,21 @@
 <script src="supabase-client.js"></script>
 <script src="nav.js"></script>
 <script>
-const BADGE_EMOJI = { none:'—', bronze:'🥉', silver:'🥈', gold:'🥇' };
+const BADGE_EMOJI = { none:'—', bronze:'🥉', silver:'🥈', gold:'🥇', platinum:'💎' };
+const BADGE_LABEL = { none:'New', bronze:'Bronze', silver:'Silver', gold:'Gold', platinum:'Platinum' };
+const MILESTONES = [
+  { tier:'bronze', label:'Bronze Trust Badge', threshold:2, emoji:'🥉' },
+  { tier:'silver', label:'Silver Trust Badge', threshold:5, emoji:'🥈' },
+  { tier:'gold', label:'Gold Trust Badge', threshold:10, emoji:'🥇' },
+  { tier:'platinum', label:'Platinum Trust Badge', threshold:20, emoji:'💎' },
+];
+const ALL_COMPONENTS = [
+  { key:'audience_authenticity', label:'Audience authenticity' },
+  { key:'engagement_quality', label:'Engagement quality' },
+  { key:'brand_safety', label:'Brand safety' },
+  { key:'content_consistency', label:'Content consistency' },
+  { key:'professionalism', label:'Professionalism' },
+];
 const QUESTIONS = [
   {key:'family_safe', label:'Is your content generally family-safe?', opts:['Yes','Mostly','No']},
   {key:'political', label:'How often do you post political content?', opts:['None','Occasional','Frequent']},
@@ -78,33 +100,76 @@ async function load() {
   (answers || []).forEach(a => answerMap[a.question_key] = a.answer);
 
   const verifiedCount = (campaigns || []).filter(x => x.status === 'verified').length;
+  const hasScore = (components || []).length > 0;
+
+  // Onboarding progress
+  const steps = [
+    { label: 'Create profile', done: !!(creator.niche && creator.location) },
+    { label: 'Complete brand safety questionnaire', done: (answers || []).length >= QUESTIONS.length },
+    { label: 'Upload evidence', done: (evidence || []).length >= 1 },
+    { label: 'Verify first campaign', done: verifiedCount >= 1 },
+  ];
+  const doneCount = steps.filter(s => s.done).length;
+  const pct = Math.round((doneCount / steps.length) * 100);
+
+  // Next milestone
+  const nextMilestone = MILESTONES.find(m => verifiedCount < m.threshold);
+
+  const componentMap = {};
+  (components || []).forEach(c => componentMap[c.component_key] = c);
 
   document.getElementById('content').innerHTML = `
     <div class="g3">
-      <div class="card-sm" style="padding:12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
-        <div class="ml">Trust score</div>
-        <div class="mv" style="color:#2563EB">${creator.trust_score}</div>
-        <div class="verified-badge" style="margin-top:4px"><i class="ti ti-rosette-discount-check"></i>${verifiedCount} verified</div>
+      <div class="card-sm" style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
+        <div class="ml">Trust score <i class="ti ti-info-circle info-ic" title="A measure of creator credibility based on verified campaigns, profile completeness, evidence validation, and brand safety."></i></div>
+        <div class="mv" style="color:#2563EB;font-size:26px">${hasScore ? creator.trust_score : 'Pending'}</div>
+        <div class="verified-badge" style="margin-top:6px"><i class="ti ti-rosette-discount-check"></i>${verifiedCount} verified</div>
       </div>
-      <div class="card-sm" style="padding:12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
-        <div class="ml">Trust level</div>
-        <div class="mv">${BADGE_EMOJI[creator.badge_tier]} ${creator.badge_tier}</div>
+      <div class="card-sm" style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
+        <div class="ml">Trust level <i class="ti ti-info-circle info-ic" title="Earned from mutually verified sponsor campaigns: Bronze at 2, Silver at 5, Gold at 10, Platinum at 20."></i></div>
+        <div class="mv" style="font-size:26px">${BADGE_EMOJI[creator.badge_tier]} ${BADGE_LABEL[creator.badge_tier]}</div>
       </div>
-      <div class="card-sm" style="padding:12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
+      <div class="card-sm" style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
         <div class="ml">Plan</div>
-        <div class="mv" style="text-transform:capitalize">${creator.plan}</div>
+        <div class="mv" style="text-transform:capitalize;font-size:26px">${creator.plan}</div>
         ${creator.plan !== 'pro' ? `<a href="pricing-creator.html" style="font-size:11px;color:#2563EB;text-decoration:none;display:inline-block;margin-top:4px">Upgrade →</a>` : ''}
       </div>
     </div>
 
+    ${doneCount < steps.length ? `
+    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:14px">
+      <div class="sec">Complete your trust profile</div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      ${steps.map(s => `<div class="step-row ${s.done?'done':''}"><i class="ti ${s.done?'ti-circle-check-filled':'ti-circle'}" style="color:${s.done?'#1C7C3F':'var(--color-text-tertiary)'}"></i>${s.label}</div>`).join('')}
+      <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">${pct}% complete</div>
+    </div>` : ''}
+
+    ${nextMilestone ? `
+    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:14px;display:flex;align-items:center;gap:14px">
+      <div style="font-size:30px">${nextMilestone.emoji}</div>
+      <div>
+        <div class="sec" style="margin-bottom:2px">Next milestone</div>
+        <div style="font-size:13px;font-weight:500">${nextMilestone.label}</div>
+        <div style="font-size:11px;color:var(--color-text-secondary)">${nextMilestone.threshold - verifiedCount} more verified campaign${nextMilestone.threshold - verifiedCount === 1 ? '' : 's'} needed · adds a verification badge and improved directory visibility</div>
+      </div>
+    </div>` : ''}
+
     <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:14px">
       <div class="sec">Score breakdown</div>
-      ${(components || []).map(c => `
+      ${ALL_COMPONENTS.map(ac => {
+        const c = componentMap[ac.key];
+        return c ? `
         <div class="pbar-row">
-          <span>${c.label}</span>
+          <span>${ac.label}</span>
           <div class="pbar-track"><div class="pbar-fill" style="width:${c.value}%"></div></div>
           <span class="pbar-val">${c.value}</span>
-        </div>`).join('')}
+        </div>` : `
+        <div class="pbar-row">
+          <span>${ac.label}</span>
+          <div class="pbar-track"></div>
+          <span class="pbar-val" style="color:var(--color-text-tertiary);width:auto">Pending</span>
+        </div>`;
+      }).join('')}
     </div>
 
     <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:14px">
@@ -116,11 +181,18 @@ async function load() {
         </div>`).join('')}
     </div>
 
-    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
+    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:14px">
       <div class="sec">Evidence</div>
       ${(evidence||[]).length ? (evidence||[]).map(e => `
         <div class="qrow"><span style="font-size:12px">${e.file_name} <span style="color:var(--color-text-tertiary)">· ${e.platform||''}</span></span><span style="font-size:10px;color:var(--color-text-secondary)">${e.status.replace('_',' ')}</span></div>
-      `).join('') : '<div style="font-size:12px;color:var(--color-text-secondary)">No evidence uploaded yet.</div>'}
+      `).join('') : `<div class="empty-tip">Upload audience or campaign evidence to strengthen your Trust Score. <a href="evidence.html">Upload evidence →</a></div>`}
+    </div>
+
+    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
+      <div class="sec">Why verify campaigns?</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.8">
+        ✓ Increases your Trust Score &nbsp;·&nbsp; ✓ Unlocks Trust Badges &nbsp;·&nbsp; ✓ Improves sponsor confidence &nbsp;·&nbsp; ✓ Improves directory ranking
+      </div>
     </div>
   `;
 }
