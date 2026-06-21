@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watchlist — Kitscore</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:4px}
+  .psub{font-size:11px;color:var(--color-text-secondary);margin-bottom:16px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .ccard{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;cursor:pointer;position:relative}
+  .ccard:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:12px;color:#185FA5}
+  .name{font-size:12px;font-weight:500}
+  .niche{font-size:10px;color:var(--color-text-secondary)}
+  .pbar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .pbar-row span:first-child{font-size:10px;color:var(--color-text-secondary)}
+  .pbar-track{flex:1;height:6px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
+  .pbar-fill{height:100%;background:#2563EB;border-radius:3px}
+  .pbar-val{font-size:11px;font-weight:500;color:#2563EB}
+  .remove-btn{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;font-size:16px;color:#E0245E}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:20px;text-align:center}
+  .empty-tip{font-size:12px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-sm);padding:14px}
+  .empty-tip a{color:#2563EB;text-decoration:none;font-weight:500}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Watchlist</div>
+    <div class="psub" id="psub">Creators you've saved for quick access.</div>
+    <div id="content" class="loading">Loading…</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="nav.js"></script>
+<script>
+let sponsorProfile;
+
+async function load() {
+  sponsorProfile = await requireRole('sponsor');
+  if (!sponsorProfile) return;
+  renderSidebar('sponsor', 'watchlist');
+
+  const { data: sponsor } = await sb.from('sponsors').select('plan').eq('id', sponsorProfile.id).single();
+  if (sponsor?.plan === 'free') {
+    document.getElementById('psub').textContent = "Creators you've saved for quick access — Free plan allows up to 3.";
+  }
+
+  const { data: saved, error } = await sb.from('watchlists')
+    .select('creator_id, creators(*, profiles!inner(display_name))')
+    .eq('sponsor_id', sponsorProfile.id)
+    .order('created_at', { ascending: false });
+  if (error) { document.getElementById('content').textContent = 'Could not load watchlist: ' + error.message; return; }
+
+  if (!saved || saved.length === 0) {
+    document.getElementById('content').innerHTML = `<div class="empty-tip">No saved creators yet. <a href="directory.html">Browse the directory →</a></div>`;
+    return;
+  }
+
+  document.getElementById('content').innerHTML = `<div class="grid">${saved.map(s => { const c = s.creators; return `
+    <div class="ccard" onclick="window.location.href='evaluate.html?creator=${c.id}'">
+      <button class="remove-btn" onclick="event.stopPropagation(); remove('${c.id}')" title="Remove from watchlist"><i class="ti ti-heart-filled"></i></button>
+      <div class="head">
+        <div class="avatar">${c.profiles.display_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+        <div><div class="name">${c.profiles.display_name}</div><div class="niche">${c.niche||''} · ${c.location||''}</div></div>
+      </div>
+      <div class="pbar-row"><span>Trust score</span><div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div><span class="pbar-val">${c.trust_score}</span></div>
+    </div>
+  `; }).join('')}</div>`;
+}
+
+async function remove(creatorId) {
+  const { error } = await sb.from('watchlists').delete().eq('sponsor_id', sponsorProfile.id).eq('creator_id', creatorId);
+  if (error) { alert('Could not remove: ' + error.message); return; }
+  load();
+}
+
+load();
+</script>
+</body>
+</html>

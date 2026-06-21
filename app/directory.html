@@ -25,6 +25,9 @@
   .pbar-fill{height:100%;background:#2563EB;border-radius:3px}
   .pbar-val{font-size:11px;font-weight:500;color:#2563EB}
   .verified-badge{font-size:10px;background:#E9F7EE;color:#1C7C3F;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px;margin-top:6px}
+  .save-btn{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;font-size:16px;color:var(--color-text-tertiary);padding:2px}
+  .save-btn.saved{color:#E0245E}
+  .ccard{position:relative}
   .loading{font-size:12px;color:var(--color-text-secondary);padding:20px;text-align:center}
 </style>
 </head>
@@ -50,10 +53,12 @@
 <script src="nav.js"></script>
 <script>
 let creators = [];
+let watchlisted = new Set();
+let sponsorProfile;
 
 async function load() {
-  const profile = await requireRole('sponsor');
-  if (!profile) return;
+  sponsorProfile = await requireRole('sponsor');
+  if (!sponsorProfile) return;
   renderSidebar('sponsor', 'directory');
 
   const { data: rows, error } = await sb.from('creators').select('*, profiles!inner(display_name)');
@@ -62,6 +67,9 @@ async function load() {
   const { data: campaigns } = await sb.from('campaigns').select('creator_id, status').eq('status', 'verified');
   const verifiedCounts = {};
   (campaigns || []).forEach(c => verifiedCounts[c.creator_id] = (verifiedCounts[c.creator_id] || 0) + 1);
+
+  const { data: saved } = await sb.from('watchlists').select('creator_id').eq('sponsor_id', sponsorProfile.id);
+  watchlisted = new Set((saved || []).map(s => s.creator_id));
 
   creators = rows.map(r => ({ ...r, name: r.profiles.display_name, verified: verifiedCounts[r.id] || 0 }));
   render();
@@ -72,6 +80,9 @@ function render() {
   const sorted = [...creators].sort((a, b) => sortBy === 'verified' ? b.verified - a.verified : b.trust_score - a.trust_score);
   document.getElementById('content').innerHTML = `<div class="grid">${sorted.map(c => `
     <div class="ccard" onclick="window.location.href='evaluate.html?creator=${c.id}'">
+      <button class="save-btn ${watchlisted.has(c.id)?'saved':''}" onclick="event.stopPropagation(); toggleSave('${c.id}')" title="${watchlisted.has(c.id)?'Remove from watchlist':'Save to watchlist'}">
+        <i class="ti ${watchlisted.has(c.id)?'ti-heart-filled':'ti-heart'}"></i>
+      </button>
       <div class="head">
         <div class="avatar">${c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
         <div><div class="name">${c.name}</div><div class="niche">${c.niche||''} · ${c.location||''}</div></div>
@@ -80,6 +91,19 @@ function render() {
       <div class="verified-badge"><i class="ti ti-rosette-discount-check"></i>${c.verified} verified</div>
     </div>
   `).join('')}</div>`;
+}
+
+async function toggleSave(creatorId) {
+  if (watchlisted.has(creatorId)) {
+    const { error } = await sb.from('watchlists').delete().eq('sponsor_id', sponsorProfile.id).eq('creator_id', creatorId);
+    if (error) { alert('Could not remove: ' + error.message); return; }
+    watchlisted.delete(creatorId);
+  } else {
+    const { error } = await sb.from('watchlists').insert({ sponsor_id: sponsorProfile.id, creator_id: creatorId });
+    if (error) { alert(error.message.includes('limited to') ? error.message : 'Could not save: ' + error.message); return; }
+    watchlisted.add(creatorId);
+  }
+  render();
 }
 
 async function signOut() { await sb.auth.signOut(); window.location.href = 'auth.html'; }
