@@ -1,6 +1,6 @@
 // POST /api/generate-pdf  { evaluationId }
 // Only generates a PDF for an evaluation the requesting sponsor actually
-// owns AND has unlocked (paid for) - this is the £29 report's deliverable.
+// owns AND has unlocked (paid for) - this is the $29 report's deliverable.
 const PDFDocument = require('pdfkit');
 const { adminClient, getAuthedSponsor } = require('./_supabase-admin');
 
@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
 
     doc.fontSize(20).fillColor('#1A1A1E').text('Kitscore — Sponsor Decision Memo', { align: 'left' });
     doc.moveDown(0.3);
-    doc.fontSize(10).fillColor('#6B7280').text(`Generated ${new Date().toLocaleDateString('en-GB')}`);
+    doc.fontSize(10).fillColor('#6B7280').text(`Generated ${new Date().toLocaleDateString('en-US')}`);
     doc.moveDown(1);
 
     doc.fontSize(14).fillColor('#1A1A1E').text(profileRow?.display_name || 'Creator');

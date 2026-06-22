@@ -111,7 +111,7 @@ async function load() {
       </div>
       <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:8px">${profileRow.display_name} · ${creator.niche||''} · ${creator.location||''}</div>
       <div class="${locked?'locked-row':''}" style="font-size:12px;color:var(--color-text-secondary);line-height:1.7">${evalRow.recommendation_summary || ''}</div>
-      ${locked ? `<button class="cta" style="margin-top:10px" onclick="unlock()">Unlock full report — £29</button>` : `<button class="cta" style="margin-top:10px;background:#1C7C3F" onclick="downloadPdf()"><i class="ti ti-file-download"></i> Download PDF</button>`}
+      ${locked ? `<button class="cta" style="margin-top:10px" onclick="unlock()">Unlock full report — $29</button>` : `<button class="cta" style="margin-top:10px;background:#1C7C3F" onclick="downloadPdf()"><i class="ti ti-file-download"></i> Download PDF</button>`}
     </div>
     <div class="card ${locked?'locked-row':''}">
       <div class="sec">Key reasons</div>
