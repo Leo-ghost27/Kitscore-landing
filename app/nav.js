@@ -12,7 +12,9 @@ const NAV = {
   sponsor: [
     { key: 'directory', href: 'directory.html', icon: 'ti-users', label: 'Directory' },
     { key: 'watchlist', href: 'watchlist.html', icon: 'ti-heart', label: 'Watchlist' },
+    { key: 'history', href: 'history.html', icon: 'ti-history', label: 'History' },
     { key: 'compare', href: 'compare.html', icon: 'ti-arrows-exchange', label: 'Compare' },
+    { key: 'team', href: 'team.html', icon: 'ti-user-plus', label: 'Team' },
     { key: 'pricing', href: 'pricing.html', icon: 'ti-credit-card', label: 'Plans' },
   ],
 };

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluation History — Kitscore</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:4px}
+  .psub{font-size:11px;color:var(--color-text-secondary);margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden;margin-bottom:14px}
+  .row-item{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+  .row-item:last-child{border-bottom:none}
+  .verdict-badge{font-size:10px;padding:3px 8px;border-radius:10px;text-transform:capitalize}
+  .v-approve{background:#E9F7EE;color:#1C7C3F}
+  .v-caution{background:#FEF6E7;color:#92600A}
+  .v-avoid{background:#FDECEC;color:#B42318}
+  .lock-badge{font-size:10px;background:var(--color-background-secondary);color:var(--color-text-secondary);padding:3px 8px;border-radius:10px}
+  .empty-tip{font-size:12px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-sm);padding:14px}
+  .empty-tip a{color:#2563EB;text-decoration:none;font-weight:500}
+  .upgrade-tip{font-size:11px;padding:10px 14px;background:var(--color-background-info);color:#185FA5;border-radius:var(--border-radius-md);margin-bottom:14px}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Evaluation history</div>
+    <div class="psub" id="psub">All creator evaluations you've run.</div>
+    <div id="upgradeTip"></div>
+    <div id="content" class="loading">Loading…</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="nav.js"></script>
+<script>
+async function load() {
+  const profile = await requireRole('sponsor');
+  if (!profile) return;
+  renderSidebar('sponsor', 'history');
+
+  const { data: sponsor } = await sb.from('sponsors').select('plan').eq('id', profile.id).single();
+  const plan = sponsor?.plan || 'free';
+
+  if (plan === 'free') {
+    document.getElementById('upgradeTip').innerHTML = `
+      <div class="upgrade-tip">
+        <i class="ti ti-lock-open"></i>
+        You're on the Free plan — only your most recent evaluation per creator is shown.
+        <a href="pricing.html" style="color:inherit;font-weight:500;margin-left:4px">Upgrade to Starter →</a>
+      </div>`;
+  }
+
+  const { data: evals, error } = await sb.from('evaluations')
+    .select('*, creators(trust_score, niche, profiles!inner(display_name))')
+    .eq('sponsor_id', profile.id)
+    .order('created_at', { ascending: false });
+  if (error) { document.getElementById('content').textContent = 'Could not load: ' + error.message; return; }
+
+  if (!evals || evals.length === 0) {
+    document.getElementById('content').innerHTML = `<div class="empty-tip">No evaluations yet. <a href="directory.html">Browse the directory to evaluate a creator →</a></div>`;
+    return;
+  }
+
+  document.getElementById('content').innerHTML = `
+    <div class="card">
+      ${evals.map(e => `
+        <div class="row-item">
+          <div>
+            <div style="font-weight:500">${e.creators?.profiles?.display_name || '—'}</div>
+            <div style="font-size:10px;color:var(--color-text-tertiary)">${new Date(e.created_at).toLocaleDateString('en-GB')} · Trust score: ${e.creators?.trust_score ?? '—'}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            ${e.recommendation_verdict ? `<span class="verdict-badge v-${e.recommendation_verdict}">${e.recommendation_verdict}</span>` : ''}
+            ${e.unlocked ? `<span class="verdict-badge" style="background:#E9F7EE;color:#1C7C3F">Unlocked</span>` : `<span class="lock-badge">Locked</span>`}
+            <a href="evaluate.html?creator=${e.creator_id}" style="font-size:11px;color:#2563EB;text-decoration:none">View →</a>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+load();
+</script>
+</body>
+</html>

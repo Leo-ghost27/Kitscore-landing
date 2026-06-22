@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team — Kitscore</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:4px}
+  .psub{font-size:11px;color:var(--color-text-secondary);margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .field{margin-bottom:10px}
+  .field label{display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+  .field input,.field textarea{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
+  .field textarea{height:70px;resize:vertical}
+  .cta{padding:8px 14px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer}
+  .cta:disabled{opacity:.6}
+  .row-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+  .row-item:last-child{border-bottom:none}
+  .role-badge{font-size:10px;background:var(--color-background-secondary);color:var(--color-text-secondary);padding:2px 8px;border-radius:10px}
+  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:6px}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  .upgrade-banner{font-size:11px;padding:12px 14px;background:var(--color-background-info);color:#185FA5;border-radius:var(--border-radius-md);margin-bottom:14px}
+  .upgrade-banner a{color:inherit;font-weight:500}
+  .note-row{padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .note-row:last-child{border-bottom:none}
+  .note-meta{font-size:10px;color:var(--color-text-tertiary);margin-bottom:3px}
+  .loading{font-size:12px;color:var(--color-text-secondary)}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Team</div>
+    <div class="psub">Manage your team, shared notes, and evaluations.</div>
+    <div id="content" class="loading">Loading…</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="nav.js"></script>
+<script>
+let profile, myTeam;
+
+async function load() {
+  profile = await requireRole('sponsor');
+  if (!profile) return;
+  renderSidebar('sponsor', 'team');
+
+  const { data: sponsor } = await sb.from('sponsors').select('plan').eq('id', profile.id).single();
+  if (sponsor?.plan !== 'team') {
+    document.getElementById('content').innerHTML = `
+      <div class="upgrade-banner">
+        <i class="ti ti-users"></i> Team features require the Team plan.
+        <a href="pricing.html">Upgrade to Team — £299/mo →</a>
+      </div>`;
+    return;
+  }
+
+  // Check if they're already in a team
+  const { data: membership } = await sb.from('team_members').select('*, teams(*)').eq('sponsor_id', profile.id).maybeSingle();
+  myTeam = membership?.teams || null;
+
+  if (!myTeam) { renderCreateTeam(); return; }
+  renderTeam();
+}
+
+function renderCreateTeam() {
+  document.getElementById('content').innerHTML = `
+    <div class="card">
+      <div class="sec">Create your team</div>
+      <div class="field"><label>Team name</label><input id="teamName" placeholder="e.g. Bloom Beverages Partnerships"></div>
+      <button class="cta" onclick="createTeam()">Create team</button>
+      <div id="createMsg"></div>
+    </div>`;
+}
+
+async function createTeam() {
+  const name = document.getElementById('teamName').value.trim();
+  if (!name) { showMsg('createMsg', 'Name is required.', 'error'); return; }
+
+  const { data: team, error: teamErr } = await sb.from('teams').insert({ name, owner_id: profile.id }).select().single();
+  if (teamErr) { showMsg('createMsg', 'Could not create team: ' + teamErr.message, 'error'); return; }
+
+  await sb.from('team_members').insert({ team_id: team.id, sponsor_id: profile.id, role: 'owner' });
+  myTeam = team;
+  renderTeam();
+}
+
+async function renderTeam() {
+  const [{ data: members }, { data: notes }] = await Promise.all([
+    sb.from('team_members').select('*, sponsors(*, profiles!inner(display_name))').eq('team_id', myTeam.id),
+    sb.from('team_notes').select('*, sponsors!author_id(profiles!inner(display_name)), creators(profiles!inner(display_name))').eq('team_id', myTeam.id).order('created_at', { ascending: false }),
+  ]);
+
+  document.getElementById('content').innerHTML = `
+    <div class="card">
+      <div class="sec">${myTeam.name}</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:10px">${(members||[]).length} member${(members||[]).length !== 1 ? 's' : ''}</div>
+      ${(members||[]).map(m => `
+        <div class="row-item">
+          <span>${m.sponsors?.profiles?.display_name || '—'}</span>
+          <span class="role-badge">${m.role}</span>
+        </div>`).join('')}
+    </div>
+
+    <div class="card">
+      <div class="sec">Add note</div>
+      <div class="field"><textarea id="noteText" placeholder="Write a note for your team about a creator or campaign…"></textarea></div>
+      <button class="cta" onclick="addNote()">Post note</button>
+      <div id="noteMsg"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec">Team notes</div>
+      ${(notes||[]).length ? notes.map(n => `
+        <div class="note-row">
+          <div class="note-meta">${n.sponsors?.profiles?.display_name || '—'} · ${new Date(n.created_at).toLocaleDateString('en-GB')}${n.creators ? ' · re: ' + n.creators.profiles.display_name : ''}</div>
+          <div style="font-size:12px">${n.content}</div>
+        </div>`).join('') : '<div style="font-size:12px;color:var(--color-text-secondary)">No notes yet.</div>'}
+    </div>
+  `;
+}
+
+async function addNote() {
+  const content = document.getElementById('noteText').value.trim();
+  if (!content) { showMsg('noteMsg', 'Note cannot be empty.', 'error'); return; }
+  const { error } = await sb.from('team_notes').insert({ team_id: myTeam.id, author_id: profile.id, content });
+  if (error) { showMsg('noteMsg', 'Could not post: ' + error.message, 'error'); return; }
+  document.getElementById('noteText').value = '';
+  renderTeam();
+}
+
+function showMsg(id, text, type) { document.getElementById(id).innerHTML = `<div class="msg ${type}">${text}</div>`; }
+
+load();
+</script>
+</body>
+</html>
