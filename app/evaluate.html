@@ -41,7 +41,7 @@
 <script src="nav.js"></script>
 <script>
 const VERDICT_STYLE = { approve: ['b-green','ti-circle-check','Approve'], caution: ['b-amber','ti-alert-triangle','Caution'], avoid: ['b-red','ti-circle-x','Avoid'] };
-let creatorId, profile;
+let creatorId, profile, currentEvalId;
 
 async function authedFetch(url, body) {
   const { data: { session } } = await sb.auth.getSession();
@@ -100,6 +100,7 @@ async function load() {
 
   const [style_class, icon, label] = VERDICT_STYLE[evalRow.recommendation_verdict] || VERDICT_STYLE.caution;
   const locked = !evalRow.unlocked;
+  currentEvalId = evalRow.id;
 
   document.getElementById('content').innerHTML = `
     ${banner}
@@ -110,7 +111,7 @@ async function load() {
       </div>
       <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:8px">${profileRow.display_name} · ${creator.niche||''} · ${creator.location||''}</div>
       <div class="${locked?'locked-row':''}" style="font-size:12px;color:var(--color-text-secondary);line-height:1.7">${evalRow.recommendation_summary || ''}</div>
-      ${locked ? `<button class="cta" style="margin-top:10px" onclick="unlock()">Unlock full report — £29</button>` : ''}
+      ${locked ? `<button class="cta" style="margin-top:10px" onclick="unlock()">Unlock full report — £29</button>` : `<button class="cta" style="margin-top:10px;background:#1C7C3F" onclick="downloadPdf()"><i class="ti ti-file-download"></i> Download PDF</button>`}
     </div>
     <div class="card ${locked?'locked-row':''}">
       <div class="sec">Key reasons</div>
@@ -129,6 +130,34 @@ async function generateEvaluation() {
   const { ok, json } = await authedFetch('/api/generate-evaluation', { creatorId });
   if (!ok) { alert('Could not generate evaluation: ' + (json.error || 'unknown error')); return; }
   load();
+}
+
+async function downloadPdf() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/generate-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ evaluationId: currentEvalId }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      try { alert('Could not generate PDF: ' + (JSON.parse(text).error || 'unknown error')); }
+      catch { alert('Could not generate PDF (status ' + res.status + '): ' + text.slice(0, 200)); }
+      return;
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'kitscore-report.pdf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('PDF download failed: ' + err.message);
+  }
 }
 
 async function unlock() {
