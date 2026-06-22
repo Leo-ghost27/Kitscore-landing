@@ -123,12 +123,50 @@ async function load() {
       <div class="sec">Score breakdown</div>
       ${(components||[]).map(c => `<div class="row"><span style="width:160px;color:var(--color-text-secondary)">${c.label}</span><strong>${c.value}</strong></div>`).join('')}
     </div>
+
+    ${!locked && evalRow.team_id ? `
+    <div class="card">
+      <div class="sec">Approval workflow</div>
+      ${evalRow.approval_status === 'draft' ? `
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Submit this evaluation to your team for review before acting on it.</div>
+        <button class="cta" onclick="submitForReview()">Submit for team review</button>
+      ` : evalRow.approval_status === 'pending_approval' ? `
+        <div class="badge b-amber" style="margin-bottom:10px">Pending team approval</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <button class="cta" style="background:#1C7C3F" onclick="reviewEvaluation('approved')">Approve</button>
+          <button class="cta" style="background:#B42318" onclick="reviewEvaluation('rejected')">Reject</button>
+        </div>
+        <input id="approvalNote" style="width:100%;padding:8px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12px" placeholder="Optional note for the team…">
+      ` : evalRow.approval_status === 'approved' ? `
+        <div class="badge b-green"><i class="ti ti-circle-check"></i> Approved${evalRow.approval_note ? ' — ' + evalRow.approval_note : ''}</div>
+      ` : `
+        <div class="badge b-red"><i class="ti ti-circle-x"></i> Rejected${evalRow.approval_note ? ' — ' + evalRow.approval_note : ''}</div>
+      `}
+    </div>` : ''}
   `;
 }
 
 async function generateEvaluation() {
   const { ok, json } = await authedFetch('/api/generate-evaluation', { creatorId });
   if (!ok) { alert('Could not generate evaluation: ' + (json.error || 'unknown error')); return; }
+  load();
+}
+
+async function submitForReview() {
+  const { error } = await sb.from('evaluations').update({ approval_status: 'pending_approval' }).eq('id', currentEvalId);
+  if (error) { alert('Could not submit for review: ' + error.message); return; }
+  load();
+}
+
+async function reviewEvaluation(status) {
+  const note = document.getElementById('approvalNote')?.value?.trim() || null;
+  const { data: { user } } = await sb.auth.getUser();
+  const { error } = await sb.from('evaluations').update({
+    approval_status: status,
+    approval_note: note,
+    reviewed_at: new Date().toISOString(),
+  }).eq('id', currentEvalId);
+  if (error) { alert('Could not update approval: ' + error.message); return; }
   load();
 }
 

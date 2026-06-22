@@ -93,9 +93,10 @@ async function createTeam() {
 }
 
 async function renderTeam() {
-  const [{ data: members }, { data: notes }] = await Promise.all([
+  const [{ data: members }, { data: notes }, { data: pendingInvites }] = await Promise.all([
     sb.from('team_members').select('*, sponsors(*, profiles!inner(display_name))').eq('team_id', myTeam.id),
     sb.from('team_notes').select('*, sponsors!author_id(profiles!inner(display_name)), creators(profiles!inner(display_name))').eq('team_id', myTeam.id).order('created_at', { ascending: false }),
+    sb.from('team_invites').select('email, expires_at').eq('team_id', myTeam.id).is('accepted_at', null).gt('expires_at', new Date().toISOString()),
   ]);
 
   document.getElementById('content').innerHTML = `
@@ -108,6 +109,25 @@ async function renderTeam() {
           <span class="role-badge">${m.role}</span>
         </div>`).join('')}
     </div>
+
+    <div class="card">
+      <div class="sec">Invite a team member</div>
+      <div style="display:flex;gap:8px;align-items:flex-end">
+        <div class="field" style="flex:1;margin-bottom:0"><label>Email address</label><input id="inviteEmail" type="email" placeholder="colleague@company.com"></div>
+        <button class="cta" onclick="sendInvite()" style="flex-shrink:0">Send invite</button>
+      </div>
+      <div id="inviteResult" style="margin-top:10px"></div>
+    </div>
+
+    ${pendingInvites?.length ? `
+    <div class="card">
+      <div class="sec">Pending invites</div>
+      ${pendingInvites.map(i => `
+        <div class="row-item">
+          <span>${i.email}</span>
+          <span style="font-size:10px;color:var(--color-text-tertiary)">Expires ${new Date(i.expires_at).toLocaleDateString('en-GB')}</span>
+        </div>`).join('')}
+    </div>` : ''}
 
     <div class="card">
       <div class="sec">Add note</div>
@@ -125,6 +145,32 @@ async function renderTeam() {
         </div>`).join('') : '<div style="font-size:12px;color:var(--color-text-secondary)">No notes yet.</div>'}
     </div>
   `;
+}
+
+async function sendInvite() {
+  const email = document.getElementById('inviteEmail').value.trim();
+  const resultEl = document.getElementById('inviteResult');
+  if (!email) { resultEl.innerHTML = '<div class="msg error">Enter an email address.</div>'; return; }
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/invite-team-member', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ teamId: myTeam.id, email }),
+    });
+    const json = await res.json();
+    if (!res.ok) { resultEl.innerHTML = `<div class="msg error">${json.error || 'Unknown error'}</div>`; return; }
+    resultEl.innerHTML = `
+      <div class="msg ok">${json.message}</div>
+      <div style="margin-top:6px;padding:8px;background:var(--color-background-secondary);border-radius:6px;font-size:11px;word-break:break-all">
+        <strong>Invite link:</strong> <a href="${json.acceptLink}" style="color:#185FA5">${json.acceptLink}</a>
+      </div>`;
+    document.getElementById('inviteEmail').value = '';
+    setTimeout(() => renderTeam(), 1500);
+  } catch (err) {
+    resultEl.innerHTML = `<div class="msg error">Request failed: ${err.message}</div>`;
+  }
 }
 
 async function addNote() {

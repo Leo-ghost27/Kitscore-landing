@@ -56,14 +56,11 @@
   const plan = sponsor?.plan || 'free';
   const planLabel = { free: 'Free', starter: 'Starter', team: 'Team' }[plan] || plan;
 
-  document.getElementById('currentPlanBanner').innerHTML = `
-    <div class="current-plan-banner">
-      <div>
-        <div class="label">Current plan</div>
-        <div class="value">${planLabel}</div>
-      </div>
-      ${plan !== 'free' ? `<span style="font-size:11px;color:var(--color-text-secondary)">Manage billing in Stripe customer portal (coming soon)</span>` : ''}
-    </div>`;
+  const manageBtn = plan !== 'free'
+    ? '<button onclick="manageSubscription()" style="font-size:11px;color:#185FA5;background:none;border:none;cursor:pointer;font-weight:500">Manage subscription \u2192</button>'
+    : '';
+  document.getElementById('currentPlanBanner').innerHTML =
+    '<div class="current-plan-banner"><div><div class="label">Current plan</div><div class="value">' + planLabel + '</div></div>' + manageBtn + '</div>';
 
   const cardBtn = (tier, label, onclick) => {
     if (plan === tier) return `<button class="btn-current" disabled>Current plan</button>`;
@@ -91,6 +88,23 @@
     </div>
   `;
 })();
+
+async function manageSubscription() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/create-portal-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+    });
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); } catch { alert('Server error (status ' + res.status + '): ' + text.slice(0, 200)); return; }
+    if (!res.ok) { alert('Could not open billing portal: ' + (json.error || 'unknown error')); return; }
+    window.location.href = json.url;
+  } catch (err) {
+    alert('Portal request failed: ' + err.message);
+  }
+}
 
 async function subscribe(product) {
   try {

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join Team — Kitscore</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="shared.css">
+<style>
+  body{display:flex;min-height:100vh;align-items:center;justify-content:center;background:var(--color-background-tertiary)}
+  .card{width:360px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:24px}
+  .card h1{font-size:17px;font-weight:500;margin-bottom:4px}
+  .card p{font-size:12px;color:var(--color-text-secondary);margin-bottom:16px}
+  .field{margin-bottom:10px}
+  .field label{display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+  .field input{width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
+  .submit{width:100%;padding:10px;background:#2563EB;color:#fff;border:none;border-radius:var(--border-radius-sm);font-size:13px;font-weight:500;cursor:pointer;margin-top:4px}
+  .submit:disabled{opacity:.6;cursor:default}
+  .msg{font-size:11px;margin-top:10px;padding:9px;border-radius:6px}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  .loading{font-size:12px;color:var(--color-text-secondary);text-align:center;padding:20px}
+  .team-name{font-weight:500;color:#2563EB}
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="loading">Verifying invite…</div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script>
+let invite, team;
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  if (!token) { showError('Invalid invite link.'); return; }
+
+  // Look up the invite by token
+  const { data, error } = await sb.from('team_invites')
+    .select('*, teams(name)')
+    .eq('token', token)
+    .maybeSingle();
+
+  if (error || !data) { showError('This invite link is invalid or has expired.'); return; }
+  if (data.accepted_at) { showError('This invite has already been accepted.'); return; }
+  if (new Date(data.expires_at) < new Date()) { showError('This invite has expired. Ask the team owner to resend it.'); return; }
+
+  invite = data;
+  team = data.teams;
+
+  // Check if already signed in
+  const profile = await getCurrentProfile();
+  if (profile) {
+    // Already logged in — try to join directly
+    await joinTeam(profile);
+    return;
+  }
+
+  // Show signup/login form
+  document.getElementById('card').innerHTML = `
+    <h1>You're invited!</h1>
+    <p>Join <span class="team-name">${team.name}</span> on Kitscore. Create an account or sign in to accept.</p>
+    <div class="field"><label>Your name / company</label><input id="displayName" placeholder="Your name" value=""></div>
+    <div class="field"><label>Email</label><input id="email" type="email" value="${invite.email}" placeholder="${invite.email}"></div>
+    <div class="field"><label>Password</label><input id="password" type="password" placeholder="Choose a password (min 6 chars)"></div>
+    <button class="submit" id="submitBtn" onclick="acceptWithSignup()">Create account and join</button>
+    <p style="font-size:11px;margin-top:10px;color:var(--color-text-secondary)">Already have an account? <a href="#" onclick="showLogin()" style="color:#2563EB">Sign in instead</a></p>
+    <div id="msg"></div>
+  `;
+}
+
+function showLogin() {
+  document.getElementById('card').innerHTML = `
+    <h1>Sign in to join</h1>
+    <p>Sign in to accept your invite to <span class="team-name">${team.name}</span>.</p>
+    <div class="field"><label>Email</label><input id="email" type="email" value="${invite.email}"></div>
+    <div class="field"><label>Password</label><input id="password" type="password" placeholder="••••••••"></div>
+    <button class="submit" id="submitBtn" onclick="acceptWithLogin()">Sign in and join</button>
+    <div id="msg"></div>
+  `;
+}
+
+async function acceptWithSignup() {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  const displayName = document.getElementById('displayName').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  if (!displayName || !email || !password) { showMsg('All fields are required.', 'error'); btn.disabled = false; return; }
+
+  const { data, error } = await sb.auth.signUp({ email, password });
+  if (error) { showMsg(error.message, 'error'); btn.disabled = false; return; }
+  if (!data.user) { showMsg('Check your email to confirm, then sign in to accept the invite.', 'ok'); return; }
+
+  const { data: profile, error: profileErr } = await sb.from('profiles')
+    .insert({ auth_user_id: data.user.id, role: 'sponsor', display_name: displayName, email })
+    .select().single();
+  if (profileErr) { showMsg('Account created but profile failed: ' + profileErr.message, 'error'); btn.disabled = false; return; }
+
+  await sb.from('sponsors').insert({ id: profile.id, company_name: displayName });
+  await joinTeam(profile);
+}
+
+async function acceptWithLogin() {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) { showMsg(error.message, 'error'); btn.disabled = false; return; }
+  const profile = await getCurrentProfile();
+  if (!profile) { showMsg('Signed in but no profile found.', 'error'); btn.disabled = false; return; }
+  await joinTeam(profile);
+}
+
+async function joinTeam(profile) {
+  // Mark invite as accepted
+  await sb.from('team_invites').update({ accepted_at: new Date().toISOString() }).eq('id', invite.id);
+
+  // Add to team_members if not already there
+  const { error } = await sb.from('team_members').upsert(
+    { team_id: invite.team_id, sponsor_id: profile.id, role: 'member' },
+    { onConflict: 'team_id,sponsor_id', ignoreDuplicates: true }
+  );
+  if (error) { showError('Could not join team: ' + error.message); return; }
+
+  // Upgrade plan to team
+  await sb.from('sponsors').update({ plan: 'team' }).eq('id', profile.id);
+
+  document.getElementById('card').innerHTML = `
+    <h1>You're in! 🎉</h1>
+    <p>You've joined <span class="team-name">${team.name}</span> on Kitscore.</p>
+    <button class="submit" onclick="window.location.href='team.html'">Go to team →</button>
+  `;
+}
+
+function showError(msg) {
+  document.getElementById('card').innerHTML = `
+    <h1>Invite error</h1>
+    <p style="color:#B42318">${msg}</p>
+    <p style="font-size:12px;color:var(--color-text-secondary)">If you think this is a mistake, ask the team owner to resend the invite.</p>
+  `;
+}
+
+function showMsg(text, type) {
+  const el = document.getElementById('msg');
+  if (el) el.innerHTML = `<div class="msg ${type}">${text}</div>`;
+}
+
+init();
+</script>
+</body>
+</html>
