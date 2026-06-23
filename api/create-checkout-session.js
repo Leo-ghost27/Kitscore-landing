@@ -6,17 +6,18 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const PRICE_MAP = {
   report: process.env.STRIPE_PRICE_REPORT,
+  evaluation_unlock: process.env.STRIPE_PRICE_EVALUATION_UNLOCK || process.env.STRIPE_PRICE_REPORT,
   starter: process.env.STRIPE_PRICE_STARTER,
   team: process.env.STRIPE_PRICE_TEAM,
   creator_pro: process.env.STRIPE_PRICE_CREATOR_PRO,
 };
 
-// Which role is allowed to buy each product, and where they land back on success/cancel.
 const PRODUCT_CONFIG = {
-  report:      { role: 'sponsor', mode: 'payment',      returnPath: (b) => `evaluate.html?creator=${b.creatorId || ''}` },
-  starter:     { role: 'sponsor', mode: 'subscription',  returnPath: () => 'pricing.html' },
-  team:        { role: 'sponsor', mode: 'subscription',  returnPath: () => 'pricing.html' },
-  creator_pro: { role: 'creator', mode: 'subscription',  returnPath: () => 'pricing-creator.html' },
+  report:            { role: 'sponsor', mode: 'payment',      returnPath: (b) => `evaluate.html?creator=${b.creatorId || ''}` },
+  evaluation_unlock: { role: 'sponsor', mode: 'payment',      returnPath: (b) => `evaluate.html?creator=${b.creatorId || ''}` },
+  starter:           { role: 'sponsor', mode: 'subscription', returnPath: () => 'pricing.html' },
+  team:              { role: 'sponsor', mode: 'subscription', returnPath: () => 'pricing.html' },
+  creator_pro:       { role: 'creator', mode: 'subscription', returnPath: () => 'pricing-creator.html' },
 };
 
 module.exports = async (req, res) => {

@@ -7,9 +7,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="shared.css">
 <style>
-  body{padding:20px;max-width:680px;margin:0 auto}
+  body{padding:0;max-width:none;margin:0}
   .back{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none;margin-bottom:10px;display:inline-block}
-  .verdict{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .verdict-banner{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
   .badge{font-size:13px;padding:5px 12px;border-radius:14px;font-weight:500}
   .b-green{background:#E9F7EE;color:#1C7C3F}
   .b-blue{background:var(--color-background-info);color:#185FA5}
@@ -18,13 +18,23 @@
   .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:12px}
   .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
   .row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px}
-  .locked-row{filter:blur(3px);user-select:none;pointer-events:none}
   .loading{font-size:12px;color:var(--color-text-secondary);padding:20px;text-align:center}
-  .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer}
-  .cta:disabled{opacity:.6;cursor:default}
+  .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  /* Teaser paywall styles */
+  .teaser-hero{background:linear-gradient(160deg,#11131A 0%,#1C2030 100%);color:#fff;border-radius:var(--border-radius-md);padding:20px;margin-bottom:12px}
+  .teaser-hero .score-val{font-size:52px;font-weight:600;color:#7C9CFF;line-height:1}
+  .teaser-hero .score-label{font-size:11px;color:#9DB6FF;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+  .teaser-hero .conf-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(124,156,255,.15);color:#9DB6FF;font-size:11px;padding:4px 10px;border-radius:10px;margin-top:8px}
+  .paywall-box{border:1.5px dashed var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:20px;text-align:center;margin-bottom:12px;background:var(--color-background-secondary)}
+  .paywall-box h3{font-size:15px;font-weight:500;margin-bottom:6px}
+  .paywall-box p{font-size:12px;color:var(--color-text-secondary);margin-bottom:14px;line-height:1.6}
+  .paywall-features{display:flex;flex-direction:column;gap:4px;margin-bottom:16px;text-align:left;max-width:300px;margin-left:auto;margin-right:auto}
+  .paywall-features li{font-size:12px;color:var(--color-text-secondary);list-style:none;display:flex;align-items:center;gap:6px}
+  .blur-preview{filter:blur(4px);user-select:none;pointer-events:none;opacity:.6;margin-bottom:12px}
   .banner{font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:12px}
   .banner.ok{background:#E9F7EE;color:#1C7C3F}
   .banner.pending{background:#FEF6E7;color:#92600A}
+  .approval-badge{font-size:10px;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
 </style>
 </head>
 <body>
@@ -32,6 +42,7 @@
   <div class="sidebar" id="sidebar-mount"></div>
   <div class="app-main">
     <button class="back" onclick="window.location.href='directory.html'">&larr; Back to directory</button>
+    <div id="banner"></div>
     <div id="content" class="loading">Loading evaluation…</div>
   </div>
 </div>
@@ -40,7 +51,11 @@
 <script src="supabase-client.js"></script>
 <script src="nav.js"></script>
 <script>
-const VERDICT_STYLE = { approve: ['b-green','ti-circle-check','Approve'], caution: ['b-amber','ti-alert-triangle','Caution'], avoid: ['b-red','ti-circle-x','Avoid'] };
+const VERDICT_STYLE = {
+  approve: ['b-green','ti-circle-check','Approve'],
+  caution: ['b-amber','ti-alert-triangle','Caution'],
+  avoid: ['b-red','ti-circle-x','Avoid']
+};
 let creatorId, profile, currentEvalId;
 
 async function authedFetch(url, body) {
@@ -51,11 +66,8 @@ async function authedFetch(url, body) {
     body: JSON.stringify(body),
   });
   const text = await res.text();
-  try {
-    return { ok: res.ok, json: JSON.parse(text) };
-  } catch {
-    return { ok: false, json: { error: `Server returned non-JSON response (status ${res.status}): ${text.slice(0, 200)}` } };
-  }
+  try { return { ok: res.ok, json: JSON.parse(text) }; }
+  catch { return { ok: false, json: { error: `Server error (${res.status}): ${text.slice(0,200)}` } }; }
 }
 
 async function load() {
@@ -68,6 +80,11 @@ async function load() {
   if (!creatorId) { document.getElementById('content').textContent = 'No creator specified.'; return; }
 
   const checkoutState = params.get('checkout');
+  if (checkoutState === 'success') {
+    document.getElementById('banner').innerHTML = `<div class="banner pending">Payment received — unlocking report <a href="#" onclick="load();return false;" style="color:inherit">Refresh</a></div>`;
+  } else if (checkoutState === 'cancelled') {
+    document.getElementById('banner').innerHTML = `<div class="banner pending">Checkout cancelled — no charge was made.</div>`;
+  }
 
   const [{ data: creator }, { data: profileRow }, { data: components }, { data: campaigns }, { data: evalRow }] = await Promise.all([
     sb.from('creators').select('*').eq('id', creatorId).single(),
@@ -81,92 +98,143 @@ async function load() {
   const compMap = {};
   (components || []).forEach(c => compMap[c.component_key] = c.value);
 
-  let banner = '';
-  if (checkoutState === 'success' && evalRow && !evalRow.unlocked) {
-    banner = `<div class="banner pending">Payment received — waiting for confirmation (usually a few seconds). <a href="#" onclick="load();return false;" style="color:inherit">Refresh</a></div>`;
-  } else if (checkoutState === 'cancelled') {
-    banner = `<div class="banner pending">Checkout was cancelled — no charge was made.</div>`;
-  }
+  const creatorName = profileRow?.display_name || 'Creator';
+  const trustScore = creator?.trust_score ?? 0;
+  const hasScore = (components || []).length > 0;
+  const confidence = hasScore && trustScore >= 75 ? 'High' : trustScore >= 55 ? 'Moderate' : 'Low';
+  const confidenceColor = { High:'#1C7C3F', Moderate:'#92600A', Low:'#B42318' }[confidence];
 
+  // ── No evaluation exists yet — show teaser and generate on first view ─────
   if (!evalRow) {
     document.getElementById('content').innerHTML = `
-      <div class="card">
-        <div class="sec">${profileRow.display_name}</div>
-        <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:10px">No evaluation has been generated for this creator yet.</p>
-        <button class="cta" onclick="generateEvaluation()">Generate evaluation</button>
+      <div style="font-size:13px;font-weight:500;margin-bottom:12px">${creatorName}</div>
+      <div class="teaser-hero">
+        <div class="score-label">Trust score</div>
+        <div class="score-val">${hasScore ? trustScore : '—'}</div>
+        <div class="conf-badge"><i class="ti ti-shield-check"></i>Confidence: <strong style="margin-left:2px">${confidence}</strong></div>
+      </div>
+      <div class="paywall-box">
+        <h3>Unlock the full evaluation</h3>
+        <p>You're seeing the Trust Score preview. Unlock the complete report for this creator.</p>
+        <ul class="paywall-features">
+          <li><i class="ti ti-check" style="color:#1C7C3F"></i>Score breakdown & audience fit</li>
+          <li><i class="ti ti-check" style="color:#1C7C3F"></i>Risk assessment</li>
+          <li><i class="ti ti-check" style="color:#1C7C3F"></i>Evidence summary</li>
+          <li><i class="ti ti-check" style="color:#1C7C3F"></i>Recommendation (Approve / Caution / Avoid)</li>
+          <li><i class="ti ti-check" style="color:#1C7C3F"></i>Downloadable PDF Decision Memo</li>
+        </ul>
+        <button class="cta" onclick="generateAndUnlock()"><i class="ti ti-lock-open"></i>Unlock full evaluation — $29</button>
       </div>`;
     return;
   }
 
-  const [style_class, icon, label] = VERDICT_STYLE[evalRow.recommendation_verdict] || VERDICT_STYLE.caution;
-  const locked = !evalRow.unlocked;
   currentEvalId = evalRow.id;
+  const locked = !evalRow.unlocked;
+  const [style_class, icon, label] = VERDICT_STYLE[evalRow.recommendation_verdict] || VERDICT_STYLE.caution;
 
-  document.getElementById('content').innerHTML = `
-    ${banner}
-    <div class="card">
-      <div class="verdict">
-        <span class="badge b-blue">Trust score: ${creator.trust_score}</span>
-        <span class="badge ${locked ? 'b-amber' : style_class}">${locked ? 'Recommendation: locked' : `<i class="ti ${icon}"></i> Recommendation: ${label}`}</span>
+  // ── Evaluation exists but not unlocked — teaser + paywall ─────────────────
+  if (locked) {
+    document.getElementById('content').innerHTML = `
+      <div style="font-size:13px;font-weight:500;margin-bottom:12px">${creatorName}</div>
+      <div class="teaser-hero">
+        <div class="score-label">Trust score</div>
+        <div class="score-val">${trustScore}</div>
+        <div class="conf-badge"><i class="ti ti-shield-check"></i>Confidence: <strong style="margin-left:2px">${confidence}</strong></div>
       </div>
-      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:8px">${profileRow.display_name} · ${creator.niche||''} · ${creator.location||''}</div>
-      <div class="${locked?'locked-row':''}" style="font-size:12px;color:var(--color-text-secondary);line-height:1.7">${evalRow.recommendation_summary || ''}</div>
-      ${locked ? `<button class="cta" style="margin-top:10px" onclick="unlock()">Unlock full report — $29</button>` : `<button class="cta" style="margin-top:10px;background:#1C7C3F" onclick="downloadPdf()"><i class="ti ti-file-download"></i> Download PDF</button>`}
+      <div class="blur-preview">
+        <div class="card">
+          <div class="sec">Score breakdown</div>
+          ${(components||[]).map(c => `<div class="row"><span style="width:160px;color:var(--color-text-secondary)">${c.label}</span><strong>${c.value}</strong></div>`).join('')}
+        </div>
+      </div>
+      <div class="paywall-box">
+        <h3>Unlock the full evaluation — $29</h3>
+        <p>One-time payment. Includes recommendation, risk assessment, audience fit, evidence summary, and PDF download.</p>
+        <button class="cta" onclick="unlock()"><i class="ti ti-lock-open"></i>Unlock full report — $29</button>
+      </div>`;
+    return;
+  }
+
+  // ── Unlocked — show everything ────────────────────────────────────────────
+  document.getElementById('content').innerHTML = `
+    <div style="font-size:13px;font-weight:500;margin-bottom:12px">${creatorName} · ${creator?.niche||''} · ${creator?.location||''}</div>
+    <div class="teaser-hero">
+      <div class="score-label">Trust score</div>
+      <div class="score-val">${trustScore}</div>
+      <div class="conf-badge"><i class="ti ti-shield-check"></i>Confidence: <strong style="margin-left:2px">${confidence}</strong></div>
     </div>
-    <div class="card ${locked?'locked-row':''}">
+    <div class="card">
+      <div class="verdict-banner">
+        <span class="badge ${style_class}"><i class="ti ${icon}"></i> Recommendation: ${label}</span>
+        <span class="badge b-blue">${verifiedCount} verified campaigns</span>
+      </div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.7;margin-bottom:10px">${evalRow.recommendation_summary || ''}</div>
+      <button class="cta" style="background:#1C7C3F" onclick="downloadPdf()"><i class="ti ti-file-download"></i>Download PDF</button>
+    </div>
+    <div class="card">
+      <div class="sec">Score breakdown</div>
+      ${(components||[]).map(c => `<div class="row"><span style="width:160px;color:var(--color-text-secondary)">${c.label}</span><strong>${c.value}</strong></div>`).join('')}
+    </div>
+    <div class="card">
       <div class="sec">Key reasons</div>
       <div class="row"><i class="ti ti-rosette-discount-check" style="color:#1C7C3F"></i>${verifiedCount} mutually verified campaigns</div>
       <div class="row"><i class="ti ti-shield-check" style="color:#1C7C3F"></i>Brand safety score: ${compMap.brand_safety ?? '—'}</div>
       <div class="row"><i class="ti ti-users" style="color:#1C7C3F"></i>Audience authenticity: ${compMap.audience_authenticity ?? '—'}</div>
     </div>
-    <div class="card ${locked?'locked-row':''}">
-      <div class="sec">Score breakdown</div>
-      ${(components||[]).map(c => `<div class="row"><span style="width:160px;color:var(--color-text-secondary)">${c.label}</span><strong>${c.value}</strong></div>`).join('')}
-    </div>
-
-    ${!locked && evalRow.team_id ? `
+    ${evalRow.team_id ? `
     <div class="card">
       <div class="sec">Approval workflow</div>
       ${evalRow.approval_status === 'draft' ? `
-        <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Submit this evaluation to your team for review before acting on it.</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Submit to your team for review before acting on it.</div>
         <button class="cta" onclick="submitForReview()">Submit for team review</button>
       ` : evalRow.approval_status === 'pending_approval' ? `
-        <div class="badge b-amber" style="margin-bottom:10px">Pending team approval</div>
+        <div class="approval-badge b-amber" style="margin-bottom:10px">Pending team approval</div>
         <div style="display:flex;gap:8px;margin-bottom:8px">
           <button class="cta" style="background:#1C7C3F" onclick="reviewEvaluation('approved')">Approve</button>
           <button class="cta" style="background:#B42318" onclick="reviewEvaluation('rejected')">Reject</button>
         </div>
-        <input id="approvalNote" style="width:100%;padding:8px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12px" placeholder="Optional note for the team…">
+        <input id="approvalNote" style="width:100%;padding:8px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12px" placeholder="Optional note…">
       ` : evalRow.approval_status === 'approved' ? `
-        <div class="badge b-green"><i class="ti ti-circle-check"></i> Approved${evalRow.approval_note ? ' — ' + evalRow.approval_note : ''}</div>
+        <span class="approval-badge b-green"><i class="ti ti-circle-check"></i>Approved${evalRow.approval_note ? ' — ' + evalRow.approval_note : ''}</span>
       ` : `
-        <div class="badge b-red"><i class="ti ti-circle-x"></i> Rejected${evalRow.approval_note ? ' — ' + evalRow.approval_note : ''}</div>
+        <span class="approval-badge b-red"><i class="ti ti-circle-x"></i>Rejected${evalRow.approval_note ? ' — ' + evalRow.approval_note : ''}</span>
       `}
     </div>` : ''}
   `;
 }
 
-async function generateEvaluation() {
+// First visit: generate evaluation server-side then go straight to Stripe
+async function generateAndUnlock() {
   const { ok, json } = await authedFetch('/api/generate-evaluation', { creatorId });
   if (!ok) { alert('Could not generate evaluation: ' + (json.error || 'unknown error')); return; }
-  load();
+  currentEvalId = json.evaluation.id;
+  await unlock();
+}
+
+async function unlock() {
+  try {
+    const { ok, json } = await authedFetch('/api/create-checkout-session', {
+      product: 'evaluation_unlock',
+      evaluationId: currentEvalId,
+      creatorId,
+    });
+    if (!ok) { alert('Could not start checkout: ' + (json.error || 'unknown error')); return; }
+    window.location.href = json.url;
+  } catch (err) { alert('Checkout failed: ' + err.message); }
 }
 
 async function submitForReview() {
   const { error } = await sb.from('evaluations').update({ approval_status: 'pending_approval' }).eq('id', currentEvalId);
-  if (error) { alert('Could not submit for review: ' + error.message); return; }
+  if (error) { alert('Could not submit: ' + error.message); return; }
   load();
 }
 
 async function reviewEvaluation(status) {
   const note = document.getElementById('approvalNote')?.value?.trim() || null;
-  const { data: { user } } = await sb.auth.getUser();
   const { error } = await sb.from('evaluations').update({
-    approval_status: status,
-    approval_note: note,
-    reviewed_at: new Date().toISOString(),
+    approval_status: status, approval_note: note, reviewed_at: new Date().toISOString(),
   }).eq('id', currentEvalId);
-  if (error) { alert('Could not update approval: ' + error.message); return; }
+  if (error) { alert('Could not update: ' + error.message); return; }
   load();
 }
 
@@ -180,33 +248,17 @@ async function downloadPdf() {
     });
     if (!res.ok) {
       const text = await res.text();
-      try { alert('Could not generate PDF: ' + (JSON.parse(text).error || 'unknown error')); }
-      catch { alert('Could not generate PDF (status ' + res.status + '): ' + text.slice(0, 200)); }
+      try { alert('Could not generate PDF: ' + (JSON.parse(text).error || 'unknown')); }
+      catch { alert('Could not generate PDF (' + res.status + '): ' + text.slice(0,200)); }
       return;
     }
     const blob = await res.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'kitscore-report.pdf';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    a.href = url; a.download = 'kitscore-report.pdf';
+    document.body.appendChild(a); a.click(); a.remove();
     window.URL.revokeObjectURL(url);
-  } catch (err) {
-    alert('PDF download failed: ' + err.message);
-  }
-}
-
-async function unlock() {
-  try {
-    const { data: evalRow } = await sb.from('evaluations').select('id').eq('creator_id', creatorId).eq('sponsor_id', profile.id).order('created_at', { ascending: false }).limit(1).single();
-    const { ok, json } = await authedFetch('/api/create-checkout-session', { product: 'report', evaluationId: evalRow.id, creatorId });
-    if (!ok) { alert('Could not start checkout: ' + (json.error || 'unknown error')); return; }
-    window.location.href = json.url;
-  } catch (err) {
-    alert('Checkout request failed: ' + err.message);
-  }
+  } catch (err) { alert('PDF download failed: ' + err.message); }
 }
 
 load();

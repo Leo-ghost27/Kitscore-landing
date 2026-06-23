@@ -3,6 +3,7 @@
 // In production this would send an email via Resend/Postmark.
 // For now it returns the link so the team owner can share it manually.
 const { adminClient, getAuthedSponsor } = require('./_supabase-admin');
+const { sendEmail, teamInviteEmail } = require('../lib/email');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -30,9 +31,21 @@ module.exports = async (req, res) => {
     const origin = req.headers.origin || `https://${req.headers.host}`;
     const acceptLink = `${origin}/app/accept-invite.html?token=${invite.token}`;
 
+    // Auto-send the invite email — no longer requires manual copy-paste
+    const { data: inviterProfile } = await admin.from('profiles')
+      .select('display_name').eq('id', sponsor.id).single();
+    await sendEmail({
+      to: email,
+      ...teamInviteEmail({
+        teamName: team.name,
+        inviteLink: acceptLink,
+        invitedBy: inviterProfile?.display_name || 'Your team',
+      }),
+    });
+
     res.status(200).json({
-      message: `Invite created for ${email}. Share this link with them:`,
-      acceptLink,
+      message: `Invite sent to ${email}.`,
+      acceptLink, // still returned for fallback copy-paste if email fails
     });
   } catch (err) {
     console.error('invite-team-member error:', err);

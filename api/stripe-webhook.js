@@ -1,8 +1,9 @@
-// POST /api/stripe-webhook — configured in the Stripe dashboard, not called by the browser.
-// Verifies the signature, then on a confirmed payment unlocks the report or
-// upgrades the sponsor's plan. This is the only code path that sets unlocked=true.
+// POST /api/stripe-webhook
+// Verifies Stripe signature then routes events. This is the only code path
+// that mutates billing state — never trust client-reported plan changes.
 const Stripe = require('stripe');
 const { adminClient } = require('./_supabase-admin');
+const { sendEmail, sponsorReceiptEmail, reportReadyEmail } = require('../lib/email');
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -13,6 +14,30 @@ function readRawBody(req) {
     req.on('end', () => resolve(Buffer.concat(chunks)));
     req.on('error', reject);
   });
+}
+
+// Map Stripe price IDs to internal plan names.
+// Reads from env vars — never hardcoded.
+function planFromPriceId(priceId) {
+  const map = {
+    [process.env.STRIPE_PRICE_STARTER]: 'starter',
+    [process.env.STRIPE_PRICE_TEAM]: 'team',
+    [process.env.STRIPE_PRICE_CREATOR_PRO]: 'creator_pro',
+  };
+  return map[priceId] || null;
+}
+
+// Find a sponsor by their Stripe customer ID
+async function sponsorByCustomerId(admin, customerId) {
+  const { data } = await admin.from('sponsors')
+    .select('id, plan').eq('stripe_customer_id', customerId).maybeSingle();
+  return data;
+}
+
+// Retrieve the plan name from a Stripe subscription object
+async function planFromSubscription(subscription) {
+  const priceId = subscription.items?.data?.[0]?.price?.id;
+  return planFromPriceId(priceId);
 }
 
 const handler = async (req, res) => {
@@ -28,24 +53,123 @@ const handler = async (req, res) => {
     return res.status(400).send(`Webhook signature verification failed: ${err.message}`);
   }
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    const { profileId, profileRole, product, evaluationId } = session.metadata || {};
-    const admin = adminClient();
+  const admin = adminClient();
 
-    if (product === 'report' && evaluationId) {
-      await admin.from('evaluations').update({ unlocked: true }).eq('id', evaluationId);
-    } else if (product === 'starter' || product === 'team') {
-      await admin.from('sponsors').update({ plan: product }).eq('id', profileId);
-    } else if (product === 'creator_pro') {
-      await admin.from('creators').update({ plan: 'pro' }).eq('id', profileId);
+  try {
+    switch (event.type) {
+
+      // ── checkout.session.completed ──────────────────────────────────────────
+      // Existing handler: unlock reports, upgrade plans on first checkout.
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const { profileId, profileRole, product, evaluationId } = session.metadata || {};
+
+        // Persist stripe_customer_id if not already stored
+        if (session.customer && profileId) {
+          await admin.from('sponsors')
+            .update({ stripe_customer_id: session.customer })
+            .eq('id', profileId)
+            .is('stripe_customer_id', null);
+        }
+
+        if (product === 'report' || product === 'evaluation_unlock') {
+          if (evaluationId) {
+            await admin.from('evaluations')
+              .update({ unlocked: true }).eq('id', evaluationId);
+
+            // Send receipt email to the sponsor
+            const { data: evalRow } = await admin.from('evaluations')
+              .select('creator_id, sponsor_id').eq('id', evaluationId).single();
+            if (evalRow) {
+              const [{ data: creatorProfile }, { data: sponsorProfile }] = await Promise.all([
+                admin.from('profiles').select('display_name').eq('id', evalRow.creator_id).single(),
+                admin.from('profiles').select('email, display_name').eq('id', evalRow.sponsor_id).single(),
+              ]);
+              const origin = `https://${req.headers.host}`;
+              const reportUrl = `${origin}/app/evaluate.html?creator=${evalRow.creator_id}`;
+              const amount = session.amount_total || 2900; // cents
+              if (sponsorProfile?.email) {
+                await sendEmail({
+                  to: sponsorProfile.email,
+                  ...sponsorReceiptEmail({
+                    amount,
+                    creatorName: creatorProfile?.display_name || 'this creator',
+                    reportUrl,
+                  }),
+                });
+              }
+            }
+          }
+        } else if (product === 'starter' || product === 'team') {
+          await admin.from('sponsors')
+            .update({ plan: product, subscription_status: 'active' }).eq('id', profileId);
+        } else if (product === 'creator_pro') {
+          await admin.from('creators').update({ plan: 'pro' }).eq('id', profileId);
+        }
+        break;
+      }
+
+      // ── customer.subscription.updated ──────────────────────────────────────
+      // Fires on plan changes, renewals, reactivations, and trial endings.
+      // Source of truth for what plan the sponsor is actually on right now.
+      case 'customer.subscription.updated': {
+        const sub = event.data.object;
+        const sponsor = await sponsorByCustomerId(admin, sub.customer);
+        if (!sponsor) break;
+
+        const plan = await planFromSubscription(sub);
+        const status = sub.status; // active | past_due | canceled | unpaid etc.
+
+        const update = { subscription_status: status };
+        if (plan) update.plan = plan;
+        // If Stripe shows cancelled or unpaid, downgrade to free
+        if (status === 'canceled' || status === 'unpaid') update.plan = 'free';
+
+        await admin.from('sponsors').update(update).eq('id', sponsor.id);
+        break;
+      }
+
+      // ── customer.subscription.deleted ──────────────────────────────────────
+      // Fires when a subscription is fully cancelled (end of billing period).
+      // Downgrade the sponsor to free — they've had their last paid period.
+      case 'customer.subscription.deleted': {
+        const sub = event.data.object;
+        const sponsor = await sponsorByCustomerId(admin, sub.customer);
+        if (!sponsor) break;
+
+        await admin.from('sponsors')
+          .update({ plan: 'free', subscription_status: 'cancelled' })
+          .eq('id', sponsor.id);
+        break;
+      }
+
+      // ── invoice.payment_failed ──────────────────────────────────────────────
+      // Fires when a renewal charge fails. Mark as past_due — Stripe will
+      // retry before ultimately cancelling, so don't downgrade immediately.
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object;
+        if (!invoice.customer) break;
+        const sponsor = await sponsorByCustomerId(admin, invoice.customer);
+        if (!sponsor) break;
+
+        await admin.from('sponsors')
+          .update({ subscription_status: 'past_due' })
+          .eq('id', sponsor.id);
+        break;
+      }
+
+      default:
+        // Unhandled event types — acknowledge receipt so Stripe doesn't retry
+        break;
     }
+  } catch (err) {
+    console.error(`Webhook handler error for ${event.type}:`, err);
+    // Still return 200 — returning 4xx/5xx causes Stripe to retry indefinitely
+    return res.status(200).json({ received: true, error: err.message });
   }
 
   res.status(200).json({ received: true });
 };
 
-// Stripe needs the raw, unparsed body to verify the signature.
 handler.config = { api: { bodyParser: false } };
-
 module.exports = handler;

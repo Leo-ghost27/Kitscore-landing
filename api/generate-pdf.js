@@ -3,6 +3,7 @@
 // owns AND has unlocked (paid for) - this is the $29 report's deliverable.
 const PDFDocument = require('pdfkit');
 const { adminClient, getAuthedSponsor } = require('./_supabase-admin');
+const { sendEmail, reportReadyEmail } = require('../lib/email');
 
 function streamToBuffer(doc) {
   return new Promise((resolve, reject) => {
@@ -75,6 +76,21 @@ module.exports = async (req, res) => {
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="kitscore-${(profileRow?.display_name || 'report').replace(/\s+/g, '-').toLowerCase()}.pdf"`);
     res.status(200).send(pdfBuffer);
+
+    // Send report-ready notification (fire-and-forget after response sent)
+    const { data: sponsorProfile } = await admin.from('profiles')
+      .select('email').eq('id', sponsor.id).single();
+    if (sponsorProfile?.email) {
+      const origin = req.headers.origin || `https://${req.headers.host}`;
+      const reportUrl = `${origin}/app/evaluate.html?creator=${evalRow.creator_id}`;
+      sendEmail({
+        to: sponsorProfile.email,
+        ...reportReadyEmail({
+          creatorName: profileRow?.display_name || 'this creator',
+          reportUrl,
+        }),
+      }).catch(err => console.error('report-ready email error:', err));
+    }
   } catch (err) {
     console.error('generate-pdf error:', err);
     res.status(500).json({ error: err.message || 'Unknown server error' });
