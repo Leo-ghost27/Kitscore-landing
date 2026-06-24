@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/app/${returnPath}${sep}checkout=success`,
       cancel_url: `${origin}/app/${returnPath}${sep}checkout=cancelled`,
-      metadata: { profileId: buyer.id, profileRole: config.role, product, evaluationId: evaluationId || '', type: product === 'report' || product === 'evaluation_unlock' ? 'evaluation' : product, evaluation_id: evaluationId || '', creator_id: creatorId || '', sponsor_id: buyer.id },
+     metadata: { profileId: buyer.id, profileRole: config.role, product: product, evaluationId: evaluationId || '', type: (product === 'report' || product === 'evaluation_unlock') ? 'evaluation' : product, evaluation_id: evaluationId || '', creator_id: creatorId || '', sponsor_id: buyer.id }, 
 
     res.status(200).json({ url: session.url });
   } catch (err) {
