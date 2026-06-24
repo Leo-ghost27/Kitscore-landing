@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
       success_url: `${origin}/app/${returnPath}${sep}checkout=success`,
       cancel_url: `${origin}/app/${returnPath}${sep}checkout=cancelled`,
      metadata: { profileId: buyer.id, profileRole: config.role, product: product, evaluationId: evaluationId || '', type: (product === 'report' || product === 'evaluation_unlock') ? 'evaluation' : product, evaluation_id: evaluationId || '', creator_id: creatorId || '', sponsor_id: buyer.id }, 
-
+    });
     res.status(200).json({ url: session.url });
   } catch (err) {
     console.error('create-checkout-session error:', err);
