@@ -545,7 +545,25 @@
     .fw-arrow { transform: rotate(90deg); }
     .dp-components { grid-template-columns: 1fr 1fr; }
     .nav-links { display: none; }
-    .waitlist-box { padding: 28px 20px; }
+    nav { padding: 0 16px; }
+    .waitlist-box { padding: 28px 16px; }
+    .hero { padding: 48px 16px 40px; text-align: center; }
+    h1 { font-size: clamp(28px, 8vw, 40px); }
+    .hero-sub { font-size: 15px; }
+    .hero-buttons { flex-direction: column; align-items: center; gap: 10px; }
+    .hero-buttons .btn-primary, .hero-buttons .btn-ghost { width: 100%; max-width: 320px; text-align: center; }
+    section { padding: 52px 16px; }
+    .score-preview { padding: 16px; }
+    .waitlist-box input, .waitlist-box select, .waitlist-box button { font-size: 16px; }
+    .pricing-card { padding: 24px 16px; }
+    .sample-card { padding: 20px 16px; }
+    .nav-cta { padding: 10px 16px; min-height: 44px; }
+    .btn-primary, .btn-ghost { min-height: 44px; }
+    .dashboard-preview { overflow-x: hidden; }
+  }
+  @media (max-width: 400px) {
+    .dp-components { grid-template-columns: 1fr; }
+    h1 { font-size: 26px; }
   }
 </style>
 </head>

@@ -7,35 +7,113 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="shared.css">
 <style>
-  body{padding:20px;max-width:760px;margin:0 auto}
-  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  body{padding:20px;max-width:780px;margin:0 auto}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
   .topbar .who{font-size:12px;color:var(--color-text-secondary)}
   .signout{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none}
-  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-  .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .ml{font-size:10px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-  .mv{font-size:20px;font-weight:500}
-  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-  .pbar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-  .pbar-row span:first-child{width:130px;font-size:11px;color:var(--color-text-secondary)}
-  .pbar-track{flex:1;height:6px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
-  .pbar-fill{height:100%;background:#2563EB;border-radius:3px;transition:width .3s}
-  .pbar-val{width:28px;text-align:right;font-size:11px;font-weight:500}
-  .qrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
-  .qrow:last-child{border-bottom:none}
-  .qrow .opts{display:flex;gap:4px}
-  .qrow button{font-size:10px;padding:4px 8px;border-radius:6px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);cursor:pointer;color:var(--color-text-secondary)}
-  .qrow button.sel{background:#2563EB;color:#fff;border-color:#2563EB}
-  .verified-badge{font-size:10px;background:#E9F7EE;color:#1C7C3F;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
-  .loading{font-size:12px;color:var(--color-text-secondary);padding:20px;text-align:center}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:40px;text-align:center}
+  .sec{font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+  .card{padding:16px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:12px}
   .info-ic{font-size:11px;color:var(--color-text-tertiary);cursor:help;margin-left:3px}
-  .progress-track{height:8px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin:8px 0 10px}
-  .progress-fill{height:100%;background:#2563EB;border-radius:4px;transition:width .3s}
+
+  /* ── Score ring hero ── */
+  .score-hero{display:grid;grid-template-columns:140px 1fr;gap:20px;align-items:center;margin-bottom:12px}
+  .ring-wrap{position:relative;width:130px;height:130px;flex-shrink:0}
+  .ring-wrap svg{width:130px;height:130px;transform:rotate(-90deg)}
+  .ring-track{fill:none;stroke:var(--color-border-tertiary);stroke-width:10}
+  .ring-fill{fill:none;stroke:#2563EB;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)}
+  .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring-num{font-size:32px;font-weight:700;color:var(--color-text-primary);line-height:1}
+  .ring-label{font-size:9px;color:var(--color-text-tertiary);margin-top:3px;text-transform:uppercase;letter-spacing:.06em}
+  .score-meta{display:flex;flex-direction:column;gap:8px}
+  .badge-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:var(--color-background-secondary);color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary);width:fit-content}
+  .conf-row{display:flex;align-items:center;gap:8px}
+  .conf-label{font-size:11px;color:var(--color-text-secondary);width:90px;flex-shrink:0}
+  .conf-bar{flex:1;height:5px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
+  .conf-fill{height:100%;background:#1D9E75;border-radius:3px;transition:width 1s ease}
+  .conf-pct{font-size:11px;font-weight:600;color:var(--color-text-primary);width:32px;text-align:right}
+  .plan-chip{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em;width:fit-content}
+  .plan-free{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .plan-pro{background:#EEF2FF;color:#3730A3}
+
+  /* ── Stats strip ── */
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+  .stat-box{padding:12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);text-align:center}
+  .stat-box .ml{font-size:10px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+  .stat-box .mv{font-size:22px;font-weight:600;color:var(--color-text-primary)}
+
+  /* ── Completeness bar ── */
+  .progress-track{height:7px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin:8px 0 10px}
+  .progress-fill{height:100%;background:#2563EB;border-radius:4px;transition:width .8s ease}
   .step-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;color:var(--color-text-secondary)}
   .step-row.done{color:var(--color-text-primary)}
   .step-row i{font-size:14px}
-  .empty-tip{font-size:12px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-sm);padding:10px;line-height:1.5}
-  .empty-tip a{color:#2563EB;text-decoration:none;font-weight:500}
+
+  /* ── Milestone ── */
+  .milestone-card{display:flex;align-items:center;gap:14px}
+  .ms-icon{font-size:36px;flex-shrink:0;animation:float 3s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  .ms-bar-wrap{flex:1}
+  .ms-bar-track{height:5px;background:var(--color-background-secondary);border-radius:3px;margin:6px 0}
+  .ms-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#2563EB,#7B6FE8);transition:width 1s ease}
+
+  /* ── Score breakdown ── */
+  .pbar-row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .pbar-row span:first-child{width:140px;font-size:12px;color:var(--color-text-secondary);flex-shrink:0}
+  .pbar-track{flex:1;height:5px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
+  .pbar-fill{height:100%;border-radius:3px;transition:width 1s ease}
+  .pbar-val{width:28px;text-align:right;font-size:12px;font-weight:600}
+  .pbar-tag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px;white-space:nowrap;flex-shrink:0}
+  .tag-live{background:#E9F7EE;color:#1C7C3F}
+  .tag-ev{background:#EEF2FF;color:#3730A3}
+  .tag-pend{background:var(--color-background-secondary);color:var(--color-text-tertiary)}
+
+  /* ── Improvement loop ── */
+  .improve-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);padding:12px;margin-bottom:8px}
+  .improve-card .ic-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .improve-card .ic-title{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+  .improve-card .ic-score{font-size:12px;font-weight:600;padding:2px 7px;border-radius:10px}
+  .ic-score-low{background:#FEF3C7;color:#92400E}
+  .ic-score-med{background:#DBEAFE;color:#1E40AF}
+  .ic-score-hi{background:#D1FAE5;color:#065F46}
+  .improve-card .ic-tip{font-size:11px;color:var(--color-text-secondary);line-height:1.55}
+  .improve-card .ic-cta{font-size:11px;font-weight:500;color:#2563EB;text-decoration:none;margin-top:6px;display:inline-block}
+
+  /* ── Brand safety ── */
+  .qrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .qrow:last-child{border-bottom:none}
+  .qrow .opts{display:flex;gap:4px}
+  .qrow button{font-size:10px;padding:4px 8px;border-radius:6px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);cursor:pointer;color:var(--color-text-secondary);font-family:inherit}
+  .qrow button.sel{background:#2563EB;color:#fff;border-color:#2563EB}
+
+  /* ── Evidence ── */
+  .ev-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+  .ev-row:last-child{border-bottom:none}
+  .ev-name{flex:1;color:var(--color-text-primary)}
+  .ev-plat{color:var(--color-text-secondary);font-size:11px}
+  .ev-status{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px}
+  .st-verified{background:#D1FAE5;color:#065F46}
+  .st-pending{background:#FEF3C7;color:#92400E}
+  .st-review{background:#DBEAFE;color:#1E40AF}
+
+  /* ── Empty states ── */
+  .empty-state{text-align:center;padding:28px 16px}
+  .empty-state .es-icon{font-size:32px;margin-bottom:10px;opacity:.5}
+  .empty-state .es-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+  .empty-state .es-body{font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:12px}
+  .empty-state a{font-size:12px;font-weight:600;color:#2563EB;text-decoration:none}
+
+  /* ── Verified badge ── */
+  .verified-badge{font-size:10px;background:#E9F7EE;color:#1C7C3F;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
+
+  /* ── Mobile ── */
+  @media(max-width:560px){
+    .score-hero{grid-template-columns:1fr;text-align:center}
+    .ring-wrap{margin:0 auto}
+    .score-meta{align-items:center}
+    .g3{grid-template-columns:1fr 1fr}
+    body{padding:12px}
+  }
 </style>
 </head>
 <body>
@@ -47,8 +125,9 @@
         <div class="ptitle" style="font-size:16px;font-weight:500">Dashboard</div>
         <div class="who" id="whoami">Loading…</div>
       </div>
+      <button class="signout" onclick="signOut()">Sign out</button>
     </div>
-    <div id="content" class="loading">Loading your live data from Supabase…</div>
+    <div id="content" class="loading">Loading your dashboard…</div>
   </div>
 </div>
 
@@ -56,157 +135,300 @@
 <script src="supabase-client.js"></script>
 <script src="nav.js"></script>
 <script>
-const BADGE_EMOJI = { none:'—', bronze:'🥉', silver:'🥈', gold:'🥇', platinum:'💎' };
-const BADGE_LABEL = { none:'New', bronze:'Bronze', silver:'Silver', gold:'Gold', platinum:'Platinum' };
-const MILESTONES = [
-  { tier:'bronze', label:'Bronze Trust Badge', threshold:2, emoji:'🥉' },
-  { tier:'silver', label:'Silver Trust Badge', threshold:5, emoji:'🥈' },
-  { tier:'gold', label:'Gold Trust Badge', threshold:10, emoji:'🥇' },
-  { tier:'platinum', label:'Platinum Trust Badge', threshold:20, emoji:'💎' },
+const BADGE_EMOJI  = { none:'—', bronze:'🥉', silver:'🥈', gold:'🥇', platinum:'💎' };
+const BADGE_LABEL  = { none:'New creator', bronze:'Bronze', silver:'Silver', gold:'Gold', platinum:'Platinum' };
+const BADGE_COLOR  = { none:'#8A909C', bronze:'#CD7F32', silver:'#A8A9AD', gold:'#D4AF37', platinum:'#B9F2FF' };
+const MILESTONES   = [
+  { tier:'bronze',   label:'Bronze Trust Badge', threshold:2,  emoji:'🥉' },
+  { tier:'silver',   label:'Silver Trust Badge',  threshold:5,  emoji:'🥈' },
+  { tier:'gold',     label:'Gold Trust Badge',    threshold:10, emoji:'🥇' },
+  { tier:'platinum', label:'Platinum Badge',      threshold:20, emoji:'💎' },
 ];
 const ALL_COMPONENTS = [
-  { key:'audience_authenticity', label:'Audience authenticity' },
-  { key:'engagement_quality', label:'Engagement quality' },
-  { key:'brand_safety', label:'Brand safety' },
-  { key:'content_consistency', label:'Content consistency' },
-  { key:'professionalism', label:'Professionalism' },
+  { key:'audience_authenticity', label:'Audience authenticity', advice:'Upload a screenshot of your audience demographics from your platform analytics.', href:'evidence.html' },
+  { key:'engagement_quality',    label:'Engagement quality',    advice:'Connect your social accounts so we can verify your engagement rate directly.', href:'profile.html' },
+  { key:'brand_safety',          label:'Brand safety',          advice:'Complete the brand safety questionnaire below — sponsors filter heavily on this.', href:'#brand-safety' },
+  { key:'content_consistency',   label:'Content consistency',   advice:'Post consistently for 4 weeks then re-submit evidence for verification.', href:'evidence.html' },
+  { key:'professionalism',       label:'Professionalism',       advice:'Add a business email, location, and niche to your profile.', href:'profile.html' },
 ];
 const QUESTIONS = [
-  {key:'family_safe', label:'Is your content generally family-safe?', opts:['Yes','Mostly','No']},
-  {key:'political', label:'How often do you post political content?', opts:['None','Occasional','Frequent']},
-  {key:'gambling', label:'Gambling promotion history?', opts:['Never','Past','Active']},
-  {key:'adult', label:'Adult/mature content?', opts:['None','Mild','Explicit']},
-  {key:'profanity', label:'Profanity frequency?', opts:['None','Occasional','Frequent']},
+  {key:'family_safe', label:'Is your content generally family-safe?',  opts:['Yes','Mostly','No']},
+  {key:'political',   label:'How often do you post political content?', opts:['None','Occasional','Frequent']},
+  {key:'gambling',    label:'Gambling promotion history?',              opts:['Never','Past','Active']},
+  {key:'adult',       label:'Adult/mature content?',                    opts:['None','Mild','Explicit']},
+  {key:'profanity',   label:'Profanity frequency?',                     opts:['None','Occasional','Frequent']},
 ];
 
 let profile, creator;
+
+function scoreColor(v){ return v>=80?'#1D9E75': v>=60?'#2563EB':'#E58C1A'; }
+
+function renderRing(score){
+  const r = 54, circ = 2*Math.PI*r;
+  const pct = Math.min(score||0, 100)/100;
+  const offset = circ*(1-pct);
+  return `
+    <div class="ring-wrap" id="ring-wrap">
+      <svg viewBox="0 0 120 120">
+        <circle class="ring-track" cx="60" cy="60" r="${r}"/>
+        <circle class="ring-fill" cx="60" cy="60" r="${r}"
+          stroke="${scoreColor(score)}"
+          stroke-dasharray="${circ}"
+          stroke-dashoffset="${circ}"
+          id="ring-arc"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-num" id="ring-num">—</div>
+        <div class="ring-label">trust score</div>
+      </div>
+    </div>`;
+}
+
+function animateRing(score){
+  const r=54, circ=2*Math.PI*r;
+  const offset = circ*(1-(Math.min(score||0,100)/100));
+  const arc = document.getElementById('ring-arc');
+  const num = document.getElementById('ring-num');
+  if(!arc||!num) return;
+  // Animate number count-up
+  let start=0, duration=1200, startTime=null;
+  function step(ts){
+    if(!startTime) startTime=ts;
+    const p=Math.min((ts-startTime)/duration,1);
+    const ease=1-Math.pow(1-p,3);
+    num.textContent=Math.round(ease*score);
+    if(p<1) requestAnimationFrame(step);
+    else num.textContent=score;
+  }
+  requestAnimationFrame(step);
+  setTimeout(()=>{ arc.style.strokeDashoffset=offset; },50);
+}
 
 async function load() {
   profile = await requireRole('creator');
   if (!profile) return;
   renderSidebar('creator', 'dashboard');
-  document.getElementById('whoami').textContent = `${profile.display_name} · ${profile.email || ''}`;
+  document.getElementById('whoami').textContent = `${profile.display_name} · ${profile.email||''}`;
 
-  const [{ data: c }, { data: components }, { data: evidence }, { data: answers }, { data: campaigns }] = await Promise.all([
+  const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns }] = await Promise.all([
     sb.from('creators').select('*').eq('id', profile.id).single(),
-    sb.from('score_components').select('*').eq('creator_id', profile.id).order('component_key'),
-    sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at', { ascending: false }),
+    sb.from('score_components').select('*').eq('creator_id', profile.id).order('weight', {ascending:false}),
+    sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at',{ascending:false}),
     sb.from('brand_safety_answers').select('*').eq('creator_id', profile.id),
-    sb.from('campaigns').select('*').eq('creator_id', profile.id).order('created_at', { ascending: false }),
+    sb.from('campaigns').select('*').eq('creator_id', profile.id).order('created_at',{ascending:false}),
   ]);
   creator = c;
 
-  const answerMap = {};
-  (answers || []).forEach(a => answerMap[a.question_key] = a.answer);
+  const answerMap={};
+  (answers||[]).forEach(a=>answerMap[a.question_key]=a.answer);
+  const verifiedCount=(campaigns||[]).filter(x=>x.creator_confirmed&&x.sponsor_confirmed).length;
+  const hasScore=(components||[]).length>0 && creator.trust_score>0;
+  const score=parseInt(creator.trust_score)||0;
+  const conf=parseInt(creator.confidence)||0;
 
-  const verifiedCount = (campaigns || []).filter(x => x.status === 'verified').length;
-  const hasScore = (components || []).length > 0;
-
-  // Onboarding progress
-  const steps = [
-    { label: 'Create profile', done: !!(creator.niche && creator.location) },
-    { label: 'Complete brand safety questionnaire', done: (answers || []).length >= QUESTIONS.length },
-    { label: 'Upload evidence', done: (evidence || []).length >= 1 },
-    { label: 'Verify first campaign', done: verifiedCount >= 1 },
+  // Onboarding steps
+  const steps=[
+    {label:'Complete your profile (niche + location)', done:!!(creator.niche&&creator.location)},
+    {label:'Complete brand safety questionnaire',       done:(answers||[]).length>=QUESTIONS.length},
+    {label:'Upload evidence',                           done:(evidence||[]).length>=1},
+    {label:'Verify first campaign',                     done:verifiedCount>=1},
   ];
-  const doneCount = steps.filter(s => s.done).length;
-  const pct = Math.round((doneCount / steps.length) * 100);
+  const doneCount=steps.filter(s=>s.done).length;
+  const pct=Math.round((doneCount/steps.length)*100);
 
   // Next milestone
-  const nextMilestone = MILESTONES.find(m => verifiedCount < m.threshold);
+  const nextMs=MILESTONES.find(m=>verifiedCount<m.threshold);
+  const prevMs=MILESTONES.filter(m=>verifiedCount>=m.threshold).pop();
+  const msFrom=prevMs?prevMs.threshold:0;
+  const msTo=nextMs?nextMs.threshold:MILESTONES[MILESTONES.length-1].threshold;
+  const msPct=nextMs?Math.round(((verifiedCount-msFrom)/(msTo-msFrom))*100):100;
 
-  const componentMap = {};
-  (components || []).forEach(c => componentMap[c.component_key] = c);
+  // Component map
+  const compMap={};
+  (components||[]).forEach(c=>compMap[c.component_key]=c);
+
+  // Improvement suggestions — sort lowest score first, cap at 3
+  const improvements=ALL_COMPONENTS
+    .filter(ac=>compMap[ac.key]&&compMap[ac.key].value<80)
+    .sort((a,b)=>(compMap[a.key]?.value||0)-(compMap[b.key]?.value||0))
+    .slice(0,3);
 
   document.getElementById('content').innerHTML = `
-    <div class="g3">
-      <div class="card-sm" style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
-        <div class="ml">Trust score <i class="ti ti-info-circle info-ic" title="A measure of creator credibility based on verified campaigns, profile completeness, evidence validation, and brand safety."></i></div>
-        <div class="mv" style="color:#2563EB;font-size:26px">${hasScore ? creator.trust_score : 'Pending'}</div>
-        <div class="verified-badge" style="margin-top:6px"><i class="ti ti-rosette-discount-check"></i>${verifiedCount} verified</div>
-      </div>
-      <div class="card-sm" style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
-        <div class="ml">Trust level <i class="ti ti-info-circle info-ic" title="Earned from mutually verified sponsor campaigns: Bronze at 2, Silver at 5, Gold at 10, Platinum at 20."></i></div>
-        <div class="mv" style="font-size:26px">${BADGE_EMOJI[creator.badge_tier]} ${BADGE_LABEL[creator.badge_tier]}</div>
-      </div>
-      <div class="card-sm" style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
-        <div class="ml">Plan</div>
-        <div class="mv" style="text-transform:capitalize;font-size:26px">${creator.plan}</div>
-        ${creator.plan !== 'pro' ? `<a href="pricing-creator.html" style="font-size:11px;color:#2563EB;text-decoration:none;display:inline-block;margin-top:4px">Upgrade →</a>` : ''}
+
+    <!-- ── Score hero ── -->
+    <div class="card">
+      <div class="score-hero">
+        ${renderRing(score)}
+        <div class="score-meta">
+          <div class="badge-pill">
+            <span style="color:${BADGE_COLOR[creator.badge_tier]}">${BADGE_EMOJI[creator.badge_tier]}</span>
+            ${BADGE_LABEL[creator.badge_tier]}
+          </div>
+          ${hasScore?`
+          <div class="conf-row">
+            <span class="conf-label">Confidence</span>
+            <div class="conf-bar"><div class="conf-fill" id="conf-fill" style="width:0%"></div></div>
+            <span class="conf-pct">${conf}%</span>
+          </div>`:''}
+          <div class="verified-badge"><i class="ti ti-rosette-discount-check"></i>${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
+          <div class="${'plan-chip plan-'+(creator.plan||'free')}">${(creator.plan||'free').toUpperCase()}</div>
+          ${creator.plan==='free'?`<a href="pricing-creator.html" style="font-size:11px;color:#2563EB;text-decoration:none;font-weight:500">Upgrade to Pro →</a>`:''}
+        </div>
       </div>
     </div>
 
-    ${doneCount < steps.length ? `
-    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:14px">
+    <!-- ── Stat strip ── -->
+    <div class="g3">
+      <div class="stat-box">
+        <div class="ml">Evidence items</div>
+        <div class="mv">${(evidence||[]).length||0}</div>
+      </div>
+      <div class="stat-box">
+        <div class="ml">Campaigns</div>
+        <div class="mv">${(campaigns||[]).length||0}</div>
+      </div>
+      <div class="stat-box">
+        <div class="ml">Profile complete</div>
+        <div class="mv">${pct}%</div>
+      </div>
+    </div>
+
+    <!-- ── Onboarding ── -->
+    ${doneCount<steps.length?`
+    <div class="card">
       <div class="sec">Complete your trust profile</div>
       <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
-      ${steps.map(s => `<div class="step-row ${s.done?'done':''}"><i class="ti ${s.done?'ti-circle-check-filled':'ti-circle'}" style="color:${s.done?'#1C7C3F':'var(--color-text-tertiary)'}"></i>${s.label}</div>`).join('')}
-      <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">${pct}% complete</div>
-    </div>` : ''}
+      ${steps.map(s=>`
+        <div class="step-row ${s.done?'done':''}">
+          <i class="ti ${s.done?'ti-circle-check-filled':'ti-circle'}" style="color:${s.done?'#1C7C3F':'var(--color-text-tertiary)'}"></i>
+          ${s.label}
+        </div>`).join('')}
+      <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:8px">${pct}% complete · finish all steps to maximise your trust score</div>
+    </div>`:''}
 
-    ${nextMilestone ? `
-    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:14px;display:flex;align-items:center;gap:14px">
-      <div style="font-size:30px">${nextMilestone.emoji}</div>
-      <div>
-        <div class="sec" style="margin-bottom:2px">Next milestone</div>
-        <div style="font-size:13px;font-weight:500">${nextMilestone.label}</div>
-        <div style="font-size:11px;color:var(--color-text-secondary)">${nextMilestone.threshold - verifiedCount} more verified campaign${nextMilestone.threshold - verifiedCount === 1 ? '' : 's'} needed · adds a verification badge and improved directory visibility</div>
+    <!-- ── Milestone ── -->
+    ${nextMs?`
+    <div class="card">
+      <div class="sec">Next milestone</div>
+      <div class="milestone-card">
+        <div class="ms-icon">${nextMs.emoji}</div>
+        <div class="ms-bar-wrap">
+          <div style="font-size:13px;font-weight:500;color:var(--color-text-primary)">${nextMs.label}</div>
+          <div class="ms-bar-track"><div class="ms-bar-fill" style="width:${msPct}%"></div></div>
+          <div style="font-size:11px;color:var(--color-text-secondary)">${verifiedCount} of ${nextMs.threshold} verified campaigns · ${nextMs.threshold-verifiedCount} to go</div>
+        </div>
       </div>
-    </div>` : ''}
+    </div>`:`
+    <div class="card" style="text-align:center;padding:20px">
+      <div style="font-size:28px;margin-bottom:8px">💎</div>
+      <div style="font-size:13px;font-weight:600;color:var(--color-text-primary)">Platinum achieved</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">You've reached the highest trust tier.</div>
+    </div>`}
 
-    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:14px">
-      <div class="sec">Score breakdown</div>
-      ${ALL_COMPONENTS.map(ac => {
-        const c = componentMap[ac.key];
-        return c ? `
+    <!-- ── Score breakdown ── -->
+    <div class="card">
+      <div class="sec">Score breakdown <i class="ti ti-info-circle info-ic" title="Each component is weighted. Live verified data scores highest."></i></div>
+      ${hasScore?ALL_COMPONENTS.map(ac=>{
+        const comp=compMap[ac.key];
+        const val=comp?comp.value:null;
+        const status=comp?comp.status:'pending';
+        const tagClass=status==='live_verified'?'tag-live':status==='evidence_submitted'?'tag-ev':'tag-pend';
+        const tagLabel=status==='live_verified'?'Live':status==='evidence_submitted'?'Evidence':'Pending';
+        const barColor=val>=80?'#1D9E75':val>=60?'#2563EB':'#E58C1A';
+        return `
         <div class="pbar-row">
           <span>${ac.label}</span>
-          <div class="pbar-track"><div class="pbar-fill" style="width:${c.value}%"></div></div>
-          <span class="pbar-val">${c.value}</span>
-        </div>` : `
-        <div class="pbar-row">
-          <span>${ac.label}</span>
-          <div class="pbar-track"></div>
-          <span class="pbar-val" style="color:var(--color-text-tertiary);width:auto">Pending</span>
+          <div class="pbar-track"><div class="pbar-fill" style="width:${val||0}%;background:${barColor}"></div></div>
+          <span class="pbar-val" style="color:${val?barColor:'var(--color-text-tertiary)'}">${val??'—'}</span>
+          <span class="pbar-tag ${tagClass}">${tagLabel}</span>
         </div>`;
-      }).join('')}
+      }).join(''):`
+      <div class="empty-state">
+        <div class="es-icon">📊</div>
+        <div class="es-title">No score components yet</div>
+        <div class="es-body">Upload evidence and complete your brand safety questionnaire to start building your trust score.</div>
+        <a href="evidence.html">Upload evidence →</a>
+      </div>`}
     </div>
 
-    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:14px">
+    <!-- ── Improvement loop ── -->
+    ${improvements.length?`
+    <div class="card">
+      <div class="sec">How to improve your score</div>
+      ${improvements.map(ac=>{
+        const val=compMap[ac.key]?.value||0;
+        const cls=val<60?'ic-score-low':val<80?'ic-score-med':'ic-score-hi';
+        return `
+        <div class="improve-card">
+          <div class="ic-head">
+            <span class="ic-title">${ac.label}</span>
+            <span class="ic-score ${cls}">${val}/100</span>
+          </div>
+          <div class="ic-tip">${ac.advice}</div>
+          <a href="${ac.href}" class="ic-cta">Take action →</a>
+        </div>`;
+      }).join('')}
+    </div>`:''}
+
+    <!-- ── Brand safety ── -->
+    <div class="card" id="brand-safety">
       <div class="sec">Brand safety questionnaire <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— updates your score live</span></div>
-      ${QUESTIONS.map(q => `
+      ${QUESTIONS.map(q=>`
         <div class="qrow">
           <span style="font-size:12px">${q.label}</span>
-          <span class="opts">${q.opts.map(o => `<button class="${answerMap[q.key]===o?'sel':''}" onclick="answerQuestion('${q.key}','${o}')">${o}</button>`).join('')}</span>
+          <span class="opts">${q.opts.map(o=>`<button class="${answerMap[q.key]===o?'sel':''}" onclick="answerQuestion('${q.key}','${o}')">${o}</button>`).join('')}</span>
         </div>`).join('')}
     </div>
 
-    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:14px">
-      <div class="sec">Evidence</div>
-      ${(evidence||[]).length ? (evidence||[]).map(e => `
-        <div class="qrow"><span style="font-size:12px">${e.file_name} <span style="color:var(--color-text-tertiary)">· ${e.platform||''}</span></span><span style="font-size:10px;color:var(--color-text-secondary)">${e.status.replace('_',' ')}</span></div>
-      `).join('') : `<div class="empty-tip">Upload audience or campaign evidence to strengthen your Trust Score. <a href="evidence.html">Upload evidence →</a></div>`}
+    <!-- ── Evidence ── -->
+    <div class="card">
+      <div class="sec">Evidence uploads</div>
+      ${(evidence||[]).length?(evidence||[]).map(e=>`
+        <div class="ev-row">
+          <span class="ev-name">${e.file_name}</span>
+          <span class="ev-plat">${e.platform||''}</span>
+          <span class="ev-status st-${e.status?.replace('_verified','verified').replace('under_','')}">${(e.status||'').replace(/_/g,' ')}</span>
+        </div>`).join(''):`
+      <div class="empty-state">
+        <div class="es-icon">📎</div>
+        <div class="es-title">No evidence uploaded yet</div>
+        <div class="es-body">Upload audience screenshots, campaign briefs, or analytics exports to verify your score components and raise your confidence rating.</div>
+        <a href="evidence.html">Upload your first piece of evidence →</a>
+      </div>`}
+      ${(evidence||[]).length?`<div style="margin-top:10px"><a href="evidence.html" style="font-size:12px;font-weight:500;color:#2563EB;text-decoration:none">Manage evidence →</a></div>`:''}
     </div>
 
-    <div style="padding:14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md)">
+    <!-- ── Why verify ── -->
+    <div class="card" style="background:var(--color-background-secondary)">
       <div class="sec">Why verify campaigns?</div>
-      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.8">
-        ✓ Increases your Trust Score &nbsp;·&nbsp; ✓ Unlocks Trust Badges &nbsp;·&nbsp; ✓ Improves sponsor confidence &nbsp;·&nbsp; ✓ Improves directory ranking
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:2">
+        ✓ Increases your Trust Score &nbsp;·&nbsp;
+        ✓ Unlocks Trust Badges &nbsp;·&nbsp;
+        ✓ Improves sponsor confidence &nbsp;·&nbsp;
+        ✓ Improves directory ranking
       </div>
+      <a href="campaigns.html" style="font-size:12px;font-weight:500;color:#2563EB;text-decoration:none;display:inline-block;margin-top:8px">Manage campaigns →</a>
     </div>
   `;
+
+  // Animate ring + confidence bar after render
+  requestAnimationFrame(()=>{
+    animateRing(score);
+    const cf=document.getElementById('conf-fill');
+    if(cf) setTimeout(()=>cf.style.width=conf+'%',100);
+  });
 }
 
-async function answerQuestion(key, answer) {
-  const { error } = await sb.from('brand_safety_answers')
-    .upsert({ creator_id: profile.id, question_key: key, answer }, { onConflict: 'creator_id,question_key' });
-  if (error) { alert('Could not save answer: ' + error.message); return; }
-  await load(); // re-fetch so the recalculated score (via DB trigger) shows immediately
+async function answerQuestion(key,answer){
+  const {error}=await sb.from('brand_safety_answers')
+    .upsert({creator_id:profile.id,question_key:key,answer},{onConflict:'creator_id,question_key'});
+  if(error){alert('Could not save: '+error.message);return;}
+  await load();
 }
 
-async function signOut() {
+async function signOut(){
   await sb.auth.signOut();
-  window.location.href = 'auth.html';
+  window.location.href='auth.html';
 }
 
 load();

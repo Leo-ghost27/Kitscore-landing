@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>How Kitscore Works — Trust Score Methodology</title>
+<link rel="canonical" href="https://kitscore.co/methodology" />
+<meta name="description" content="How Kitscore calculates creator trust scores — the components, weighting, confidence rating, verification sources, and badge tiers explained." />
+<meta property="og:title" content="Kitscore Methodology — How Trust Scores Work" />
+<meta property="og:description" content="Every number comes with proof. Here's exactly how we calculate creator trust scores." />
+<meta property="og:image" content="https://kitscore.co/og-image.png" />
+<meta property="og:url" content="https://kitscore.co/methodology" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://kitscore.co/og-image.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0A0C10; --bg2: #111318; --bg3: #181B22;
+    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.16);
+    --text: #F0F2F5; --muted: #8A909C;
+    --accent: #7B6FE8; --accent-light: #A39CF0; --accent-dim: rgba(123,111,232,0.12);
+    --green: #2ECC8A; --green-dim: rgba(46,204,138,0.12);
+    --amber: #F5A623; --amber-dim: rgba(245,166,35,0.12);
+    --red-dim: rgba(239,68,68,0.12); --red: #F87171;
+    --radius: 12px; --radius-sm: 8px;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent-light); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── Nav ── */
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 60px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(10,12,16,0.92); backdrop-filter: blur(12px); z-index: 100; }
+  .nav-logo { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
+  .nav-logo span { color: var(--accent-light); }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-link { font-size: 14px; color: var(--muted); transition: color 0.15s; text-decoration: none; }
+  .nav-link:hover { color: var(--text); }
+  .nav-cta { background: var(--accent); color: #fff; border: none; padding: 8px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; text-decoration: none; }
+
+  /* ── Layout ── */
+  .container { max-width: 780px; margin: 0 auto; padding: 0 24px; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-light); margin-bottom: 12px; }
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  /* ── Hero ── */
+  .hero { padding: 72px 0 60px; }
+  .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--accent-dim); border: 1px solid rgba(123,111,232,0.25); color: var(--accent-light); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 24px; }
+  .hero h1 { font-size: clamp(30px, 4.5vw, 48px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 18px; }
+  .hero-sub { font-size: 17px; color: var(--muted); max-width: 600px; line-height: 1.75; margin-bottom: 36px; }
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; }
+  .toc-link { background: var(--bg2); border: 1px solid var(--border); color: var(--muted); font-size: 13px; padding: 6px 14px; border-radius: 20px; text-decoration: none; transition: border-color 0.15s, color 0.15s; }
+  .toc-link:hover { border-color: var(--accent); color: var(--accent-light); text-decoration: none; }
+
+  /* ── Sections ── */
+  section { padding: 64px 0; }
+  section h2 { font-size: clamp(22px, 3vw, 32px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 14px; }
+  section p { font-size: 15px; color: var(--muted); line-height: 1.8; margin-bottom: 16px; }
+  section p:last-child { margin-bottom: 0; }
+  section p strong { color: var(--text); font-weight: 600; }
+
+  /* ── Component table ── */
+  .comp-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
+  .comp-row { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
+  .comp-row:hover { border-color: var(--border-hover); }
+  .comp-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .comp-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+  .comp-sources { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .src-tag { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 20px; }
+  .src-live { background: var(--green-dim); color: var(--green); }
+  .src-ev   { background: var(--accent-dim); color: var(--accent-light); }
+  .src-self { background: var(--amber-dim); color: var(--amber); }
+  .weight-badge { font-size: 13px; font-weight: 700; color: var(--text); background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 12px; white-space: nowrap; text-align: center; }
+  .weight-sub { font-size: 10px; color: var(--muted); font-weight: 400; display: block; margin-top: 2px; }
+
+  /* ── Confidence ── */
+  .conf-levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
+  .conf-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .conf-card .cl-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+  .conf-card .cl-range { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .conf-card .cl-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .cl-low  .cl-label { color: var(--amber); }
+  .cl-med  .cl-label { color: var(--accent-light); }
+  .cl-high .cl-label { color: var(--green); }
+
+  /* ── Verification sources ── */
+  .source-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+  .source-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .source-card .sc-icon { font-size: 24px; margin-bottom: 10px; }
+  .source-card .sc-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .source-card .sc-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .source-card .sc-tag { display: inline-flex; margin-top: 10px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+
+  /* ── Badge tiers ── */
+  .badge-tiers { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 24px; }
+  .badge-row { background: var(--bg2); display: grid; grid-template-columns: 60px 120px 1fr auto; gap: 16px; align-items: center; padding: 16px 20px; }
+  .badge-row.header { background: var(--bg3); }
+  .badge-row.header span { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .badge-emoji { font-size: 24px; text-align: center; }
+  .badge-name  { font-size: 14px; font-weight: 600; color: var(--text); }
+  .badge-desc  { font-size: 13px; color: var(--muted); }
+  .badge-req   { font-size: 12px; font-weight: 600; color: var(--accent-light); white-space: nowrap; }
+
+  /* ── Brand safety ── */
+  .bs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 24px; }
+  .bs-item { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
+  .bs-icon { font-size: 20px; flex-shrink: 0; }
+  .bs-name  { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .bs-desc  { font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+  /* ── Callout ── */
+  .callout { background: var(--accent-dim); border: 1px solid rgba(123,111,232,0.25); border-radius: var(--radius); padding: 20px 24px; margin: 24px 0; }
+  .callout p { font-size: 14px; color: var(--accent-light); margin: 0; line-height: 1.7; }
+  .callout p strong { color: #fff; }
+
+  /* ── CTA ── */
+  .cta-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 48px 40px; text-align: center; margin: 0; }
+  .cta-block h2 { font-size: clamp(22px, 3vw, 32px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .cta-block p  { font-size: 15px; color: var(--muted); margin-bottom: 28px; max-width: 460px; margin-left: auto; margin-right: auto; }
+  .btn-primary  { display: inline-block; background: var(--accent); color: #fff; border: none; padding: 12px 28px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; font-family: var(--font); cursor: pointer; text-decoration: none; }
+  .btn-ghost    { display: inline-block; background: transparent; color: var(--text); border: 1px solid var(--border-hover); padding: 12px 28px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 500; text-decoration: none; margin-left: 10px; }
+
+  /* ── Footer ── */
+  footer { padding: 32px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--muted); max-width: 780px; margin: 0 auto; }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--text); }
+
+  /* ── Responsive ── */
+  @media(max-width:680px) {
+    nav { padding: 0 16px; }
+    .nav-links { display: none; }
+    .container { padding: 0 16px; }
+    .conf-levels, .source-grid, .bs-grid { grid-template-columns: 1fr; }
+    .comp-row { grid-template-columns: 1fr; }
+    .badge-row { grid-template-columns: 40px 1fr; }
+    .badge-desc, .badge-req { display: none; }
+    .cta-block { padding: 36px 20px; }
+    .btn-ghost { margin-left: 0; margin-top: 10px; }
+    section { padding: 48px 0; }
+    .hero { padding: 48px 0 40px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Kit<span>score</span></a>
+  <div class="nav-links">
+    <a href="/#how-it-works" class="nav-link">How it works</a>
+    <a href="/#pricing" class="nav-link">Pricing</a>
+    <a href="/agencies.html" class="nav-link">For agencies</a>
+    <a href="/app/auth.html" class="nav-link">Sign in</a>
+  </div>
+  <a href="/app/auth.html" class="nav-cta">Start free</a>
+</nav>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">Methodology</div>
+    <h1>Every number<br>comes with proof.</h1>
+    <p class="hero-sub">Kitscore doesn't ask you to trust a score. It shows you exactly what went into it — every component, every source, every weight. Here's how it works.</p>
+    <div class="toc">
+      <a href="#trust-score"    class="toc-link">Trust Score</a>
+      <a href="#components"     class="toc-link">Score components</a>
+      <a href="#confidence"     class="toc-link">Confidence rating</a>
+      <a href="#verification"   class="toc-link">Verification sources</a>
+      <a href="#brand-safety"   class="toc-link">Brand safety</a>
+      <a href="#badges"         class="toc-link">Badge tiers</a>
+    </div>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<!-- ── TRUST SCORE ── -->
+<section id="trust-score">
+  <div class="container">
+    <div class="section-label">The trust score</div>
+    <h2>A number between 0 and 100.<br>Backed by verified data.</h2>
+    <p>The Kitscore Trust Score is a weighted composite of five components, each scored 0–100. The final score reflects not just performance, but the <strong>quality of evidence</strong> behind each component. A live-verified data point carries more weight than a self-reported one.</p>
+    <p>Trust Scores are recalculated automatically whenever a creator updates their profile, uploads new evidence, answers the brand safety questionnaire, or has a campaign confirmed by a sponsor.</p>
+    <div class="callout">
+      <p><strong>Why not just use follower counts?</strong> Follower counts measure size, not quality. A creator with 10K highly-engaged, brand-safe, UK-based followers is often more valuable to a sponsor than one with 200K followers of uncertain authenticity. Kitscore measures what actually matters to sponsorship outcomes.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ── COMPONENTS ── -->
+<section id="components">
+  <div class="container">
+    <div class="section-label">Score components</div>
+    <h2>Five components.<br>Each independently verified.</h2>
+    <p>Every creator's Trust Score is built from five components. Each is scored 0–100 and carries a weight that reflects its impact on sponsorship outcomes based on what sponsors consistently tell us matters most.</p>
+    <div class="comp-grid">
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">Audience Authenticity</div>
+          <div class="comp-desc">Measures the quality and genuineness of a creator's audience. Looks at follower growth patterns, engagement-to-follower ratios, geographic consistency, and signs of inauthentic activity such as bot-pattern behaviour or sudden unexplained spikes.</div>
+          <div class="comp-sources">
+            <span class="src-tag src-live">Live platform data</span>
+            <span class="src-tag src-ev">Analytics screenshots</span>
+          </div>
+        </div>
+        <div class="weight-badge">25%<span class="weight-sub">of score</span></div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">Engagement Quality</div>
+          <div class="comp-desc">Measures how actively an audience responds to content — likes, comments, saves, shares — relative to follower count. Benchmarked against category averages so a fitness creator's 4% rate is contextualised against the fitness benchmark, not a general average.</div>
+          <div class="comp-sources">
+            <span class="src-tag src-live">Live platform data</span>
+            <span class="src-tag src-ev">Insights exports</span>
+          </div>
+        </div>
+        <div class="weight-badge">25%<span class="weight-sub">of score</span></div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">Brand Safety</div>
+          <div class="comp-desc">An 8-point assessment covering adult content, gambling promotion, political content, profanity, family safety, FTC paid disclosure compliance, misinformation history, and controversy history. Each question carries a calibrated penalty when answered unfavourably.</div>
+          <div class="comp-sources">
+            <span class="src-tag src-self">Creator questionnaire</span>
+            <span class="src-tag src-ev">Content review</span>
+          </div>
+        </div>
+        <div class="weight-badge">20%<span class="weight-sub">of score</span></div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">Content Consistency</div>
+          <div class="comp-desc">Measures posting regularity, niche focus, and content quality over time. Sponsors want creators who show up reliably — consistent posting schedules and consistent content themes both reduce campaign risk.</div>
+          <div class="comp-sources">
+            <span class="src-tag src-live">Platform data</span>
+            <span class="src-tag src-ev">Creator evidence</span>
+          </div>
+        </div>
+        <div class="weight-badge">15%<span class="weight-sub">of score</span></div>
+      </div>
+
+      <div class="comp-row">
+        <div>
+          <div class="comp-name">Professionalism</div>
+          <div class="comp-desc">Measures the business-readiness signals sponsors rely on: a verified business email, a complete profile with niche and location, media kit availability, and response professionalism based on campaign history feedback.</div>
+          <div class="comp-sources">
+            <span class="src-tag src-ev">Profile data</span>
+            <span class="src-tag src-self">Creator-supplied</span>
+          </div>
+        </div>
+        <div class="weight-badge">15%<span class="weight-sub">of score</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ── CONFIDENCE ── -->
+<section id="confidence">
+  <div class="container">
+    <div class="section-label">Confidence rating</div>
+    <h2>The score tells you what.<br>Confidence tells you how sure.</h2>
+    <p>Every Trust Score ships with a Confidence Rating — a percentage that reflects how much of the score is backed by verified data versus self-reported information. A score of 80 with 90% confidence is meaningfully different from a score of 80 with 40% confidence.</p>
+    <p>Confidence increases as creators upload evidence, get verified by Kitscore, and have campaigns mutually confirmed by sponsors. It decreases if evidence is missing, outdated, or self-reported only.</p>
+    <div class="conf-levels">
+      <div class="conf-card cl-low">
+        <div class="cl-label">Low confidence</div>
+        <div class="cl-range">0 – 49%</div>
+        <div class="cl-desc">Mostly self-reported data. Profile is incomplete or evidence is missing. Score should be treated as indicative only.</div>
+      </div>
+      <div class="conf-card cl-med">
+        <div class="cl-label">Medium confidence</div>
+        <div class="cl-range">50 – 79%</div>
+        <div class="cl-desc">Mix of verified and self-reported data. Some evidence submitted. Score is reasonably reliable but room for verification remains.</div>
+      </div>
+      <div class="conf-card cl-high">
+        <div class="cl-label">High confidence</div>
+        <div class="cl-range">80 – 100%</div>
+        <div class="cl-desc">Majority of components live-verified or evidence-backed. At least one confirmed campaign. Score can be relied upon for sponsorship decisions.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ── VERIFICATION ── -->
+<section id="verification">
+  <div class="container">
+    <div class="section-label">Verification sources</div>
+    <h2>Three tiers of data.<br>Not all evidence is equal.</h2>
+    <p>Kitscore weights data differently depending on how it was verified. Live-verified data carries the most weight. Self-reported data carries the least — but still contributes, because any information is better than none.</p>
+    <div class="source-grid">
+      <div class="source-card">
+        <div class="sc-icon">⚡</div>
+        <div class="sc-title">Live verified</div>
+        <div class="sc-desc">Data pulled directly from platform APIs or verified in real time by Kitscore. Not dependent on creator submissions. Highest confidence contribution.</div>
+        <span class="sc-tag src-live">Highest weight</span>
+      </div>
+      <div class="source-card">
+        <div class="sc-icon">📎</div>
+        <div class="sc-title">Evidence submitted</div>
+        <div class="sc-desc">Screenshots, analytics exports, campaign briefs, or other documentation uploaded by the creator and reviewed by Kitscore. Medium confidence contribution.</div>
+        <span class="sc-tag src-ev">Medium weight</span>
+      </div>
+      <div class="source-card">
+        <div class="sc-icon">✅</div>
+        <div class="sc-title">Mutually confirmed</div>
+        <div class="sc-desc">Campaigns confirmed by both creator and sponsor independently. Neither party can confirm alone — both must agree the campaign happened and rate the outcome.</div>
+        <span class="sc-tag src-live">High weight</span>
+      </div>
+      <div class="source-card">
+        <div class="sc-icon">📝</div>
+        <div class="sc-title">Self-reported</div>
+        <div class="sc-desc">Information supplied by the creator through their profile or questionnaire, without independent verification. Lowest confidence contribution, but still scored.</div>
+        <span class="sc-tag src-self">Lowest weight</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ── BRAND SAFETY ── -->
+<section id="brand-safety">
+  <div class="container">
+    <div class="section-label">Brand safety</div>
+    <h2>Eight checks.<br>Every creator, every time.</h2>
+    <p>Brand safety is scored via a structured 8-question assessment. Each question is answered by the creator and can be supplemented with content review evidence. Unfavourable answers apply calibrated score penalties — the severity reflects real sponsor concern levels.</p>
+    <div class="bs-grid">
+      <div class="bs-item"><div class="bs-icon">🔞</div><div><div class="bs-name">Adult content</div><div class="bs-desc">Presence of explicit or sexually suggestive content in the creator's primary content channels.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">🎰</div><div><div class="bs-name">Gambling promotion</div><div class="bs-desc">History of promoting gambling, betting, or gaming products without appropriate disclosure.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">🗳️</div><div><div class="bs-name">Political content</div><div class="bs-desc">Frequency of political commentary or advocacy that could polarise a brand's customer base.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">🤬</div><div><div class="bs-name">Profanity</div><div class="bs-desc">Regular use of strong language that may conflict with brand tone or family-safe requirements.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">👨‍👩‍👧</div><div><div class="bs-name">Family safety</div><div class="bs-desc">Whether the creator's content is appropriate for a broad, family-inclusive audience.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">📢</div><div><div class="bs-name">Paid disclosure (FTC)</div><div class="bs-desc">Consistency of disclosing paid partnerships. Failure to disclose is a legal and reputational risk for sponsors. Highest penalty weighting.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">🚫</div><div><div class="bs-name">Misinformation history</div><div class="bs-desc">History of sharing content later identified as false or misleading by authoritative fact-checkers.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">⚠️</div><div><div class="bs-name">Controversy history</div><div class="bs-desc">Past viral controversy events — major or minor — that generated significant negative public attention.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ── BADGES ── -->
+<section id="badges">
+  <div class="container">
+    <div class="section-label">Badge tiers</div>
+    <h2>Earned, not bought.<br>Visible on every profile.</h2>
+    <p>Trust Badges are awarded based on the number of <strong>mutually confirmed campaigns</strong> a creator has completed. They cannot be purchased or gamed — they require a real sponsor to independently confirm a real campaign happened. Badges appear on creator profiles, proof packets, and sponsor decision memos.</p>
+    <div class="badge-tiers">
+      <div class="badge-row header">
+        <span></span><span>Badge</span><span>What it means</span><span>Requirement</span>
+      </div>
+      <div class="badge-row">
+        <div class="badge-emoji">—</div>
+        <div class="badge-name" style="color:#8A909C">New creator</div>
+        <div class="badge-desc">Profile created, no confirmed campaigns yet. Score may still be high based on evidence submitted.</div>
+        <div class="badge-req">0 campaigns</div>
+      </div>
+      <div class="badge-row">
+        <div class="badge-emoji">🥉</div>
+        <div class="badge-name" style="color:#CD7F32">Bronze</div>
+        <div class="badge-desc">Has completed and had at least 2 campaigns mutually confirmed. Sponsor-verified track record begins here.</div>
+        <div class="badge-req">2+ campaigns</div>
+      </div>
+      <div class="badge-row">
+        <div class="badge-emoji">🥈</div>
+        <div class="badge-name" style="color:#A8A9AD">Silver</div>
+        <div class="badge-desc">Consistent delivery across 5 confirmed campaigns. Demonstrates reliability as a sponsorship partner.</div>
+        <div class="badge-req">5+ campaigns</div>
+      </div>
+      <div class="badge-row">
+        <div class="badge-emoji">🥇</div>
+        <div class="badge-name" style="color:#D4AF37">Gold</div>
+        <div class="badge-desc">10 confirmed campaigns. Strong track record, high sponsor confidence. Eligible for top directory placement.</div>
+        <div class="badge-req">10+ campaigns</div>
+      </div>
+      <div class="badge-row">
+        <div class="badge-emoji">💎</div>
+        <div class="badge-name" style="color:#B9F2FF">Platinum</div>
+        <div class="badge-desc">20+ confirmed campaigns. Highest tier of verified creator credibility on Kitscore. Reserved for creators with a substantial, verifiable track record.</div>
+        <div class="badge-req">20+ campaigns</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ── CTA ── -->
+<section style="padding:64px 0">
+  <div class="container">
+    <div class="cta-block">
+      <div class="section-label" style="margin-bottom:10px">Get started</div>
+      <h2>Build your score.<br>Or evaluate a creator.</h2>
+      <p>Creators build their Trust Score free. Sponsors unlock a full evaluation for £29 — trust score, confidence rating, brand safety assessment, and a decision memo.</p>
+      <a href="/app/auth.html" class="btn-primary">Create free account</a>
+      <a href="/sample-sponsor-decision-memo.html" target="_blank" class="btn-ghost">View sample report</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Kitscore.co · Sponsorship trust infrastructure</span>
+  <span>
+    <a href="/privacy.html" style="margin-right:16px">Privacy</a>
+    <span>© 2026</span>
+  </span>
+</footer>
+
+</body>
+</html>

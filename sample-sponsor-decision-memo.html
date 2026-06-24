@@ -10,6 +10,11 @@
   body { background: white; font-size: 12px; }
   .wrap { max-width: none; padding: 0; }
   .page-break { page-break-before: always; }
+  .card { break-inside: avoid; }
+  .verdict { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body::after { content: 'KITSCORE VERIFIED'; position: fixed; bottom: 40px; right: 40px;
+    font-size: 10px; font-weight: 700; letter-spacing: .2em;
+    color: rgba(91,79,207,0.15); transform: rotate(-30deg); pointer-events: none; }
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif; background: #F4F3EE; color: #1A1A18; font-size: 14px; }

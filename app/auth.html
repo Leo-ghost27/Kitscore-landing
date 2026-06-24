@@ -39,7 +39,15 @@
   .msg{font-size:11px;margin-top:12px;padding:9px 10px;border-radius:var(--border-radius-sm)}
   .msg.error{background:#FDECEC;color:#B42318}
   .msg.ok{background:#E9F7EE;color:#1C7C3F}
-  @media (max-width:760px){.brand-panel{display:none}.form-panel{width:100%}}
+  @media (max-width:760px){
+    .brand-panel{display:none}
+    .form-panel{width:100%;padding:32px 20px}
+  }
+  @media (max-width:480px){
+    .form-panel{padding:24px 16px}
+    input,select,button[type=submit]{font-size:16px !important;} /* prevent iOS zoom */
+    .form-panel h2{font-size:20px}
+  }
 </style>
 </head>
 <body>
