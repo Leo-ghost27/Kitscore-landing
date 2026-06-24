@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sponsor Decision Memo · Kitscore</title>
+<style>
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; font-size: 12px; }
+  .wrap { max-width: none; padding: 0; }
+  .page-break { page-break-before: always; }
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif; background: #F4F3EE; color: #1A1A18; font-size: 14px; }
+
+.dl-bar { background: #1A1A18; color: #fff; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+.dl-bar span { color: #6B6B67; }
+.dl-btn { background: #5B4FCF; color: #fff; border: none; padding: 7px 18px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+.wrap { max-width: 800px; margin: 0 auto; padding: 32px 20px 80px; }
+
+.sample-banner { background: #FAEEDA; border: 1px solid #D97706; border-radius: 10px; padding: 12px 20px; margin-bottom: 20px; text-align: center; font-size: 12px; color: #92460A; font-weight: 500; }
+
+/* ── Memo header ── */
+.memo-header { background: #fff; border-radius: 12px; padding: 32px 36px; margin-bottom: 16px; border: 1px solid #E5E4DF; }
+.memo-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #5B4FCF; margin-bottom: 12px; }
+.memo-title { font-size: 26px; font-weight: 600; color: #1A1A18; margin-bottom: 4px; line-height: 1.2; }
+.memo-sub { font-size: 14px; color: #6B6B67; margin-bottom: 24px; }
+.memo-meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding-top: 20px; border-top: 1px solid #F0EFE9; }
+@media(max-width:580px){ .memo-meta-grid { grid-template-columns: repeat(2,1fr); } }
+.mm-item .mm-label { font-size: 10px; color: #9E9E99; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+.mm-item .mm-val { font-size: 14px; font-weight: 600; color: #1A1A18; }
+.mm-item .mm-val.green { color: #2D6A0F; }
+.mm-item .mm-val.amber { color: #92460A; }
+
+/* ── Verdict banner ── */
+.verdict { border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; display: flex; align-items: center; gap: 20px; }
+.verdict.recommend { background: linear-gradient(135deg, #0F1A0C, #0D1409); border: 1px solid #2A4020; }
+.verdict-icon { font-size: 36px; flex-shrink: 0; }
+.verdict-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #4ADE80; margin-bottom: 4px; }
+.verdict-text { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.3; }
+.verdict-sub { font-size: 12px; color: #6B9E78; margin-top: 4px; }
+
+/* ── Sections ── */
+.card { background: #fff; border-radius: 12px; padding: 24px 28px; margin-bottom: 16px; border: 1px solid #E5E4DF; }
+.sec-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #9E9E99; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #F0EFE9; display: flex; justify-content: space-between; align-items: center; }
+.sec-label span { font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+
+/* ── Score overview ── */
+.score-overview { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; margin-bottom: 20px; }
+.big-score { text-align: center; }
+.big-score .num { font-size: 56px; font-weight: 700; color: #1A1A18; line-height: 1; }
+.big-score .denom { font-size: 16px; color: #9E9E99; }
+.big-score .badge-pill { display: inline-flex; margin-top: 8px; background: #F0EFE9; color: #3D3099; font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+.comp-list { display: flex; flex-direction: column; gap: 8px; }
+.comp-row { display: grid; grid-template-columns: 150px 1fr 40px; gap: 10px; align-items: center; }
+.comp-label { font-size: 12px; color: #3D3D3A; }
+.comp-bar-bg { background: #F0EFE9; border-radius: 3px; height: 5px; }
+.comp-bar { height: 5px; border-radius: 3px; }
+.comp-val { font-size: 12px; font-weight: 600; color: #1A1A18; text-align: right; }
+
+/* ── Fit analysis ── */
+.fit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media(max-width:520px){ .fit-grid { grid-template-columns: 1fr; } }
+.fit-card { background: #F9F8F5; border-radius: 8px; padding: 14px; border: 1px solid #E5E4DF; }
+.fit-card .fc-label { font-size: 10px; color: #9E9E99; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; }
+.fit-card .fc-val { font-size: 14px; font-weight: 600; color: #1A1A18; margin-bottom: 4px; }
+.fit-card .fc-note { font-size: 11px; color: #6B6B67; line-height: 1.5; }
+
+/* ── Risk table ── */
+.risk-row { display: grid; grid-template-columns: 160px 60px 1fr; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid #F0EFE9; font-size: 13px; }
+.risk-row:last-child { border-bottom: none; }
+.risk-row .r-cat { color: #3D3D3A; }
+.risk-level { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; text-align: center; }
+.rl-low  { background: #EBF5DE; color: #2D6A0F; }
+.rl-med  { background: #FDF0DC; color: #92460A; }
+.rl-high { background: #FDEAEA; color: #8B1A1A; }
+.r-note { font-size: 12px; color: #6B6B67; }
+
+/* ── Key findings ── */
+.finding { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #F0EFE9; align-items: flex-start; }
+.finding:last-child { border-bottom: none; }
+.f-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.f-body { font-size: 13px; color: #3D3D3A; line-height: 1.6; }
+.f-body strong { color: #1A1A18; }
+
+/* ── Conditions ── */
+.condition { background: #F9F8F5; border-radius: 8px; padding: 12px 14px; border-left: 3px solid #5B4FCF; margin-bottom: 8px; font-size: 13px; color: #3D3D3A; line-height: 1.55; }
+.condition strong { color: #1A1A18; }
+
+/* ── Sponsor info ── */
+.sponsor-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #F0EFE9; font-size: 13px; }
+.sponsor-row:last-child { border-bottom: none; }
+.sr-key { color: #6B6B67; }
+.sr-val { color: #1A1A18; font-weight: 500; }
+.reliability-bar { display: flex; gap: 4px; align-items: center; }
+.rb-pip { width: 12px; height: 12px; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="dl-bar no-print">
+  <span>Sample · Sponsor Decision Memo · Bloom Beverages evaluating Jordan Ellis</span>
+  <button class="dl-btn" onclick="window.print()">Download PDF</button>
+</div>
+
+<div class="wrap">
+
+  <div class="sample-banner">
+    📋 This is a sample Sponsor Decision Memo. Real memos are generated for your specific creator evaluation after payment. <a href="https://kitscore.co" style="color:#7C4B0A;font-weight:600;margin-left:6px;">Evaluate a creator for $29 →</a>
+  </div>
+
+  <!-- ── MEMO HEADER ── -->
+  <div class="memo-header">
+    <div class="memo-eyebrow">Sponsor Decision Memo · Kitscore Evaluation</div>
+    <div class="memo-title">Jordan Ellis — Fitness Creator</div>
+    <div class="memo-sub">Evaluation requested by Bloom Beverages · June 23, 2026</div>
+    <div class="memo-meta-grid">
+      <div class="mm-item"><div class="mm-label">Trust Score</div><div class="mm-val">87 / 100</div></div>
+      <div class="mm-item"><div class="mm-label">Confidence</div><div class="mm-val">High · 89%</div></div>
+      <div class="mm-item"><div class="mm-label">Badge tier</div><div class="mm-val" style="color:#D97706">🏅 Gold</div></div>
+      <div class="mm-item"><div class="mm-label">Risk level</div><div class="mm-val green">Low</div></div>
+    </div>
+  </div>
+
+  <!-- ── VERDICT ── -->
+  <div class="verdict recommend">
+    <div class="verdict-icon">✅</div>
+    <div>
+      <div class="verdict-label">Verdict</div>
+      <div class="verdict-text">Recommend to sponsor</div>
+      <div class="verdict-sub">High confidence · Low risk · Strong audience fit for Bloom Beverages health positioning</div>
+    </div>
+  </div>
+
+  <!-- ── SCORE OVERVIEW ── -->
+  <div class="card">
+    <div class="sec-label">Kitscore overview <span>Weighted composite · 5 components</span></div>
+    <div class="score-overview">
+      <div class="big-score">
+        <div class="num">87</div>
+        <div class="denom">/ 100</div>
+        <div class="badge-pill">Gold · High Trust</div>
+      </div>
+      <div class="comp-list">
+        <div class="comp-row"><div class="comp-label">Audience Authenticity</div><div class="comp-bar-bg"><div class="comp-bar" style="width:91%;background:#3E8A1A"></div></div><div class="comp-val">91</div></div>
+        <div class="comp-row"><div class="comp-label">Engagement Quality</div><div class="comp-bar-bg"><div class="comp-bar" style="width:88%;background:#3E8A1A"></div></div><div class="comp-val">88</div></div>
+        <div class="comp-row"><div class="comp-label">Brand Safety</div><div class="comp-bar-bg"><div class="comp-bar" style="width:82%;background:#2B6CB0"></div></div><div class="comp-val">82</div></div>
+        <div class="comp-row"><div class="comp-label">Content Consistency</div><div class="comp-bar-bg"><div class="comp-bar" style="width:84%;background:#3E8A1A"></div></div><div class="comp-val">84</div></div>
+        <div class="comp-row"><div class="comp-label">Professionalism</div><div class="comp-bar-bg"><div class="comp-bar" style="width:85%;background:#3E8A1A"></div></div><div class="comp-val">85</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AUDIENCE FIT ── -->
+  <div class="card">
+    <div class="sec-label">Audience fit analysis <span>Bloom Beverages target: UK health-conscious 25–40</span></div>
+    <div class="fit-grid">
+      <div class="fit-card">
+        <div class="fc-label">Geographic match</div>
+        <div class="fc-val">82% UK audience</div>
+        <div class="fc-note">Strong alignment with Bloom's UK distribution focus. Primary cities: London (34%), Manchester (18%), Bristol (12%).</div>
+      </div>
+      <div class="fit-card">
+        <div class="fc-label">Demographic match</div>
+        <div class="fc-val">67% in 25–44 bracket</div>
+        <div class="fc-note">41% aged 25–34, 26% aged 35–44. Closely matches Bloom's stated target demographic.</div>
+      </div>
+      <div class="fit-card">
+        <div class="fc-label">Niche alignment</div>
+        <div class="fc-val">Fitness & Wellness</div>
+        <div class="fc-note">Primary content: gym, nutrition, recovery. Direct category fit for Bloom's electrolyte and wellness range.</div>
+      </div>
+      <div class="fit-card">
+        <div class="fc-label">Engagement rate</div>
+        <div class="fc-val">4.8% avg · Above benchmark</div>
+        <div class="fc-note">Fitness category benchmark: 2.9%. Jordan's rate is 1.65× the category average — strong audience responsiveness.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RISK ASSESSMENT ── -->
+  <div class="card">
+    <div class="sec-label">Risk assessment</div>
+    <div class="risk-row"><div class="r-cat">Adult content</div><div class="risk-level rl-low">Low</div><div class="r-note">No flagged content across 90-day content scan.</div></div>
+    <div class="risk-row"><div class="r-cat">FTC disclosure</div><div class="risk-level rl-low">Low</div><div class="r-note">Consistent #ad and #sponsored labelling. 100% compliance rate on reviewed posts.</div></div>
+    <div class="risk-row"><div class="r-cat">Misinformation</div><div class="risk-level rl-low">Low</div><div class="r-note">No flagged claims. Content is evidence-backed and avoids pseudo-scientific language.</div></div>
+    <div class="risk-row"><div class="r-cat">Controversy history</div><div class="risk-level rl-low">Low</div><div class="r-note">No viral controversy events in 24-month history.</div></div>
+    <div class="risk-row"><div class="r-cat">Audience authenticity</div><div class="risk-level rl-low">Low</div><div class="r-note">91/100 authenticity score. Follower growth pattern is organic. No bot-pattern activity detected.</div></div>
+    <div class="risk-row"><div class="r-cat">Content consistency</div><div class="risk-level rl-low">Low</div><div class="r-note">Posts 4–5× per week consistently for 14+ months. No unexplained hiatuses.</div></div>
+  </div>
+
+  <!-- ── KEY FINDINGS ── -->
+  <div class="card">
+    <div class="sec-label">Key findings</div>
+    <div class="finding"><div class="f-icon">✅</div><div class="f-body"><strong>5 verified campaigns</strong> — mutually confirmed by both creator and sponsor parties. Completion rate 100%. Average sponsor rating 4.8 / 5.</div></div>
+    <div class="finding"><div class="f-icon">✅</div><div class="f-body"><strong>Audience authenticity above median</strong> — 91/100 vs platform median of 74. Follower composition consistent with organic fitness-content growth.</div></div>
+    <div class="finding"><div class="f-icon">✅</div><div class="f-body"><strong>FTC disclosure practices are consistent</strong> — all reviewed sponsored posts carry appropriate disclosure. No omissions in 18-month review window.</div></div>
+    <div class="finding"><div class="f-icon">✅</div><div class="f-body"><strong>Strong niche fit</strong> — Fitness & Wellness primary. Audience skews health-conscious UK adults 25–44, which matches Bloom Beverages' stated target.</div></div>
+    <div class="finding"><div class="f-icon">⚠️</div><div class="f-body"><strong>Brand Safety component is evidence-submitted (not live-verified)</strong> — questionnaire responses are self-reported. Recommend requesting a content audit for brand safety if budget is significant (&gt;£5K).</div></div>
+  </div>
+
+  <!-- ── RECOMMENDATION WITH CONDITIONS ── -->
+  <div class="card">
+    <div class="sec-label">Recommendation & conditions</div>
+    <div class="condition"><strong>Proceed with sponsorship.</strong> Jordan Ellis meets the threshold for a high-confidence evaluation across all weighted components. Audience fit, engagement rate, and verified campaign track record all support proceeding.</div>
+    <div class="condition"><strong>Suggested brief scope:</strong> Product integration within fitness content (workout series, recovery content). Avoid lifestyle or travel content — outside primary niche and may reduce engagement relevance.</div>
+    <div class="condition"><strong>Contract note:</strong> Include a disclosure clause requiring FTC-compliant labelling. Based on evidence, Jordan already complies consistently — this is standard practice to formalise.</div>
+    <div class="condition"><strong>Budget indication:</strong> Based on 127K followers at 4.8% engagement and verified history, market rate is approximately £800–£1,800 per sponsored post. Video integration commands a premium of 1.5–2× over static.</div>
+  </div>
+
+  <!-- ── SPONSOR INFO ── -->
+  <div class="card">
+    <div class="sec-label">Sponsor context <span>Bloom Beverages</span></div>
+    <div class="sponsor-row"><div class="sr-key">Company</div><div class="sr-val">Bloom Beverages</div></div>
+    <div class="sponsor-row"><div class="sr-key">Kitscore plan</div><div class="sr-val">Pay-as-you-go · Single evaluation</div></div>
+    <div class="sponsor-row"><div class="sr-key">Sponsor reliability</div><div class="sr-val">Unrated (first evaluation)</div></div>
+    <div class="sponsor-row"><div class="sr-key">Evaluation ID</div><div class="sr-val" style="font-family:monospace;font-size:12px;color:#9E9E99">eval_sample_001</div></div>
+    <div class="sponsor-row"><div class="sr-key">Unlocked</div><div class="sr-val">June 23, 2026 · via Stripe</div></div>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <div style="text-align:center;padding-top:20px;border-top:1px solid #E5E4DF;margin-top:8px;">
+    <div style="font-size:13px;font-weight:600;color:#5B4FCF;margin-bottom:4px;">Kitscore</div>
+    <div style="font-size:11px;color:#9E9E99;line-height:1.6;">Sponsorship trust infrastructure · kitscore.co · Generated June 23, 2026<br>
+    This evaluation is based on data available at the time of generation. Scores may change as creators update their evidence. Valid for 90 days.<br>
+    This memo is for the exclusive use of Bloom Beverages and is not for redistribution.</div>
+  </div>
+
+</div>
+<script>
+  if (new URLSearchParams(window.location.search).get('download') === '1') {
+    window.addEventListener('load', () => setTimeout(() => window.print(), 500));
+  }
+</script>
+</body>
+</html>

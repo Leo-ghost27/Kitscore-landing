@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /app/creator-dashboard
+Disallow: /app/sponsor-dashboard
+Disallow: /app/team
+Disallow: /api/
+
+Sitemap: https://kitscore.co/sitemap.xml
