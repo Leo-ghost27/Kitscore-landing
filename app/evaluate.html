@@ -81,10 +81,11 @@ async function load() {
 
   const checkoutState = params.get('checkout');
   if (checkoutState === 'success') {
-    document.getElementById('banner').innerHTML = `<div class="banner pending">Payment received — unlocking report <a href="#" onclick="load();return false;" style="color:inherit">Refresh</a></div>`;
-  } else if (checkoutState === 'cancelled') {
-    document.getElementById('banner').innerHTML = `<div class="banner pending">Checkout cancelled — no charge was made.</div>`;
-  }
+      document.getElementById('banner').innerHTML = `<div class="banner pending">Payment received — unlocking report</div>`;
+      setTimeout(() => { window.location.href = window.location.href.replace('&checkout=success','').replace('?checkout=success','').replace('checkout=success',''); }, 3000);
+    } else if (checkoutState === 'cancelled') {
+      document.getElementById('banner').innerHTML = `<div class="banner pending">Checkout cancelled — no charge was made.</div>`;
+    }}
 
   const [{ data: creator }, { data: profileRow }, { data: components }, { data: campaigns }, { data: evalRow }] = await Promise.all([
     sb.from('creators').select('*').eq('id', creatorId).single(),
