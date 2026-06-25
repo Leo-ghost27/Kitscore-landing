@@ -211,7 +211,7 @@ async function load() {
   document.getElementById('whoami').textContent = `${profile.display_name} · ${profile.email||''}`;
 
   const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns }] = await Promise.all([
-    sb.from('creators').select('*').eq('id', profile.id).single(),
+    sb.from('creators').select('id,niche,location,business_email,trust_score,confidence,badge_tier,plan,reliability_score,repeat_sponsor_rate,would_hire_again_pct').eq('id', profile.id).single(),
     sb.from('score_components').select('*').eq('creator_id', profile.id).order('weight', {ascending:false}),
     sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at',{ascending:false}),
     sb.from('brand_safety_answers').select('*').eq('creator_id', profile.id),
@@ -324,6 +324,28 @@ async function load() {
       <div style="font-size:13px;font-weight:600;color:var(--color-text-primary)">Platinum achieved</div>
       <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">You've reached the highest trust tier.</div>
     </div>`}
+
+
+    <!-- ── Verified Reputation ── -->
+    ${(verifiedCount>0)?`
+    <div class="card">
+      <div class="sec">Verified Sponsorship Reputation</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-sm);padding:10px;text-align:center">
+          <div style="font-size:18px;font-weight:600;color:${creator.reliability_score>=80?'#D4AF37':'var(--color-text-primary)}'}">${creator.reliability_score||0}</div>
+          <div style="font-size:10px;color:var(--color-text-secondary);margin-top:2px">Reliability Score</div>
+        </div>
+        <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-sm);padding:10px;text-align:center">
+          <div style="font-size:18px;font-weight:600;color:var(--color-text-primary)">${creator.would_hire_again_pct||0}%</div>
+          <div style="font-size:10px;color:var(--color-text-secondary);margin-top:2px">Would Hire Again</div>
+        </div>
+        <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-sm);padding:10px;text-align:center">
+          <div style="font-size:18px;font-weight:600;color:var(--color-text-primary)">${creator.repeat_sponsor_rate||0}%</div>
+          <div style="font-size:10px;color:var(--color-text-secondary);margin-top:2px">Repeat Sponsors</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.6">Computed from ${verifiedCount} mutually confirmed campaign${verifiedCount===1?'':'s'}. Updates automatically when sponsors submit endorsements.</div>
+    </div>`:''}
 
     <!-- ── Score breakdown ── -->
     <div class="card">
