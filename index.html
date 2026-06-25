@@ -556,6 +556,8 @@
   @media (max-width: 640px) {
     #about > div { grid-template-columns: 1fr !important; gap: 32px !important; }
     #methodology-teaser > div { grid-template-columns: 1fr !important; gap: 32px !important; }
+    #reputation > div:nth-child(3) { grid-template-columns: 1fr !important; }
+    #reputation > div:nth-child(5) > div:first-child { grid-template-columns: 1fr !important; }
     .vc-block, .pricing-grid, .creator-tiers, .sample-cards { grid-template-columns: 1fr; }
     .flywheel-steps { flex-direction: column; }
     .fw-arrow { transform: rotate(90deg); }
@@ -919,6 +921,75 @@
         <a href="./sample-sponsor-decision-memo.html" target="_blank" class="sample-btn">Download Sample →</a>
       </div>
     </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- VERIFIED REPUTATION BLOCK -->
+<section id="reputation" style="padding:96px 2rem;max-width:960px;margin:0 auto">
+  <div class="section-label">Verified Sponsorship Reputation</div>
+  <h2 class="section-h">The centerpiece of every<br>creator profile.</h2>
+  <p class="section-sub" style="margin-bottom:36px">Built from real campaign data, mutual confirmations, and sponsor endorsements — not self-reported claims. This is what separates Kitscore from every other platform.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px">
+    <div style="background:var(--bg2);border:1px solid rgba(212,175,55,0.2);border-radius:12px;padding:24px;text-align:center;box-shadow:0 0 20px rgba(212,175,55,0.04)">
+      <div style="font-size:38px;font-weight:700;color:var(--text);letter-spacing:-0.02em;font-family:var(--font-display)">93</div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:5px">Reliability Score</div>
+      <div style="font-size:11px;font-weight:600;color:#D4AF37;background:rgba(212,175,55,0.1);padding:3px 12px;border-radius:20px;display:inline-block;margin-top:8px">Excellent</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center">
+      <div style="font-size:38px;font-weight:700;color:var(--text);letter-spacing:-0.02em;font-family:var(--font-display)">100%</div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:5px">Would Hire Again</div>
+      <div style="font-size:11px;font-weight:600;color:#2ECC8A;background:rgba(46,204,138,0.1);padding:3px 12px;border-radius:20px;display:inline-block;margin-top:8px">5 of 5 sponsors</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center">
+      <div style="font-size:38px;font-weight:700;color:var(--text);letter-spacing:-0.02em;font-family:var(--font-display)">75%</div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:5px">Repeat Sponsor Rate</div>
+      <div style="font-size:11px;font-weight:600;color:var(--accent-light);background:var(--accent-dim);padding:3px 12px;border-radius:20px;display:inline-block;margin-top:8px">3 of 4 returned</div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px 32px;margin-bottom:16px">
+    <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)">Sponsor endorsement ratings</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px">
+      <div style="background:var(--bg3);border-radius:8px;padding:14px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Communication</div>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <div style="font-size:22px;font-weight:700;color:var(--text)">4.9</div>
+          <div style="font-size:12px;color:#D4AF37">★★★★★</div>
+        </div>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:14px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Professionalism</div>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <div style="font-size:22px;font-weight:700;color:var(--text)">4.8</div>
+          <div style="font-size:12px;color:#D4AF37">★★★★★</div>
+        </div>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:14px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Deliverable Quality</div>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <div style="font-size:22px;font-weight:700;color:var(--text)">4.9</div>
+          <div style="font-size:12px;color:#D4AF37">★★★★★</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="border-left:2px solid #D4AF37;padding:12px 16px;background:rgba(212,175,55,0.04);border-radius:0 8px 8px 0;font-size:13px;color:var(--text);font-style:italic;line-height:1.65">
+        "Delivered exactly what was briefed, ahead of schedule. Would absolutely work with them again."
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;font-style:normal">— Verified sponsor · Zest Protein · April 2026</div>
+      </div>
+      <div style="border-left:2px solid rgba(212,175,55,0.4);padding:12px 16px;background:rgba(212,175,55,0.02);border-radius:0 8px 8px 0;font-size:13px;color:var(--text);font-style:italic;line-height:1.65">
+        "Professional, responsive, and the content performed above our benchmarks."
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;font-style:normal">— Verified sponsor · NovaSleep · February 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <a href="app/auth.html" style="background:var(--accent);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:8px">Evaluate a Creator</a>
+    <a href="sample-creator-proof-packet.html" target="_blank" style="background:transparent;color:var(--text);border:1px solid var(--border-hover);padding:12px 24px;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none">View Creator Proof Packet →</a>
   </div>
 </section>
 
