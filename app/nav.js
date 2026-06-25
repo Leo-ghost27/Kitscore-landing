@@ -24,7 +24,7 @@ function renderSidebar(role, activeKey) {
   if (!mount) return;
   const items = NAV[role] || [];
   mount.innerHTML = `
-    <div class="nav-logo"><img src="/public/assets/logo-lockup-dark.svg" alt="Kitscore" style="height:28px;width:auto" /></div>
+    <div class="nav-logo">Kit<span>score</span></div>
     ${items.map(i => `<a class="sb-item ${i.key === activeKey ? 'active' : ''}" href="${i.href}"><i class="ti ${i.icon}" aria-hidden="true"></i>${i.label}</a>`).join('')}
     <a class="sb-item" href="#" id="sb-signout" style="margin-top:auto"><i class="ti ti-logout" aria-hidden="true"></i>Sign out</a>
   `;

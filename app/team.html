@@ -53,12 +53,19 @@ async function load() {
   renderSidebar('sponsor', 'team');
 
   const { data: sponsor } = await sb.from('sponsors').select('plan').eq('id', profile.id).single();
-  if (sponsor?.plan !== 'team') {
+  const sponsorPlan = (sponsor?.plan || '').toLowerCase();
+  if (sponsorPlan !== 'team') {
+    // Check if they just came back from a successful checkout
+    const params = new URLSearchParams(window.location.search);
+    const justPaid = params.get('checkout') === 'success';
     document.getElementById('content').innerHTML = `
       <div class="upgrade-banner">
-        <i class="ti ti-users"></i> Team features require the Team plan.
-        <a href="pricing.html">Upgrade to Team — $299/mo →</a>
-      </div>`;
+        ${justPaid
+          ? '<strong>Payment received!</strong> Your plan is being activated — this can take up to 60 seconds. <button onclick="window.location.reload()" style="color:#185FA5;background:none;border:none;cursor:pointer;font-weight:600;text-decoration:underline">Refresh now →</button>'
+          : '<i class="ti ti-users"></i> Team features require the Team plan. <a href="pricing.html">Upgrade to Team — $299/mo →</a>'
+        }
+      </div>
+      ${justPaid ? '<div style="font-size:11px;color:var(--color-text-secondary);margin-top:8px">If the page still shows this after refreshing, wait 30 seconds and try again.</div>' : ''}`;
     return;
   }
 

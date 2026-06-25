@@ -15,7 +15,7 @@
 <meta name="twitter:image" content="https://kitscore.co/og-image.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -28,6 +28,7 @@
     --red-dim: rgba(239,68,68,0.12); --red: #F87171;
     --radius: 12px; --radius-sm: 8px;
     --font: 'Inter', system-ui, sans-serif;
+    --font-display: 'Playfair Display', Georgia, serif;
   }
   body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
   a { color: var(--accent-light); text-decoration: none; }
@@ -44,21 +45,21 @@
 
   /* ── Layout ── */
   .container { max-width: 780px; margin: 0 auto; padding: 0 24px; }
-  .section-label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-light); margin-bottom: 12px; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(212,175,55,0.85); margin-bottom: 12px; }
   hr.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
 
   /* ── Hero ── */
   .hero { padding: 72px 0 60px; }
-  .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--accent-dim); border: 1px solid rgba(123,111,232,0.25); color: var(--accent-light); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 24px; }
-  .hero h1 { font-size: clamp(30px, 4.5vw, 48px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 18px; }
+  .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.25); color: rgba(212,175,55,0.9); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 24px; }
+  .hero h1 { font-size: clamp(30px, 4.5vw, 48px); font-weight: 800; font-family: var(--font-display); letter-spacing: -0.01em; line-height: 1.12; margin-bottom: 18px; }
   .hero-sub { font-size: 17px; color: var(--muted); max-width: 600px; line-height: 1.75; margin-bottom: 36px; }
   .toc { display: flex; flex-wrap: wrap; gap: 8px; }
   .toc-link { background: var(--bg2); border: 1px solid var(--border); color: var(--muted); font-size: 13px; padding: 6px 14px; border-radius: 20px; text-decoration: none; transition: border-color 0.15s, color 0.15s; }
-  .toc-link:hover { border-color: var(--accent); color: var(--accent-light); text-decoration: none; }
+  .toc-link:hover { border-color: rgba(212,175,55,0.5); color: rgba(212,175,55,0.9); text-decoration: none; }
 
   /* ── Sections ── */
   section { padding: 64px 0; }
-  section h2 { font-size: clamp(22px, 3vw, 32px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 14px; }
+  section h2 { font-size: clamp(22px, 3vw, 32px); font-weight: 700; font-family: var(--font-display); letter-spacing: -0.01em; line-height: 1.2; margin-bottom: 14px; }
   section p { font-size: 15px; color: var(--muted); line-height: 1.8; margin-bottom: 16px; }
   section p:last-child { margin-bottom: 0; }
   section p strong { color: var(--text); font-weight: 600; }
@@ -72,7 +73,7 @@
   .comp-sources { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .src-tag { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 20px; }
   .src-live { background: var(--green-dim); color: var(--green); }
-  .src-ev   { background: var(--accent-dim); color: var(--accent-light); }
+  .src-ev   { background: rgba(212,175,55,0.08); color: rgba(212,175,55,0.85); }
   .src-self { background: var(--amber-dim); color: var(--amber); }
   .weight-badge { font-size: 13px; font-weight: 700; color: var(--text); background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 12px; white-space: nowrap; text-align: center; }
   .weight-sub { font-size: 10px; color: var(--muted); font-weight: 400; display: block; margin-top: 2px; }
@@ -84,7 +85,7 @@
   .conf-card .cl-range { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
   .conf-card .cl-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; }
   .cl-low  .cl-label { color: var(--amber); }
-  .cl-med  .cl-label { color: var(--accent-light); }
+  .cl-med  .cl-label { color: rgba(212,175,55,0.85); }
   .cl-high .cl-label { color: var(--green); }
 
   /* ── Verification sources ── */
@@ -103,7 +104,7 @@
   .badge-emoji { font-size: 24px; text-align: center; }
   .badge-name  { font-size: 14px; font-weight: 600; color: var(--text); }
   .badge-desc  { font-size: 13px; color: var(--muted); }
-  .badge-req   { font-size: 12px; font-weight: 600; color: var(--accent-light); white-space: nowrap; }
+  .badge-req   { font-size: 12px; font-weight: 600; color: rgba(212,175,55,0.85); white-space: nowrap; }
 
   /* ── Brand safety ── */
   .bs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 24px; }
@@ -113,8 +114,8 @@
   .bs-desc  { font-size: 12px; color: var(--muted); line-height: 1.55; }
 
   /* ── Callout ── */
-  .callout { background: var(--accent-dim); border: 1px solid rgba(123,111,232,0.25); border-radius: var(--radius); padding: 20px 24px; margin: 24px 0; }
-  .callout p { font-size: 14px; color: var(--accent-light); margin: 0; line-height: 1.7; }
+  .callout { background: rgba(212,175,55,0.06); border: 1px solid rgba(212,175,55,0.2); border-radius: var(--radius); padding: 20px 24px; margin: 24px 0; }
+  .callout p { font-size: 14px; color: rgba(212,175,55,0.85); margin: 0; line-height: 1.7; }
   .callout p strong { color: #fff; }
 
   /* ── CTA ── */
@@ -143,6 +144,19 @@
     section { padding: 48px 0; }
     .hero { padding: 48px 0 40px; }
   }
+
+  /* Micro-interactions */
+  .source-card { transition: border-color 0.2s, transform 0.2s; }
+  .source-card:hover { border-color: rgba(212,175,55,0.25); transform: translateY(-2px); }
+  .conf-card { transition: border-color 0.2s, transform 0.2s; }
+  .conf-card:hover { transform: translateY(-2px); }
+  .comp-row { transition: border-color 0.2s; }
+  .comp-row:hover { border-color: rgba(212,175,55,0.2); }
+  .btn-primary { transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s; }
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(123,111,232,0.3); }
+  .btn-ghost { transition: border-color 0.15s, transform 0.15s; }
+  .btn-ghost:hover { transform: translateY(-1px); border-color: rgba(212,175,55,0.4); }
+
 </style>
 </head>
 <body>

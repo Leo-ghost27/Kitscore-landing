@@ -48,7 +48,7 @@ module.exports = async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       mode: config.mode,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/app/${returnPath}${sep}checkout=success`,
+      success_url: `${origin}/app/${returnPath}${sep}checkout=success&product=${product}`,
       cancel_url: `${origin}/app/${returnPath}${sep}checkout=cancelled`,
      metadata: { profileId: buyer.id, profileRole: config.role, product: product, evaluationId: evaluationId || '', type: (product === 'report' || product === 'evaluation_unlock') ? 'evaluation' : product, evaluation_id: evaluationId || '', creator_id: creatorId || '', sponsor_id: buyer.id }, 
     });

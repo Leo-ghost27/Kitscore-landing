@@ -62,7 +62,7 @@ body{font-family:var(--font-sans,system-ui,sans-serif);font-size:13px;line-heigh
 .pbar-fill{height:100%;border-radius:2px;transition:width .4s}
 .pbar-val{font-size:11px;font-weight:500;width:22px;text-align:right;flex-shrink:0}
 .ring-wrap{position:relative;flex-shrink:0}
-.ring-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:17px;font-weight:500}
+.ring-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:15px;font-weight:600;color:var(--color-text-primary);letter-spacing:-0.02em;line-height:1}
 .sep{height:0.5px;background:var(--color-border-tertiary);margin:10px 0}
 .sec{font-size:10px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
 .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;font-size:11px;font-weight:500}

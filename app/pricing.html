@@ -56,7 +56,13 @@
 
   const params = new URLSearchParams(window.location.search);
   if (params.get('checkout') === 'success') {
+    const product = params.get('product') || '';
     document.getElementById('banner').innerHTML = '<div class="banner">Subscription started — thank you! It may take a few seconds to reflect.</div>';
+    // Redirect after 2s to the right place
+    setTimeout(() => {
+      if (product === 'team') window.location.href = 'team.html';
+      else if (product === 'starter') window.location.href = 'directory.html';
+    }, 2000);
   }
 
   const { data: sponsor } = await sb.from('sponsors').select('plan').eq('id', profile.id).single();
