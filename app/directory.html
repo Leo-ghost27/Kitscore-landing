@@ -61,7 +61,7 @@ async function load() {
   if (!sponsorProfile) return;
   renderSidebar('sponsor', 'directory');
 
-  const { data: rows, error } = await sb.from('creators').select('*, profiles!inner(display_name)');
+  const { data: rows, error } = await sb.from('creators').select('*, profiles!inner(display_name), reliability_score, repeat_sponsor_rate');
   if (error) { document.getElementById('content').textContent = 'Could not load creators: ' + error.message; return; }
 
   const { data: campaigns } = await sb.from('campaigns').select('creator_id, status').eq('status', 'verified');
@@ -88,7 +88,22 @@ function render() {
         <div><div class="name">${c.name}</div><div class="niche">${c.niche||''} · ${c.location||''}</div></div>
       </div>
       <div class="pbar-row"><span>Trust score</span><div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div><span class="pbar-val">${c.trust_score}</span></div>
-      <div class="verified-badge"><i class="ti ti-rosette-discount-check"></i>${c.verified} verified</div>
+      <div class="card-reliability">
+        <div class="card-rel-item">
+          <span class="card-rel-val gold">${c.reliability_score > 0 ? c.reliability_score : '—'}</span>
+          <span class="card-rel-label">Reliability</span>
+        </div>
+        <div class="card-rel-divider"></div>
+        <div class="card-rel-item">
+          <span class="card-rel-val">${c.verified}</span>
+          <span class="card-rel-label">Verified</span>
+        </div>
+        <div class="card-rel-divider"></div>
+        <div class="card-rel-item">
+          <span class="card-rel-val">${c.repeat_sponsor_rate > 0 ? c.repeat_sponsor_rate + '%' : '—'}</span>
+          <span class="card-rel-label">Repeat Rate</span>
+        </div>
+      </div>
     </div>
   `).join('')}</div>`;
 }

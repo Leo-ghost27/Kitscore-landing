@@ -94,3 +94,27 @@ input:focus,select:focus{outline:none;border-color:#2563EB}
 .tbl td{padding:8px 8px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px}
 .tbl tr:last-child td{border-bottom:none}
 .tbl tr:hover td{background:var(--color-background-secondary)}
+
+/* ── Verified Reputation Block (Phase 2.5) ── */
+.reputation-block{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px 18px;margin-bottom:14px;background:var(--color-background-primary)}
+.rep-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.rep-title{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-secondary)}
+.rep-badge{font-size:9px;font-weight:500;padding:2px 7px;border-radius:20px;background:#FAEEDA;color:#854F0B}
+.rep-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.rep-metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:9px 10px;text-align:center}
+.rep-metric .rm-val{font-size:18px;font-weight:600;color:var(--color-text-primary);line-height:1;margin-bottom:3px}
+.rep-metric .rm-val.gold{color:#C9A227}
+.rep-metric .rm-label{font-size:9px;color:var(--color-text-secondary);line-height:1.3}
+.rep-divider{height:0.5px;background:var(--color-border-tertiary);margin:10px 0}
+.rep-endorsement-row{display:flex;align-items:center;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.rep-endorsement-row:last-child{border-bottom:none}
+.rep-endorsement-row .re-label{color:var(--color-text-secondary)}
+.rep-endorsement-row .re-val{font-weight:500;color:var(--color-text-primary)}
+
+/* ── Directory card reliability mini-block (Phase 2.5) ── */
+.card-reliability{display:flex;align-items:center;gap:8px;padding:8px 0 0;border-top:0.5px solid var(--color-border-tertiary);margin-top:8px}
+.card-rel-item{display:flex;flex-direction:column;align-items:center;flex:1}
+.card-rel-val{font-size:13px;font-weight:600;color:var(--color-text-primary)}
+.card-rel-val.gold{color:#C9A227}
+.card-rel-label{font-size:9px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em;margin-top:1px}
+.card-rel-divider{width:0.5px;height:24px;background:var(--color-border-tertiary)}

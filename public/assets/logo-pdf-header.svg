@@ -1,0 +1,10 @@
+<svg width="160" height="32" viewBox="0 0 160 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" rx="7" fill="#111111"/>
+  <line x1="9" y1="7" x2="9" y2="25" stroke="#F5F5F5" stroke-width="2.8" stroke-linecap="round"/>
+  <line x1="9" y1="16" x2="22" y2="7" stroke="#F5F5F5" stroke-width="2.8" stroke-linecap="round"/>
+  <line x1="9" y1="16" x2="22" y2="25" stroke="#F5F5F5" stroke-width="2.8" stroke-linecap="round"/>
+  <circle cx="23" cy="23" r="6" fill="#D4AF37"/>
+  <polyline points="20,23 22.5,25.5 27,20.5" stroke="#0A0A0A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <text x="42" y="22" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="16" font-weight="600" letter-spacing="-0.3" fill="#0A0A0A">kit</text>
+  <text x="65" y="22" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="16" font-weight="600" letter-spacing="-0.3" fill="#D4AF37">score</text>
+</svg>

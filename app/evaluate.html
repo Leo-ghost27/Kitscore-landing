@@ -113,6 +113,17 @@ async function load() {
         <div class="score-val">${hasScore ? trustScore : '—'}</div>
         <div class="conf-badge"><i class="ti ti-shield-check"></i>Confidence: <strong style="margin-left:2px">${confidence}</strong></div>
       </div>
+      <div class="reputation-block">
+        <div class="rep-header">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#D4AF37"/><polyline points="4,7 6,9 10,5" stroke="#D4AF37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <span class="rep-title">Verified Sponsorship Reputation</span>
+        </div>
+        <div class="rep-grid">
+          <div class="rep-metric"><div class="rm-val gold">${creator?.reliability_score > 0 ? creator.reliability_score : '—'}</div><div class="rm-label">Reliability<br>Score</div></div>
+          <div class="rep-metric"><div class="rm-val">${verifiedCount}</div><div class="rm-label">Verified<br>Campaigns</div></div>
+          <div class="rep-metric"><div class="rm-val">${creator?.repeat_sponsor_rate > 0 ? creator.repeat_sponsor_rate + '%' : '—'}</div><div class="rm-label">Repeat Sponsor<br>Rate</div></div>
+        </div>
+      </div>
       <div class="paywall-box">
         <h3>Unlock the full evaluation</h3>
         <p>You're seeing the Trust Score preview. Unlock the complete report for this creator.</p>
@@ -140,6 +151,17 @@ async function load() {
         <div class="score-label">Trust score</div>
         <div class="score-val">${trustScore}</div>
         <div class="conf-badge"><i class="ti ti-shield-check"></i>Confidence: <strong style="margin-left:2px">${confidence}</strong></div>
+      </div>
+      <div class="reputation-block">
+        <div class="rep-header">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#D4AF37"/><polyline points="4,7 6,9 10,5" stroke="#D4AF37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <span class="rep-title">Verified Sponsorship Reputation</span>
+        </div>
+        <div class="rep-grid">
+          <div class="rep-metric"><div class="rm-val gold">${creator?.reliability_score > 0 ? creator.reliability_score : '—'}</div><div class="rm-label">Reliability<br>Score</div></div>
+          <div class="rep-metric"><div class="rm-val">${verifiedCount}</div><div class="rm-label">Verified<br>Campaigns</div></div>
+          <div class="rep-metric"><div class="rm-val">${creator?.repeat_sponsor_rate > 0 ? creator.repeat_sponsor_rate + '%' : '—'}</div><div class="rm-label">Repeat Sponsor<br>Rate</div></div>
+        </div>
       </div>
       <div class="blur-preview">
         <div class="card">
