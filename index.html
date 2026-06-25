@@ -555,6 +555,7 @@
 
   @media (max-width: 640px) {
     #about > div { grid-template-columns: 1fr !important; gap: 32px !important; }
+    #methodology-teaser > div { grid-template-columns: 1fr !important; gap: 32px !important; }
     .vc-block, .pricing-grid, .creator-tiers, .sample-cards { grid-template-columns: 1fr; }
     .flywheel-steps { flex-direction: column; }
     .fw-arrow { transform: rotate(90deg); }
@@ -648,8 +649,9 @@
   <div class="nav-logo">Kit<span>score</span></div>
   <div class="nav-links">
     <a href="#how-it-works" class="nav-link">How it works</a>
+    <a href="methodology.html" class="nav-link">Methodology</a>
     <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="app/auth.html" class="nav-link">Sign up</a>
+    <a href="agencies.html" class="nav-link">Agencies</a>
     <a href="app/auth.html" class="nav-link">Sign in</a>
   </div>
   <a href="app/auth.html" class="nav-cta" style="text-decoration:none">Get Started</a>
@@ -922,6 +924,50 @@
 
 <hr class="section-divider" />
 
+<!-- METHODOLOGY TEASER -->
+<section id="methodology-teaser" style="padding:80px 2rem;max-width:960px;margin:0 auto">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center">
+    <div>
+      <div class="section-label">Methodology</div>
+      <h2 class="section-h" style="margin-bottom:16px">Every number<br>comes with proof.</h2>
+      <p style="font-size:15px;color:var(--muted);line-height:1.8;margin-bottom:24px">Kitscore scores are not black boxes. Every component, weight, and confidence rating is fully documented and publicly explained — so sponsors understand exactly what they're buying.</p>
+      <a href="methodology.html" style="display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--text);border:1px solid var(--border-hover);padding:11px 22px;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none;transition:border-color 0.15s,transform 0.15s" onmouseover="this.style.borderColor='rgba(212,175,55,0.4)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='var(--border-hover)';this.style.transform='none'">Read the full methodology →</a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px">5 score components</div>
+          <div style="font-size:12px;color:var(--muted)">Audience, engagement, brand safety, consistency, professionalism</div>
+        </div>
+        <div style="font-size:11px;font-weight:600;color:rgba(212,175,55,0.9);background:rgba(212,175,55,0.1);padding:3px 10px;border-radius:20px;white-space:nowrap;margin-left:12px">Weighted</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px">3 verification tiers</div>
+          <div style="font-size:12px;color:var(--muted)">Live verified · Evidence submitted · Self-reported</div>
+        </div>
+        <div style="font-size:11px;font-weight:600;color:#2ECC8A;background:rgba(46,204,138,0.1);padding:3px 10px;border-radius:20px;white-space:nowrap;margin-left:12px">Transparent</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px">Confidence rating</div>
+          <div style="font-size:12px;color:var(--muted)">Every score ships with a % showing how much data backs it</div>
+        </div>
+        <div style="font-size:11px;font-weight:600;color:var(--accent-light);background:var(--accent-dim);padding:3px 10px;border-radius:20px;white-space:nowrap;margin-left:12px">Unique</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px">8-point brand safety</div>
+          <div style="font-size:12px;color:var(--muted)">FTC disclosure, misinformation, controversy — all scored</div>
+        </div>
+        <div style="font-size:11px;font-weight:600;color:#2ECC8A;background:rgba(46,204,138,0.1);padding:3px 10px;border-radius:20px;white-space:nowrap;margin-left:12px">Compliance</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
 <!-- PRICING -->
 <section id="pricing">
   <div class="section-label">Pricing</div>
@@ -1068,7 +1114,7 @@
       <h2 class="section-h" style="margin-bottom:20px">Built for the people<br>making real decisions.</h2>
       <p style="font-size:15px;color:var(--muted);line-height:1.8;margin-bottom:16px">Kitscore was built because sponsorship decisions were being made on the wrong signals. Follower counts, reach screenshots, and self-reported media kits were passing as due diligence.</p>
       <p style="font-size:15px;color:var(--muted);line-height:1.8;margin-bottom:16px">We built the infrastructure to change that. Verified campaign history. Mutual confirmation. Sponsor endorsements. Reliability scores. A platform where every number comes with proof.</p>
-      <p style="font-size:15px;color:var(--muted);line-height:1.8;margin-bottom:28px">Kitscore is operated by <strong style="color:var(--text)">GHG Consulting</strong>, incorporated in New York. We're building the reputation infrastructure for the creator economy.</p>
+      <p style="font-size:15px;color:var(--muted);line-height:1.8;margin-bottom:28px">We're building the reputation infrastructure for the creator economy — a platform where every sponsorship decision is backed by verified proof.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <a href="app/auth.html" style="background:var(--accent);color:#fff;padding:11px 22px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none">Get started</a>
         <a href="mailto:hello@kitscore.co" style="background:transparent;color:var(--text);border:1px solid var(--border-hover);padding:11px 22px;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none">hello@kitscore.co</a>
@@ -1093,8 +1139,10 @@
         <div style="font-size:13px;color:var(--muted);line-height:1.8">
           General: <a href="mailto:hello@kitscore.co" style="color:var(--accent-light);text-decoration:none">hello@kitscore.co</a><br>
           Billing: <a href="mailto:billing@kitscore.co" style="color:var(--accent-light);text-decoration:none">billing@kitscore.co</a><br>
-          Instagram: <a href="https://instagram.com/kitscore.co" target="_blank" style="color:var(--accent-light);text-decoration:none">@kitscore.co</a><br>
-          X: <a href="https://x.com/kitscoreCo" target="_blank" style="color:var(--accent-light);text-decoration:none">@kitscoreCo</a>
+          <div style="display:flex;gap:14px;margin-top:4px;align-items:center">
+            <a href="https://www.instagram.com/kitscore.co" target="_blank" rel="noopener" title="@kitscore.co on Instagram" style="color:var(--accent-light);display:inline-flex;opacity:0.7;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+            <a href="https://x.com/kitscoreCo" target="_blank" rel="noopener" title="@kitscoreCo on X" style="color:var(--accent-light);display:inline-flex;opacity:0.7;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.857L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+          </div>
         </div>
       </div>
     </div>
@@ -1136,7 +1184,7 @@
           <a href="agencies.html" style="font-size:13px;color:var(--muted);text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">For agencies</a>
           <a href="#pricing" style="font-size:13px;color:var(--muted);text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">For sponsors</a>
           <a href="app/auth.html" style="font-size:13px;color:var(--muted);text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">For creators</a>
-          <a href="#reputation" style="font-size:13px;color:var(--muted);text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Verified reputation</a>
+          <a href="#reputation" onclick="document.getElementById('reputation').scrollIntoView({behavior:'smooth'});return false;" style="font-size:13px;color:var(--muted);text-decoration:none;transition:color 0.15s;cursor:pointer" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Verified reputation</a>
         </div>
       </div>
 
@@ -1154,7 +1202,7 @@
 
     <!-- Bottom bar -->
     <div style="border-top:1px solid var(--border);padding-top:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-      <span style="font-size:12px;color:var(--muted)">© 2026 Kitscore · GHG Consulting · New York, NY</span>
+      <span style="font-size:12px;color:var(--muted)">© 2026 Kitscore</span>
       <span style="font-size:12px;color:var(--muted)">The verified sponsorship reputation platform</span>
     </div>
 
