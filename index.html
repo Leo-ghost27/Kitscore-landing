@@ -45,6 +45,9 @@
     --radius-sm: 8px;
     --font: 'Inter', system-ui, -apple-system, sans-serif;
     --font-display: 'Playfair Display', Georgia, serif;
+    --gold: #C9A84C;
+    --gold-dim: rgba(201,168,76,0.1);
+    --gold-border: rgba(201,168,76,0.2);
   }
 
   body {
@@ -642,6 +645,78 @@
     letter-spacing: .1em;
   }
 
+
+  /* SEARCH BAR */
+  .search-hero-wrap { max-width: 960px; margin: 48px auto 0; padding: 0 2rem; }
+  .search-bar { display: flex; align-items: center; gap: 10px; background: var(--bg2); border: 1px solid var(--border-hover); border-radius: 12px; padding: 10px 14px; transition: border-color .15s; }
+  .search-bar:focus-within { border-color: rgba(201,168,76,.4); box-shadow: 0 0 0 3px rgba(201,168,76,.06); }
+  .search-input { flex: 1; background: none; border: none; outline: none; font-family: var(--font); font-size: 14px; color: var(--text); }
+  .search-input::placeholder { color: var(--muted); }
+  .search-submit { background: var(--gold,#C9A84C); color: #fff; border: none; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: opacity .15s; white-space: nowrap; }
+  .search-submit:hover { opacity: .85; }
+  .search-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .search-tag { font-size: 12px; color: var(--muted); background: var(--bg2); border: 1px solid var(--border); padding: 4px 12px; border-radius: 20px; cursor: pointer; transition: border-color .15s, color .15s; }
+  .search-tag:hover { border-color: rgba(201,168,76,.35); color: var(--text); }
+
+  /* MOCK CREATOR CARD */
+  .creator-preview-card { max-width: 960px; margin: 24px auto 0; padding: 0 2rem; }
+  .cpc { background: var(--bg2); border: 1px solid var(--border-hover); border-radius: 14px; overflow: hidden; box-shadow: 0 0 40px rgba(201,168,76,.05); }
+  .cpc-header { background: var(--bg3); padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; position: relative; }
+  .cpc-header::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,.5), transparent); }
+  .cpc-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,#C9A84C,#8B6914); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .cpc-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .cpc-handle { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .cpc-niche { margin-left: auto; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--gold,#C9A84C); background: rgba(201,168,76,.1); border: 1px solid rgba(201,168,76,.2); padding: 3px 10px; border-radius: 20px; }
+  .cpc-body { display: grid; grid-template-columns: 100px 1fr; gap: 0; }
+  .cpc-ring-col { padding: 18px 14px; border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+  .cpc-ring { position: relative; width: 70px; height: 70px; }
+  .cpc-ring svg { width: 70px; height: 70px; transform: rotate(-90deg); }
+  .cpc-ring-track { fill: none; stroke: rgba(255,255,255,.06); stroke-width: 6; }
+  .cpc-ring-fill { fill: none; stroke: var(--gold,#C9A84C); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 201; stroke-dashoffset: 26; }
+  .cpc-ring-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .cpc-ring-num { font-size: 19px; font-weight: 700; color: var(--text); line-height: 1; }
+  .cpc-ring-sub { font-size: 9px; color: var(--muted); margin-top: 1px; }
+  .cpc-badge { font-size: 10px; font-weight: 600; color: var(--gold,#C9A84C); text-align: center; }
+  .cpc-main { padding: 16px 18px; }
+  .cpc-comps { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .cpc-comp-row { display: flex; align-items: center; gap: 8px; }
+  .cpc-comp-name { font-size: 11px; color: var(--muted); width: 100px; flex-shrink: 0; }
+  .cpc-bar-bg { flex: 1; height: 4px; background: rgba(255,255,255,.06); border-radius: 2px; overflow: hidden; }
+  .cpc-bar { height: 4px; border-radius: 2px; }
+  .cpc-comp-val { font-size: 11px; font-weight: 600; color: var(--text); width: 22px; text-align: right; }
+  .cpc-comp-tag { font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 10px; flex-shrink: 0; }
+  .cpc-tag-live { background: rgba(46,204,138,.12); color: #2ECC8A; }
+  .cpc-tag-ev { background: rgba(201,168,76,.1); color: var(--gold,#C9A84C); }
+  .cpc-rep-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 12px; }
+  .cpc-rep-stat { background: var(--bg3); border-radius: 7px; padding: 8px; text-align: center; }
+  .cpc-rep-val { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1; }
+  .cpc-rep-label { font-size: 9px; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: .05em; }
+  .cpc-unlock { background: rgba(201,168,76,.06); border: 1px solid rgba(201,168,76,.2); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .cpc-unlock-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .cpc-unlock-text strong { color: var(--text); }
+  .cpc-unlock-btn { background: var(--gold,#C9A84C); color: #fff; border: none; font-size: 12px; font-weight: 600; font-family: var(--font); padding: 8px 14px; border-radius: 7px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .cpc-unlock-btn:hover { opacity: .85; }
+
+  /* DIRECTORY PREVIEW */
+  .dir-preview { max-width: 960px; margin: 0 auto; padding: 0 2rem; }
+  .dir-filter-row { display: flex; gap: 4px; background: var(--bg2); border-radius: 8px; padding: 4px; width: fit-content; margin-bottom: 16px; }
+  .dir-filter-btn { font-size: 12px; font-weight: 500; color: var(--muted); background: transparent; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: var(--font); transition: all .15s; }
+  .dir-filter-btn.active { background: var(--bg3); color: var(--text); }
+  .dir-rows { display: flex; flex-direction: column; gap: 8px; }
+  .dir-row { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; display: grid; grid-template-columns: 38px 1fr 52px auto auto; gap: 12px; align-items: center; cursor: pointer; transition: border-color .15s, background .15s; }
+  .dir-row:hover { border-color: rgba(201,168,76,.25); background: var(--bg3); }
+  .dir-av { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .dir-info-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .dir-info-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .dir-score-box { text-align: center; }
+  .dir-score-num { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1; }
+  .dir-score-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+  .dir-badge { font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+  .dir-badge-gold { background: rgba(201,168,76,.1); color: var(--gold,#C9A84C); border: 1px solid rgba(201,168,76,.2); }
+  .dir-badge-silver { background: rgba(148,163,184,.1); color: #94A3B8; border: 1px solid rgba(148,163,184,.2); }
+  .dir-badge-bronze { background: rgba(180,120,60,.1); color: #B4783C; border: 1px solid rgba(180,120,60,.2); }
+  .dir-cta-link { font-size: 12px; font-weight: 600; color: var(--accent-light); white-space: nowrap; }
+
 </style>
 </head>
 <body>
@@ -651,6 +726,7 @@
   <div class="nav-logo">Kit<span>score</span></div>
   <div class="nav-links">
     <a href="#how-it-works" class="nav-link">How it works</a>
+    <a href="#directory" class="nav-link">Directory</a>
     <a href="methodology.html" class="nav-link">Methodology</a>
     <a href="#pricing" class="nav-link">Pricing</a>
     <a href="agencies.html" class="nav-link">Agencies</a>
@@ -668,6 +744,64 @@
   <div class="hero-buttons">
     <a href="app/auth.html" class="btn-primary" style="text-decoration:none;display:inline-flex;align-items:center">Evaluate a Creator</a>
     <a href="./sample-sponsor-decision-memo.html" target="_blank" class="btn-ghost" style="text-decoration:none">View Sample Report</a>
+  </div>
+
+  <!-- IMPROVEMENT 2: Search bar -->
+  <div style="max-width:600px;margin:36px auto 0">
+    <div class="search-bar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted);flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" placeholder="Search creator name, niche, or handle…" id="heroSearch">
+      <button class="search-submit" onclick="window.location.href='app/directory.html'">Search</button>
+    </div>
+    <div class="search-tags" style="margin-top:8px">
+      <span class="search-tag" onclick="document.getElementById('heroSearch').value=this.textContent">Fitness</span>
+      <span class="search-tag" onclick="document.getElementById('heroSearch').value=this.textContent">Beauty</span>
+      <span class="search-tag" onclick="document.getElementById('heroSearch').value=this.textContent">Tech</span>
+      <span class="search-tag" onclick="document.getElementById('heroSearch').value=this.textContent">Food</span>
+      <span class="search-tag" onclick="document.getElementById('heroSearch').value=this.textContent">London, UK</span>
+      <span class="search-tag" onclick="document.getElementById('heroSearch').value=this.textContent">New York, US</span>
+    </div>
+  </div>
+
+  <!-- IMPROVEMENT 1: Mock creator card -->
+  <div style="max-width:480px;margin:20px auto 0">
+    <div class="cpc">
+      <div class="cpc-header">
+        <div class="cpc-avatar">JE</div>
+        <div><div class="cpc-name">Jordan Ellis</div><div class="cpc-handle">@jordanellis · Instagram · YouTube</div></div>
+        <div class="cpc-niche">Fitness</div>
+      </div>
+      <div class="cpc-body">
+        <div class="cpc-ring-col">
+          <div class="cpc-ring">
+            <svg viewBox="0 0 70 70">
+              <circle class="cpc-ring-track" cx="35" cy="35" r="32"/>
+              <circle class="cpc-ring-fill" cx="35" cy="35" r="32"/>
+            </svg>
+            <div class="cpc-ring-inner"><div class="cpc-ring-num">87</div><div class="cpc-ring-sub">/ 100</div></div>
+          </div>
+          <div class="cpc-badge">🥇 Gold</div>
+        </div>
+        <div class="cpc-main">
+          <div class="cpc-comps">
+            <div class="cpc-comp-row"><span class="cpc-comp-name">Audience auth.</span><div class="cpc-bar-bg"><div class="cpc-bar" style="width:91%;background:#2ECC8A"></div></div><span class="cpc-comp-val">91</span><span class="cpc-comp-tag cpc-tag-live">Live</span></div>
+            <div class="cpc-comp-row"><span class="cpc-comp-name">Engagement</span><div class="cpc-bar-bg"><div class="cpc-bar" style="width:88%;background:#2ECC8A"></div></div><span class="cpc-comp-val">88</span><span class="cpc-comp-tag cpc-tag-live">Live</span></div>
+            <div class="cpc-comp-row"><span class="cpc-comp-name">Brand safety</span><div class="cpc-bar-bg"><div class="cpc-bar" style="width:82%;background:#C9A84C"></div></div><span class="cpc-comp-val">82</span><span class="cpc-comp-tag cpc-tag-ev">Evidence</span></div>
+            <div class="cpc-comp-row"><span class="cpc-comp-name">Consistency</span><div class="cpc-bar-bg"><div class="cpc-bar" style="width:84%;background:#2ECC8A"></div></div><span class="cpc-comp-val">84</span><span class="cpc-comp-tag cpc-tag-live">Live</span></div>
+            <div class="cpc-comp-row"><span class="cpc-comp-name">Professionalism</span><div class="cpc-bar-bg"><div class="cpc-bar" style="width:85%;background:#2ECC8A"></div></div><span class="cpc-comp-val">85</span><span class="cpc-comp-tag cpc-tag-live">Live</span></div>
+          </div>
+          <div class="cpc-rep-row">
+            <div class="cpc-rep-stat"><div class="cpc-rep-val" style="color:#C9A84C">93</div><div class="cpc-rep-label">Reliability</div></div>
+            <div class="cpc-rep-stat"><div class="cpc-rep-val">100%</div><div class="cpc-rep-label">Hire Again</div></div>
+            <div class="cpc-rep-stat"><div class="cpc-rep-val">4.9★</div><div class="cpc-rep-label">Avg Rating</div></div>
+          </div>
+          <div class="cpc-unlock">
+            <div class="cpc-unlock-text">🔒 <strong>Unlock full evaluation</strong> — decision memo, risk assessment, endorsements, audience fit</div>
+            <button class="cpc-unlock-btn" onclick="window.location.href='app/auth.html'">$29 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Score preview -->
@@ -797,6 +931,65 @@
         </ul>
       </div>
     </div>
+  </div>
+</section>
+
+<hr class="section-divider" />
+
+<!-- IMPROVEMENT 3: DIRECTORY PREVIEW -->
+<section id="directory" style="padding:80px 2rem;max-width:960px;margin:0 auto">
+  <div class="section-label">Creator Directory</div>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap">
+    <div>
+      <h2 class="section-h" style="margin-bottom:8px">Browse verified creators.<br>Evaluate before you commit.</h2>
+      <p style="font-size:14px;color:var(--muted)">Every profile shows verified campaign history and reliability data. Unlock a full evaluation for $29.</p>
+    </div>
+    <div class="dir-filter-row">
+      <button class="dir-filter-btn active" onclick="kitFilterDir(this,'all')">All</button>
+      <button class="dir-filter-btn" onclick="kitFilterDir(this,'fitness')">Fitness</button>
+      <button class="dir-filter-btn" onclick="kitFilterDir(this,'beauty')">Beauty</button>
+      <button class="dir-filter-btn" onclick="kitFilterDir(this,'tech')">Tech</button>
+    </div>
+  </div>
+  <div class="dir-rows" id="kitDirGrid">
+    <div class="dir-row" data-niche="fitness">
+      <div class="dir-av" style="background:linear-gradient(135deg,#C9A84C,#8B6914)">JE</div>
+      <div><div class="dir-info-name">Jordan Ellis</div><div class="dir-info-meta">Fitness · London, UK · 127K followers · 4.8% eng.</div></div>
+      <div class="dir-score-box"><div class="dir-score-num">87</div><div class="dir-score-lbl">Trust</div></div>
+      <div class="dir-badge dir-badge-gold">🥇 Gold</div>
+      <div class="dir-cta-link">Evaluate →</div>
+    </div>
+    <div class="dir-row" data-niche="beauty">
+      <div class="dir-av" style="background:linear-gradient(135deg,#7C3AED,#4C1D95)">SN</div>
+      <div><div class="dir-info-name">Sofia Navarro</div><div class="dir-info-meta">Beauty · New York, US · 284K followers · 3.2% eng.</div></div>
+      <div class="dir-score-box"><div class="dir-score-num">79</div><div class="dir-score-lbl">Trust</div></div>
+      <div class="dir-badge dir-badge-silver">🥈 Silver</div>
+      <div class="dir-cta-link">Evaluate →</div>
+    </div>
+    <div class="dir-row" data-niche="tech">
+      <div class="dir-av" style="background:linear-gradient(135deg,#0891B2,#164E63)">MK</div>
+      <div><div class="dir-info-name">Marcus Kim</div><div class="dir-info-meta">Tech & Dev · Seoul, KR · 89K followers · 6.1% eng.</div></div>
+      <div class="dir-score-box"><div class="dir-score-num">92</div><div class="dir-score-lbl">Trust</div></div>
+      <div class="dir-badge dir-badge-gold">🥇 Gold</div>
+      <div class="dir-cta-link">Evaluate →</div>
+    </div>
+    <div class="dir-row" data-niche="fitness">
+      <div class="dir-av" style="background:linear-gradient(135deg,#059669,#064E3B)">AL</div>
+      <div><div class="dir-info-name">Aisha Lawal</div><div class="dir-info-meta">Fitness & Nutrition · Lagos, NG · 54K followers · 7.4% eng.</div></div>
+      <div class="dir-score-box"><div class="dir-score-num">74</div><div class="dir-score-lbl">Trust</div></div>
+      <div class="dir-badge dir-badge-bronze">🥉 Bronze</div>
+      <div class="dir-cta-link">Evaluate →</div>
+    </div>
+    <div class="dir-row" data-niche="beauty">
+      <div class="dir-av" style="background:linear-gradient(135deg,#DB2777,#831843)">PL</div>
+      <div><div class="dir-info-name">Priya Lal</div><div class="dir-info-meta">Beauty & Lifestyle · Mumbai, IN · 412K followers · 2.9% eng.</div></div>
+      <div class="dir-score-box"><div class="dir-score-num">83</div><div class="dir-score-lbl">Trust</div></div>
+      <div class="dir-badge dir-badge-gold">🥇 Gold</div>
+      <div class="dir-cta-link">Evaluate →</div>
+    </div>
+  </div>
+  <div style="margin-top:16px;text-align:center">
+    <a href="app/directory.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 24px">Browse full directory →</a>
   </div>
 </section>
 
@@ -1385,6 +1578,25 @@
     document.getElementById('wl-counter').textContent = 'You\'re on the list 🎉';
   }
 </script>
+
+<script>
+function kitFilterDir(btn, niche) {
+  document.querySelectorAll('.dir-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#kitDirGrid .dir-row').forEach(row => {
+    row.style.display = (niche === 'all' || row.dataset.niche === niche) ? 'grid' : 'none';
+  });
+}
+// Animate creator card ring on load
+window.addEventListener('load', () => {
+  const fill = document.querySelector('.cpc-ring-fill');
+  if (fill) {
+    fill.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
+    fill.style.strokeDashoffset = 201 * (1 - 0.87);
+  }
+});
+</script>
+
 </body>
 </html>
 <!-- deploy trigger Thu Jun 25 11:13:59 UTC 2026 -->
