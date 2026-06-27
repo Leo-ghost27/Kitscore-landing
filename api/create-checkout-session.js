@@ -15,8 +15,8 @@ const PRICE_MAP = {
 const PRODUCT_CONFIG = {
   report:            { role: 'sponsor', mode: 'payment',      returnPath: (b) => `evaluate.html?creator=${b.creatorId || ''}` },
   evaluation_unlock: { role: 'sponsor', mode: 'payment',      returnPath: (b) => `evaluate.html?creator=${b.creatorId || ''}` },
-  starter:           { role: 'sponsor', mode: 'subscription', returnPath: () => 'pricing.html' },
-  team:              { role: 'sponsor', mode: 'subscription', returnPath: () => 'pricing.html' },
+  starter:           { role: 'sponsor', mode: 'subscription', returnPath: () => 'directory.html' },
+  team:              { role: 'sponsor', mode: 'subscription', returnPath: () => 'team.html' },
   creator_pro:       { role: 'creator', mode: 'subscription', returnPath: () => 'pricing-creator.html' },
 };
 

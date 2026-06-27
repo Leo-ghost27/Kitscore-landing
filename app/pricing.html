@@ -57,12 +57,12 @@
   const params = new URLSearchParams(window.location.search);
   if (params.get('checkout') === 'success') {
     const product = params.get('product') || '';
-    document.getElementById('banner').innerHTML = '<div class="banner">Subscription started — thank you! It may take a few seconds to reflect.</div>';
-    // Redirect after 2s to the right place
+    document.getElementById('banner').innerHTML = '<div class="banner">Subscription started — thank you! Redirecting you now…</div>';
     setTimeout(() => {
-      if (product === 'team') window.location.href = 'team.html';
+      if (product === 'team') window.location.href = 'team.html?checkout=success';
       else if (product === 'starter') window.location.href = 'directory.html';
-    }, 2000);
+      else if (product === 'creator_pro') window.location.href = 'dashboard.html';
+    }, 1500);
   }
 
   const { data: sponsor } = await sb.from('sponsors').select('plan').eq('id', profile.id).single();

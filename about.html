@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Kitscore</title>
+<link rel="canonical" href="https://kitscore.co/about">
+<meta name="description" content="Kitscore is the verified sponsorship reputation platform. Built to make sponsorship decisions based on proof, not promises.">
+<meta property="og:title" content="About Kitscore">
+<meta property="og:image" content="https://kitscore.co/og-image.png">
+<meta property="og:url" content="https://kitscore.co/about">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0A0C10; --bg2: #111318; --bg3: #181B22;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+    --text: #F0F2F5; --muted: #8A909C;
+    --accent: #7B6FE8; --accent-light: #A39CF0; --accent-dim: rgba(123,111,232,0.12);
+    --gold: #C9A84C; --gold-dim: rgba(201,168,76,0.1);
+    --green: #2ECC8A; --green-dim: rgba(46,204,138,0.12);
+    --radius: 12px; --radius-sm: 8px;
+    --font: 'Inter', system-ui, sans-serif;
+    --display: 'Playfair Display', Georgia, serif;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 60px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(10,12,16,0.9); backdrop-filter: blur(12px); z-index: 100; }
+  .nav-logo { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
+  .nav-logo span { color: var(--accent-light); }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-link { font-size: 14px; color: var(--muted); transition: color 0.15s; }
+  .nav-link:hover { color: var(--text); }
+  .nav-cta { background: var(--accent); color: #fff; padding: 8px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+
+  /* Hero */
+  .hero { padding: 80px 0 64px; }
+  .hero h1 { font-family: var(--display); font-size: clamp(36px, 5vw, 54px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 20px; }
+  .hero p { font-size: 17px; color: var(--muted); line-height: 1.8; max-width: 580px; }
+
+  /* Cards */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+  .card-gold { border-color: rgba(201,168,76,0.2); background: linear-gradient(135deg, rgba(201,168,76,0.04), var(--bg2)); }
+
+  /* Story */
+  .story { padding: 48px 0; }
+  .story p { font-size: 15px; color: var(--muted); line-height: 1.85; margin-bottom: 18px; }
+  .story p strong { color: var(--text); font-weight: 500; }
+  .story p:last-child { margin-bottom: 0; }
+
+  /* Values */
+  .values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 32px; }
+  .value-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; transition: border-color 0.2s, transform 0.2s; }
+  .value-card:hover { border-color: rgba(201,168,76,0.2); transform: translateY(-2px); }
+  .value-icon { font-size: 24px; margin-bottom: 12px; }
+  .value-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .value-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+  /* Stats */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 32px; }
+  .stat-box { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; }
+  .stat-val { font-family: var(--display); font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* Contact */
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 28px; }
+  .contact-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .contact-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .contact-card a { font-size: 13px; color: var(--accent-light); display: flex; align-items: center; gap: 8px; }
+  .contact-card a:hover { text-decoration: underline; }
+  .contact-social { display: flex; gap: 12px; margin-top: 10px; }
+  .social-btn { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); background: var(--bg3); border: 1px solid var(--border); padding: 8px 14px; border-radius: var(--radius-sm); transition: border-color 0.15s, color 0.15s; }
+  .social-btn:hover { border-color: var(--border2); color: var(--text); }
+
+  /* CTA */
+  .cta-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 48px 40px; text-align: center; margin: 64px 0; }
+  .cta-block h2 { font-family: var(--display); font-size: clamp(24px, 3.5vw, 36px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 14px; }
+  .cta-block p { font-size: 15px; color: var(--muted); max-width: 440px; margin: 0 auto 28px; }
+  .btn-primary { display: inline-block; background: var(--accent); color: #fff; padding: 12px 28px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; transition: opacity 0.15s, transform 0.15s; }
+  .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn-ghost { display: inline-block; background: transparent; color: var(--text); border: 1px solid var(--border2); padding: 12px 28px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; margin-left: 10px; transition: border-color 0.15s; }
+  .btn-ghost:hover { border-color: rgba(201,168,76,0.4); }
+
+  footer { padding: 32px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--muted); max-width: 860px; margin: 0 auto; }
+  footer a { color: var(--muted); }
+  footer a:hover { color: var(--text); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  @media(max-width:680px) {
+    nav { padding: 0 16px; } .nav-links { display: none; }
+    .container { padding: 0 16px; }
+    .values-grid, .stats-grid, .contact-grid { grid-template-columns: 1fr; }
+    .hero { padding: 56px 0 40px; }
+    .btn-ghost { margin-left: 0; margin-top: 10px; }
+    .cta-block { padding: 36px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Kit<span>score</span></a>
+  <div class="nav-links">
+    <a href="/#how-it-works" class="nav-link">How it works</a>
+    <a href="/methodology.html" class="nav-link">Methodology</a>
+    <a href="/#pricing" class="nav-link">Pricing</a>
+    <a href="/agencies.html" class="nav-link">Agencies</a>
+  </div>
+  <a href="/app/auth.html" class="nav-cta">Get started</a>
+</nav>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="section-label">About Kitscore</div>
+    <h1>Built for the people<br>making real decisions.</h1>
+    <p>Kitscore is the verified sponsorship reputation platform. We exist to answer one question — <strong style="color:var(--text)">"Will this creator actually deliver on a sponsorship?"</strong> — with verified proof, not guesswork.</p>
+  </div>
+
+  <hr>
+
+  <!-- Story -->
+  <div class="story">
+    <div class="section-label">The story</div>
+    <p>Sponsorship decisions were being made on the wrong signals. Follower counts, reach screenshots, and self-reported media kits were passing as due diligence. Brands were signing creators they'd never verified. Campaigns were underdelivering. And no one had a reliable way to tell in advance.</p>
+    <p>We built Kitscore to change that. <strong>Verified campaign history.</strong> <strong>Mutual confirmation.</strong> <strong>Sponsor endorsements.</strong> <strong>Reliability scores.</strong> A platform where every number comes with proof, and every sponsorship decision is backed by data that can't be faked.</p>
+    <p>We're building the reputation infrastructure for the creator economy. A platform where the creators who deliver consistently get recognised for it — and sponsors can trust the evaluation before they sign.</p>
+  </div>
+
+  <hr>
+
+  <!-- Values -->
+  <div>
+    <div class="section-label">What we stand for</div>
+    <div class="values-grid">
+      <div class="value-card">
+        <div class="value-icon">🔒</div>
+        <div class="value-title">Proof over promises</div>
+        <div class="value-desc">Every score component links back to verifiable evidence. We don't accept self-reported data without corroboration.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🤝</div>
+        <div class="value-title">Mutual verification</div>
+        <div class="value-desc">Campaign history only counts when both the creator and sponsor confirm it happened. No single source of truth.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">📊</div>
+        <div class="value-title">Transparent methodology</div>
+        <div class="value-desc">Every weight, every component, every confidence calculation is documented and publicly explained. No black boxes.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Stats -->
+  <div>
+    <div class="section-label">By the numbers</div>
+    <div class="stats-grid">
+      <div class="stat-box"><div class="stat-val">32</div><div class="stat-label">Verified campaign confirmations</div></div>
+      <div class="stat-box"><div class="stat-val">$29</div><div class="stat-label">Per full evaluation</div></div>
+      <div class="stat-box"><div class="stat-val">8</div><div class="stat-label">Brand safety checks</div></div>
+      <div class="stat-box"><div class="stat-val">100%</div><div class="stat-label">Mutually verified by both sides</div></div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Contact -->
+  <div>
+    <div class="section-label">Get in touch</div>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <h3>General enquiries</h3>
+        <a href="mailto:hello@kitscore.co">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          hello@kitscore.co
+        </a>
+      </div>
+      <div class="contact-card">
+        <h3>Billing & subscriptions</h3>
+        <a href="mailto:billing@kitscore.co">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          billing@kitscore.co
+        </a>
+      </div>
+      <div class="contact-card" style="grid-column:span 2">
+        <h3>Follow us</h3>
+        <div class="contact-social">
+          <a href="https://www.instagram.com/kitscore.co" target="_blank" class="social-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+            @kitscore.co
+          </a>
+          <a href="https://x.com/kitscoreCo" target="_blank" class="social-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.857L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            @kitscoreCo
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-block">
+    <div class="section-label" style="margin-bottom:10px">Get started</div>
+    <h2>The next creator you evaluate<br>should be verified, not guessed at.</h2>
+    <p>Create an account free. Run your first evaluation for $29. See the full decision memo before you commit budget.</p>
+    <a href="/app/auth.html" class="btn-primary">Create free account</a>
+    <a href="/sample-sponsor-decision-memo.html" target="_blank" class="btn-ghost">View sample report</a>
+  </div>
+
+</div>
+
+<footer>
+  <span>Kitscore.co · Verified Sponsorship Reputation · © 2026</span>
+  <span><a href="/privacy.html" style="margin-right:16px">Privacy</a><a href="/">Home</a></span>
+</footer>
+
+</body>
+</html>
