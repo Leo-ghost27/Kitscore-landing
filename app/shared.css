@@ -118,3 +118,21 @@ input:focus,select:focus{outline:none;border-color:#2563EB}
 .card-rel-val.gold{color:#C9A227}
 .card-rel-label{font-size:9px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em;margin-top:1px}
 .card-rel-divider{width:0.5px;height:24px;background:var(--color-border-tertiary)}
+
+/* Role badge in sidebar */
+.nav-role-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--color-text-secondary);
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-sm);
+  padding: 5px 10px;
+  margin: 0 8px 12px;
+}
+.nav-role-badge i { font-size: 12px; }

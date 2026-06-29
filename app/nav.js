@@ -23,8 +23,14 @@ function renderSidebar(role, activeKey) {
   const mount = document.getElementById('sidebar-mount');
   if (!mount) return;
   const items = NAV[role] || [];
+  const roleLabel = role === 'sponsor' ? 'Sponsor' : 'Creator';
+  const roleIcon  = role === 'sponsor' ? 'ti-building-store' : 'ti-device-camera';
   mount.innerHTML = `
     <div class="nav-logo">Kit<span>score</span></div>
+    <div class="nav-role-badge">
+      <i class="ti ${roleIcon}" aria-hidden="true"></i>
+      ${roleLabel} account
+    </div>
     ${items.map(i => `<a class="sb-item ${i.key === activeKey ? 'active' : ''}" href="${i.href}"><i class="ti ${i.icon}" aria-hidden="true"></i>${i.label}</a>`).join('')}
     <a class="sb-item" href="#" id="sb-signout" style="margin-top:auto"><i class="ti ti-logout" aria-hidden="true"></i>Sign out</a>
   `;
