@@ -67,7 +67,7 @@
 
   const { data: sponsor } = await sb.from('sponsors').select('plan').eq('id', profile.id).single();
   const plan = sponsor?.plan || 'free';
-  const planLabel = { free: 'Free', starter: 'Starter', team: 'Team' }[plan] || plan;
+  const planLabel = { free: 'Free', starter: 'Starter', team: 'Team', pro: 'Pro (Legacy)' }[plan] || plan;
 
   const manageBtn = plan !== 'free'
     ? '<button onclick="manageSubscription()" style="font-size:11px;color:#185FA5;background:none;border:none;cursor:pointer;font-weight:500">Manage subscription \u2192</button>'
@@ -81,7 +81,7 @@
   };
 
   document.getElementById('plansWrap').innerHTML = `
-    <div class="plan ${plan==='free' ? 'is-current' : ''}">
+    <div class="plan ${plan==='free' || plan==='pro' ? 'is-current' : ''}">
       <h3>Pay per report</h3>
       <div class="price">$29<span>/report</span></div>
       <ul><li>Full creator evaluation</li><li>✓ Recommendation + risk assessment</li><li>✓ No subscription required</li></ul>
