@@ -44,7 +44,7 @@
   .nav-cta { background: var(--accent); color: #fff; border: none; padding: 8px 20px; border-radius:0; font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; text-decoration: none; }
 
   /* ── Layout ── */
-  .container { max-width: 780px; margin: 0 auto; padding: 0 24px; }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
   .section-label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
   hr.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
 
@@ -89,9 +89,9 @@
   .cl-high .cl-label { color: var(--green); }
 
   /* ── Verification sources ── */
-  .source-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+  .source-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; margin-top: 24px; }
   .source-card { background: var(--bg2); border: 1px solid var(--border); border-radius:0; padding: 20px; }
-  .source-card .sc-icon { font-size: 24px; margin-bottom: 10px; }
+  .source-card .sc-icon { width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; letter-spacing: .02em; margin-bottom: 12px; border: 1px solid var(--border); background: var(--bg3); color: var(--text); }
   .source-card .sc-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
   .source-card .sc-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; }
   .source-card .sc-tag { display: inline-flex; margin-top: 10px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius:0; }
@@ -107,9 +107,9 @@
   .badge-req   { font-size: 12px; font-weight: 600; color: var(--accent); white-space: nowrap; }
 
   /* ── Brand safety ── */
-  .bs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 24px; }
-  .bs-item { background: var(--bg2); border: 1px solid var(--border); border-radius:0; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
-  .bs-icon { font-size: 20px; flex-shrink: 0; }
+  .bs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 20px; margin-top: 24px; }
+  .bs-item { background: var(--bg2); border: 1px solid var(--border); border-radius:0; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+  .bs-icon { width: 28px; height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border: 1px solid var(--border); background: var(--bg3); color: var(--muted); margin-top: 1px; }
   .bs-name  { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
   .bs-desc  { font-size: 12px; color: var(--muted); line-height: 1.55; }
 
@@ -126,7 +126,7 @@
   .btn-ghost    { display: inline-block; background: transparent; color: var(--text); border: 1px solid var(--border-hover); padding: 12px 28px; border-radius:0; font-size: 15px; font-weight: 500; text-decoration: none; margin-left: 10px; }
 
   /* ── Footer ── */
-  footer { padding: 32px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--muted); max-width: 780px; margin: 0 auto; }
+  footer { padding: 32px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--muted); max-width: 960px; margin: 0 auto; }
   footer a { color: var(--muted); text-decoration: none; }
   footer a:hover { color: var(--text); }
 
@@ -318,25 +318,25 @@
     <p>Kitscore weights data differently depending on how it was verified. Live-verified data carries the most weight. Self-reported data carries the least — but still contributes, because any information is better than none.</p>
     <div class="source-grid">
       <div class="source-card">
-        <div class="sc-icon">⚡</div>
+        <div class="sc-icon">LV</div>
         <div class="sc-title">Live verified</div>
         <div class="sc-desc">Data pulled directly from platform APIs or verified in real time by Kitscore. Not dependent on creator submissions. Highest confidence contribution.</div>
         <span class="sc-tag src-live">Highest weight</span>
       </div>
       <div class="source-card">
-        <div class="sc-icon">📎</div>
+        <div class="sc-icon">ES</div>
         <div class="sc-title">Evidence submitted</div>
         <div class="sc-desc">Screenshots, analytics exports, campaign briefs, or other documentation uploaded by the creator and reviewed by Kitscore. Medium confidence contribution.</div>
         <span class="sc-tag src-ev">Medium weight</span>
       </div>
       <div class="source-card">
-        <div class="sc-icon">✅</div>
+        <div class="sc-icon">MC</div>
         <div class="sc-title">Mutually confirmed</div>
         <div class="sc-desc">Campaigns confirmed by both creator and sponsor independently. Neither party can confirm alone — both must agree the campaign happened and rate the outcome.</div>
         <span class="sc-tag src-live">High weight</span>
       </div>
       <div class="source-card">
-        <div class="sc-icon">📝</div>
+        <div class="sc-icon">SR</div>
         <div class="sc-title">Self-reported</div>
         <div class="sc-desc">Information supplied by the creator through their profile or questionnaire, without independent verification. Lowest confidence contribution, but still scored.</div>
         <span class="sc-tag src-self">Lowest weight</span>
@@ -354,14 +354,14 @@
     <h2>Eight checks.<br>Every creator, every time.</h2>
     <p>Brand safety is scored via a structured 8-question assessment. Each question is answered by the creator and can be supplemented with content review evidence. Unfavourable answers apply calibrated score penalties — the severity reflects real sponsor concern levels.</p>
     <div class="bs-grid">
-      <div class="bs-item"><div class="bs-icon">🔞</div><div><div class="bs-name">Adult content</div><div class="bs-desc">Presence of explicit or sexually suggestive content in the creator's primary content channels.</div></div></div>
-      <div class="bs-item"><div class="bs-icon">🎰</div><div><div class="bs-name">Gambling promotion</div><div class="bs-desc">History of promoting gambling, betting, or gaming products without appropriate disclosure.</div></div></div>
-      <div class="bs-item"><div class="bs-icon">🗳️</div><div><div class="bs-name">Political content</div><div class="bs-desc">Frequency of political commentary or advocacy that could polarise a brand's customer base.</div></div></div>
-      <div class="bs-item"><div class="bs-icon">🤬</div><div><div class="bs-name">Profanity</div><div class="bs-desc">Regular use of strong language that may conflict with brand tone or family-safe requirements.</div></div></div>
-      <div class="bs-item"><div class="bs-icon">👨‍👩‍👧</div><div><div class="bs-name">Family safety</div><div class="bs-desc">Whether the creator's content is appropriate for a broad, family-inclusive audience.</div></div></div>
-      <div class="bs-item"><div class="bs-icon">📢</div><div><div class="bs-name">Paid disclosure (FTC)</div><div class="bs-desc">Consistency of disclosing paid partnerships. Failure to disclose is a legal and reputational risk for sponsors. Highest penalty weighting.</div></div></div>
-      <div class="bs-item"><div class="bs-icon">🚫</div><div><div class="bs-name">Misinformation history</div><div class="bs-desc">History of sharing content later identified as false or misleading by authoritative fact-checkers.</div></div></div>
-      <div class="bs-item"><div class="bs-icon">⚠️</div><div><div class="bs-name">Controversy history</div><div class="bs-desc">Past viral controversy events — major or minor — that generated significant negative public attention.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">01</div><div><div class="bs-name">Adult content</div><div class="bs-desc">Presence of explicit or sexually suggestive content in the creator's primary content channels.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">02</div><div><div class="bs-name">Gambling promotion</div><div class="bs-desc">History of promoting gambling, betting, or gaming products without appropriate disclosure.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">03</div><div><div class="bs-name">Political content</div><div class="bs-desc">Frequency of political commentary or advocacy that could polarise a brand's customer base.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">04</div><div><div class="bs-name">Profanity</div><div class="bs-desc">Regular use of strong language that may conflict with brand tone or family-safe requirements.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">05</div><div><div class="bs-name">Family safety</div><div class="bs-desc">Whether the creator's content is appropriate for a broad, family-inclusive audience.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">06</div><div><div class="bs-name">Paid disclosure (FTC)</div><div class="bs-desc">Consistency of disclosing paid partnerships. Failure to disclose is a legal and reputational risk for sponsors. Highest penalty weighting.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">07</div><div><div class="bs-name">Misinformation history</div><div class="bs-desc">History of sharing content later identified as false or misleading by authoritative fact-checkers.</div></div></div>
+      <div class="bs-item"><div class="bs-icon">08</div><div><div class="bs-name">Controversy history</div><div class="bs-desc">Past viral controversy events — major or minor — that generated significant negative public attention.</div></div></div>
     </div>
   </div>
 </section>
@@ -464,8 +464,13 @@
 
 <footer>
   <span>Kitscore.co · Sponsorship trust infrastructure</span>
-  <span>
-    <a href="https://www.instagram.com/kitscore.co" target="_blank" rel="noopener" title="Instagram" style="color:var(--muted,#888);display:inline-flex;opacity:0.6;margin-right:12px;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a><a href="https://x.com/kitscoreCo" target="_blank" rel="noopener" title="X / Twitter @kitscoreCo" style="color:var(--muted,#888);display:inline-flex;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.857L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a><a href="/privacy.html" style="margin-right:16px">Privacy</a>
+  <span style="display:flex;align-items:center;gap:20px">
+    <a href="/app/auth.html" style="background:var(--accent);color:#fff;padding:7px 16px;border-radius:0;font-size:12px;font-weight:600;text-decoration:none;font-family:var(--font)">Get Started</a>
+    <span style="display:flex;align-items:center;gap:14px">
+      <a href="https://www.instagram.com/kitscore.co" target="_blank" rel="noopener" title="Instagram" style="color:var(--muted,#888);display:inline-flex;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a><a href="https://x.com/kitscoreCo" target="_blank" rel="noopener" title="X / Twitter @kitscoreCo" style="color:var(--muted,#888);display:inline-flex;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.857L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+    </span>
+    <span style="width:1px;height:14px;background:var(--border)"></span>
+    <a href="/privacy.html">Privacy</a>
     <span>© 2026</span>
   </span>
 </footer>
