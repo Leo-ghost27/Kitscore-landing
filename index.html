@@ -46,8 +46,8 @@
     --amber-bg: #FAEEDA;
     --red: #A32D2D;
     --red-bg: #FCEBEB;
-    --radius: 12px;
-    --radius-sm: 8px;
+    --radius: 0;
+    --radius-sm: 0;
     --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
@@ -83,7 +83,7 @@
   .nav-cta {
     background: var(--accent); color: #fff;
     border: none; cursor: pointer;
-    padding: 7px 18px; border-radius: var(--radius-sm);
+    padding: 7px 18px; border-radius:0;
     font-size: 13px; font-weight: 600; font-family: var(--font);
     transition: opacity 0.15s;
   }
@@ -105,7 +105,7 @@
     color: var(--accent);
     font-size: 12px; font-weight: 600;
     letter-spacing: 0.05em; text-transform: uppercase;
-    padding: 5px 14px; border-radius: 999px;
+    padding: 5px 14px; border-radius:0;
     border: 1px solid #B5D4F4;
     margin-bottom: 24px;
   }
@@ -134,7 +134,7 @@
   .hero2 { padding: 80px 2rem 96px; max-width: 1180px; margin: 0 auto; }
   .hero2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
   .hero2-left { text-align: left; }
-  .hero2-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-dim); color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 5px 14px; border-radius: 999px; border: 1px solid #B5D4F4; margin-bottom: 22px; }
+  .hero2-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-dim); color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 5px 14px; border-radius:0; border: 1px solid #B5D4F4; margin-bottom: 22px; }
   .hero2-ai-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); margin-left: 10px; }
   .hero2-left h1 { font-size: clamp(2rem, 4.2vw, 3rem); font-weight: 700; line-height: 1.12; letter-spacing: -0.02em; color: var(--text); margin-bottom: 20px; }
   .hero2-left h1 .accent { color: var(--accent); }
@@ -154,7 +154,7 @@
   .btn-primary {
     background: var(--accent); color: #fff;
     border: none; cursor: pointer;
-    padding: 12px 24px; border-radius: var(--radius-sm);
+    padding: 12px 24px; border-radius:0;
     font-size: 14px; font-weight: 600; font-family: var(--font);
     transition: opacity 0.15s, transform 0.15s;
     display: inline-flex; align-items: center; gap: 6px;
@@ -163,7 +163,7 @@
   .btn-ghost {
     background: var(--bg); color: var(--text);
     border: 0.5px solid var(--border-hover); cursor: pointer;
-    padding: 12px 24px; border-radius: var(--radius-sm);
+    padding: 12px 24px; border-radius:0;
     font-size: 14px; font-weight: 500; font-family: var(--font);
     transition: border-color 0.15s, background 0.15s, transform 0.15s;
     display: inline-flex; align-items: center; gap: 6px;
@@ -175,7 +175,7 @@
     margin: 48px auto 0;
     background: var(--bg);
     border: 0.5px solid var(--border);
-    border-radius: var(--radius);
+    border-radius:0;
     padding: 24px 28px;
     max-width: 540px;
     text-align: left;
@@ -193,15 +193,15 @@
     display: inline-block;
     background: var(--green-bg); color: var(--green);
     font-size: 11px; font-weight: 600;
-    padding: 2px 9px; border-radius: 999px;
+    padding: 2px 9px; border-radius:0;
   }
   .conf-row { display: flex; gap: 8px; align-items: center; }
   .conf-label { font-size: 12px; color: var(--muted); white-space: nowrap; font-weight: 500; }
   .conf-bar {
     flex: 1; height: 5px; background: var(--bg3);
-    border-radius: 999px; overflow: hidden;
+    border-radius:0; overflow: hidden;
   }
-  .conf-fill { height: 100%; border-radius: 999px; background: var(--accent); width: 72%; }
+  .conf-fill { height: 100%; border-radius:0; background: var(--accent); width: 72%; }
   .conf-pct { font-size: 12px; font-weight: 600; color: var(--accent); }
   .score-locked {
     margin-top: 16px;
@@ -217,7 +217,7 @@
   .dashboard-preview {
     background: var(--bg);
     border: 0.5px solid var(--border);
-    border-radius: var(--radius);
+    border-radius:0;
     padding: 20px 24px;
     max-width: 520px;
     margin: 24px auto 0;
@@ -229,18 +229,18 @@
   .dp-label { font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
   .dp-score-line { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
   .dp-score-big { font-size: 2rem; font-weight: 700; color: var(--text); letter-spacing: -0.04em; }
-  .dp-score-badge { background: var(--green-bg); color: var(--green); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+  .dp-score-badge { background: var(--green-bg); color: var(--green); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius:0; }
   .dp-meta { display: flex; gap: 14px; font-size: 11px; color: var(--muted); margin-bottom: 16px; }
   .dp-components { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .dp-comp {
     background: var(--bg2); border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm); padding: 10px 12px;
+    border-radius:0; padding: 10px 12px;
     display: flex; justify-content: space-between; align-items: center;
   }
   .dp-comp-name { font-size: 11px; color: var(--muted); font-weight: 500; }
   .dp-comp-right { text-align: right; }
   .dp-comp-score { font-size: 14px; font-weight: 700; color: var(--text); }
-  .dp-comp-src { font-size: 10px; padding: 1px 6px; border-radius: 4px; margin-top: 2px; display: inline-block; font-weight: 500; }
+  .dp-comp-src { font-size: 10px; padding: 1px 6px; border-radius:0; margin-top: 2px; display: inline-block; font-weight: 500; }
   .src-evidence { background: var(--green-bg); color: var(--green); }
   .src-self { background: var(--amber-bg); color: var(--amber); }
 
@@ -249,11 +249,11 @@
   .src-tag {
     display: flex; align-items: center; gap: 7px;
     background: var(--bg); border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm); padding: 8px 14px;
+    border-radius:0; padding: 8px 14px;
     font-size: 12px; font-weight: 500;
     box-shadow: var(--shadow-sm);
   }
-  .src-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .src-dot { width: 7px; height: 7px; border-radius:0; flex-shrink: 0; }
 
   /* SECTION LABELS */
   .section-label {
@@ -264,9 +264,9 @@
   .section-sub { font-size: 0.95rem; color: var(--muted); max-width: 520px; margin-bottom: 40px; line-height: 1.7; }
 
   /* HOW IT WORKS */
-  .hiw-tabs { display: flex; gap: 6px; margin-bottom: 32px; background: var(--bg2); padding: 4px; border-radius: var(--radius-sm); width: fit-content; }
+  .hiw-tabs { display: flex; gap: 6px; margin-bottom: 32px; background: var(--bg2); padding: 4px; border-radius:0; width: fit-content; }
   .tab-btn {
-    padding: 8px 18px; border-radius: 6px;
+    padding: 8px 18px; border-radius:0;
     font-size: 13px; font-weight: 600; font-family: var(--font);
     cursor: pointer; transition: all 0.15s; border: none;
   }
@@ -279,13 +279,13 @@
   .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
   .step-card {
     background: var(--bg); border: 0.5px solid var(--border);
-    border-radius: var(--radius); padding: 20px;
+    border-radius:0; padding: 20px;
     box-shadow: var(--shadow-sm);
     transition: border-color 0.2s, box-shadow 0.2s;
   }
   .step-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
   .step-num {
-    width: 26px; height: 26px; border-radius: 50%;
+    width: 26px; height: 26px; border-radius:0;
     display: flex; align-items: center; justify-content: center;
     background: var(--accent-dim); color: var(--accent);
     font-size: 11px; font-weight: 700;
@@ -306,7 +306,8 @@
   .hiw2-panel { display: none; padding-top: 40px; }
   .hiw2-panel.active { display: block; }
   .hiw2-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
-  .hiw2-card { position: relative; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 28px 24px; }
+  .hiw2-card { position: relative; background: var(--bg); border: 0.5px solid var(--border); border-radius:0; padding: 28px 24px; transition: border-color .15s, box-shadow .15s; }
+  .hiw2-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
   .hiw2-card::before { content: ''; position: absolute; top: -1px; left: -1px; width: 18px; height: 3px; background: var(--accent); }
   .hiw2-card::after { content: ''; position: absolute; top: -1px; left: -1px; width: 3px; height: 18px; background: var(--accent); }
   .hiw2-num { font-size: 30px; font-weight: 800; color: var(--bg3); line-height: 1; margin-bottom: 18px; letter-spacing: -0.02em; }
@@ -317,7 +318,7 @@
   .creator-tiers { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
   .tier-card {
     background: var(--bg); border: 0.5px solid var(--border);
-    border-radius: var(--radius); padding: 20px; position: relative;
+    border-radius:0; padding: 20px; position: relative;
     box-shadow: var(--shadow-sm);
   }
   .tier-card.pro { border-color: var(--accent); }
@@ -325,7 +326,7 @@
     position: absolute; top: -1px; right: 16px;
     background: var(--accent); color: #fff;
     font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
-    padding: 3px 10px; border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    padding: 3px 10px; border-radius:0;
   }
   .tier-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
   .tier-price { font-size: 22px; font-weight: 700; color: var(--accent); margin-bottom: 14px; }
@@ -339,7 +340,7 @@
   .why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
   .why-card {
     background: var(--bg); border: 0.5px solid var(--border);
-    border-radius: var(--radius); padding: 20px;
+    border-radius:0; padding: 20px;
     box-shadow: var(--shadow-sm);
     transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
   }
@@ -349,13 +350,13 @@
   .why-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
   /* WHY KITSCORE v2 */
-  .why2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .why2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 0.5px solid var(--border); border-radius:0; overflow: hidden; }
   .why2-card { background: var(--bg); padding: 32px; border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
   .why2-card:nth-child(2n) { border-right: none; }
   .why2-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
   .why2-icon { width: 22px; height: 22px; color: var(--accent); display: flex; align-items: center; justify-content: center; }
   .why2-icon svg { width: 100%; height: 100%; }
-  .why2-badge { font-size: 12px; font-weight: 500; color: var(--accent); border: 0.5px solid var(--accent); border-radius: 6px; padding: 5px 12px; }
+  .why2-badge { font-size: 12px; font-weight: 500; color: var(--accent); border: 0.5px solid var(--accent); border-radius:0; padding: 5px 12px; }
   .why2-card h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
   .why2-card p { font-size: 14px; color: var(--muted); line-height: 1.65; }
   @media (max-width: 640px) {
@@ -363,7 +364,7 @@
     .why2-card { border-right: none; }
   }
 
-  .why2-compare { border: 0.5px solid var(--border); border-top: 2px solid var(--accent); border-radius: var(--radius); overflow: hidden; margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; }
+  .why2-compare { border: 0.5px solid var(--border); border-top: 2px solid var(--accent); border-radius:0; overflow: hidden; margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; }
   .why2-compare-side { padding: 32px; }
   .why2-compare-side:first-child { border-right: 0.5px solid var(--border); }
   .why2-compare-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
@@ -379,7 +380,7 @@
   /* VERIFIED CAMPAIGNS */
   .vc-block {
     background: var(--bg); border: 0.5px solid var(--border);
-    border-radius: var(--radius); padding: 36px;
+    border-radius:0; padding: 36px;
     display: grid; grid-template-columns: 1fr 1fr; gap: 36px;
     align-items: center; box-shadow: var(--shadow-sm);
     border-top: 2px solid var(--accent);
@@ -393,17 +394,17 @@
   .vc-flow { display: flex; flex-direction: column; gap: 8px; }
   .vc-step {
     background: var(--bg2); border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm); padding: 11px 14px;
+    border-radius:0; padding: 11px 14px;
     font-size: 13px; color: var(--muted);
     display: flex; align-items: center; gap: 10px;
     font-weight: 500;
   }
-  .vc-step-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .vc-step-dot { width: 7px; height: 7px; border-radius:0; background: var(--accent); flex-shrink: 0; }
 
   /* DIFFERENCE */
   .diff-block {
     background: var(--bg2); border: 0.5px solid var(--border);
-    border-radius: var(--radius); padding: 40px; text-align: center;
+    border-radius:0; padding: 40px; text-align: center;
   }
   .diff-block .vs { display: flex; align-items: center; gap: 28px; justify-content: center; margin: 28px 0; flex-wrap: wrap; }
   .diff-side { flex: 1; min-width: 180px; }
@@ -416,14 +417,14 @@
   .sample-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .sample-card {
     background: var(--bg); border: 0.5px solid var(--border);
-    border-radius: var(--radius); padding: 20px;
+    border-radius:0; padding: 20px;
     display: flex; align-items: flex-start; gap: 14px;
     box-shadow: var(--shadow-sm);
     transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
   }
   .sample-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
   .sample-icon {
-    width: 40px; height: 40px; border-radius: var(--radius-sm);
+    width: 40px; height: 40px; border-radius:0;
     background: var(--accent-dim);
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; flex-shrink: 0;
@@ -438,7 +439,7 @@
   .pricing-col-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
   .plan-card {
     background: var(--bg); border: 0.5px solid var(--border);
-    border-radius: var(--radius); padding: 20px; margin-bottom: 12px;
+    border-radius:0; padding: 20px; margin-bottom: 12px;
     position: relative; box-shadow: var(--shadow-sm);
     transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
   }
@@ -452,11 +453,11 @@
   .plan-divider { border: none; border-top: 0.5px solid var(--border); margin: 14px 0; }
   .plan-features { list-style: none; }
   .plan-features li { font-size: 13px; color: var(--text); padding: 8px 0 8px 14px; position: relative; }
-  .plan-features li::before { content: ''; position: absolute; left: 0; top: 9px; bottom: 9px; width: 3px; background: var(--accent); border-radius: 2px; }
+  .plan-features li::before { content: ''; position: absolute; left: 0; top: 9px; bottom: 9px; width: 3px; background: var(--accent); border-radius:0; }
 
   /* PRICING TOGGLE */
-  .pricing-toggle { display: inline-flex; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 40px; box-shadow: var(--shadow-sm); }
-  .pricing-toggle-btn { padding: 9px 28px; border-radius: 6px; font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; border: none; background: transparent; color: var(--text); transition: all 0.15s; }
+  .pricing-toggle { display: inline-flex; background: var(--bg); border: 0.5px solid var(--border); border-radius:0; padding: 4px; margin-bottom: 40px; box-shadow: var(--shadow-sm); }
+  .pricing-toggle-btn { padding: 9px 28px; border-radius:0; font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; border: none; background: transparent; color: var(--text); transition: all 0.15s; }
   .pricing-toggle-btn.active { background: var(--accent); color: #fff; }
   .pricing-toggle-btn:not(.active):hover { background: var(--bg2); }
   .pricing-cols { display: none; }
@@ -465,7 +466,7 @@
   .pricing-cols.cols-2 { grid-template-columns: repeat(2, 1fr); gap: 24px; max-width: 700px; margin: 0 auto; }
   .plan-card2 {
     background: var(--bg); border: 0.5px solid var(--border);
-    border-radius: var(--radius); padding: 28px;
+    border-radius:0; padding: 28px;
     box-shadow: var(--shadow-sm); position: relative;
     display: flex; flex-direction: column;
     transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
@@ -480,8 +481,8 @@
   .plan-card2-divider { border: none; border-top: 0.5px solid var(--border); margin-bottom: 18px; }
   .plan-card2-features { list-style: none; flex: 1; margin-bottom: 24px; }
   .plan-card2-features li { font-size: 13px; color: var(--text); padding: 7px 0 7px 14px; position: relative; }
-  .plan-card2-features li::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 2px; }
-  .plan-card2-cta { display: block; text-align: center; padding: 12px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; font-family: var(--font); text-decoration: none; transition: opacity 0.15s, background 0.15s, color 0.15s; }
+  .plan-card2-features li::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius:0; }
+  .plan-card2-cta { display: block; text-align: center; padding: 12px; border-radius:0; font-size: 14px; font-weight: 600; font-family: var(--font); text-decoration: none; transition: opacity 0.15s, background 0.15s, color 0.15s; }
   .plan-card2-cta.outline { background: var(--bg); color: var(--text); border: 0.5px solid var(--border-hover); }
   .plan-card2-cta.outline:hover { border-color: var(--accent); color: var(--accent); }
   .plan-card2-cta.solid { background: var(--accent); color: #fff; border: none; }
@@ -492,7 +493,7 @@
   }
   .plan-cta {
     width: 100%; margin-top: 14px;
-    padding: 9px; border-radius: var(--radius-sm);
+    padding: 9px; border-radius:0;
     font-size: 13px; font-weight: 600; font-family: var(--font);
     cursor: pointer; transition: all 0.15s;
   }
@@ -504,14 +505,14 @@
     position: absolute; top: -1px; left: 16px;
     background: var(--amber-bg); color: var(--amber);
     font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
-    padding: 3px 10px; border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    padding: 3px 10px; border-radius:0;
     border: 0.5px solid #D4A96B; border-top: none;
   }
 
   /* FLYWHEEL */
   .flywheel {
     background: var(--bg2); border: 0.5px solid var(--border);
-    border-radius: var(--radius); padding: 40px; text-align: center;
+    border-radius:0; padding: 40px; text-align: center;
   }
   .flywheel-steps {
     display: flex; align-items: center; justify-content: center;
@@ -519,7 +520,7 @@
   }
   .fw-node {
     background: var(--bg); border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm); padding: 14px 18px;
+    border-radius:0; padding: 14px 18px;
     font-size: 12px; font-weight: 600; color: var(--text);
     min-width: 110px; text-align: center;
     box-shadow: var(--shadow-sm);
@@ -551,7 +552,7 @@
   .waitlist-box {
     background: var(--bg);
     border: 0.5px solid var(--border);
-    border-radius: var(--radius);
+    border-radius:0;
     padding: 32px 28px;
     position: relative;
     box-shadow: var(--shadow-md);
@@ -567,7 +568,7 @@
   .role-selector { display: flex; gap: 8px; margin-bottom: 18px; justify-content: center; }
   .role-btn {
     flex: 1; max-width: 150px;
-    padding: 8px 14px; border-radius: var(--radius-sm);
+    padding: 8px 14px; border-radius:0;
     font-size: 13px; font-weight: 600; font-family: var(--font);
     cursor: pointer; transition: all 0.15s;
     border: 0.5px solid var(--border); background: var(--bg2); color: var(--muted);
@@ -584,7 +585,7 @@
     padding: 10px 14px;
     background: var(--bg);
     border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm);
+    border-radius:0;
     color: var(--text);
     font-size: 14px;
     font-family: var(--font);
@@ -598,7 +599,7 @@
     width: 100%;
     padding: 12px;
     background: var(--accent); color: #fff;
-    border: none; border-radius: var(--radius-sm);
+    border: none; border-radius:0;
     font-size: 14px; font-weight: 600; font-family: var(--font);
     cursor: pointer; transition: opacity 0.15s;
   }
@@ -622,7 +623,7 @@
     display: none;
     background: var(--red-bg);
     border: 0.5px solid #EDBBBB;
-    border-radius: var(--radius-sm);
+    border-radius:0;
     padding: 9px 12px;
     font-size: 12px; color: var(--red);
     margin-bottom: 10px;
@@ -632,12 +633,12 @@
   .wl-count {
     display: flex; align-items: center; justify-content: center; gap: 7px;
     background: var(--green-bg);
-    border-radius: 999px; padding: 5px 14px;
+    border-radius:0; padding: 5px 14px;
     font-size: 12px; color: var(--green); font-weight: 600;
     margin-bottom: 20px;
     width: fit-content; margin-left: auto; margin-right: auto;
   }
-  .wl-count-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  .wl-count-dot { width: 6px; height: 6px; border-radius:0; background: var(--green); animation: pulse 2s infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
   /* DIVIDERS */
@@ -656,23 +657,23 @@
   footer a:hover { color: var(--text); }
 
   /* SEARCH BAR */
-  .search-bar { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 9px 12px; transition: border-color .15s; box-shadow: var(--shadow-sm); }
+  .search-bar { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 0.5px solid var(--border); border-radius:0; padding: 9px 12px; transition: border-color .15s; box-shadow: var(--shadow-sm); }
   .search-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
   .search-input { flex: 1; background: none; border: none; outline: none; font-family: var(--font); font-size: 13px; color: var(--text); }
   .search-input::placeholder { color: var(--muted2); }
-  .search-submit { background: var(--accent); color: #fff; border: none; padding: 7px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: opacity .15s; white-space: nowrap; }
+  .search-submit { background: var(--accent); color: #fff; border: none; padding: 7px 16px; border-radius:0; font-size: 12px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: opacity .15s; white-space: nowrap; }
   .search-submit:hover { opacity: .88; }
   .search-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-  .search-tag { font-size: 11px; color: var(--muted); background: var(--bg2); border: 0.5px solid var(--border); padding: 3px 10px; border-radius: 20px; cursor: pointer; transition: border-color .15s, color .15s; font-weight: 500; }
+  .search-tag { font-size: 11px; color: var(--muted); background: var(--bg2); border: 0.5px solid var(--border); padding: 3px 10px; border-radius:0; cursor: pointer; transition: border-color .15s, color .15s; font-weight: 500; }
   .search-tag:hover { border-color: var(--accent); color: var(--accent); }
 
   /* MOCK CREATOR CARD */
-  .cpc { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-md); border-top: 2px solid var(--accent); }
+  .cpc { background: var(--bg); border: 0.5px solid var(--border); border-radius:0; overflow: hidden; box-shadow: var(--shadow-md); border-top: 2px solid var(--accent); }
   .cpc-header { background: var(--bg2); padding: 16px 18px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 12px; position: relative; }
-  .cpc-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .cpc-avatar { width: 40px; height: 40px; border-radius:0; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
   .cpc-name { font-size: 13px; font-weight: 600; color: var(--text); }
   .cpc-handle { font-size: 11px; color: var(--muted); margin-top: 1px; }
-  .cpc-niche { margin-left: auto; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); background: var(--accent-dim); border: 0.5px solid #B5D4F4; padding: 2px 9px; border-radius: 20px; }
+  .cpc-niche { margin-left: auto; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); background: var(--accent-dim); border: 0.5px solid #B5D4F4; padding: 2px 9px; border-radius:0; }
   .cpc-body { display: grid; grid-template-columns: 90px 1fr; gap: 0; }
   .cpc-ring-col { padding: 16px 12px; border-right: 0.5px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; }
   .cpc-ring { position: relative; width: 64px; height: 64px; }
@@ -687,36 +688,38 @@
   .cpc-comps { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
   .cpc-comp-row { display: flex; align-items: center; gap: 7px; }
   .cpc-comp-name { font-size: 10px; color: var(--muted); width: 90px; flex-shrink: 0; font-weight: 500; }
-  .cpc-bar-bg { flex: 1; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
-  .cpc-bar { height: 4px; border-radius: 2px; }
+  .cpc-bar-bg { flex: 1; height: 4px; background: var(--bg3); border-radius:0; overflow: hidden; }
+  .cpc-bar { height: 4px; border-radius:0; }
   .cpc-comp-val { font-size: 10px; font-weight: 600; color: var(--text); width: 20px; text-align: right; }
-  .cpc-comp-tag { font-size: 9px; font-weight: 600; padding: 1px 5px; border-radius: 10px; flex-shrink: 0; }
+  .cpc-comp-tag { font-size: 9px; font-weight: 600; padding: 1px 5px; border-radius:0; flex-shrink: 0; }
   .cpc-tag-live { background: var(--green-bg); color: var(--green); }
   .cpc-tag-ev { background: var(--amber-bg); color: var(--amber); }
   .cpc-rep-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 10px; }
-  .cpc-rep-stat { background: var(--bg2); border-radius: 6px; padding: 7px; text-align: center; border: 0.5px solid var(--border); }
+  .cpc-rep-stat { background: var(--bg2); border-radius:0; padding: 7px; text-align: center; border: 0.5px solid var(--border); }
   .cpc-rep-val { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1; }
   .cpc-rep-label { font-size: 9px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .05em; }
-  .cpc-unlock { background: var(--accent-dim); border: 0.5px solid #B5D4F4; border-radius: 7px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .cpc-unlock { background: var(--accent-dim); border: 0.5px solid #B5D4F4; border-radius:0; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .cpc-unlock-text { font-size: 11px; color: var(--muted); line-height: 1.5; }
   .cpc-unlock-text strong { color: var(--text); }
-  .cpc-unlock-btn { background: var(--accent); color: #fff; border: none; font-size: 11px; font-weight: 600; font-family: var(--font); padding: 7px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .cpc-unlock-btn { background: var(--accent); color: #fff; border: none; font-size: 11px; font-weight: 600; font-family: var(--font); padding: 7px 12px; border-radius:0; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
   .cpc-unlock-btn:hover { opacity: .88; }
 
   /* DIRECTORY PREVIEW */
-  .dir-filter-row { display: flex; gap: 3px; background: var(--bg2); border-radius: var(--radius-sm); padding: 3px; width: fit-content; margin-bottom: 14px; }
-  .dir-filter-btn { font-size: 12px; font-weight: 500; color: var(--muted); background: transparent; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-family: var(--font); transition: all .15s; }
+  .dir-filter-row { display: flex; gap: 3px; background: var(--bg2); border-radius:0; padding: 3px; width: fit-content; margin-bottom: 14px; }
+  .dir-filter-btn { font-size: 12px; font-weight: 500; color: var(--muted); background: transparent; border: none; padding: 5px 12px; border-radius:0; cursor: pointer; font-family: var(--font); transition: all .15s; }
   .dir-filter-btn.active { background: var(--bg); color: var(--accent); box-shadow: var(--shadow-sm); font-weight: 600; }
   .dir-rows { display: flex; flex-direction: column; gap: 6px; }
-  .dir-row { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 11px 14px; display: grid; grid-template-columns: 36px 1fr 48px auto auto; gap: 10px; align-items: center; cursor: pointer; transition: border-color .15s, box-shadow .15s; box-shadow: var(--shadow-sm); }
+  .dir-header-row { display: grid; grid-template-columns: 1.6fr 0.9fr 1.1fr 0.8fr 0.8fr 90px; gap: 10px; padding: 9px 14px; background: var(--bg2); border: 0.5px solid var(--border); border-bottom: none; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+  .dir-row { background: var(--bg); border: 0.5px solid var(--border); border-radius:0; padding: 11px 14px; display: grid; grid-template-columns: 1.6fr 0.9fr 1.1fr 0.8fr 0.8fr 90px; gap: 10px; align-items: center; cursor: pointer; transition: border-color .15s, box-shadow .15s; box-shadow: var(--shadow-sm); }
+  .dir-row-creator { display: flex; align-items: center; gap: 10px; }
   .dir-row:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
-  .dir-av { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .dir-av { width: 34px; height: 34px; border-radius:0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
   .dir-info-name { font-size: 12px; font-weight: 600; color: var(--text); }
   .dir-info-meta { font-size: 11px; color: var(--muted); margin-top: 1px; }
   .dir-score-box { text-align: center; }
   .dir-score-num { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1; }
   .dir-score-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-top: 1px; }
-  .dir-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .dir-badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius:0; white-space: nowrap; }
   .dir-badge-gold { background: var(--amber-bg); color: var(--amber); }
   .dir-badge-silver { background: var(--bg3); color: var(--muted); }
   .dir-badge-bronze { background: var(--bg2); color: var(--muted); }
@@ -773,7 +776,7 @@
   <div class="hero2-grid">
     <div class="hero2-left">
       <span class="hero2-eyebrow">Verified Sponsorship Reputation</span>
-      <span class="hero2-ai-tag"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block"></span>Now with Sponsorship Intelligence AI</span>
+      <span class="hero2-ai-tag"><span style="width:6px;height:6px;border-radius:0;background:var(--accent);display:inline-block"></span>Now with Sponsorship Intelligence AI</span>
       <h1>Know Before<br><span class="accent">You Sponsor</span></h1>
       <p class="hero-sub">Evaluate creators using verified campaign history, sponsor endorsements, reliability scores, and evidence-backed reports. Make sponsorship decisions using proof, not guesswork.</p>
       <p class="hero-unlock">See a creator's <strong>Trust Score</strong> and <strong>Reliability Score</strong> instantly. Unlock the full evaluation, risk analysis, and sponsor decision memo for <strong>$29</strong>.</p>
@@ -790,7 +793,12 @@
 
     <div>
       <!-- Mock creator card -->
-      <div class="cpc">
+      <div style="position:relative">
+        <div style="position:absolute;top:-14px;right:-10px;z-index:2;background:#fff;border:1.5px solid var(--accent);border-radius:0;padding:8px 14px;box-shadow:var(--shadow-md)">
+          <div style="font-size:12px;font-weight:700;color:var(--accent)">88% Confidence</div>
+          <div style="font-size:10px;color:var(--muted)">High evidence backing</div>
+        </div>
+        <div class="cpc">
         <div class="cpc-header">
           <div class="cpc-avatar">JE</div>
           <div><div class="cpc-name">Jordan Ellis</div><div class="cpc-handle">@jordanellis · Instagram · YouTube</div></div>
@@ -831,6 +839,8 @@
             <button class="cpc-unlock-btn" onclick="window.location.href='app/auth.html'">$29 →</button>
           </div>
         </div>
+        </div>
+        <div style="position:absolute;bottom:-14px;left:14px;z-index:2;background:var(--accent);color:#fff;border-radius:0;padding:9px 16px;font-size:12px;font-weight:700;box-shadow:var(--shadow-md)">5 Verified Campaigns</div>
       </div>
 
       <!-- Search bar -->
@@ -930,6 +940,9 @@
       <button class="dir-filter-btn" onclick="kitFilterDir(this,'tech')">Tech</button>
     </div>
   </div>
+  <div class="dir-header-row">
+    <span>Creator</span><span>Niche</span><span>Location</span><span>Trust Score</span><span>Tier</span><span></span>
+  </div>
   <div class="dir-rows" id="kitDirGrid">
     <div style="padding:24px;text-align:center;font-size:12px;color:var(--muted)" id="kitDirLoading">Loading creators…</div>
   </div>
@@ -941,7 +954,7 @@
 <hr class="section-divider" />
 
 <!-- WHY KITSCORE -->
-<section>
+<section id="why-kitscore">
   <div class="section-label">Why Kitscore</div>
   <h2 class="section-h">This is not another<br><strong>analytics tool.</strong></h2>
   <p class="section-sub">This is a sponsorship due diligence platform. Every evaluation is built around the question that matters: <strong style="color:var(--text)">should we sponsor this creator?</strong></p>
@@ -1010,27 +1023,20 @@
       </div>
     </div>
   </div>
-</section>
 
-<hr class="section-divider" />
-
-<!-- VERIFIED CAMPAIGNS -->
-<section>
-  <div class="section-label">Verified Campaigns</div>
-  <div class="vc-block">
+  <div style="margin-top:44px;display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start;border-top:0.5px solid var(--border);padding-top:44px">
     <div>
-      <h2 class="vc-heading">The strongest signal isn't follower count.<br>It's proven sponsorship history.</h2>
-      <p class="vc-sub">Creators and sponsors can mutually confirm completed campaigns. Verified Campaigns appear on creator profiles, proof packets, and sponsor evaluations.</p>
-      <div class="vc-result"><strong>More trust. Better sponsorship decisions. Less guesswork.</strong></div>
-    </div>
-    <div class="vc-flow">
-      <div class="vc-step"><div class="vc-step-dot"></div>Sponsor evaluates creator</div>
-      <div class="vc-step"><div class="vc-step-dot"></div>Creator receives invitation</div>
-      <div class="vc-step"><div class="vc-step-dot"></div>Creator claims profile</div>
-      <div class="vc-step"><div class="vc-step-dot"></div>Campaign evidence is submitted</div>
-      <div class="vc-step" style="border-color:var(--accent);color:var(--accent);background:var(--accent-dim)">
-        <div class="vc-step-dot" style="background:var(--green)"></div>✓ Verified Campaign confirmed
+      <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;margin-bottom:14px;color:var(--text)">Built for the people making real decisions.</h3>
+      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:14px">Kitscore was built because sponsorship decisions were being made on the wrong signals. Follower counts, reach screenshots, and self-reported media kits were passing as due diligence.</p>
+      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:24px">We built the infrastructure to change that — verified campaign history, mutual confirmation, sponsor endorsements, reliability scores. A platform where every number comes with proof.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Get started</a>
+        <a href="mailto:hello@kitscore.co" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Contact us</a>
       </div>
+    </div>
+    <div style="background:var(--accent-dim);border:0.5px solid #B5D4F4;border-radius:0;padding:18px 20px;border-left:2px solid var(--accent)">
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:5px">Our mission</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.65">Make sponsorship decisions based on proof, not promises. We're building the reputation infrastructure for the creator economy.</div>
     </div>
   </div>
 </section>
@@ -1068,45 +1074,55 @@
 <!-- VERIFIED REPUTATION BLOCK -->
 <section id="reputation" style="padding:80px 2rem;max-width:960px;margin:0 auto">
   <div class="section-label">Verified Sponsorship Reputation</div>
-  <h2 class="section-h">The centerpiece of every<br>creator profile.</h2>
-  <p class="section-sub" style="margin-bottom:28px">Built from real campaign data, mutual confirmations, and sponsor endorsements — not self-reported claims.</p>
+  <h2 class="section-h">The strongest signal isn't follower count.<br>It's proven sponsorship history.</h2>
+  <p class="section-sub" style="margin-bottom:28px">Built from real campaign data, mutual confirmations, and sponsor endorsements — not self-reported claims. This is the centerpiece of every creator profile.</p>
 
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px">
-    <div style="background:var(--bg);border:0.5px solid var(--border);border-top:2px solid var(--accent);border-radius:var(--radius);padding:20px;text-align:center;box-shadow:var(--shadow-sm)">
-      <div style="font-size:34px;font-weight:700;color:var(--text);letter-spacing:-0.02em">93</div>
-      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:4px">Reliability Score</div>
-      <div style="font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-dim);padding:2px 10px;border-radius:20px;display:inline-block;margin-top:7px">Excellent</div>
-    </div>
-    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;box-shadow:var(--shadow-sm)">
-      <div style="font-size:34px;font-weight:700;color:var(--text);letter-spacing:-0.02em">100%</div>
-      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:4px">Would Hire Again</div>
-      <div style="font-size:10px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 10px;border-radius:20px;display:inline-block;margin-top:7px">5 of 5 sponsors</div>
-    </div>
-    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;box-shadow:var(--shadow-sm)">
-      <div style="font-size:34px;font-weight:700;color:var(--text);letter-spacing:-0.02em">75%</div>
-      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:4px">Repeat Sponsor Rate</div>
-      <div style="font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-dim);padding:2px 10px;border-radius:20px;display:inline-block;margin-top:7px">3 of 4 returned</div>
+  <div class="vc-flow" style="margin-bottom:32px">
+    <div class="vc-step"><div class="vc-step-dot"></div>Sponsor evaluates creator</div>
+    <div class="vc-step"><div class="vc-step-dot"></div>Creator receives invitation</div>
+    <div class="vc-step"><div class="vc-step-dot"></div>Creator claims profile</div>
+    <div class="vc-step"><div class="vc-step-dot"></div>Campaign evidence is submitted</div>
+    <div class="vc-step" style="border-color:var(--accent);color:var(--accent);background:var(--accent-dim)">
+      <div class="vc-step-dot" style="background:var(--green)"></div>✓ Verified Campaign confirmed
     </div>
   </div>
 
-  <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:24px 28px;margin-bottom:14px;box-shadow:var(--shadow-sm)">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px">
+    <div style="background:var(--bg);border:0.5px solid var(--border);border-top:2px solid var(--accent);border-radius:0;padding:20px;text-align:center;box-shadow:var(--shadow-sm)">
+      <div style="font-size:34px;font-weight:700;color:var(--text);letter-spacing:-0.02em">93</div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:4px">Reliability Score</div>
+      <div style="font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-dim);padding:2px 10px;border-radius:0;display:inline-block;margin-top:7px">Excellent</div>
+    </div>
+    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:20px;text-align:center;box-shadow:var(--shadow-sm)">
+      <div style="font-size:34px;font-weight:700;color:var(--text);letter-spacing:-0.02em">100%</div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:4px">Would Hire Again</div>
+      <div style="font-size:10px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 10px;border-radius:0;display:inline-block;margin-top:7px">5 of 5 sponsors</div>
+    </div>
+    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:20px;text-align:center;box-shadow:var(--shadow-sm)">
+      <div style="font-size:34px;font-weight:700;color:var(--text);letter-spacing:-0.02em">75%</div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:4px">Repeat Sponsor Rate</div>
+      <div style="font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-dim);padding:2px 10px;border-radius:0;display:inline-block;margin-top:7px">3 of 4 returned</div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:24px 28px;margin-bottom:14px;box-shadow:var(--shadow-sm)">
     <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:16px;padding-bottom:12px;border-bottom:0.5px solid var(--border)">Sponsor endorsement ratings</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
-      <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:12px;border:0.5px solid var(--border)">
+      <div style="background:var(--bg2);border-radius:0;padding:12px;border:0.5px solid var(--border)">
         <div style="font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500">Communication</div>
         <div style="display:flex;align-items:baseline;gap:5px">
           <div style="font-size:20px;font-weight:700;color:var(--text)">4.9</div>
           <div style="font-size:11px;color:var(--amber)">★★★★★</div>
         </div>
       </div>
-      <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:12px;border:0.5px solid var(--border)">
+      <div style="background:var(--bg2);border-radius:0;padding:12px;border:0.5px solid var(--border)">
         <div style="font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500">Professionalism</div>
         <div style="display:flex;align-items:baseline;gap:5px">
           <div style="font-size:20px;font-weight:700;color:var(--text)">4.8</div>
           <div style="font-size:11px;color:var(--amber)">★★★★★</div>
         </div>
       </div>
-      <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:12px;border:0.5px solid var(--border)">
+      <div style="background:var(--bg2);border-radius:0;padding:12px;border:0.5px solid var(--border)">
         <div style="font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500">Deliverable Quality</div>
         <div style="display:flex;align-items:baseline;gap:5px">
           <div style="font-size:20px;font-weight:700;color:var(--text)">4.9</div>
@@ -1115,11 +1131,11 @@
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
-      <div style="border-left:2px solid var(--accent);padding:10px 14px;background:var(--accent-dim);border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:13px;color:var(--text);font-style:italic;line-height:1.65">
+      <div style="border-left:2px solid var(--accent);padding:10px 14px;background:var(--accent-dim);border-radius:0;font-size:13px;color:var(--text);font-style:italic;line-height:1.65">
         "Delivered exactly what was briefed, ahead of schedule. Would absolutely work with them again."
         <div style="font-size:11px;color:var(--muted);margin-top:5px;font-style:normal">— Verified sponsor · Zest Protein · April 2026</div>
       </div>
-      <div style="border-left:2px solid var(--border-hover);padding:10px 14px;background:var(--bg2);border-radius:0 var(--radius-sm) var(--radius-sm) 0;font-size:13px;color:var(--text);font-style:italic;line-height:1.65">
+      <div style="border-left:2px solid var(--border-hover);padding:10px 14px;background:var(--bg2);border-radius:0;font-size:13px;color:var(--text);font-style:italic;line-height:1.65">
         "Professional, responsive, and the content performed above our benchmarks."
         <div style="font-size:11px;color:var(--muted);margin-top:5px;font-style:normal">— Verified sponsor · NovaSleep · February 2026</div>
       </div>
@@ -1144,33 +1160,33 @@
       <a href="methodology.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:9px 18px">Read the full methodology →</a>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
-      <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)">
+      <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)">
         <div>
           <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">5 score components</div>
           <div style="font-size:11px;color:var(--muted)">Audience, engagement, brand safety, consistency, professionalism</div>
         </div>
-        <div style="font-size:10px;font-weight:600;color:var(--amber);background:var(--amber-bg);padding:2px 8px;border-radius:20px;white-space:nowrap;margin-left:10px">Weighted</div>
+        <div style="font-size:10px;font-weight:600;color:var(--amber);background:var(--amber-bg);padding:2px 8px;border-radius:0;white-space:nowrap;margin-left:10px">Weighted</div>
       </div>
-      <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)">
+      <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)">
         <div>
           <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">3 verification tiers</div>
           <div style="font-size:11px;color:var(--muted)">Live verified · Evidence submitted · Self-reported</div>
         </div>
-        <div style="font-size:10px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:20px;white-space:nowrap;margin-left:10px">Transparent</div>
+        <div style="font-size:10px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:0;white-space:nowrap;margin-left:10px">Transparent</div>
       </div>
-      <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)">
+      <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)">
         <div>
           <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">Confidence rating</div>
           <div style="font-size:11px;color:var(--muted)">Every score ships with a % showing how much data backs it</div>
         </div>
-        <div style="font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-dim);padding:2px 8px;border-radius:20px;white-space:nowrap;margin-left:10px">Unique</div>
+        <div style="font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-dim);padding:2px 8px;border-radius:0;white-space:nowrap;margin-left:10px">Unique</div>
       </div>
-      <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)">
+      <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)">
         <div>
           <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">8-point brand safety</div>
           <div style="font-size:11px;color:var(--muted)">FTC disclosure, misinformation, controversy — all scored</div>
         </div>
-        <div style="font-size:10px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:20px;white-space:nowrap;margin-left:10px">Compliance</div>
+        <div style="font-size:10px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:0;white-space:nowrap;margin-left:10px">Compliance</div>
       </div>
     </div>
   </div>
@@ -1186,27 +1202,27 @@
       <h2 class="section-h" style="margin-bottom:14px">AI-written.<br>Human-verified.</h2>
       <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:14px">Our AI synthesises the verified evidence and generates a decision brief specific to your campaign brief — audience fit, risk flags, budget indication, and a clear recommendation.</p>
       <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:20px">Unlike pure-AI platforms that score creators from scraped data alone, Kitscore's AI works on top of <strong style="color:var(--text)">mutually confirmed campaigns, sponsor endorsements, and human-verified evidence</strong>. The AI narrates the proof. It doesn't replace it.</p>
-      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:0">
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)">
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:0">
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px">
           <span style="color:var(--accent)">✓</span> Verified data first, AI summary second
         </div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)">
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px">
           <span style="color:var(--accent)">✓</span> Campaign-brief aware recommendations
         </div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)">
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px">
           <span style="color:var(--accent)">✓</span> Content risk flag detection
         </div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)">
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px">
           <span style="color:var(--accent)">✓</span> Budget range estimation
         </div>
       </div>
     </div>
 
     <!-- AI Summary mock output -->
-    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-md);border-top:2px solid var(--accent)">
+    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;overflow:hidden;box-shadow:var(--shadow-md);border-top:2px solid var(--accent)">
       <div style="background:var(--bg2);padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between">
         <div style="display:flex;align-items:center;gap:7px">
-          <div style="width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite"></div>
+          <div style="width:7px;height:7px;border-radius:0;background:var(--accent);animation:pulse 2s infinite"></div>
           <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Sponsorship Intelligence</span>
         </div>
         <span style="font-size:10px;color:var(--muted)">Powered by Kitscore AI</span>
@@ -1214,21 +1230,21 @@
       <div style="padding:18px">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px">AI Decision Brief — Jordan Ellis × Bloom Beverages</div>
 
-        <div style="background:var(--green-bg);border:0.5px solid #A3C68B;border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:12px">
+        <div style="background:var(--green-bg);border:0.5px solid #A3C68B;border-radius:0;padding:10px 12px;margin-bottom:12px">
           <div style="font-size:10px;font-weight:600;color:var(--green);margin-bottom:3px">✓ RECOMMENDED TO SPONSOR</div>
           <div style="font-size:12px;color:var(--text);line-height:1.65">Jordan Ellis is a <strong>high-confidence, brand-safe fitness creator</strong> with a verifiable track record. Based on your campaign brief (UK fitness audience, £10K budget, wellness positioning), this creator is a strong fit.</div>
         </div>
 
         <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
-          <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px">
+          <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:0;padding:9px 11px">
             <div style="font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Audience fit</div>
             <div style="font-size:12px;color:var(--text)">82% UK audience · 67% in your target 25–44 bracket · Direct category alignment with wellness.</div>
           </div>
-          <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px">
+          <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:0;padding:9px 11px">
             <div style="font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Risk assessment</div>
             <div style="font-size:12px;color:var(--text)">Low risk. No brand safety flags across all 8 checks. FTC disclosure consistently applied.</div>
           </div>
-          <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px">
+          <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:0;padding:9px 11px">
             <div style="font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Budget indication</div>
             <div style="font-size:12px;color:var(--text)">Market rate: <strong>$1,000–$2,300 per post</strong> based on 127K followers at 4.8% engagement and verified history.</div>
           </div>
@@ -1336,61 +1352,29 @@
   </div>
 </section>
 
-<hr class="section-divider" />
-
-<!-- NETWORK EFFECT -->
-<section>
-  <div class="section-label">Network Effect</div>
-  <div class="flywheel">
-    <h2 class="section-h" style="margin-bottom:6px;">Every evaluation improves the ecosystem.</h2>
-    <p style="font-size:13px; color:var(--muted); margin-bottom:0;">The Kitscore flywheel: each sponsorship decision makes the next one stronger.</p>
-    <div class="flywheel-steps">
-      <div class="fw-node">Sponsor evaluates<div class="fw-sub">pays $29 per eval</div></div>
-      <div class="fw-arrow">→</div>
-      <div class="fw-node">Creator invited<div class="fw-sub">joins Kitscore</div></div>
-      <div class="fw-arrow">→</div>
-      <div class="fw-node">Evidence added<div class="fw-sub">confidence rises</div></div>
-      <div class="fw-arrow">→</div>
-      <div class="fw-node">Future decisions<div class="fw-sub">get stronger</div></div>
-    </div>
-    <p class="flywheel-footer"><strong>More participants → better data → smarter sponsorship decisions for everyone.</strong></p>
-  </div>
-</section>
-
 <!-- CTA BAND -->
 <div style="background:var(--accent);padding:88px 2rem;text-align:center;position:relative;overflow:hidden">
   <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.12) 1px,transparent 1px);background-size:18px 18px;opacity:0.5"></div>
-  <div style="position:relative;max-width:640px;margin:0 auto">
+  <div style="position:relative;max-width:760px;margin:0 auto">
     <div style="font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,0.75);margin-bottom:18px">Get Started Today</div>
     <h2 style="font-size:clamp(2rem,4.5vw,3rem);font-weight:700;color:#fff;line-height:1.2;letter-spacing:-0.02em;margin-bottom:18px">The smarter way<br><strong>to sponsor.</strong></h2>
     <p style="font-size:1.05rem;color:rgba(255,255,255,0.85);line-height:1.6;margin-bottom:36px">Stop guessing. Start evaluating creators with verified proof — not follower counts.</p>
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <a href="app/auth.html" style="text-decoration:none;background:#fff;color:var(--accent);padding:14px 28px;border-radius:var(--radius-sm);font-size:15px;font-weight:700;font-family:var(--font)">Evaluate a Creator — $29 →</a>
-      <a href="app/auth.html" style="text-decoration:none;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.6);padding:14px 28px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;font-family:var(--font)">Claim Creator Profile Free</a>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:56px">
+      <a href="app/auth.html" style="text-decoration:none;background:#fff;color:var(--accent);padding:14px 28px;border-radius:0;font-size:15px;font-weight:700;font-family:var(--font)">Evaluate a Creator — $29 →</a>
+      <a href="app/auth.html" style="text-decoration:none;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.6);padding:14px 28px;border-radius:0;font-size:15px;font-weight:600;font-family:var(--font)">Claim Creator Profile Free</a>
     </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap">
+      <div><div style="font-size:15px;font-weight:700;color:#fff">Sponsor evaluates</div><div style="font-size:11px;color:rgba(255,255,255,0.65);margin-top:2px">$29 per eval</div></div>
+      <div style="margin:0 22px;color:rgba(255,255,255,0.4);font-size:15px">→</div>
+      <div><div style="font-size:15px;font-weight:700;color:#fff">Creator joins</div><div style="font-size:11px;color:rgba(255,255,255,0.65);margin-top:2px">Builds credibility</div></div>
+      <div style="margin:0 22px;color:rgba(255,255,255,0.4);font-size:15px">→</div>
+      <div><div style="font-size:15px;font-weight:700;color:#fff">Evidence added</div><div style="font-size:11px;color:rgba(255,255,255,0.65);margin-top:2px">Confidence rises</div></div>
+      <div style="margin:0 22px;color:rgba(255,255,255,0.4);font-size:15px">→</div>
+      <div><div style="font-size:15px;font-weight:700;color:#fff">Smarter decisions</div><div style="font-size:11px;color:rgba(255,255,255,0.65);margin-top:2px">For everyone</div></div>
+    </div>
+    <p style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:24px">More participants → better data → smarter sponsorship decisions for everyone.</p>
   </div>
 </div>
-
-<!-- ABOUT -->
-<section id="about" style="padding:88px 2rem;max-width:960px;margin:0 auto">
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start">
-    <div>
-      <div class="section-label">About Kitscore</div>
-      <h2 class="section-h" style="margin-bottom:16px">Built for the people<br>making real decisions.</h2>
-      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:14px">Kitscore was built because sponsorship decisions were being made on the wrong signals. Follower counts, reach screenshots, and self-reported media kits were passing as due diligence.</p>
-      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:14px">We built the infrastructure to change that. Verified campaign history. Mutual confirmation. Sponsor endorsements. Reliability scores. A platform where every number comes with proof.</p>
-      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:24px">We're building the reputation infrastructure for the creator economy — a platform where every sponsorship decision is backed by verified proof.</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <a href="app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Get started</a>
-        <a href="mailto:hello@kitscore.co" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Contact us</a>
-      </div>
-    </div>
-    <div style="background:var(--accent-dim);border:0.5px solid #B5D4F4;border-radius:var(--radius-sm);padding:18px 20px;border-left:2px solid var(--accent)">
-      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:5px">Our mission</div>
-      <div style="font-size:13px;color:var(--text);line-height:1.65">Make sponsorship decisions based on proof, not promises.</div>
-    </div>
-  </div>
-</section>
 
 <!-- FOOTER -->
 <footer style="border-top:0.5px solid #222;padding:56px 2rem 32px;margin-top:0;background:#111318;color:#9CA3AF">
@@ -1398,13 +1382,13 @@
     <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:36px;margin-bottom:40px">
       <div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-          <div style="width:24px;height:24px;border-radius:6px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">K</div>
+          <div style="width:24px;height:24px;border-radius:0;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">K</div>
           <span style="font-size:1rem;font-weight:700;letter-spacing:-0.02em;color:#fff">Kitscore</span>
         </div>
         <p style="font-size:13px;color:#8A909C;line-height:1.7;max-width:260px;margin-bottom:18px">The sponsorship due diligence platform. Evaluate creators using verified campaign history, not guesswork.</p>
         <div style="display:flex;gap:10px">
-          <a href="app/auth.html" style="text-decoration:none;background:var(--accent);color:#fff;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:600;font-family:var(--font)">Get Started</a>
-          <a href="./sample-sponsor-decision-memo.html" target="_blank" style="text-decoration:none;background:transparent;color:#fff;border:0.5px solid #333;padding:9px 18px;border-radius:6px;font-size:12px;font-weight:500;font-family:var(--font)">View Sample</a>
+          <a href="app/auth.html" style="text-decoration:none;background:var(--accent);color:#fff;padding:9px 18px;border-radius:0;font-size:12px;font-weight:600;font-family:var(--font)">Get Started</a>
+          <a href="./sample-sponsor-decision-memo.html" target="_blank" style="text-decoration:none;background:transparent;color:#fff;border:0.5px solid #333;padding:9px 18px;border-radius:0;font-size:12px;font-weight:500;font-family:var(--font)">View Sample</a>
         </div>
       </div>
       <div>
@@ -1419,7 +1403,7 @@
       <div>
         <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;margin-bottom:14px">Company</div>
         <div style="display:flex;flex-direction:column;gap:9px">
-          <a href="#about" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">About</a>
+          <a href="#why-kitscore" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Why Kitscore</a>
           <a href="methodology.html" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Methodology</a>
           <a href="mailto:hello@kitscore.co" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Contact</a>
         </div>
@@ -1438,10 +1422,6 @@
       <div style="display:flex;align-items:center;gap:18px">
         <a href="https://www.instagram.com/kitscore.co" target="_blank" rel="noopener" title="Instagram" style="color:#6B7280;display:inline-flex;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#6B7280'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
         <a href="https://x.com/kitscoreCo" target="_blank" rel="noopener" title="X" style="color:#6B7280;display:inline-flex;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#6B7280'"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.857L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-        <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#6B7280;font-family:'Courier New',monospace">
-          <span style="width:6px;height:6px;border-radius:50%;background:#3B6D11;display:inline-block"></span>
-          All systems operational
-        </span>
       </div>
     </div>
   </div>
@@ -1552,14 +1532,17 @@ function dirInitials(name) {
 
 function dirRowHtml(c, i) {
   const niche = (c.niche || '').toLowerCase();
-  const badge = DIR_BADGES[c.badge_tier] || '';
-  const meta = [c.niche, c.location].filter(Boolean).join(' · ');
+  const badge = DIR_BADGES[c.badge_tier] || '—';
   return `
     <a class="dir-row" data-niche="${niche}" href="app/auth.html" style="text-decoration:none">
-      <div class="dir-av" style="background:${DIR_AVATAR_COLORS[i % DIR_AVATAR_COLORS.length]}">${dirInitials(c.display_name)}</div>
-      <div><div class="dir-info-name">${c.display_name || 'Creator'}</div><div class="dir-info-meta">${meta || 'Profile in progress'}</div></div>
-      <div class="dir-score-box"><div class="dir-score-num">${c.trust_score ?? '—'}</div><div class="dir-score-lbl">Trust</div></div>
-      ${badge ? `<div class="dir-badge dir-badge-${c.badge_tier}">${badge}</div>` : '<div></div>'}
+      <div class="dir-row-creator">
+        <div class="dir-av" style="background:${DIR_AVATAR_COLORS[i % DIR_AVATAR_COLORS.length]}">${dirInitials(c.display_name)}</div>
+        <div class="dir-info-name">${c.display_name || 'Creator'}</div>
+      </div>
+      <div class="dir-info-meta">${c.niche || '—'}</div>
+      <div class="dir-info-meta">${c.location || '—'}</div>
+      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">${c.trust_score ?? '—'}</span><span class="dir-score-lbl"> /100</span></div>
+      <div>${badge !== '—' ? `<span class="dir-badge dir-badge-${c.badge_tier}">${badge}</span>` : '<span style="color:var(--muted);font-size:12px">—</span>'}</div>
       <div class="dir-cta-link">Evaluate →</div>
     </a>`;
 }

@@ -19,14 +19,14 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0A0C10; --bg2: #111318; --bg3: #181B22;
-    --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.16);
-    --text: #F0F2F5; --muted: #8A909C;
-    --accent: #7B6FE8; --accent-light: #A39CF0; --accent-dim: rgba(123,111,232,0.12);
-    --green: #2ECC8A; --green-dim: rgba(46,204,138,0.12);
-    --amber: #F5A623; --amber-dim: rgba(245,166,35,0.12);
-    --red-dim: rgba(239,68,68,0.12); --red: #F87171;
-    --radius: 12px; --radius-sm: 8px;
+    --bg: #FFFFFF; --bg2: #F4F5F7; --bg3: #ECEEF1;
+    --border: #E3E5E9; --border-hover: #C8CDD6;
+    --text: #1A1A1E; --muted: #6B7280;
+    --accent: #2563EB; --accent-light: #2563EB; --accent-dim: #E6F1FB;
+    --green: #3B6D11; --green-dim: #EAF3DE;
+    --amber: #854F0B; --amber-dim: #FAEEDA;
+    --red-dim: #FBEAEA; --red: #B3261E;
+    --radius: 0; --radius-sm: 0;
     --font: 'Inter', system-ui, sans-serif;
     --font-display: 'Playfair Display', Georgia, serif;
   }
@@ -35,27 +35,27 @@
   a:hover { text-decoration: underline; }
 
   /* ── Nav ── */
-  nav { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 60px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(10,12,16,0.92); backdrop-filter: blur(12px); z-index: 100; }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 60px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); z-index: 100; }
   .nav-logo { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
   .nav-logo span { color: var(--accent-light); }
   .nav-links { display: flex; gap: 24px; align-items: center; }
   .nav-link { font-size: 14px; color: var(--muted); transition: color 0.15s; text-decoration: none; }
   .nav-link:hover { color: var(--text); }
-  .nav-cta { background: var(--accent); color: #fff; border: none; padding: 8px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; text-decoration: none; }
+  .nav-cta { background: var(--accent); color: #fff; border: none; padding: 8px 20px; border-radius:0; font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; text-decoration: none; }
 
   /* ── Layout ── */
   .container { max-width: 780px; margin: 0 auto; padding: 0 24px; }
-  .section-label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(212,175,55,0.85); margin-bottom: 12px; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
   hr.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
 
   /* ── Hero ── */
   .hero { padding: 72px 0 60px; }
-  .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.25); color: rgba(212,175,55,0.9); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 24px; }
+  .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--accent-dim); border: 1px solid rgba(37,99,235,0.25); color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 5px 14px; border-radius:0; margin-bottom: 24px; }
   .hero h1 { font-size: clamp(30px, 4.5vw, 48px); font-weight: 800; font-family: var(--font-display); letter-spacing: -0.01em; line-height: 1.12; margin-bottom: 18px; }
   .hero-sub { font-size: 17px; color: var(--muted); max-width: 600px; line-height: 1.75; margin-bottom: 36px; }
   .toc { display: flex; flex-wrap: wrap; gap: 8px; }
-  .toc-link { background: var(--bg2); border: 1px solid var(--border); color: var(--muted); font-size: 13px; padding: 6px 14px; border-radius: 20px; text-decoration: none; transition: border-color 0.15s, color 0.15s; }
-  .toc-link:hover { border-color: rgba(212,175,55,0.5); color: rgba(212,175,55,0.9); text-decoration: none; }
+  .toc-link { background: var(--bg2); border: 1px solid var(--border); color: var(--muted); font-size: 13px; padding: 6px 14px; border-radius:0; text-decoration: none; transition: border-color 0.15s, color 0.15s; }
+  .toc-link:hover { border-color: rgba(37,99,235,0.5); color: var(--accent); text-decoration: none; }
 
   /* ── Sections ── */
   section { padding: 64px 0; }
@@ -66,64 +66,64 @@
 
   /* ── Component table ── */
   .comp-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
-  .comp-row { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
+  .comp-row { background: var(--bg2); border: 1px solid var(--border); border-radius:0; padding: 20px 24px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
   .comp-row:hover { border-color: var(--border-hover); }
   .comp-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
   .comp-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
   .comp-sources { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .src-tag { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 20px; }
+  .src-tag { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius:0; }
   .src-live { background: var(--green-dim); color: var(--green); }
-  .src-ev   { background: rgba(212,175,55,0.08); color: rgba(212,175,55,0.85); }
+  .src-ev   { background: var(--accent-dim); color: var(--accent); }
   .src-self { background: var(--amber-dim); color: var(--amber); }
-  .weight-badge { font-size: 13px; font-weight: 700; color: var(--text); background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 12px; white-space: nowrap; text-align: center; }
+  .weight-badge { font-size: 13px; font-weight: 700; color: var(--text); background: var(--bg3); border: 1px solid var(--border); border-radius:0; padding: 6px 12px; white-space: nowrap; text-align: center; }
   .weight-sub { font-size: 10px; color: var(--muted); font-weight: 400; display: block; margin-top: 2px; }
 
   /* ── Confidence ── */
   .conf-levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
-  .conf-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .conf-card { background: var(--bg2); border: 1px solid var(--border); border-radius:0; padding: 20px; }
   .conf-card .cl-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
   .conf-card .cl-range { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
   .conf-card .cl-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; }
   .cl-low  .cl-label { color: var(--amber); }
-  .cl-med  .cl-label { color: rgba(212,175,55,0.85); }
+  .cl-med  .cl-label { color: var(--accent); }
   .cl-high .cl-label { color: var(--green); }
 
   /* ── Verification sources ── */
   .source-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
-  .source-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .source-card { background: var(--bg2); border: 1px solid var(--border); border-radius:0; padding: 20px; }
   .source-card .sc-icon { font-size: 24px; margin-bottom: 10px; }
   .source-card .sc-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
   .source-card .sc-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; }
-  .source-card .sc-tag { display: inline-flex; margin-top: 10px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+  .source-card .sc-tag { display: inline-flex; margin-top: 10px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius:0; }
 
   /* ── Badge tiers ── */
-  .badge-tiers { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 24px; }
+  .badge-tiers { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius:0; overflow: hidden; margin-top: 24px; }
   .badge-row { background: var(--bg2); display: grid; grid-template-columns: 60px 120px 1fr auto; gap: 16px; align-items: center; padding: 16px 20px; }
   .badge-row.header { background: var(--bg3); }
   .badge-row.header span { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
   .badge-emoji { font-size: 24px; text-align: center; }
   .badge-name  { font-size: 14px; font-weight: 600; color: var(--text); }
   .badge-desc  { font-size: 13px; color: var(--muted); }
-  .badge-req   { font-size: 12px; font-weight: 600; color: rgba(212,175,55,0.85); white-space: nowrap; }
+  .badge-req   { font-size: 12px; font-weight: 600; color: var(--accent); white-space: nowrap; }
 
   /* ── Brand safety ── */
   .bs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 24px; }
-  .bs-item { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
+  .bs-item { background: var(--bg2); border: 1px solid var(--border); border-radius:0; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
   .bs-icon { font-size: 20px; flex-shrink: 0; }
   .bs-name  { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
   .bs-desc  { font-size: 12px; color: var(--muted); line-height: 1.55; }
 
   /* ── Callout ── */
-  .callout { background: rgba(212,175,55,0.06); border: 1px solid rgba(212,175,55,0.2); border-radius: var(--radius); padding: 20px 24px; margin: 24px 0; }
-  .callout p { font-size: 14px; color: rgba(212,175,55,0.85); margin: 0; line-height: 1.7; }
-  .callout p strong { color: #fff; }
+  .callout { background: var(--accent-dim); border: 1px solid rgba(37,99,235,0.2); border-radius:0; padding: 20px 24px; margin: 24px 0; }
+  .callout p { font-size: 14px; color: var(--accent); margin: 0; line-height: 1.7; }
+  .callout p strong { color: var(--text); }
 
   /* ── CTA ── */
-  .cta-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 48px 40px; text-align: center; margin: 0; }
+  .cta-block { background: var(--bg2); border: 1px solid var(--border); border-radius:0; padding: 48px 40px; text-align: center; margin: 0; }
   .cta-block h2 { font-size: clamp(22px, 3vw, 32px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
   .cta-block p  { font-size: 15px; color: var(--muted); margin-bottom: 28px; max-width: 460px; margin-left: auto; margin-right: auto; }
-  .btn-primary  { display: inline-block; background: var(--accent); color: #fff; border: none; padding: 12px 28px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; font-family: var(--font); cursor: pointer; text-decoration: none; }
-  .btn-ghost    { display: inline-block; background: transparent; color: var(--text); border: 1px solid var(--border-hover); padding: 12px 28px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 500; text-decoration: none; margin-left: 10px; }
+  .btn-primary  { display: inline-block; background: var(--accent); color: #fff; border: none; padding: 12px 28px; border-radius:0; font-size: 15px; font-weight: 600; font-family: var(--font); cursor: pointer; text-decoration: none; }
+  .btn-ghost    { display: inline-block; background: transparent; color: var(--text); border: 1px solid var(--border-hover); padding: 12px 28px; border-radius:0; font-size: 15px; font-weight: 500; text-decoration: none; margin-left: 10px; }
 
   /* ── Footer ── */
   footer { padding: 32px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--muted); max-width: 780px; margin: 0 auto; }
@@ -147,15 +147,15 @@
 
   /* Micro-interactions */
   .source-card { transition: border-color 0.2s, transform 0.2s; }
-  .source-card:hover { border-color: rgba(212,175,55,0.25); transform: translateY(-2px); }
+  .source-card:hover { border-color: rgba(37,99,235,0.25); transform: translateY(-2px); }
   .conf-card { transition: border-color 0.2s, transform 0.2s; }
   .conf-card:hover { transform: translateY(-2px); }
   .comp-row { transition: border-color 0.2s; }
-  .comp-row:hover { border-color: rgba(212,175,55,0.2); }
+  .comp-row:hover { border-color: rgba(37,99,235,0.2); }
   .btn-primary { transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s; }
   .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(123,111,232,0.3); }
   .btn-ghost { transition: border-color 0.15s, transform 0.15s; }
-  .btn-ghost:hover { transform: translateY(-1px); border-color: rgba(212,175,55,0.4); }
+  .btn-ghost:hover { transform: translateY(-1px); border-color: rgba(37,99,235,0.4); }
 
 </style>
 </head>
@@ -380,7 +380,7 @@
       </div>
       <div class="badge-row">
         <div class="badge-emoji">—</div>
-        <div class="badge-name" style="color:#8A909C">New creator</div>
+        <div class="badge-name" style="color:var(--muted)">New creator</div>
         <div class="badge-desc">Profile created, no confirmed campaigns yet. Score may still be high based on evidence submitted.</div>
         <div class="badge-req">0 campaigns</div>
       </div>
@@ -392,19 +392,19 @@
       </div>
       <div class="badge-row">
         <div class="badge-emoji">🥈</div>
-        <div class="badge-name" style="color:#A8A9AD">Silver</div>
+        <div class="badge-name" style="color:#71717A">Silver</div>
         <div class="badge-desc">Consistent delivery across 5 confirmed campaigns. Demonstrates reliability as a sponsorship partner.</div>
         <div class="badge-req">5+ campaigns</div>
       </div>
       <div class="badge-row">
         <div class="badge-emoji">🥇</div>
-        <div class="badge-name" style="color:#D4AF37">Gold</div>
+        <div class="badge-name" style="color:var(--amber)">Gold</div>
         <div class="badge-desc">10 confirmed campaigns. Strong track record, high sponsor confidence. Eligible for top directory placement.</div>
         <div class="badge-req">10+ campaigns</div>
       </div>
       <div class="badge-row">
         <div class="badge-emoji">💎</div>
-        <div class="badge-name" style="color:#B9F2FF">Platinum</div>
+        <div class="badge-name" style="color:#0E7490">Platinum</div>
         <div class="badge-desc">20+ confirmed campaigns. Highest tier of verified creator credibility on Kitscore. Reserved for creators with a substantial, verifiable track record.</div>
         <div class="badge-req">20+ campaigns</div>
       </div>
@@ -430,18 +430,18 @@
     </div>
 
     <div class="conf-levels" style="margin-top:24px">
-      <div class="conf-card" style="border-left:2px solid #8B1A1A">
-        <div class="cl-label" style="color:#F87171">Needs Improvement</div>
+      <div class="conf-card" style="border-left:2px solid var(--red)">
+        <div class="cl-label" style="color:var(--red)">Needs Improvement</div>
         <div class="cl-range">0 – 49</div>
         <div class="cl-desc">Few confirmed campaigns, low sponsor ratings, or poor would-hire-again rate. Proceed with caution and request additional references.</div>
       </div>
       <div class="conf-card" style="border-left:2px solid var(--accent)">
-        <div class="cl-label" style="color:var(--accent-light)">Established</div>
+        <div class="cl-label" style="color:var(--accent)">Established</div>
         <div class="cl-range">50 – 79</div>
         <div class="cl-desc">Solid track record with consistent sponsor ratings. Some repeat sponsors. Reliable for standard campaigns.</div>
       </div>
-      <div class="conf-card" style="border-left:2px solid #D4AF37">
-        <div class="cl-label" style="color:#D4AF37">Excellent</div>
+      <div class="conf-card" style="border-left:2px solid var(--amber)">
+        <div class="cl-label" style="color:var(--amber)">Excellent</div>
         <div class="cl-range">80 – 100</div>
         <div class="cl-desc">Exceptional sponsor satisfaction, high repeat rate, and top-tier endorsement ratings. Highest confidence for premium sponsorship commitments.</div>
       </div>
