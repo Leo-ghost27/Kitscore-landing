@@ -931,41 +931,7 @@
     </div>
   </div>
   <div class="dir-rows" id="kitDirGrid">
-    <div class="dir-row" data-niche="fitness">
-      <div class="dir-av" style="background:#2563EB">JE</div>
-      <div><div class="dir-info-name">Jordan Ellis</div><div class="dir-info-meta">Fitness · London, UK · 127K followers · 4.8% eng.</div></div>
-      <div class="dir-score-box"><div class="dir-score-num">87</div><div class="dir-score-lbl">Trust</div></div>
-      <div class="dir-badge dir-badge-gold">🥇 Gold</div>
-      <div class="dir-cta-link">Evaluate →</div>
-    </div>
-    <div class="dir-row" data-niche="beauty">
-      <div class="dir-av" style="background:#7C3AED">SN</div>
-      <div><div class="dir-info-name">Sofia Navarro</div><div class="dir-info-meta">Beauty · New York, US · 284K followers · 3.2% eng.</div></div>
-      <div class="dir-score-box"><div class="dir-score-num">79</div><div class="dir-score-lbl">Trust</div></div>
-      <div class="dir-badge dir-badge-silver">🥈 Silver</div>
-      <div class="dir-cta-link">Evaluate →</div>
-    </div>
-    <div class="dir-row" data-niche="tech">
-      <div class="dir-av" style="background:#0891B2">MK</div>
-      <div><div class="dir-info-name">Marcus Kim</div><div class="dir-info-meta">Tech & Dev · Seoul, KR · 89K followers · 6.1% eng.</div></div>
-      <div class="dir-score-box"><div class="dir-score-num">92</div><div class="dir-score-lbl">Trust</div></div>
-      <div class="dir-badge dir-badge-gold">🥇 Gold</div>
-      <div class="dir-cta-link">Evaluate →</div>
-    </div>
-    <div class="dir-row" data-niche="fitness">
-      <div class="dir-av" style="background:#059669">AL</div>
-      <div><div class="dir-info-name">Aisha Lawal</div><div class="dir-info-meta">Fitness & Nutrition · Lagos, NG · 54K followers · 7.4% eng.</div></div>
-      <div class="dir-score-box"><div class="dir-score-num">74</div><div class="dir-score-lbl">Trust</div></div>
-      <div class="dir-badge dir-badge-bronze">🥉 Bronze</div>
-      <div class="dir-cta-link">Evaluate →</div>
-    </div>
-    <div class="dir-row" data-niche="beauty">
-      <div class="dir-av" style="background:#DB2777">PL</div>
-      <div><div class="dir-info-name">Priya Lal</div><div class="dir-info-meta">Beauty & Lifestyle · Mumbai, IN · 412K followers · 2.9% eng.</div></div>
-      <div class="dir-score-box"><div class="dir-score-num">83</div><div class="dir-score-lbl">Trust</div></div>
-      <div class="dir-badge dir-badge-gold">🥇 Gold</div>
-      <div class="dir-cta-link">Evaluate →</div>
-    </div>
+    <div style="padding:24px;text-align:center;font-size:12px;color:var(--muted)" id="kitDirLoading">Loading creators…</div>
   </div>
   <div style="margin-top:14px;text-align:center">
     <a href="app/directory.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:9px 22px">Browse full directory →</a>
@@ -1576,6 +1542,47 @@ window.addEventListener('load', () => {
     fill.style.strokeDashoffset = 201 * (1 - 0.87);
   }
 });
+
+const DIR_AVATAR_COLORS = ['#2563EB','#7C3AED','#0891B2','#059669','#DB2777','#D97706'];
+const DIR_BADGES = { gold: '🥇 Gold', silver: '🥈 Silver', bronze: '🥉 Bronze' };
+
+function dirInitials(name) {
+  return (name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+}
+
+function dirRowHtml(c, i) {
+  const niche = (c.niche || '').toLowerCase();
+  const badge = DIR_BADGES[c.badge_tier] || '';
+  const meta = [c.niche, c.location].filter(Boolean).join(' · ');
+  return `
+    <a class="dir-row" data-niche="${niche}" href="app/auth.html" style="text-decoration:none">
+      <div class="dir-av" style="background:${DIR_AVATAR_COLORS[i % DIR_AVATAR_COLORS.length]}">${dirInitials(c.display_name)}</div>
+      <div><div class="dir-info-name">${c.display_name || 'Creator'}</div><div class="dir-info-meta">${meta || 'Profile in progress'}</div></div>
+      <div class="dir-score-box"><div class="dir-score-num">${c.trust_score ?? '—'}</div><div class="dir-score-lbl">Trust</div></div>
+      ${badge ? `<div class="dir-badge dir-badge-${c.badge_tier}">${badge}</div>` : '<div></div>'}
+      <div class="dir-cta-link">Evaluate →</div>
+    </a>`;
+}
+
+async function loadHomeDirectory() {
+  const grid = document.getElementById('kitDirGrid');
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/creators_directory_public?select=*&niche=not.is.null&trust_score=gt.0&order=trust_score.desc&limit=5`, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+    });
+    if (!res.ok) throw new Error(`Server error (${res.status})`);
+    const rows = await res.json();
+    if (!rows.length) {
+      grid.innerHTML = `<div style="padding:24px;text-align:center;font-size:12px;color:var(--muted)">New creator profiles are being added — check back soon.</div>`;
+      return;
+    }
+    grid.innerHTML = rows.map(dirRowHtml).join('');
+  } catch (err) {
+    console.error('Directory load error:', err);
+    grid.innerHTML = `<div style="padding:24px;text-align:center;font-size:12px;color:var(--muted)">Could not load creators right now — please refresh.</div>`;
+  }
+}
+loadHomeDirectory();
 </script>
 
 </body>
