@@ -427,7 +427,7 @@
     width: 40px; height: 40px; border-radius:0;
     background: var(--accent-dim);
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px; flex-shrink: 0;
+    color: var(--accent); flex-shrink: 0;
   }
   .sample-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 5px; color: var(--text); }
   .sample-card p { font-size: 12px; color: var(--muted); line-height: 1.55; }
@@ -530,118 +530,7 @@
   .flywheel-footer { font-size: 13px; color: var(--muted); }
   .flywheel-footer strong { color: var(--text); }
 
-  /* WAITLIST SECTION */
-  #waitlist {
-    padding: 80px 2rem 96px;
-    max-width: 600px;
-    margin: 0 auto;
-    text-align: center;
-  }
-  #waitlist h2 {
-    font-size: clamp(1.6rem, 4vw, 2.2rem);
-    font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; color: var(--text);
-  }
-  #waitlist .wl-sub {
-    font-size: 0.95rem; color: var(--muted); margin-bottom: 6px;
-  }
-  #waitlist .wl-price {
-    font-size: 0.95rem; color: var(--text); font-weight: 600; margin-bottom: 32px;
-  }
-  #waitlist .wl-price span { color: var(--accent); }
 
-  .waitlist-box {
-    background: var(--bg);
-    border: 0.5px solid var(--border);
-    border-radius:0;
-    padding: 32px 28px;
-    position: relative;
-    box-shadow: var(--shadow-md);
-    border-top: 2px solid var(--accent);
-  }
-  .waitlist-box h3 {
-    font-size: 17px; font-weight: 700; margin-bottom: 5px; color: var(--text);
-  }
-  .waitlist-box .wl-tagline {
-    font-size: 12px; color: var(--muted); margin-bottom: 20px;
-  }
-
-  .role-selector { display: flex; gap: 8px; margin-bottom: 18px; justify-content: center; }
-  .role-btn {
-    flex: 1; max-width: 150px;
-    padding: 8px 14px; border-radius:0;
-    font-size: 13px; font-weight: 600; font-family: var(--font);
-    cursor: pointer; transition: all 0.15s;
-    border: 0.5px solid var(--border); background: var(--bg2); color: var(--muted);
-  }
-  .role-btn.active {
-    background: var(--accent-dim); color: var(--accent);
-    border-color: #B5D4F4;
-  }
-  .role-btn:hover:not(.active) { border-color: var(--border-hover); color: var(--text); }
-
-  .wl-fields { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
-  .wl-input {
-    width: 100%;
-    padding: 10px 14px;
-    background: var(--bg);
-    border: 0.5px solid var(--border);
-    border-radius:0;
-    color: var(--text);
-    font-size: 14px;
-    font-family: var(--font);
-    transition: border-color 0.15s;
-    outline: none;
-  }
-  .wl-input::placeholder { color: var(--muted2); }
-  .wl-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
-
-  .wl-submit {
-    width: 100%;
-    padding: 12px;
-    background: var(--accent); color: #fff;
-    border: none; border-radius:0;
-    font-size: 14px; font-weight: 600; font-family: var(--font);
-    cursor: pointer; transition: opacity 0.15s;
-  }
-  .wl-submit:hover { opacity: 0.88; }
-  .wl-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .wl-lock {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    font-size: 11px; color: var(--muted); margin-top: 10px;
-  }
-
-  .wl-success {
-    display: none;
-    text-align: center; padding: 20px;
-  }
-  .wl-success-icon { font-size: 36px; margin-bottom: 10px; }
-  .wl-success h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; color: var(--green); }
-  .wl-success p { font-size: 13px; color: var(--muted); }
-
-  .wl-error {
-    display: none;
-    background: var(--red-bg);
-    border: 0.5px solid #EDBBBB;
-    border-radius:0;
-    padding: 9px 12px;
-    font-size: 12px; color: var(--red);
-    margin-bottom: 10px;
-    text-align: left;
-  }
-
-  .wl-count {
-    display: flex; align-items: center; justify-content: center; gap: 7px;
-    background: var(--green-bg);
-    border-radius:0; padding: 5px 14px;
-    font-size: 12px; color: var(--green); font-weight: 600;
-    margin-bottom: 20px;
-    width: fit-content; margin-left: auto; margin-right: auto;
-  }
-  .wl-count-dot { width: 6px; height: 6px; border-radius:0; background: var(--green); animation: pulse 2s infinite; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-  /* DIVIDERS */
   .section-divider { border: none; border-top: 0.5px solid var(--border); margin: 0; }
 
   /* FOOTER */
@@ -737,7 +626,6 @@
     .dp-components { grid-template-columns: 1fr 1fr; }
     .nav-links { display: none; }
     nav { padding: 0 16px; }
-    .waitlist-box { padding: 24px 14px; }
     .hero { padding: 52px 16px 44px; text-align: center; }
     h1 { font-size: clamp(24px, 8vw, 36px); }
     .hero-sub { font-size: 14px; }
@@ -1062,7 +950,7 @@
 
   <div class="sample-cards">
     <div class="sample-card">
-      <div class="sample-icon">📄</div>
+      <div class="sample-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></svg></div>
       <div>
         <h3>Sample Creator Proof Packet</h3>
         <p>The verified evidence packet a creator shares with brands and agencies.</p>
@@ -1070,7 +958,7 @@
       </div>
     </div>
     <div class="sample-card">
-      <div class="sample-icon">📋</div>
+      <div class="sample-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h6"/></svg></div>
       <div>
         <h3>Sample Sponsor Decision Memo</h3>
         <p>The full PDF decision memo delivered to sponsors after a paid evaluation.</p>
@@ -1454,16 +1342,6 @@
 <script>
   const SUPABASE_URL = 'https://tpcriphrfrrgywycviqv.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwY3JpcGhyZnJyZ3l3eWN2aXF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MTI3OTcsImV4cCI6MjA5NzE4ODc5N30.pDACvVfUMi8McYJ0zxI1Qs5vG_JcQoG-FXGE8WQl5yY';
-  const WAITLIST_TABLE = 'waitlist';
-
-  let selectedRole = 'creator';
-
-  function selectRole(role, btn) {
-    selectedRole = role;
-    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  }
-
   function showTab(name, btn) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1483,51 +1361,6 @@
     document.querySelectorAll('.pricing-toggle-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('pricing-' + name).classList.add('active');
     btn.classList.add('active');
-  }
-
-  function showError(msg) {
-    const el = document.getElementById('wl-error');
-    if (el) { el.textContent = msg; el.style.display = 'block'; }
-  }
-  function clearError() {
-    const el = document.getElementById('wl-error');
-    if (el) { el.style.display = 'none'; el.textContent = ''; }
-  }
-
-  async function submitWaitlist() {
-    clearError();
-    const name  = document.getElementById('wl-name')?.value.trim();
-    const email = document.getElementById('wl-email')?.value.trim();
-    const btn   = document.getElementById('wl-btn');
-    if (!name) { showError('Please enter your name.'); return; }
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('Please enter a valid email address.'); return; }
-    btn.disabled = true; btn.textContent = 'Joining…';
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/${WAITLIST_TABLE}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Prefer': 'return=minimal' },
-        body: JSON.stringify({ name, email, role: selectedRole, signed_up_at: new Date().toISOString() })
-      });
-      if (res.status === 409) { showSuccess(name, email, true); return; }
-      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.message || `Server error (${res.status})`); }
-      showSuccess(name, email);
-    } catch (err) {
-      console.error('Waitlist error:', err);
-      showError('Something went wrong. Please try again or email us at hello@kitscore.co');
-      btn.disabled = false; btn.textContent = 'Join waitlist';
-    }
-  }
-
-  function showSuccess(name, email, duplicate = false) {
-    const inner = document.getElementById('wl-form-inner');
-    const successEl = document.getElementById('wl-success');
-    if (inner) inner.style.display = 'none';
-    if (successEl) {
-      successEl.style.display = 'block';
-      const msg = document.getElementById('wl-success-msg');
-      if (msg) msg.textContent = duplicate ? `${email} is already on the list.` : `We'll email ${email} when Kitscore opens.`;
-    }
-    document.getElementById('wl-counter').textContent = 'You\'re on the list 🎉';
   }
 </script>
 
