@@ -3,7 +3,7 @@
 // that mutates billing state — never trust client-reported plan changes.
 const Stripe = require('stripe');
 const { adminClient } = require('./_supabase-admin');
-const { sendEmail, sponsorReceiptEmail, reportReadyEmail } = require('../lib/email');
+const { sendEmail, sponsorReceiptEmail, reportReadyEmail, refundConfirmationEmail } = require('../lib/email');
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -154,7 +154,25 @@ const handler = async (req, res) => {
         break;
       }
 
-      // ── invoice.payment_failed ──────────────────────────────────────────────
+      // ── charge.refunded ─────────────────────────────────────────────────────
+      // Fires when a refund is issued (from Stripe dashboard or API).
+      // Send confirmation email to the customer so they know it's on its way.
+      case 'charge.refunded': {
+        const charge = event.data.object;
+        const customerEmail = charge.billing_details?.email || charge.receipt_email;
+        if (!customerEmail) break;
+
+        // Get the most recent refund amount
+        const latestRefund = charge.refunds?.data?.[0];
+        const amount = latestRefund?.amount || charge.amount_refunded;
+        const description = charge.description || 'Kitscore purchase';
+
+        await sendEmail({
+          to: customerEmail,
+          ...refundConfirmationEmail({ amount, description }),
+        });
+        break;
+      }
       // Fires when a renewal charge fails. Mark as past_due — Stripe will
       // retry before ultimately cancelling, so don't downgrade immediately.
       case 'invoice.payment_failed': {
