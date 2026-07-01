@@ -125,8 +125,9 @@ async function submitForm() {
   btn.disabled = true;
 
   if (mode === 'login') {
-    const { error } = await sb.auth.signInWithPassword({ email, password });
+    const { data: loginData, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) { showMsg(error.message, 'error'); btn.disabled = false; return; }
+    await ensureProfile(loginData.user);
     await routeToDashboard();
     return;
   }
@@ -135,7 +136,10 @@ async function submitForm() {
   const displayName = document.getElementById('displayName').value.trim();
   if (!displayName) { showMsg('Name / company is required.', 'error'); btn.disabled = false; return; }
 
-  const { data, error } = await sb.auth.signUp({ email, password });
+  const { data, error } = await sb.auth.signUp({
+    email, password,
+    options: { data: { role, display_name: displayName } }
+  });
   if (error) { showMsg(error.message, 'error'); btn.disabled = false; return; }
   if (!data.session) {
     showMsg('Check your email to confirm your account, then sign in.', 'ok');
@@ -143,16 +147,8 @@ async function submitForm() {
     return;
   }
 
-  const { data: profile, error: profileErr } = await sb.from('profiles')
-    .insert({ auth_user_id: data.user.id, role, display_name: displayName, email })
-    .select().single();
-  if (profileErr) { showMsg('Account created but profile setup failed: ' + profileErr.message, 'error'); btn.disabled = false; return; }
-
-  if (role === 'creator') {
-    await sb.from('creators').insert({ id: profile.id });
-  } else {
-    await sb.from('sponsors').insert({ id: profile.id, company_name: displayName });
-  }
+  const profile = await ensureProfile(data.user);
+  if (!profile) { showMsg('Account created but profile setup failed. Please try signing in.', 'error'); btn.disabled = false; return; }
   await routeToDashboard();
 }
 
@@ -163,7 +159,9 @@ async function routeToDashboard() {
 }
 
 (async () => {
-  const profile = await getCurrentProfile();
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return;
+  const profile = await ensureProfile(session.user);
   if (profile) await routeToDashboard();
 })();
 </script>

@@ -16,6 +16,37 @@ async function getCurrentProfile() {
   return data;
 }
 
+// Ensures a profile (and matching creators/sponsors row) exists for the given
+// authenticated user, creating it from their signup metadata if missing.
+// Safe to call on every login/session — no-ops if the profile already exists.
+// This covers users who confirmed their email and are logging in for the
+// first time, since the signup form itself only runs while an immediate
+// session exists (i.e. when email confirmation is disabled).
+async function ensureProfile(user) {
+  if (!user) return null;
+  const existing = await getCurrentProfile();
+  if (existing) return existing;
+
+  const role = user.user_metadata?.role;
+  const displayName = user.user_metadata?.display_name;
+  if (!role || !displayName) {
+    console.error('ensureProfile: missing role/display_name metadata for user', user.id);
+    return null;
+  }
+
+  const { data: profile, error: profileErr } = await sb.from('profiles')
+    .insert({ auth_user_id: user.id, role, display_name: displayName, email: user.email })
+    .select().single();
+  if (profileErr) { console.error('ensureProfile: profile insert failed:', profileErr.message); return null; }
+
+  if (role === 'creator') {
+    await sb.from('creators').insert({ id: profile.id });
+  } else {
+    await sb.from('sponsors').insert({ id: profile.id, company_name: displayName });
+  }
+  return profile;
+}
+
 // Redirects to auth.html if nobody is signed in, or to the wrong dashboard
 // if the signed-in profile's role doesn't match what this page expects.
 async function requireRole(expectedRole) {

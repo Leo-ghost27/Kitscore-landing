@@ -27,11 +27,19 @@ function planFromPriceId(priceId) {
   return map[priceId] || null;
 }
 
-// Find a sponsor by their Stripe customer ID
-async function sponsorByCustomerId(admin, customerId) {
-  const { data } = await admin.from('sponsors')
+// Find a sponsor or creator account by their Stripe customer ID.
+// Checks both tables since either role can hold a subscription
+// (sponsors: starter/team, creators: creator_pro).
+async function accountByCustomerId(admin, customerId) {
+  const { data: sponsor } = await admin.from('sponsors')
     .select('id, plan').eq('stripe_customer_id', customerId).maybeSingle();
-  return data;
+  if (sponsor) return { ...sponsor, table: 'sponsors' };
+
+  const { data: creator } = await admin.from('creators')
+    .select('id, plan').eq('stripe_customer_id', customerId).maybeSingle();
+  if (creator) return { ...creator, table: 'creators' };
+
+  return null;
 }
 
 // Retrieve the plan name from a Stripe subscription object
@@ -64,9 +72,11 @@ const handler = async (req, res) => {
         const session = event.data.object;
         const { profileId, profileRole, product, evaluationId } = session.metadata || {};
 
-        // Persist stripe_customer_id if not already stored
+        // Persist stripe_customer_id if not already stored — to the correct
+        // table for this buyer's role, since creator_pro buyers are creators.
         if (session.customer && profileId) {
-          await admin.from('sponsors')
+          const accountTable = profileRole === 'creator' ? 'creators' : 'sponsors';
+          await admin.from(accountTable)
             .update({ stripe_customer_id: session.customer })
             .eq('id', profileId)
             .is('stripe_customer_id', null);
@@ -114,18 +124,19 @@ const handler = async (req, res) => {
       // Source of truth for what plan the sponsor is actually on right now.
       case 'customer.subscription.updated': {
         const sub = event.data.object;
-        const sponsor = await sponsorByCustomerId(admin, sub.customer);
-        if (!sponsor) break;
+        const account = await accountByCustomerId(admin, sub.customer);
+        if (!account) break;
 
         const plan = await planFromSubscription(sub);
         const status = sub.status; // active | past_due | canceled | unpaid etc.
 
-        const update = { subscription_status: status };
+        const update = {};
+        if (account.table === 'sponsors') update.subscription_status = status;
         if (plan) update.plan = plan;
         // If Stripe shows cancelled or unpaid, downgrade to free
         if (status === 'canceled' || status === 'unpaid') update.plan = 'free';
 
-        await admin.from('sponsors').update(update).eq('id', sponsor.id);
+        await admin.from(account.table).update(update).eq('id', account.id);
         break;
       }
 
@@ -134,12 +145,12 @@ const handler = async (req, res) => {
       // Downgrade the sponsor to free — they've had their last paid period.
       case 'customer.subscription.deleted': {
         const sub = event.data.object;
-        const sponsor = await sponsorByCustomerId(admin, sub.customer);
-        if (!sponsor) break;
+        const account = await accountByCustomerId(admin, sub.customer);
+        if (!account) break;
 
-        await admin.from('sponsors')
-          .update({ plan: 'free', subscription_status: 'cancelled' })
-          .eq('id', sponsor.id);
+        const update = { plan: 'free' };
+        if (account.table === 'sponsors') update.subscription_status = 'cancelled';
+        await admin.from(account.table).update(update).eq('id', account.id);
         break;
       }
 
@@ -149,12 +160,16 @@ const handler = async (req, res) => {
       case 'invoice.payment_failed': {
         const invoice = event.data.object;
         if (!invoice.customer) break;
-        const sponsor = await sponsorByCustomerId(admin, invoice.customer);
-        if (!sponsor) break;
+        const account = await accountByCustomerId(admin, invoice.customer);
+        if (!account) break;
 
-        await admin.from('sponsors')
-          .update({ subscription_status: 'past_due' })
-          .eq('id', sponsor.id);
+        // creators has no subscription_status column — nothing to persist
+        // there yet. Sponsors get flagged past_due so the app can warn them.
+        if (account.table === 'sponsors') {
+          await admin.from('sponsors')
+            .update({ subscription_status: 'past_due' })
+            .eq('id', account.id);
+        }
         break;
       }
 
