@@ -32,4 +32,12 @@ async function getAuthedSponsor(req) {
   return getAuthedProfile(req, 'sponsor');
 }
 
-module.exports = { adminClient, getAuthedSponsor, getAuthedProfile };
+async function getAuthedCreator(req) {
+  const profile = await getAuthedProfile(req, 'creator');
+  if (!profile) return null;
+  const admin = adminClient();
+  const { data: creator } = await admin.from('creators').select('*').eq('id', profile.id).maybeSingle();
+  return creator ? { ...profile, ...creator, id: profile.id } : null;
+}
+
+module.exports = { adminClient, getAuthedSponsor, getAuthedCreator, getAuthedProfile };
