@@ -94,8 +94,20 @@
       <div class="field"><label>Password</label>
         <div class="field-icon"><i class="ti ti-lock" aria-hidden="true"></i><input id="password" type="password" placeholder="••••••••"></div>
       </div>
+      <div id="forgotLink" style="text-align:right;margin-top:-6px;margin-bottom:10px">
+        <a href="#" onclick="showForgot(event)" style="font-size:11px;color:#2563EB;text-decoration:none">Forgot password?</a>
+      </div>
       <button class="submit" id="submitBtn" onclick="submitForm()"><i class="ti ti-arrow-right" aria-hidden="true"></i>Sign in</button>
       <div id="msg"></div>
+      <!-- Reset password panel (hidden by default) -->
+      <div id="resetPanel" style="display:none;margin-top:16px">
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:10px">Enter your email and we'll send a reset link from <strong>hello@kitscore.co</strong></div>
+        <div class="field">
+          <div class="field-icon"><i class="ti ti-mail" aria-hidden="true"></i><input id="resetEmail" type="email" placeholder="you@example.com"></div>
+        </div>
+        <button class="submit" id="resetBtn" onclick="sendReset()"><i class="ti ti-send"></i>Send reset link</button>
+        <div style="text-align:center;margin-top:10px"><a href="#" onclick="hideReset(event)" style="font-size:11px;color:var(--color-text-secondary);text-decoration:none">← Back to sign in</a></div>
+      </div>
     </div>
   </div>
 
@@ -108,9 +120,46 @@ function setMode(m) {
   document.getElementById('tabLogin').classList.toggle('active', m==='login');
   document.getElementById('tabSignup').classList.toggle('active', m==='signup');
   document.getElementById('signupOnly').style.display = m==='signup' ? 'block' : 'none';
+  document.getElementById('forgotLink').style.display = m==='login' ? 'block' : 'none';
   document.getElementById('modeSub').textContent = m==='login' ? 'Sign in to your account' : 'Set up your Kitscore account';
   document.getElementById('submitBtn').innerHTML = m==='login' ? '<i class="ti ti-arrow-right"></i>Sign in' : '<i class="ti ti-arrow-right"></i>Create account';
   document.getElementById('msg').innerHTML = '';
+  hideReset();
+}
+
+function showForgot(e) {
+  e.preventDefault();
+  document.getElementById('resetPanel').style.display = 'block';
+  document.getElementById('forgotLink').style.display = 'none';
+  document.getElementById('submitBtn').style.display = 'none';
+  const emailVal = document.getElementById('email').value;
+  if (emailVal) document.getElementById('resetEmail').value = emailVal;
+}
+
+function hideReset(e) {
+  if (e) e.preventDefault();
+  document.getElementById('resetPanel').style.display = 'none';
+  document.getElementById('forgotLink').style.display = mode === 'login' ? 'block' : 'none';
+  document.getElementById('submitBtn').style.display = 'flex';
+}
+
+async function sendReset() {
+  const email = document.getElementById('resetEmail').value.trim();
+  if (!email) { showMsg('Please enter your email address.', 'error'); return; }
+  const btn = document.getElementById('resetBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader"></i>Sending…';
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://www.kitscore.co/app/auth.html?reset=true'
+  });
+  if (error) {
+    showMsg(error.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-send"></i>Send reset link';
+    return;
+  }
+  showMsg('Reset link sent to ' + email + ' — check your inbox (including spam). The email will come from hello@kitscore.co.', 'ok');
+  btn.innerHTML = '<i class="ti ti-check"></i>Sent!';
 }
 
 function showMsg(text, type) {
