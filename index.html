@@ -134,7 +134,7 @@
   .hero2 { padding: 80px 2rem 96px; max-width: 1180px; margin: 0 auto; }
   .hero2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
   .hero2-left { text-align: left; }
-  .hero2-eyebrow { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-dim); color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 5px 14px; border-radius:0; border: 1px solid #B5D4F4; margin-bottom: 22px; }
+  .hero2-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: #fff; color: var(--accent); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; border-radius:0; border: 1px solid var(--border); margin-bottom: 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
   .hero2-ai-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); margin-left: 10px; }
   .hero2-left h1 { font-size: clamp(2rem, 4.2vw, 3rem); font-weight: 700; line-height: 1.12; letter-spacing: -0.02em; color: var(--text); margin-bottom: 20px; }
   .hero2-left h1 .accent { color: var(--accent); }
@@ -762,11 +762,11 @@
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="2" y="16" width="5" height="10" rx="1" fill="#2563EB" opacity="0.5"/>
       <rect x="9" y="10" width="5" height="16" rx="1" fill="#2563EB" opacity="0.75"/>
-      <rect x="16" y="4" width="5" height="22" rx="1" fill="#2563EB"/>
-      <circle cx="23" cy="6" r="5" fill="#2563EB"/>
-      <path d="M20.5 6l1.8 1.8L25 4.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="16" y="4" width="5" height="20" rx="1" fill="#2563EB"/>
+      <circle cx="23.5" cy="5.5" r="4.5" fill="#2563EB" stroke="#fff" stroke-width="1"/>
+      <path d="M21.3 5.5l1.5 1.5L25.5 4" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <span style="font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;color:#0F172A">Kit</span><span style="font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;color:#2563EB">score</span>
+    <span style="font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;color:#0F172A">Kit<span style="color:#2563EB">score</span></span>
   </a>
   <div class="nav-links">
     <a href="#how-it-works" class="nav-link">How it works</a>
@@ -784,7 +784,7 @@
 <div class="hero2">
   <div class="hero2-grid">
     <div class="hero2-left">
-      <span class="hero2-eyebrow">Verified Sponsorship Reputation</span>
+      <span class="hero2-eyebrow"><span style="width:7px;height:7px;border-radius:50%;background:#22C55E;flex-shrink:0"></span>Verified Sponsorship Reputation</span>
       <span class="hero2-ai-tag"><span style="width:6px;height:6px;border-radius:0;background:var(--accent);display:inline-block"></span>Now with Sponsorship Intelligence AI</span>
       <h1>Know Before<br><span class="accent">You Sponsor</span></h1>
       <p class="hero-sub">Evaluate creators using verified campaign history, sponsor endorsements, reliability scores, and evidence-backed reports. Make sponsorship decisions using proof, not guesswork.</p>
@@ -803,15 +803,17 @@
     <div>
       <!-- Mock creator card -->
       <div style="position:relative">
-        <div style="position:absolute;top:-14px;right:-10px;z-index:2;background:#fff;border:1.5px solid var(--accent);border-radius:0;padding:8px 14px;box-shadow:var(--shadow-md)">
-          <div style="font-size:12px;font-weight:700;color:var(--accent)">88% Confidence</div>
-          <div style="font-size:10px;color:var(--muted)">High evidence backing</div>
-        </div>
         <div class="cpc">
-        <div class="cpc-header">
+        <div class="cpc-header" style="position:relative">
           <div class="cpc-avatar">JE</div>
-          <div><div class="cpc-name">Jordan Ellis</div><div class="cpc-handle">@jordanellis · Instagram · YouTube</div></div>
-          <div class="cpc-niche">Fitness</div>
+          <div><div class="cpc-name">Jordan Ellis</div><div class="cpc-handle">@jordanellis · Fitness · London</div></div>
+          <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#22C55E"><span style="width:6px;height:6px;border-radius:50%;background:#22C55E"></span>Live</span>
+            <div style="background:#fff;border:1.5px solid var(--accent);padding:6px 10px;text-align:right;box-shadow:0 2px 8px rgba(37,99,235,0.12)">
+              <div style="font-size:11px;font-weight:700;color:var(--accent)">88% Confidence</div>
+              <div style="font-size:10px;color:var(--muted)">High evidence backing</div>
+            </div>
+          </div>
         </div>
         <div style="padding:24px">
           <div style="display:flex;gap:24px;align-items:center;margin-bottom:20px">
@@ -843,9 +845,9 @@
             <div class="cpc-comp-row"><span class="cpc-comp-name">Consistency</span><div class="cpc-bar-bg"><div class="cpc-bar" style="width:84%;background:#3B6D11"></div></div><span class="cpc-comp-val">84</span><span class="cpc-comp-tag cpc-tag-live">Live</span></div>
             <div class="cpc-comp-row"><span class="cpc-comp-name">Professionalism</span><div class="cpc-bar-bg"><div class="cpc-bar" style="width:85%;background:#3B6D11"></div></div><span class="cpc-comp-val">85</span><span class="cpc-comp-tag cpc-tag-live">Live</span></div>
           </div>
-          <div class="cpc-unlock" style="margin-top:16px">
-            <div class="cpc-unlock-text"><strong>Unlock full evaluation</strong> — decision memo, risk assessment, endorsements, audience fit</div>
-            <button class="cpc-unlock-btn" onclick="window.location.href='app/auth.html'">$29 →</button>
+          <div style="margin-top:16px">
+            <button onclick="window.location.href='app/auth.html'" style="width:100%;background:var(--accent);color:#fff;border:none;padding:13px;font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;border-radius:0">Unlock Full Evaluation — $29</button>
+            <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:8px">Score breakdown · Risk assessment · Decision memo PDF</div>
           </div>
         </div>
         </div>
@@ -1395,8 +1397,14 @@
     <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:36px;margin-bottom:40px">
       <div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-          <div style="width:24px;height:24px;border-radius:0;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">K</div>
-          <span style="font-size:1rem;font-weight:700;letter-spacing:-0.02em;color:#fff">Kitscore</span>
+          <svg width="22" height="22" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="16" width="5" height="10" rx="1" fill="#2563EB" opacity="0.5"/>
+            <rect x="9" y="10" width="5" height="16" rx="1" fill="#2563EB" opacity="0.75"/>
+            <rect x="16" y="4" width="5" height="20" rx="1" fill="#2563EB"/>
+            <circle cx="23.5" cy="5.5" r="4.5" fill="#2563EB" stroke="#111318" stroke-width="1"/>
+            <path d="M21.3 5.5l1.5 1.5L25.5 4" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span style="font-size:1rem;font-weight:800;letter-spacing:-0.02em;color:#fff">Kit<span style="color:#2563EB">score</span></span>
         </div>
         <p style="font-size:13px;color:#8A909C;line-height:1.7;max-width:260px;margin-bottom:18px">The sponsorship due diligence platform. Evaluate creators using verified campaign history, not guesswork.</p>
         <div style="display:flex;gap:10px">
