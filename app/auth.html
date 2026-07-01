@@ -138,11 +138,14 @@ async function submitForm() {
 
   const { data, error } = await sb.auth.signUp({
     email, password,
-    options: { data: { role, display_name: displayName } }
+    options: {
+      emailRedirectTo: 'https://www.kitscore.co/app/auth.html',
+      data: { role, display_name: displayName }
+    }
   });
   if (error) { showMsg(error.message, 'error'); btn.disabled = false; return; }
   if (!data.session) {
-    showMsg('Check your email to confirm your account, then sign in.', 'ok');
+    showMsg('Account created! Check your email for a confirmation link from hello@kitscore.co — click it to activate your account, then sign in here.', 'ok');
     btn.disabled = false;
     return;
   }
