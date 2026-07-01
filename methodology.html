@@ -102,7 +102,14 @@
   .badge-row { background: var(--bg2); display: grid; grid-template-columns: 60px 120px 1fr auto; gap: 16px; align-items: center; padding: 16px 20px; }
   .badge-row.header { background: var(--bg3); }
   .badge-row.header span { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-  .badge-emoji { font-size: 24px; text-align: center; }
+  .badge-icon {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--icon-border, var(--border));
+    background: var(--bg3);
+    font-size: 11px; font-weight: 700; letter-spacing: .03em;
+    color: var(--icon-color, var(--muted));
+  }
   .badge-name  { font-size: 14px; font-weight: 600; color: var(--text); }
   .badge-desc  { font-size: 13px; color: var(--muted); }
   .badge-req   { font-size: 12px; font-weight: 600; color: var(--accent); white-space: nowrap; }
@@ -360,31 +367,31 @@
         <span></span><span>Badge</span><span>What it means</span><span>Requirement</span>
       </div>
       <div class="badge-row">
-        <div class="badge-emoji"><span style="display:inline-block;width:20px;height:20px;background:var(--border)"></span></div>
+        <div class="badge-icon" style="--icon-color:var(--muted)">—</div>
         <div class="badge-name" style="color:var(--muted)">New creator</div>
         <div class="badge-desc">Profile created, no confirmed campaigns yet. Score may still be high based on evidence submitted.</div>
         <div class="badge-req">0 campaigns</div>
       </div>
       <div class="badge-row">
-        <div class="badge-emoji"><span style="display:inline-block;width:20px;height:20px;background:#CD7F32"></span></div>
+        <div class="badge-icon" style="--icon-border:#CD7F32;--icon-color:#CD7F32">BR</div>
         <div class="badge-name" style="color:#CD7F32">Bronze</div>
         <div class="badge-desc">Has completed and had at least 2 campaigns mutually confirmed. Sponsor-verified track record begins here.</div>
         <div class="badge-req">2+ campaigns</div>
       </div>
       <div class="badge-row">
-        <div class="badge-emoji"><span style="display:inline-block;width:20px;height:20px;background:#71717A"></span></div>
+        <div class="badge-icon" style="--icon-border:#71717A;--icon-color:#71717A">SI</div>
         <div class="badge-name" style="color:#71717A">Silver</div>
         <div class="badge-desc">Consistent delivery across 5 confirmed campaigns. Demonstrates reliability as a sponsorship partner.</div>
         <div class="badge-req">5+ campaigns</div>
       </div>
       <div class="badge-row">
-        <div class="badge-emoji"><span style="display:inline-block;width:20px;height:20px;background:#854F0B"></span></div>
+        <div class="badge-icon" style="--icon-border:#854F0B;--icon-color:#854F0B">GO</div>
         <div class="badge-name" style="color:#854F0B">Gold</div>
         <div class="badge-desc">10 confirmed campaigns. Strong track record, high sponsor confidence. Eligible for top directory placement.</div>
         <div class="badge-req">10+ campaigns</div>
       </div>
       <div class="badge-row">
-        <div class="badge-emoji"><span style="display:inline-block;width:20px;height:20px;background:#0E7490"></span></div>
+        <div class="badge-icon" style="--icon-border:#0E7490;--icon-color:#0E7490">PL</div>
         <div class="badge-name" style="color:#0E7490">Platinum</div>
         <div class="badge-desc">20+ confirmed campaigns. Highest tier of verified creator credibility on Kitscore. Reserved for creators with a substantial, verifiable track record.</div>
         <div class="badge-req">20+ campaigns</div>

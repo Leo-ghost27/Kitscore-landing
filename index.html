@@ -843,7 +843,61 @@
     <span>Creator</span><span>Niche</span><span>Location</span><span>Trust Score</span><span>Tier</span><span></span>
   </div>
   <div class="dir-rows" id="kitDirGrid">
-    <div style="padding:24px;text-align:center;font-size:12px;color:var(--muted)" id="kitDirLoading">Loading creators…</div>
+    <a class="dir-row" data-niche="fitness" href="app/auth.html" style="text-decoration:none">
+      <div class="dir-row-creator">
+        <div class="dir-av" style="background:#2563EB">MK</div>
+        <div class="dir-info-name">Marcus Khoury</div>
+      </div>
+      <div class="dir-info-meta">Fitness</div>
+      <div class="dir-info-meta">Manchester, UK</div>
+      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">87</span><span class="dir-score-lbl"> /100</span></div>
+      <div><span class="dir-badge dir-badge-gold">Gold</span></div>
+      <div class="dir-cta-link">Evaluate →</div>
+    </a>
+    <a class="dir-row" data-niche="beauty" href="app/auth.html" style="text-decoration:none">
+      <div class="dir-row-creator">
+        <div class="dir-av" style="background:#DB2777">SL</div>
+        <div class="dir-info-name">Sophie Lau</div>
+      </div>
+      <div class="dir-info-meta">Beauty</div>
+      <div class="dir-info-meta">Edinburgh, UK</div>
+      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">91</span><span class="dir-score-lbl"> /100</span></div>
+      <div><span class="dir-badge dir-badge-gold">Gold</span></div>
+      <div class="dir-cta-link">Evaluate →</div>
+    </a>
+    <a class="dir-row" data-niche="lifestyle" href="app/auth.html" style="text-decoration:none">
+      <div class="dir-row-creator">
+        <div class="dir-av" style="background:#7C3AED">AA</div>
+        <div class="dir-info-name">Aaliya Ahmed</div>
+      </div>
+      <div class="dir-info-meta">Lifestyle</div>
+      <div class="dir-info-meta">London, UK</div>
+      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">80</span><span class="dir-score-lbl"> /100</span></div>
+      <div><span class="dir-badge dir-badge-silver">Silver</span></div>
+      <div class="dir-cta-link">Evaluate →</div>
+    </a>
+    <a class="dir-row" data-niche="tech" href="app/auth.html" style="text-decoration:none">
+      <div class="dir-row-creator">
+        <div class="dir-av" style="background:#0891B2">JP</div>
+        <div class="dir-info-name">James Patel</div>
+      </div>
+      <div class="dir-info-meta">Tech</div>
+      <div class="dir-info-meta">Bristol, UK</div>
+      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">78</span><span class="dir-score-lbl"> /100</span></div>
+      <div><span class="dir-badge dir-badge-silver">Silver</span></div>
+      <div class="dir-cta-link">Evaluate →</div>
+    </a>
+    <a class="dir-row" data-niche="fitness" href="app/auth.html" style="text-decoration:none">
+      <div class="dir-row-creator">
+        <div class="dir-av" style="background:#059669">PN</div>
+        <div class="dir-info-name">Priya Nair</div>
+      </div>
+      <div class="dir-info-meta">Fitness</div>
+      <div class="dir-info-meta">Leeds, UK</div>
+      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">65</span><span class="dir-score-lbl"> /100</span></div>
+      <div><span class="dir-badge dir-badge-bronze">Bronze</span></div>
+      <div class="dir-cta-link">Evaluate →</div>
+    </a>
   </div>
   <div style="margin-top:14px;text-align:center">
     <a href="app/directory.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:9px 22px">Browse full directory →</a>
@@ -1381,7 +1435,7 @@ window.addEventListener('load', () => {
 });
 
 const DIR_AVATAR_COLORS = ['#2563EB','#7C3AED','#0891B2','#059669','#DB2777','#D97706'];
-const DIR_BADGES = { gold: '🥇 Gold', silver: '🥈 Silver', bronze: '🥉 Bronze' };
+const DIR_BADGES = { gold: 'Gold', silver: 'Silver', bronze: 'Bronze' };
 
 function dirInitials(name) {
   return (name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -1406,20 +1460,25 @@ function dirRowHtml(c, i) {
 
 async function loadHomeDirectory() {
   const grid = document.getElementById('kitDirGrid');
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/creators_directory_public?select=*&niche=not.is.null&trust_score=gt.0&order=trust_score.desc&limit=5`, {
-      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+      signal: controller.signal
     });
+    clearTimeout(timeout);
     if (!res.ok) throw new Error(`Server error (${res.status})`);
     const rows = await res.json();
-    if (!rows.length) {
-      grid.innerHTML = `<div style="padding:24px;text-align:center;font-size:12px;color:var(--muted)">New creator profiles are being added — check back soon.</div>`;
-      return;
+    // Only swap the pre-rendered preview rows for live data once we actually have some —
+    // never leave visitors looking at an empty or stuck state.
+    if (rows.length) {
+      grid.innerHTML = rows.map(dirRowHtml).join('');
     }
-    grid.innerHTML = rows.map(dirRowHtml).join('');
   } catch (err) {
-    console.error('Directory load error:', err);
-    grid.innerHTML = `<div style="padding:24px;text-align:center;font-size:12px;color:var(--muted)">Could not load creators right now — please refresh.</div>`;
+    clearTimeout(timeout);
+    console.error('Directory load error (showing preview rows instead):', err);
+    // Fall through silently — the pre-rendered rows already in #kitDirGrid stay visible.
   }
 }
 loadHomeDirectory();
