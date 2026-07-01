@@ -136,14 +136,20 @@
 <script src="supabase-client.js?v=2"></script>
 <script src="nav.js?v=2"></script>
 <script>
-const BADGE_EMOJI  = { none:'—', bronze:'🥉', silver:'🥈', gold:'🥇', platinum:'💎' };
+const BADGE_SVG = {
+  none:     `<svg width="14" height="14" viewBox="0 0 14 14"><rect width="14" height="14" rx="2" fill="#E5E7EB"/></svg>`,
+  bronze:   `<svg width="14" height="14" viewBox="0 0 14 14"><rect width="14" height="14" rx="2" fill="#CD7F32"/></svg>`,
+  silver:   `<svg width="14" height="14" viewBox="0 0 14 14"><rect width="14" height="14" rx="2" fill="#A8A9AD"/></svg>`,
+  gold:     `<svg width="14" height="14" viewBox="0 0 14 14"><rect width="14" height="14" rx="2" fill="#D4AF37"/></svg>`,
+  platinum: `<svg width="14" height="14" viewBox="0 0 14 14"><rect width="14" height="14" rx="2" fill="#2563EB"/></svg>`,
+};
 const BADGE_LABEL  = { none:'New creator', bronze:'Bronze', silver:'Silver', gold:'Gold', platinum:'Platinum' };
-const BADGE_COLOR  = { none:'#8A909C', bronze:'#CD7F32', silver:'#A8A9AD', gold:'#D4AF37', platinum:'#B9F2FF' };
+const BADGE_COLOR  = { none:'#8A909C', bronze:'#CD7F32', silver:'#A8A9AD', gold:'#D4AF37', platinum:'#2563EB' };
 const MILESTONES   = [
-  { tier:'bronze',   label:'Bronze Trust Badge', threshold:2,  emoji:'🥉' },
-  { tier:'silver',   label:'Silver Trust Badge',  threshold:5,  emoji:'🥈' },
-  { tier:'gold',     label:'Gold Trust Badge',    threshold:10, emoji:'🥇' },
-  { tier:'platinum', label:'Platinum Badge',      threshold:20, emoji:'💎' },
+  { tier:'bronze',   label:'Bronze Trust Badge', threshold:2,  svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#CD7F32"/><path d="M6 10l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
+  { tier:'silver',   label:'Silver Trust Badge',  threshold:5,  svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#A8A9AD"/><path d="M6 10l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
+  { tier:'gold',     label:'Gold Trust Badge',    threshold:10, svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#D4AF37"/><path d="M6 10l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
+  { tier:'platinum', label:'Platinum Badge',      threshold:20, svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#2563EB"/><path d="M6 10l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
 ];
 const ALL_COMPONENTS = [
   { key:'audience_authenticity', label:'Audience authenticity', advice:'Upload a screenshot of your audience demographics from your platform analytics.', href:'evidence.html' },
@@ -262,7 +268,7 @@ async function load() {
         ${renderRing(score)}
         <div class="score-meta">
           <div class="badge-pill">
-            <span style="color:${BADGE_COLOR[creator.badge_tier]}">${BADGE_EMOJI[creator.badge_tier]}</span>
+            <span>${BADGE_SVG[creator.badge_tier]}</span>
             ${BADGE_LABEL[creator.badge_tier]}
           </div>
           ${hasScore?`
@@ -312,7 +318,7 @@ async function load() {
     <div class="card">
       <div class="sec">Next milestone</div>
       <div class="milestone-card">
-        <div class="ms-icon">${nextMs.emoji}</div>
+        <div class="ms-icon">${nextMs.svg}</div>
         <div class="ms-bar-wrap">
           <div style="font-size:13px;font-weight:500;color:var(--color-text-primary)">${nextMs.label}</div>
           <div class="ms-bar-track"><div class="ms-bar-fill" style="width:${msPct}%"></div></div>
@@ -321,7 +327,7 @@ async function load() {
       </div>
     </div>`:`
     <div class="card" style="text-align:center;padding:20px">
-      <div style="font-size:28px;margin-bottom:8px">💎</div>
+      <div style="margin-bottom:8px"><svg width="28" height="28" viewBox="0 0 28 28"><rect width="28" height="28" rx="4" fill="#2563EB"/><path d="M8 14l5 5 7-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <div style="font-size:13px;font-weight:600;color:var(--color-text-primary)">Platinum achieved</div>
       <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">You've reached the highest trust tier.</div>
     </div>`}
@@ -413,7 +419,7 @@ async function load() {
           <span class="ev-status st-${e.status?.replace('_verified','verified').replace('under_','')}">${(e.status||'').replace(/_/g,' ')}</span>
         </div>`).join(''):`
       <div class="empty-state">
-        <div class="es-icon">📎</div>
+        <div class="es-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
         <div class="es-title">No evidence uploaded yet</div>
         <div class="es-body">Upload audience screenshots, campaign briefs, or analytics exports to verify your score components and raise your confidence rating.</div>
         <a href="evidence.html">Upload your first piece of evidence →</a>
