@@ -162,7 +162,16 @@
 <body>
 
 <nav>
-  <a href="/" class="nav-logo">Kit<span>score</span></a>
+  <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:9px;text-decoration:none">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="16" width="5" height="10" rx="1" fill="#2563EB" opacity="0.5"/>
+      <rect x="9" y="10" width="5" height="16" rx="1" fill="#2563EB" opacity="0.75"/>
+      <rect x="16" y="4" width="5" height="22" rx="1" fill="#2563EB"/>
+      <circle cx="23" cy="6" r="5" fill="#2563EB"/>
+      <path d="M20.5 6l1.8 1.8L25 4.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span style="font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;color:#0F172A">Kit</span><span style="font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;color:#2563EB">score</span>
+  </a>
   <div class="nav-links">
     <a href="/#how-it-works" class="nav-link">How it works</a>
     <a href="/#pricing" class="nav-link">Pricing</a>
@@ -450,25 +459,23 @@
 </section>
 
 <!-- ── CTA ── -->
-<section style="padding:64px 0">
-  <div class="container">
-    <div class="cta-block">
-      <div class="section-label" style="margin-bottom:10px">Get started</div>
-      <h2>Build your score.<br>Or evaluate a creator.</h2>
-      <p>Creators build their Trust Score free. Sponsors unlock a full evaluation for $29 — trust score, confidence rating, brand safety assessment, and a decision memo.</p>
-      <a href="/app/auth.html" class="btn-primary">Create free account</a>
-      <a href="/sample-sponsor-decision-memo.html" target="_blank" class="btn-ghost">View sample report</a>
+<div style="background:var(--accent);padding:88px 2rem;text-align:center;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.12) 1px,transparent 1px);background-size:18px 18px;opacity:0.5"></div>
+  <div style="position:relative;max-width:640px;margin:0 auto">
+    <div style="font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,0.75);margin-bottom:18px">Get started</div>
+    <h2 style="font-size:clamp(24px,3.5vw,36px);font-weight:700;color:#fff;line-height:1.2;letter-spacing:-0.02em;margin-bottom:18px">Build your score.<br>Or evaluate a creator.</h2>
+    <p style="font-size:16px;color:rgba(255,255,255,0.85);line-height:1.6;margin-bottom:32px">Creators build their Trust Score free. Sponsors unlock a full evaluation for $29 — trust score, confidence rating, brand safety assessment, and a decision memo.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="/app/auth.html" style="text-decoration:none;background:#fff;color:var(--accent);padding:13px 28px;border-radius:0;font-size:15px;font-weight:700;font-family:var(--font)">Create free account</a>
+      <a href="/sample-sponsor-decision-memo.html" target="_blank" style="text-decoration:none;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.6);padding:13px 28px;border-radius:0;font-size:15px;font-weight:600;font-family:var(--font)">View sample report</a>
     </div>
   </div>
-</section>
+</div>
 
 <footer>
   <span>Kitscore.co · Sponsorship trust infrastructure</span>
-  <span style="display:flex;align-items:center;gap:20px">
-    <a href="/app/auth.html" style="background:var(--accent);color:#fff;padding:7px 16px;border-radius:0;font-size:12px;font-weight:600;text-decoration:none;font-family:var(--font)">Get Started</a>
-    <span style="display:flex;align-items:center;gap:14px">
-      <a href="https://www.instagram.com/kitscore.co" target="_blank" rel="noopener" title="Instagram" style="color:var(--muted,#888);display:inline-flex;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a><a href="https://x.com/kitscoreCo" target="_blank" rel="noopener" title="X / Twitter @kitscoreCo" style="color:var(--muted,#888);display:inline-flex;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.857L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-    </span>
+  <span style="display:flex;align-items:center;gap:14px">
+    <a href="https://www.instagram.com/kitscore.co" target="_blank" rel="noopener" title="Instagram" style="color:var(--muted,#888);display:inline-flex;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a><a href="https://x.com/kitscoreCo" target="_blank" rel="noopener" title="X / Twitter @kitscoreCo" style="color:var(--muted,#888);display:inline-flex;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.857L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
     <span style="width:1px;height:14px;background:var(--border)"></span>
     <a href="/privacy.html">Privacy</a>
     <span>© 2026</span>
