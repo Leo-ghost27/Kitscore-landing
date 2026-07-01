@@ -1,8 +1,16 @@
 User-agent: *
 Allow: /
-Disallow: /app/creator-dashboard
-Disallow: /app/sponsor-dashboard
-Disallow: /app/team
+Disallow: /app/dashboard.html
+Disallow: /app/campaigns.html
+Disallow: /app/compare.html
+Disallow: /app/directory.html
+Disallow: /app/evaluate.html
+Disallow: /app/evidence.html
+Disallow: /app/history.html
+Disallow: /app/profile.html
+Disallow: /app/team.html
+Disallow: /app/watchlist.html
+Disallow: /app/accept-invite.html
 Disallow: /api/
 
 Sitemap: https://kitscore.co/sitemap.xml
