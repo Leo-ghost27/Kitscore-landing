@@ -127,7 +127,7 @@ async function submitForm() {
 
   const { data, error } = await sb.auth.signUp({ email, password });
   if (error) { showMsg(error.message, 'error'); btn.disabled = false; return; }
-  if (!data.user) {
+  if (!data.session) {
     showMsg('Check your email to confirm your account, then sign in.', 'ok');
     btn.disabled = false;
     return;

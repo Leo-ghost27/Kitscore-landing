@@ -93,7 +93,7 @@ async function acceptWithSignup() {
 
   const { data, error } = await sb.auth.signUp({ email, password });
   if (error) { showMsg(error.message, 'error'); btn.disabled = false; return; }
-  if (!data.user) { showMsg('Check your email to confirm, then sign in to accept the invite.', 'ok'); return; }
+  if (!data.session) { showMsg('Check your email to confirm, then sign in to accept the invite.', 'ok'); return; }
 
   const { data: profile, error: profileErr } = await sb.from('profiles')
     .insert({ auth_user_id: data.user.id, role: 'sponsor', display_name: displayName, email })

@@ -44,7 +44,7 @@
   .nav-cta { background: var(--accent); color: #fff; border: none; padding: 8px 20px; border-radius:0; font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; text-decoration: none; }
 
   /* ── Layout ── */
-  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 48px; }
   .section-label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
   hr.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
 
@@ -65,9 +65,10 @@
   section p strong { color: var(--text); font-weight: 600; }
 
   /* ── Component table ── */
-  .comp-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
-  .comp-row { background: var(--bg2); border: 1px solid var(--border); border-radius:0; padding: 20px 24px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
-  .comp-row:hover { border-color: var(--border-hover); }
+  .comp-grid { display: flex; flex-direction: column; gap: 0; margin-top: 28px; border: 1px solid var(--border); }
+  .comp-row { background: var(--bg); border: none; border-bottom: 1px solid var(--border); border-radius:0; padding: 20px 24px; display: grid; grid-template-columns: 220px 1fr 90px; gap: 24px; align-items: start; }
+  .comp-row:last-child { border-bottom: none; }
+  .comp-row:hover { background: var(--bg2); border-color: var(--border); }
   .comp-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
   .comp-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
   .comp-sources { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
@@ -126,7 +127,7 @@
   .btn-ghost    { display: inline-block; background: transparent; color: var(--text); border: 1px solid var(--border-hover); padding: 12px 28px; border-radius:0; font-size: 15px; font-weight: 500; text-decoration: none; margin-left: 10px; }
 
   /* ── Footer ── */
-  footer { padding: 32px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--muted); max-width: 960px; margin: 0 auto; }
+  footer { padding: 24px 48px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--muted); max-width: 1100px; margin: 0 auto; }
   footer a { color: var(--muted); text-decoration: none; }
   footer a:hover { color: var(--text); }
 
@@ -135,6 +136,7 @@
     nav { padding: 0 16px; }
     .nav-links { display: none; }
     .container { padding: 0 16px; }
+    .col-layout { grid-template-columns: 1fr; gap: 16px; }
     .conf-levels, .source-grid, .bs-grid { grid-template-columns: 1fr; }
     .comp-row { grid-template-columns: 1fr; }
     .badge-row { grid-template-columns: 40px 1fr; }
@@ -225,62 +227,32 @@
     <div class="comp-grid">
 
       <div class="comp-row">
-        <div>
-          <div class="comp-name">Audience Authenticity</div>
-          <div class="comp-desc">Measures the quality and genuineness of a creator's audience. Looks at follower growth patterns, engagement-to-follower ratios, geographic consistency, and signs of inauthentic activity such as bot-pattern behaviour or sudden unexplained spikes.</div>
-          <div class="comp-sources">
-            <span class="src-tag src-live">Live platform data</span>
-            <span class="src-tag src-ev">Analytics screenshots</span>
-          </div>
-        </div>
+        <div><div class="comp-name">Audience Authenticity</div><div class="comp-sources" style="margin-top:8px"><span class="src-tag src-live">Live</span><span class="src-tag src-ev">Evidence</span></div></div>
+        <div><div class="comp-desc">Measures the quality and genuineness of a creator's audience. Looks at follower growth patterns, engagement-to-follower ratios, geographic consistency, and signs of inauthentic activity such as bot-pattern behaviour or sudden unexplained spikes.</div></div>
         <div class="weight-badge">25%<span class="weight-sub">of score</span></div>
       </div>
 
       <div class="comp-row">
-        <div>
-          <div class="comp-name">Engagement Quality</div>
-          <div class="comp-desc">Measures how actively an audience responds to content — likes, comments, saves, shares — relative to follower count. Benchmarked against category averages so a fitness creator's 4% rate is contextualised against the fitness benchmark, not a general average.</div>
-          <div class="comp-sources">
-            <span class="src-tag src-live">Live platform data</span>
-            <span class="src-tag src-ev">Insights exports</span>
-          </div>
-        </div>
+        <div><div class="comp-name">Engagement Quality</div><div class="comp-sources" style="margin-top:8px"><span class="src-tag src-live">Live</span><span class="src-tag src-ev">Evidence</span></div></div>
+        <div><div class="comp-desc">Measures how actively an audience responds to content — likes, comments, saves, shares — relative to follower count. Benchmarked against category averages so a fitness creator's 4% rate is contextualised against the fitness benchmark, not a general average.</div></div>
         <div class="weight-badge">25%<span class="weight-sub">of score</span></div>
       </div>
 
       <div class="comp-row">
-        <div>
-          <div class="comp-name">Brand Safety</div>
-          <div class="comp-desc">An 8-point assessment covering adult content, gambling promotion, political content, profanity, family safety, FTC paid disclosure compliance, misinformation history, and controversy history. Each question carries a calibrated penalty when answered unfavourably.</div>
-          <div class="comp-sources">
-            <span class="src-tag src-self">Creator questionnaire</span>
-            <span class="src-tag src-ev">Content review</span>
-          </div>
-        </div>
+        <div><div class="comp-name">Brand Safety</div><div class="comp-sources" style="margin-top:8px"><span class="src-tag src-self">Self-reported</span><span class="src-tag src-ev">Evidence</span></div></div>
+        <div><div class="comp-desc">An 8-point assessment covering adult content, gambling promotion, political content, profanity, family safety, FTC paid disclosure compliance, misinformation history, and controversy history. Each question carries a calibrated penalty when answered unfavourably.</div></div>
         <div class="weight-badge">20%<span class="weight-sub">of score</span></div>
       </div>
 
       <div class="comp-row">
-        <div>
-          <div class="comp-name">Content Consistency</div>
-          <div class="comp-desc">Measures posting regularity, niche focus, and content quality over time. Sponsors want creators who show up reliably — consistent posting schedules and consistent content themes both reduce campaign risk.</div>
-          <div class="comp-sources">
-            <span class="src-tag src-live">Platform data</span>
-            <span class="src-tag src-ev">Creator evidence</span>
-          </div>
-        </div>
+        <div><div class="comp-name">Content Consistency</div><div class="comp-sources" style="margin-top:8px"><span class="src-tag src-live">Live</span><span class="src-tag src-ev">Evidence</span></div></div>
+        <div><div class="comp-desc">Measures posting regularity, niche focus, and content quality over time. Sponsors want creators who show up reliably — consistent posting schedules and consistent content themes both reduce campaign risk.</div></div>
         <div class="weight-badge">15%<span class="weight-sub">of score</span></div>
       </div>
 
       <div class="comp-row">
-        <div>
-          <div class="comp-name">Professionalism</div>
-          <div class="comp-desc">Measures the business-readiness signals sponsors rely on: a verified business email, a complete profile with niche and location, media kit availability, and response professionalism based on campaign history feedback.</div>
-          <div class="comp-sources">
-            <span class="src-tag src-ev">Profile data</span>
-            <span class="src-tag src-self">Creator-supplied</span>
-          </div>
-        </div>
+        <div><div class="comp-name">Professionalism</div><div class="comp-sources" style="margin-top:8px"><span class="src-tag src-ev">Evidence</span><span class="src-tag src-self">Self-reported</span></div></div>
+        <div><div class="comp-desc">Measures the business-readiness signals sponsors rely on: a verified business email, a complete profile with niche and location, media kit availability, and response professionalism based on campaign history feedback.</div></div>
         <div class="weight-badge">15%<span class="weight-sub">of score</span></div>
       </div>
 
@@ -388,31 +360,31 @@
         <span></span><span>Badge</span><span>What it means</span><span>Requirement</span>
       </div>
       <div class="badge-row">
-        <div class="badge-emoji">—</div>
+        <div class="badge-emoji"><span style="display:inline-block;width:20px;height:20px;background:var(--border)"></span></div>
         <div class="badge-name" style="color:var(--muted)">New creator</div>
         <div class="badge-desc">Profile created, no confirmed campaigns yet. Score may still be high based on evidence submitted.</div>
         <div class="badge-req">0 campaigns</div>
       </div>
       <div class="badge-row">
-        <div class="badge-emoji">🥉</div>
+        <div class="badge-emoji"><span style="display:inline-block;width:20px;height:20px;background:#CD7F32"></span></div>
         <div class="badge-name" style="color:#CD7F32">Bronze</div>
         <div class="badge-desc">Has completed and had at least 2 campaigns mutually confirmed. Sponsor-verified track record begins here.</div>
         <div class="badge-req">2+ campaigns</div>
       </div>
       <div class="badge-row">
-        <div class="badge-emoji">🥈</div>
+        <div class="badge-emoji"><span style="display:inline-block;width:20px;height:20px;background:#71717A"></span></div>
         <div class="badge-name" style="color:#71717A">Silver</div>
         <div class="badge-desc">Consistent delivery across 5 confirmed campaigns. Demonstrates reliability as a sponsorship partner.</div>
         <div class="badge-req">5+ campaigns</div>
       </div>
       <div class="badge-row">
-        <div class="badge-emoji">🥇</div>
-        <div class="badge-name" style="color:var(--amber)">Gold</div>
+        <div class="badge-emoji"><span style="display:inline-block;width:20px;height:20px;background:#854F0B"></span></div>
+        <div class="badge-name" style="color:#854F0B">Gold</div>
         <div class="badge-desc">10 confirmed campaigns. Strong track record, high sponsor confidence. Eligible for top directory placement.</div>
         <div class="badge-req">10+ campaigns</div>
       </div>
       <div class="badge-row">
-        <div class="badge-emoji">💎</div>
+        <div class="badge-emoji"><span style="display:inline-block;width:20px;height:20px;background:#0E7490"></span></div>
         <div class="badge-name" style="color:#0E7490">Platinum</div>
         <div class="badge-desc">20+ confirmed campaigns. Highest tier of verified creator credibility on Kitscore. Reserved for creators with a substantial, verifiable track record.</div>
         <div class="badge-req">20+ campaigns</div>
@@ -475,7 +447,7 @@
 <footer>
   <span>Kitscore.co · Sponsorship trust infrastructure</span>
   <span style="display:flex;align-items:center;gap:14px">
-    <a href="https://www.instagram.com/kitscore.co" target="_blank" rel="noopener" title="Instagram" style="color:var(--muted,#888);display:inline-flex;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a><a href="https://x.com/kitscoreCo" target="_blank" rel="noopener" title="X / Twitter @kitscoreCo" style="color:var(--muted,#888);display:inline-flex;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.857L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+    <a href="https://www.instagram.com/kitscore.co" target="_blank" rel="noopener" title="Instagram" style="color:var(--muted,#888);display:inline-flex;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="0" ry="0"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a><a href="https://x.com/kitscoreCo" target="_blank" rel="noopener" title="X / Twitter @kitscoreCo" style="color:var(--muted,#888);display:inline-flex;opacity:0.6;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.857L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
     <span style="width:1px;height:14px;background:var(--border)"></span>
     <a href="/privacy.html">Privacy</a>
     <span>© 2026</span>
