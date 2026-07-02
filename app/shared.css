@@ -8,9 +8,9 @@
   --color-background-tertiary:#ECEEF1;
   --color-background-info:#E6F1FB;
   --color-border-tertiary:#E3E5E9;
-  --border-radius-sm:4px;
-  --border-radius-md:8px;
-  --border-radius-lg:12px;
+  --border-radius-sm:0;
+  --border-radius-md:0;
+  --border-radius-lg:0;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 .app-shell{display:flex;min-height:100vh}
@@ -18,7 +18,7 @@
 .sidebar .nav-logo{writing-mode:horizontal-tb;transform:none;padding:10px 10px 16px}
 .sidebar .nav-logo span{color:#2563EB}
 .sidebar .sb-section{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-tertiary);padding:10px 10px 4px}
-.sb-item{display:flex;align-items:center;gap:7px;padding:7px 10px;cursor:pointer;color:var(--color-text-secondary);font-size:12px;font-weight:500;border-left:2px solid transparent;border-radius:0 6px 6px 0;text-decoration:none}
+.sb-item{display:flex;align-items:center;gap:7px;padding:7px 10px;cursor:pointer;color:var(--color-text-secondary);font-size:12px;font-weight:500;border-left:2px solid transparent;border-radius:0;text-decoration:none}
 .sb-item:hover{color:var(--color-text-primary);background:var(--color-background-secondary)}
 .sb-item.active{color:#185FA5;border-left-color:#2563EB;background:#E6F1FB}
 .sb-item i{font-size:14px;flex-shrink:0}

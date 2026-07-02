@@ -22,7 +22,7 @@
   .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
   .row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px}
   .loading{font-size:12px;color:var(--color-text-secondary);padding:20px;text-align:center}
-  .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:0;font-size:12px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
   /* Teaser paywall styles */
   .teaser-hero{background:linear-gradient(160deg,#11131A 0%,#1C2030 100%);color:#fff;border-radius:var(--border-radius-md);padding:20px;margin-bottom:12px}
   .teaser-hero .score-val{font-size:52px;font-weight:600;color:#7C9CFF;line-height:1}
@@ -34,7 +34,7 @@
   .paywall-features{display:flex;flex-direction:column;gap:4px;margin-bottom:16px;text-align:left;max-width:300px;margin-left:auto;margin-right:auto}
   .paywall-features li{font-size:12px;color:var(--color-text-secondary);list-style:none;display:flex;align-items:center;gap:6px}
   .blur-preview{filter:blur(4px);user-select:none;pointer-events:none;opacity:.6;margin-bottom:12px}
-  .banner{font-size:11px;padding:8px 12px;border-radius:6px;margin-bottom:12px}
+  .banner{font-size:11px;padding:8px 12px;border-radius:0;margin-bottom:12px}
   .banner.ok{background:#E9F7EE;color:#1C7C3F}
   .banner.pending{background:#FEF6E7;color:#92600A}
   .approval-badge{font-size:10px;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
@@ -218,7 +218,7 @@ async function load() {
           <button class="cta" style="background:#1C7C3F" onclick="reviewEvaluation('approved')">Approve</button>
           <button class="cta" style="background:#B42318" onclick="reviewEvaluation('rejected')">Reject</button>
         </div>
-        <input id="approvalNote" style="width:100%;padding:8px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12px" placeholder="Optional note…">
+        <input id="approvalNote" style="width:100%;padding:8px;border:0.5px solid var(--color-border-tertiary);border-radius:0;font-size:12px" placeholder="Optional note…">
       ` : evalRow.approval_status === 'approved' ? `
         <span class="approval-badge b-green"><i class="ti ti-circle-check"></i>Approved${evalRow.approval_note ? ' — ' + evalRow.approval_note : ''}</span>
       ` : `

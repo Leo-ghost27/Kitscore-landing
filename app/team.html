@@ -18,12 +18,12 @@
   .field label{display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
   .field input,.field textarea{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
   .field textarea{height:70px;resize:vertical}
-  .cta{padding:8px 14px;background:#2563EB;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer}
+  .cta{padding:8px 14px;background:#2563EB;color:#fff;border:none;border-radius:0;font-size:12px;font-weight:500;cursor:pointer}
   .cta:disabled{opacity:.6}
   .row-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
   .row-item:last-child{border-bottom:none}
   .role-badge{font-size:10px;background:var(--color-background-secondary);color:var(--color-text-secondary);padding:2px 8px;border-radius:10px}
-  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:6px}
+  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
   .msg.error{background:#FDECEC;color:#B42318}
   .msg.ok{background:#E9F7EE;color:#1C7C3F}
   .upgrade-banner{font-size:11px;padding:12px 14px;background:var(--color-background-info);color:#185FA5;border-radius:var(--border-radius-md);margin-bottom:14px}
@@ -173,7 +173,7 @@ async function sendInvite() {
     if (!res.ok) { resultEl.innerHTML = `<div class="msg error">${json.error || 'Unknown error'}</div>`; return; }
     resultEl.innerHTML = `
       <div class="msg ok">${json.message}</div>
-      <div style="margin-top:6px;padding:8px;background:var(--color-background-secondary);border-radius:6px;font-size:11px;word-break:break-all">
+      <div style="margin-top:6px;padding:8px;background:var(--color-background-secondary);border-radius:0;font-size:11px;word-break:break-all">
         <strong>Invite link:</strong> <a href="${json.acceptLink}" style="color:#185FA5">${json.acceptLink}</a>
       </div>`;
     document.getElementById('inviteEmail').value = '';
