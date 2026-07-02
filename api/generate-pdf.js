@@ -201,6 +201,44 @@ module.exports = async (req, res) => {
       .text(summaryLine, bx, bannerTop + 52, { width: CONTENT_W - 44 });
     y = bannerTop + bannerH + 14;
 
+    // ---------- AI DECISION BRIEF ----------
+    // evaluate.html already renders these four sections on-screen
+    // (audience_fit / risk_assessment / confidence_note / recommendation);
+    // the PDF previously only carried recommendation_summary, a single
+    // sentence, leaving the rest of the brief sponsor-only-visible-on-web.
+    let aiBrief = null;
+    if (evalRow.ai_summary) {
+      try { aiBrief = JSON.parse(evalRow.ai_summary); } catch (e) { aiBrief = null; }
+    }
+    const BRIEF_SECTIONS = [
+      ['audience_fit', 'Audience fit'],
+      ['risk_assessment', 'Risk assessment'],
+      ['confidence_note', 'Confidence'],
+      ['recommendation', 'Recommendation'],
+    ];
+    const briefItems = aiBrief
+      ? BRIEF_SECTIONS.filter(([key]) => aiBrief[key]).map(([key, label]) => [label, String(aiBrief[key])])
+      : [];
+    if (briefItems.length > 0) {
+      const briefInnerW = CONTENT_W - 22 * 2;
+      doc.font('Helvetica').fontSize(10.5);
+      let briefHeight = 26; // section label
+      briefItems.forEach(([, body], idx) => {
+        briefHeight += 14 + doc.heightOfString(body, { width: briefInnerW }) + (idx < briefItems.length - 1 ? 14 : 0);
+      });
+      drawCard(briefHeight, (x, w, cy) => {
+        cy = sectionLabel(x, w, 'Kitscore AI decision brief', cy);
+        briefItems.forEach(([label, body], idx) => {
+          doc.font('Helvetica-Bold').fontSize(9.5).fillColor(ACCENT).text(label, x, cy, { width: w });
+          cy += 14;
+          doc.font('Helvetica').fontSize(10.5).fillColor('#3D3D3A').text(body, x, cy, { width: w });
+          cy += doc.heightOfString(body, { width: w });
+          if (idx < briefItems.length - 1) cy += 14;
+        });
+        return cy;
+      });
+    }
+
     // ---------- KITSCORE OVERVIEW ----------
     drawCard(130, (x, w, cy) => {
       cy = sectionLabel(x, w, 'Kitscore overview', cy);
