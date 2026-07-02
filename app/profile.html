@@ -45,10 +45,10 @@ async function load() {
   creator = c;
 
   document.getElementById('formWrap').innerHTML = `
-    <div class="field"><label>Display name</label><input id="displayName" value="${profile.display_name || ''}"></div>
-    <div class="field"><label>Niche</label><input id="niche" value="${creator.niche || ''}"></div>
-    <div class="field"><label>Location</label><input id="location" value="${creator.location || ''}"></div>
-    <div class="field"><label>Business email</label><input id="businessEmail" value="${creator.business_email || ''}"></div>
+    <div class="field"><label>Display name</label><input id="displayName" value="${escapeHtml(profile.display_name || '')}"></div>
+    <div class="field"><label>Niche</label><input id="niche" value="${escapeHtml(creator.niche || '')}"></div>
+    <div class="field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}"></div>
+    <div class="field"><label>Business email</label><input id="businessEmail" value="${escapeHtml(creator.business_email || '')}"></div>
     <button class="cta" id="saveBtn" onclick="save()">Save changes</button>
     <div id="msg"></div>
   `;

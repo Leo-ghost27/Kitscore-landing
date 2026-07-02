@@ -109,11 +109,11 @@ async function renderTeam() {
 
   document.getElementById('content').innerHTML = `
     <div class="card">
-      <div class="sec">${myTeam.name}</div>
+      <div class="sec">${escapeHtml(myTeam.name)}</div>
       <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:10px">${(members||[]).length} member${(members||[]).length !== 1 ? 's' : ''}</div>
       ${(members||[]).map(m => `
         <div class="row-item">
-          <span>${m.sponsors?.profiles?.display_name || '—'}</span>
+          <span>${escapeHtml(m.sponsors?.profiles?.display_name || '—')}</span>
           <span class="role-badge">${m.role}</span>
         </div>`).join('')}
     </div>
@@ -132,7 +132,7 @@ async function renderTeam() {
       <div class="sec">Pending invites</div>
       ${pendingInvites.map(i => `
         <div class="row-item">
-          <span>${i.email}</span>
+          <span>${escapeHtml(i.email)}</span>
           <span style="font-size:10px;color:var(--color-text-tertiary)">Expires ${new Date(i.expires_at).toLocaleDateString('en-GB')}</span>
         </div>`).join('')}
     </div>` : ''}
@@ -148,8 +148,8 @@ async function renderTeam() {
       <div class="sec">Team notes</div>
       ${(notes||[]).length ? notes.map(n => `
         <div class="note-row">
-          <div class="note-meta">${n.sponsors?.profiles?.display_name || '—'} · ${new Date(n.created_at).toLocaleDateString('en-GB')}${n.creators ? ' · re: ' + n.creators.profiles.display_name : ''}</div>
-          <div style="font-size:12px">${n.content}</div>
+          <div class="note-meta">${escapeHtml(n.sponsors?.profiles?.display_name || '—')} · ${new Date(n.created_at).toLocaleDateString('en-GB')}${n.creators ? ' · re: ' + escapeHtml(n.creators.profiles.display_name) : ''}</div>
+          <div style="font-size:12px">${escapeHtml(n.content)}</div>
         </div>`).join('') : '<div style="font-size:12px;color:var(--color-text-secondary)">No notes yet.</div>'}
     </div>
   `;

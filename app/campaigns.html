@@ -46,13 +46,13 @@ async function load() {
 
   const { data: campaigns, error } = await sb.from('campaigns')
     .select('*, sponsors(company_name)').eq('creator_id', profile.id).order('created_at', { ascending: false });
-  if (error) { document.getElementById('list').innerHTML = 'Could not load: ' + error.message; return; }
+  if (error) { document.getElementById('list').innerHTML = 'Could not load: ' + escapeHtml(error.message); return; }
 
   document.getElementById('list').innerHTML = (campaigns && campaigns.length) ? campaigns.map(c => `
     <div class="row-item">
       <div>
-        <div style="font-weight:500">${c.name}</div>
-        <div style="color:var(--color-text-secondary);font-size:11px">${c.sponsors?.company_name || 'Unknown sponsor'}</div>
+        <div style="font-weight:500">${escapeHtml(c.name)}</div>
+        <div style="color:var(--color-text-secondary);font-size:11px">${escapeHtml(c.sponsors?.company_name || 'Unknown sponsor')}</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <span class="status-tag st-${c.status}">${c.status}</span>

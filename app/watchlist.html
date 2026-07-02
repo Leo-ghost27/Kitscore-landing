@@ -69,8 +69,8 @@ async function load() {
     <div class="ccard" onclick="window.location.href='evaluate.html?creator=${c.id}'">
       <button class="remove-btn" onclick="event.stopPropagation(); remove('${c.id}')" title="Remove from watchlist"><i class="ti ti-heart-filled"></i></button>
       <div class="head">
-        <div class="avatar">${c.profiles.display_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
-        <div><div class="name">${c.profiles.display_name}</div><div class="niche">${c.niche||''} · ${c.location||''}</div></div>
+        <div class="avatar">${escapeHtml(c.profiles.display_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
+        <div><div class="name">${escapeHtml(c.profiles.display_name)}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
       </div>
       <div class="pbar-row"><span>Trust score</span><div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div><span class="pbar-val">${c.trust_score}</span></div>
     </div>

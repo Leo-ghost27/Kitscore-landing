@@ -63,9 +63,9 @@ async function init() {
   // Show signup/login form
   document.getElementById('card').innerHTML = `
     <h1>You're invited!</h1>
-    <p>Join <span class="team-name">${team.name}</span> on Kitscore. Create an account or sign in to accept.</p>
+    <p>Join <span class="team-name">${escapeHtml(team.name)}</span> on Kitscore. Create an account or sign in to accept.</p>
     <div class="field"><label>Your name / company</label><input id="displayName" placeholder="Your name" value=""></div>
-    <div class="field"><label>Email</label><input id="email" type="email" value="${invite.email}" placeholder="${invite.email}"></div>
+    <div class="field"><label>Email</label><input id="email" type="email" value="${escapeHtml(invite.email)}" placeholder="${escapeHtml(invite.email)}"></div>
     <div class="field"><label>Password</label><input id="password" type="password" placeholder="Choose a password (min 6 chars)"></div>
     <button class="submit" id="submitBtn" onclick="acceptWithSignup()">Create account and join</button>
     <p style="font-size:11px;margin-top:10px;color:var(--color-text-secondary)">Already have an account? <a href="#" onclick="showLogin()" style="color:#2563EB">Sign in instead</a></p>
@@ -76,8 +76,8 @@ async function init() {
 function showLogin() {
   document.getElementById('card').innerHTML = `
     <h1>Sign in to join</h1>
-    <p>Sign in to accept your invite to <span class="team-name">${team.name}</span>.</p>
-    <div class="field"><label>Email</label><input id="email" type="email" value="${invite.email}"></div>
+    <p>Sign in to accept your invite to <span class="team-name">${escapeHtml(team.name)}</span>.</p>
+    <div class="field"><label>Email</label><input id="email" type="email" value="${escapeHtml(invite.email)}"></div>
     <div class="field"><label>Password</label><input id="password" type="password" placeholder="••••••••"></div>
     <button class="submit" id="submitBtn" onclick="acceptWithLogin()">Sign in and join</button>
     <div id="msg"></div>
@@ -133,7 +133,7 @@ async function joinTeam(profile) {
 
   document.getElementById('card').innerHTML = `
     <h1>You're in! 🎉</h1>
-    <p>You've joined <span class="team-name">${team.name}</span> on Kitscore.</p>
+    <p>You've joined <span class="team-name">${escapeHtml(team.name)}</span> on Kitscore.</p>
     <button class="submit" onclick="window.location.href='team.html'">Go to team →</button>
   `;
 }

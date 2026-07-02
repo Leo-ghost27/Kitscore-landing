@@ -87,8 +87,8 @@ function render() {
         <i class="ti ${watchlisted.has(c.id)?'ti-heart-filled':'ti-heart'}"></i>
       </button>
       <div class="head">
-        <div class="avatar">${c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
-        <div><div class="name">${c.name}</div><div class="niche">${c.niche||''} · ${c.location||''}</div></div>
+        <div class="avatar">${escapeHtml(c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
+        <div><div class="name">${escapeHtml(c.name)}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
       </div>
       <div class="pbar-row"><span>Trust score</span><div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div><span class="pbar-val">${c.trust_score}</span></div>
       <div class="card-reliability">

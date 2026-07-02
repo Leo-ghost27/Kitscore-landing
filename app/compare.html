@@ -73,7 +73,7 @@ async function load() {
 
 function renderPicker() {
   const available = allCreators.filter(c => !selectedIds.includes(c.id));
-  document.getElementById('creatorPick').innerHTML = available.map(c => `<option value="${c.id}">${c.profiles.display_name}</option>`).join('');
+  document.getElementById('creatorPick').innerHTML = available.map(c => `<option value="${c.id}">${escapeHtml(c.profiles.display_name)}</option>`).join('');
   const btn = document.getElementById('addBtn');
   const atLimit = selectedIds.length >= maxCompare;
   btn.disabled = atLimit || available.length === 0;
@@ -83,7 +83,7 @@ function renderPicker() {
 function renderChips() {
   document.getElementById('chips').innerHTML = selectedIds.map(id => {
     const c = allCreators.find(x => x.id === id);
-    return `<span class="chip">${c.profiles.display_name}<button onclick="removeCreator('${id}')" title="Remove">✕</button></span>`;
+    return `<span class="chip">${escapeHtml(c.profiles.display_name)}<button onclick="removeCreator('${id}')" title="Remove">✕</button></span>`;
   }).join('');
 }
 
@@ -126,7 +126,7 @@ async function renderCompare() {
   document.getElementById('result').innerHTML = `
     <div class="cmp-table" style="grid-template-columns:repeat(${cols}, 1fr)">
       <div class="cmp-cell cmp-head">Metric</div>
-      ${results.map(r => `<div class="cmp-cell cmp-head">${r.creator.profiles.display_name}</div>`).join('')}
+      ${results.map(r => `<div class="cmp-cell cmp-head">${escapeHtml(r.creator.profiles.display_name)}</div>`).join('')}
       ${metricRows.map(([label, getter]) => {
         const values = results.map(getter);
         const max = Math.max(...values.map(v => v ?? -Infinity));

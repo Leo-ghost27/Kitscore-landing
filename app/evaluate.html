@@ -99,7 +99,7 @@ async function load() {
   const compMap = {};
   (components || []).forEach(c => compMap[c.component_key] = c.value);
 
-  const creatorName = profileRow?.display_name || 'Creator';
+  const creatorName = escapeHtml(profileRow?.display_name || 'Creator');
   const trustScore = creator?.trust_score ?? 0;
   const hasScore = (components || []).length > 0;
   const confidence = hasScore && trustScore >= 75 ? 'High' : trustScore >= 55 ? 'Moderate' : 'Low';
@@ -180,7 +180,7 @@ async function load() {
 
   // ── Unlocked — show everything ────────────────────────────────────────────
   document.getElementById('content').innerHTML = `
-    <div style="font-size:13px;font-weight:500;margin-bottom:12px">${creatorName} · ${creator?.niche||''} · ${creator?.location||''}</div>
+    <div style="font-size:13px;font-weight:500;margin-bottom:12px">${creatorName} · ${escapeHtml(creator?.niche||'')} · ${escapeHtml(creator?.location||'')}</div>
     <div class="teaser-hero">
       <div class="score-label">Trust score</div>
       <div class="score-val">${trustScore}</div>

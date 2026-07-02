@@ -72,7 +72,7 @@ async function load() {
 
   document.getElementById('list').innerHTML = (items && items.length) ? items.map(e => `
     <div class="row-item">
-      <span>${e.file_name} <span style="color:var(--color-text-tertiary)">· ${e.platform || ''} · ${e.evidence_type || ''}</span></span>
+      <span>${escapeHtml(e.file_name)} <span style="color:var(--color-text-tertiary)">· ${escapeHtml(e.platform || '')} · ${escapeHtml(e.evidence_type || '')}</span></span>
       <span style="display:flex;align-items:center;gap:10px">
         <span class="status-tag st-${e.status}">${e.status.replace('_',' ')}</span>
         ${e.storage_path ? `<button class="link-btn" onclick="download('${e.storage_path}')">Download</button>` : ''}

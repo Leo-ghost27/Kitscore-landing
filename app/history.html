@@ -72,7 +72,7 @@ async function load() {
       ${evals.map(e => `
         <div class="row-item">
           <div>
-            <div style="font-weight:500">${e.creators?.profiles?.display_name || '—'}</div>
+            <div style="font-weight:500">${escapeHtml(e.creators?.profiles?.display_name || '—')}</div>
             <div style="font-size:10px;color:var(--color-text-tertiary)">${new Date(e.created_at).toLocaleDateString('en-GB')} · Trust score: ${e.creators?.trust_score ?? '—'}</div>
           </div>
           <div style="display:flex;align-items:center;gap:8px">

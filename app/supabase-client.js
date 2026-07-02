@@ -7,6 +7,19 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Escapes user-controlled text before it's interpolated into an innerHTML
+// template literal (display names, campaign names, filenames, etc. all
+// come from creator/sponsor input and are not safe to inject raw).
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // Returns the signed-in user's profile row (or null), creating nothing.
 async function getCurrentProfile() {
   const { data: { user } } = await sb.auth.getUser();

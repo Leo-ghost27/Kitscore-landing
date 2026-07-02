@@ -414,8 +414,8 @@ async function load() {
       <div class="sec">Evidence uploads</div>
       ${(evidence||[]).length?(evidence||[]).map(e=>`
         <div class="ev-row">
-          <span class="ev-name">${e.file_name}</span>
-          <span class="ev-plat">${e.platform||''}</span>
+          <span class="ev-name">${escapeHtml(e.file_name)}</span>
+          <span class="ev-plat">${escapeHtml(e.platform||'')}</span>
           <span class="ev-status st-${e.status?.replace('_verified','verified').replace('under_','')}">${(e.status||'').replace(/_/g,' ')}</span>
         </div>`).join(''):`
       <div class="empty-state">

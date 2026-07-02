@@ -32,8 +32,14 @@ module.exports = async (req, res) => {
     const buyer = await getAuthedProfile(req, config.role);
     if (!buyer) return res.status(401).json({ error: `Not authenticated as a ${config.role}` });
 
-    // For report purchases, confirm this sponsor actually owns the evaluation they're unlocking.
-    if (product === 'report') {
+    // Confirm this sponsor actually owns the evaluation they're unlocking.
+    // NOTE: the live frontend (evaluate.html) sends product:'evaluation_unlock',
+    // not 'report' — this check used to only run for 'report', which meant it
+    // silently never executed. Without it, a sponsor could pass any
+    // evaluationId (including one belonging to another sponsor) and the
+    // Stripe webhook would unlock it with no ownership cross-check on that
+    // side either.
+    if (product === 'report' || product === 'evaluation_unlock') {
       if (!evaluationId) return res.status(400).json({ error: 'evaluationId is required for report purchase' });
       const admin = adminClient();
       const { data: evalRow } = await admin.from('evaluations').select('id')
