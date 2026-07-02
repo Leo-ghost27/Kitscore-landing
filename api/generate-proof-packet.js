@@ -40,14 +40,14 @@ module.exports = async (req, res) => {
       admin.from('profiles').select('display_name, email').eq('id', creator.id).single(),
       admin.from('score_components').select('*').eq('creator_id', creator.id),
       admin.from('campaigns').select('*').eq('creator_id', creator.id).eq('status', 'verified'),
-      admin.from('evidence_items').select('*').eq('creator_id', creator.id),
+      admin.from('evidence_uploads').select('*').eq('creator_id', creator.id),
       admin.from('brand_safety_answers').select('*').eq('creator_id', creator.id),
     ]);
 
     const isPro = creator.plan === 'pro';
     const displayName = profile?.display_name || 'Creator';
     const score = creator.trust_score || 0;
-    const confidence = creator.confidence_rating || 0;
+    const confidence = creator.confidence || 0;
     const niche = creator.niche || '—';
     const location = creator.location || '—';
     const badgeTier = creator.badge_tier || 'none';
@@ -256,9 +256,9 @@ module.exports = async (req, res) => {
         const rY = y + idx * 28;
         doc.rect(MARGIN, rY, CONTENT_W, 28).fill(idx % 2 === 0 ? '#FFFFFF' : '#FAFAF8');
         doc.fontSize(10).fillColor('#1A1A18').font('Helvetica-Bold')
-          .text(c.brand_name || 'Brand', MARGIN + 12, rY + 8);
+          .text(c.name || 'Campaign', MARGIN + 12, rY + 8);
         doc.fontSize(9).fillColor('#6B6B67').font('Helvetica')
-          .text(c.campaign_name || '', MARGIN + 12, rY + 18);
+          .text(c.objective || '', MARGIN + 12, rY + 18);
         doc.fontSize(9).fillColor('#1C7C3F').font('Helvetica-Bold')
           .text('✓ Verified', MARGIN + CONTENT_W - 70, rY + 11);
       });
@@ -326,7 +326,7 @@ module.exports = async (req, res) => {
         doc.fontSize(9).fillColor('#6B6B67').font('Helvetica')
           .text(e.platform || '', MARGIN + 12 + (CONTENT_W - 140), eY + 7, { width: 80 });
         const statusLabel = (e.status || '').replace(/_/g, ' ');
-        const statusColor = e.status === 'verified' ? '#1C7C3F' : '#92460A';
+        const statusColor = e.status === 'live_verified' ? '#1C7C3F' : e.status === 'submitted' ? '#0C3D6E' : '#92460A';
         doc.fontSize(8).fillColor(statusColor).font('Helvetica-Bold')
           .text(statusLabel, MARGIN + CONTENT_W - 70, eY + 8, { width: 58, align: 'right' });
       });
