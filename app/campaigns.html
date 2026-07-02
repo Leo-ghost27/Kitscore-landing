@@ -28,6 +28,11 @@
   .st-disputed{background:#FDECEC;color:#B42318}
   .confirm-btn{font-size:11px;padding:5px 10px;border-radius:0;border:none;background:#2563EB;color:#fff;cursor:pointer}
   .confirm-btn:disabled{opacity:.6;cursor:default}
+  .dispute-btn{font-size:11px;padding:5px 10px;border-radius:0;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+  .dispute-btn:hover{border-color:#B42318;color:#B42318}
+  .dispute-panel{padding:10px 14px 14px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+  .dispute-panel textarea{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:12px;font-family:inherit;resize:vertical;min-height:56px;margin-bottom:8px}
+  .dispute-reason-note{font-size:11px;color:#B42318;padding:0 14px 12px;line-height:1.5}
   .waiting{font-size:10px;color:var(--color-text-tertiary)}
   .loading{font-size:12px;color:var(--color-text-secondary);padding:14px}
   .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
@@ -144,9 +149,10 @@ async function loadSponsorCampaigns() {
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <span class="status-tag st-${c.status}">${c.status}</span>
-        <span class="waiting">${c.creator_confirmed ? 'Confirmed by creator' : 'Waiting on creator'}</span>
+        <span class="waiting">${c.creator_confirmed ? 'Confirmed by creator' : (c.status === 'disputed' ? 'Disputed by creator' : 'Waiting on creator')}</span>
       </div>
     </div>
+    ${c.status === 'disputed' && c.dispute_reason ? `<div class="dispute-reason-note"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Creator's reason: ${escapeHtml(c.dispute_reason)}</div>` : ''}
   `).join('') : '<div style="padding:14px;font-size:12px;color:var(--color-text-secondary)">No campaigns logged yet.</div>';
 }
 
@@ -162,12 +168,27 @@ async function loadCreatorCampaigns() {
         <div style="font-weight:500">${escapeHtml(c.name)}</div>
         <div style="color:var(--color-text-secondary);font-size:11px">${escapeHtml(c.sponsors?.company_name || 'Unknown sponsor')}</div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px">
         <span class="status-tag st-${c.status}">${c.status}</span>
-        ${c.creator_confirmed
-          ? `<span class="waiting">${c.sponsor_confirmed ? 'Confirmed' : 'Waiting on sponsor'}</span>`
-          : `<button class="confirm-btn" onclick="confirmCampaign('${c.id}')">Confirm</button>`}
+        ${c.status === 'disputed'
+          ? `<span class="waiting">Disputed</span>`
+          : c.creator_confirmed
+            ? `<span class="waiting">${c.sponsor_confirmed ? 'Confirmed' : 'Waiting on sponsor'}</span>`
+            : `<button class="confirm-btn" onclick="confirmCampaign('${c.id}')">Confirm</button>
+               <button class="dispute-btn" onclick="toggleDispute('${c.id}')">Dispute</button>`}
       </div>
+    </div>
+    ${c.status === 'disputed' && c.dispute_reason
+      ? `<div class="dispute-reason-note"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Your reason: ${escapeHtml(c.dispute_reason)}</div>`
+      : ''}
+    <div id="dispute-panel-${c.id}" class="dispute-panel" style="display:none">
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px">Tell us why this campaign is wrong or didn't happen. This only shows to you and the sponsor.</div>
+      <textarea id="dispute-reason-${c.id}" placeholder="e.g. I never worked with this sponsor / wrong name / wrong details"></textarea>
+      <div style="display:flex;gap:8px">
+        <button class="dispute-btn" style="background:#B42318;color:#fff;border-color:#B42318" onclick="submitDispute('${c.id}')">Submit dispute</button>
+        <button class="dispute-btn" onclick="toggleDispute('${c.id}')">Cancel</button>
+      </div>
+      <div id="dispute-msg-${c.id}"></div>
     </div>
   `).join('') : '<div style="padding:14px;font-size:12px;color:var(--color-text-secondary)">No campaigns yet.</div>';
 }
@@ -175,6 +196,25 @@ async function loadCreatorCampaigns() {
 async function confirmCampaign(id) {
   const { error } = await sb.from('campaigns').update({ creator_confirmed: true }).eq('id', id);
   if (error) { alert('Could not confirm: ' + error.message); return; }
+  loadCreatorCampaigns();
+}
+
+function toggleDispute(id) {
+  const panel = document.getElementById(`dispute-panel-${id}`);
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitDispute(id) {
+  const reason = document.getElementById(`dispute-reason-${id}`).value.trim();
+  const msgEl = document.getElementById(`dispute-msg-${id}`);
+  if (!reason) { msgEl.innerHTML = '<div class="msg error">Give a short reason.</div>'; return; }
+
+  // status='disputed' is only accepted by the DB trigger for the creator on
+  // a still-unconfirmed, still-pending campaign — see
+  // fn_validate_campaign_confirmation.
+  const { error } = await sb.from('campaigns')
+    .update({ status: 'disputed', dispute_reason: reason }).eq('id', id);
+  if (error) { msgEl.innerHTML = `<div class="msg error">Could not submit dispute: ${escapeHtml(error.message)}</div>`; return; }
   loadCreatorCampaigns();
 }
 
