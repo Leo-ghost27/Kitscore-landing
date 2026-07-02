@@ -369,15 +369,36 @@ async function submitDispute(id) {
   // above, so a failure here shouldn't block or alarm the creator. They see
   // no error either way; worst case the sponsor just finds out by revisiting
   // their Campaigns page, same as before this shipped.
+  //
+  // Retries a couple of times with backoff for network-level failures (the
+  // request never reaching the server at all — a dropped connection,
+  // temporary DNS blip, etc). This is the case scripts/retry-failed-
+  // notifications.js can't help with, since nothing gets queued server-side
+  // if the request never arrived. Failures that DO reach the server (e.g.
+  // Resend itself erroring) are queued in notification_failures by
+  // /api/notify-dispute and retried from there instead — no need to
+  // hammer the endpoint again here for those.
   try {
     const { data: { session } } = await sb.auth.getSession();
-    await fetch('/api/notify-dispute', {
+    await fetchWithRetry('/api/notify-dispute', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
       body: JSON.stringify({ campaignId: id }),
-    });
+    }, 2, 600);
   } catch (err) {
-    console.error('notify-dispute error:', err);
+    console.error('notify-dispute error (all retries exhausted):', err);
+  }
+}
+
+async function fetchWithRetry(url, options, retries, delayMs) {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok && retries > 0) throw new Error(`HTTP ${res.status}`);
+    return res;
+  } catch (err) {
+    if (retries <= 0) throw err;
+    await new Promise(r => setTimeout(r, delayMs));
+    return fetchWithRetry(url, options, retries - 1, delayMs * 2);
   }
 }
 

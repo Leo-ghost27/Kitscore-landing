@@ -26,6 +26,7 @@
   .st-live_verified{background:#E9F7EE;color:#1C7C3F}
   .st-submitted{background:#FEF6E7;color:#92600A}
   .st-self_reported{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .st-rejected{background:#FDECEC;color:#B42318}
   .link-btn{font-size:11px;color:#2563EB;background:none;border:none;cursor:pointer;white-space:nowrap}
   select.status-select{font-size:11px;padding:5px 8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);background:#fff}
   .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
@@ -47,6 +48,7 @@
         <button data-status="self_reported">Self-reported</button>
         <button data-status="submitted">Submitted</button>
         <button data-status="live_verified">Live verified</button>
+        <button data-status="rejected">Rejected</button>
       </div>
       <div id="list" class="loading">Loading…</div>
       <div id="msg"></div>
@@ -100,6 +102,7 @@ function render() {
           <option value="self_reported" ${e.status === 'self_reported' ? 'selected' : ''}>Self-reported</option>
           <option value="submitted" ${e.status === 'submitted' ? 'selected' : ''}>Submitted</option>
           <option value="live_verified" ${e.status === 'live_verified' ? 'selected' : ''}>Live verified</option>
+          <option value="rejected" ${e.status === 'rejected' ? 'selected' : ''}>Rejected</option>
         </select>
       </div>
     </div>

@@ -6,6 +6,7 @@
 // Mirrors the auth + email pattern used in invite-team-member.js.
 const { adminClient, getAuthedCreator } = require('./_supabase-admin');
 const { sendEmail, disputeNotificationEmail } = require('../lib/email');
+const { logNotificationFailure } = require('../lib/notification-queue');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -35,7 +36,11 @@ module.exports = async (req, res) => {
 
     if (!sponsorProfile?.email) {
       // Nothing to send to, but the dispute itself already went through —
-      // don't fail the whole request over a missing email address.
+      // don't fail the whole request over a missing email address. Still
+      // queued below so it's visible somewhere instead of just vanishing.
+      await logNotificationFailure(admin, {
+        campaignId: campaign.id, recipientEmail: null, error: 'Sponsor has no email on file',
+      });
       return res.status(200).json({ sent: false, reason: 'Sponsor has no email on file' });
     }
 
@@ -52,7 +57,17 @@ module.exports = async (req, res) => {
       }),
     });
 
-    if (result?.error) return res.status(200).json({ sent: false, reason: 'Email provider error' });
+    if (result?.error) {
+      // Fail soft to the browser (dispute is already saved), but queue it
+      // so scripts/retry-failed-notifications.js can pick it up later —
+      // previously this just vanished into console.error with no way to
+      // know it happened short of grepping Vercel logs.
+      await logNotificationFailure(admin, {
+        campaignId: campaign.id, recipientEmail: sponsorProfile.email,
+        error: JSON.stringify(result.error).slice(0, 2000),
+      });
+      return res.status(200).json({ sent: false, reason: 'Email provider error' });
+    }
     res.status(200).json({ sent: true });
   } catch (err) {
     console.error('notify-dispute error:', err);
