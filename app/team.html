@@ -170,16 +170,16 @@ async function sendInvite() {
       body: JSON.stringify({ teamId: myTeam.id, email }),
     });
     const json = await res.json();
-    if (!res.ok) { resultEl.innerHTML = `<div class="msg error">${json.error || 'Unknown error'}</div>`; return; }
+    if (!res.ok) { resultEl.innerHTML = `<div class="msg error">${escapeHtml(json.error || 'Unknown error')}</div>`; return; }
     resultEl.innerHTML = `
-      <div class="msg ok">${json.message}</div>
+      <div class="msg ok">${escapeHtml(json.message)}</div>
       <div style="margin-top:6px;padding:8px;background:var(--color-background-secondary);border-radius:0;font-size:11px;word-break:break-all">
-        <strong>Invite link:</strong> <a href="${json.acceptLink}" style="color:#185FA5">${json.acceptLink}</a>
+        <strong>Invite link:</strong> <a href="${escapeHtml(json.acceptLink)}" style="color:#185FA5">${escapeHtml(json.acceptLink)}</a>
       </div>`;
     document.getElementById('inviteEmail').value = '';
     setTimeout(() => renderTeam(), 1500);
   } catch (err) {
-    resultEl.innerHTML = `<div class="msg error">Request failed: ${err.message}</div>`;
+    resultEl.innerHTML = `<div class="msg error">Request failed: ${escapeHtml(err.message)}</div>`;
   }
 }
 

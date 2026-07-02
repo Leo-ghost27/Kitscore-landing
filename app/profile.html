@@ -72,7 +72,7 @@ async function save() {
 
   const msg = document.getElementById('msg');
   if (pErr || cErr) {
-    msg.innerHTML = `<div class="msg error">Could not save: ${(pErr || cErr).message}</div>`;
+    msg.innerHTML = `<div class="msg error">Could not save: ${escapeHtml((pErr || cErr).message)}</div>`;
   } else {
     msg.innerHTML = `<div class="msg ok">Saved.</div>`;
   }

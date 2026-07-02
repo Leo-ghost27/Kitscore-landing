@@ -110,6 +110,19 @@
         <button class="submit" id="resetBtn" onclick="sendReset()"><i class="ti ti-send"></i>Send reset link</button>
         <div style="text-align:center;margin-top:10px"><a href="#" onclick="hideReset(event)" style="font-size:11px;color:var(--color-text-secondary);text-decoration:none">← Back to sign in</a></div>
       </div>
+      <!-- Password recovery completion panel (shown when arriving via a reset-link) -->
+      <div id="recoveryPanel" style="display:none">
+        <h1>Set a new password</h1>
+        <p>Choose a new password for your account.</p>
+        <div class="field"><label>New password</label>
+          <div class="field-icon"><i class="ti ti-lock" aria-hidden="true"></i><input id="newPassword" type="password" placeholder="••••••••"></div>
+        </div>
+        <div class="field"><label>Confirm new password</label>
+          <div class="field-icon"><i class="ti ti-lock" aria-hidden="true"></i><input id="newPasswordConfirm" type="password" placeholder="••••••••"></div>
+        </div>
+        <button class="submit" id="recoveryBtn" onclick="submitNewPassword()"><i class="ti ti-check"></i>Set new password</button>
+        <div id="recoveryMsg"></div>
+      </div>
     </div>
   </div>
 
@@ -117,6 +130,61 @@
 <script src="supabase-client.js?v=2"></script>
 <script>
 let mode = 'login';
+// Recovery links carry type=recovery in the URL hash. Check this
+// synchronously, before the async getSession()/onAuthStateChange calls
+// below have a chance to race and redirect a recovering user away.
+let isRecovering = /type=recovery/.test(window.location.hash) || new URLSearchParams(window.location.search).get('reset') === 'true';
+if (isRecovering) showRecoveryPanel();
+
+function showRecoveryPanel() {
+  isRecovering = true;
+  document.querySelector('.tabs').style.display = 'none';
+  document.getElementById('signupOnly').style.display = 'none';
+  document.querySelectorAll('.form-panel .field').forEach(f => {
+    if (!f.closest('#recoveryPanel')) f.style.display = 'none';
+  });
+  document.getElementById('forgotLink').style.display = 'none';
+  document.getElementById('submitBtn').style.display = 'none';
+  document.getElementById('resetPanel').style.display = 'none';
+  document.getElementById('modeSub').textContent = 'Choose a new password below';
+  document.getElementById('recoveryPanel').style.display = 'block';
+}
+
+async function submitNewPassword() {
+  const pw = document.getElementById('newPassword').value;
+  const pwConfirm = document.getElementById('newPasswordConfirm').value;
+  const msgEl = document.getElementById('recoveryMsg');
+  if (!pw || pw.length < 8) {
+    msgEl.innerHTML = '<div class="msg error">Password must be at least 8 characters.</div>';
+    return;
+  }
+  if (pw !== pwConfirm) {
+    msgEl.innerHTML = '<div class="msg error">Passwords do not match.</div>';
+    return;
+  }
+  const btn = document.getElementById('recoveryBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader"></i>Updating…';
+  const { error } = await sb.auth.updateUser({ password: pw });
+  if (error) {
+    msgEl.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`;
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-check"></i>Set new password';
+    return;
+  }
+  msgEl.innerHTML = '<div class="msg ok">Password updated. Redirecting you now…</div>';
+  isRecovering = false;
+  await routeToDashboard();
+}
+
+// Fires when a user opens a password-reset link — Supabase detects the
+// recovery token in the URL and emits this before any normal session
+// logic runs. Without this listener, the auto-redirect at the bottom of
+// this file would immediately send a recovering user to their dashboard
+// before they ever got a chance to set a new password.
+sb.auth.onAuthStateChange((event) => {
+  if (event === 'PASSWORD_RECOVERY') showRecoveryPanel();
+});
 function setMode(m) {
   mode = m;
   document.getElementById('tabLogin').classList.toggle('active', m==='login');
@@ -214,7 +282,7 @@ async function routeToDashboard() {
 
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) return;
+  if (!session || isRecovering) return;
   const profile = await ensureProfile(session.user);
   if (profile) await routeToDashboard();
 })();
