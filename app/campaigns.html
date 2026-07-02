@@ -33,6 +33,9 @@
   .dispute-panel{padding:10px 14px 14px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
   .dispute-panel textarea{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:12px;font-family:inherit;resize:vertical;min-height:56px;margin-bottom:8px}
   .dispute-reason-note{font-size:11px;color:#B42318;padding:0 14px 12px;line-height:1.5}
+  .resolve-btn{font-size:11px;padding:5px 10px;border-radius:0;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+  .resolve-btn:hover{border-color:#2563EB;color:#2563EB}
+  .resolve-panel{padding:10px 14px 14px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
   .waiting{font-size:10px;color:var(--color-text-tertiary)}
   .loading{font-size:12px;color:var(--color-text-secondary);padding:14px}
   .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
@@ -147,13 +150,50 @@ async function loadSponsorCampaigns() {
         <div style="font-weight:500">${escapeHtml(c.name)}</div>
         <div style="color:var(--color-text-secondary);font-size:11px">${escapeHtml(c.creators?.profiles?.display_name || 'Unknown creator')}</div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px">
         <span class="status-tag st-${c.status}">${c.status}</span>
-        <span class="waiting">${c.creator_confirmed ? 'Confirmed by creator' : (c.status === 'disputed' ? 'Disputed by creator' : 'Waiting on creator')}</span>
+        ${c.status === 'disputed'
+          ? `<button class="resolve-btn" onclick="toggleResubmit('${c.id}')">Edit &amp; resubmit</button>`
+          : `<span class="waiting">${c.creator_confirmed ? 'Confirmed by creator' : 'Waiting on creator'}</span>`}
       </div>
     </div>
     ${c.status === 'disputed' && c.dispute_reason ? `<div class="dispute-reason-note"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Creator's reason: ${escapeHtml(c.dispute_reason)}</div>` : ''}
+    ${c.status === 'disputed' ? `
+    <div id="resubmit-panel-${c.id}" class="resolve-panel" style="display:none">
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px">Fix the details and resubmit. This clears the dispute and puts it back in front of the creator to confirm.</div>
+      <div class="field"><label>Campaign name</label><input id="resubmit-name-${c.id}" value="${escapeHtml(c.name)}"></div>
+      <div class="field"><label>Budget range</label><input id="resubmit-budget-${c.id}" value="${escapeHtml(c.budget_range || '')}"></div>
+      <div class="field"><label>Objective</label><input id="resubmit-objective-${c.id}" value="${escapeHtml(c.objective || '')}"></div>
+      <div style="display:flex;gap:8px">
+        <button class="cta" onclick="resubmitCampaign('${c.id}')">Resubmit</button>
+        <button class="resolve-btn" onclick="toggleResubmit('${c.id}')">Cancel</button>
+      </div>
+      <div id="resubmit-msg-${c.id}"></div>
+    </div>` : ''}
   `).join('') : '<div style="padding:14px;font-size:12px;color:var(--color-text-secondary)">No campaigns logged yet.</div>';
+}
+
+function toggleResubmit(id) {
+  const panel = document.getElementById(`resubmit-panel-${id}`);
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function resubmitCampaign(id) {
+  const name = document.getElementById(`resubmit-name-${id}`).value.trim();
+  const budgetRange = document.getElementById(`resubmit-budget-${id}`).value.trim();
+  const objective = document.getElementById(`resubmit-objective-${id}`).value.trim();
+  const msgEl = document.getElementById(`resubmit-msg-${id}`);
+  if (!name) { msgEl.innerHTML = '<div class="msg error">Give the campaign a name.</div>'; return; }
+
+  // status='pending' is only accepted back from 'disputed' by the DB trigger
+  // for the creator or sponsor already on the row, and it refuses to let
+  // creator_id/sponsor_id change in the same update — see
+  // fn_validate_campaign_confirmation.
+  const { error } = await sb.from('campaigns').update({
+    name, budget_range: budgetRange || null, objective: objective || null, status: 'pending',
+  }).eq('id', id);
+  if (error) { msgEl.innerHTML = `<div class="msg error">Could not resubmit: ${escapeHtml(error.message)}</div>`; return; }
+  loadSponsorCampaigns();
 }
 
 // ── Creator: confirm a campaign ─────────────────────────────────────────────
@@ -171,7 +211,7 @@ async function loadCreatorCampaigns() {
       <div style="display:flex;align-items:center;gap:8px">
         <span class="status-tag st-${c.status}">${c.status}</span>
         ${c.status === 'disputed'
-          ? `<span class="waiting">Disputed</span>`
+          ? `<button class="resolve-btn" onclick="withdrawDispute('${c.id}')">Withdraw dispute</button>`
           : c.creator_confirmed
             ? `<span class="waiting">${c.sponsor_confirmed ? 'Confirmed' : 'Waiting on sponsor'}</span>`
             : `<button class="confirm-btn" onclick="confirmCampaign('${c.id}')">Confirm</button>
@@ -215,6 +255,12 @@ async function submitDispute(id) {
   const { error } = await sb.from('campaigns')
     .update({ status: 'disputed', dispute_reason: reason }).eq('id', id);
   if (error) { msgEl.innerHTML = `<div class="msg error">Could not submit dispute: ${escapeHtml(error.message)}</div>`; return; }
+  loadCreatorCampaigns();
+}
+
+async function withdrawDispute(id) {
+  const { error } = await sb.from('campaigns').update({ status: 'pending' }).eq('id', id);
+  if (error) { alert('Could not withdraw dispute: ' + error.message); return; }
   loadCreatorCampaigns();
 }
 
