@@ -1,5 +1,5 @@
 :root{
-  --font-sans: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --font-sans: 'Inter', -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   --color-text-primary:#1A1A1E;
   --color-text-secondary:#6B7280;
   --color-text-tertiary:#9CA3AF;
