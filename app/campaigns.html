@@ -256,6 +256,21 @@ async function submitDispute(id) {
     .update({ status: 'disputed', dispute_reason: reason }).eq('id', id);
   if (error) { msgEl.innerHTML = `<div class="msg error">Could not submit dispute: ${escapeHtml(error.message)}</div>`; return; }
   loadCreatorCampaigns();
+
+  // Best-effort sponsor notification — the dispute itself is already saved
+  // above, so a failure here shouldn't block or alarm the creator. They see
+  // no error either way; worst case the sponsor just finds out by revisiting
+  // their Campaigns page, same as before this shipped.
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    await fetch('/api/notify-dispute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ campaignId: id }),
+    });
+  } catch (err) {
+    console.error('notify-dispute error:', err);
+  }
 }
 
 async function withdrawDispute(id) {
