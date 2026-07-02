@@ -41,6 +41,18 @@
   .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
   .msg.error{background:#FDECEC;color:#B42318}
   .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  .endorse-btn{font-size:11px;padding:5px 10px;border-radius:0;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+  .endorse-btn:hover{border-color:#2563EB;color:#2563EB}
+  .endorsed-tag{font-size:10px;color:#1C7C3F;display:flex;align-items:center;gap:4px}
+  .endorse-panel{padding:10px 14px 14px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+  .endorse-panel textarea{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:12px;font-family:inherit;resize:vertical;min-height:56px;margin-bottom:8px}
+  .star-row{display:flex;align-items:center;gap:2px;margin-bottom:2px}
+  .star-row .star{font-size:16px;color:var(--color-border-tertiary);cursor:pointer;line-height:1}
+  .star-row .star.on{color:#F5A623}
+  .yn-row{display:flex;gap:8px;margin-bottom:10px}
+  .yn-btn{font-size:11px;padding:5px 12px;border-radius:0;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+  .yn-btn.selected{background:#2563EB;color:#fff;border-color:#2563EB}
+  .endorse-summary{padding:10px 14px 14px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px;color:var(--color-text-secondary);line-height:1.6}
 </style>
 </head>
 <body>
@@ -154,7 +166,11 @@ async function loadSponsorCampaigns() {
         <span class="status-tag st-${c.status}">${c.status}</span>
         ${c.status === 'disputed'
           ? `<button class="resolve-btn" onclick="toggleResubmit('${c.id}')">Edit &amp; resubmit</button>`
-          : `<span class="waiting">${c.creator_confirmed ? 'Confirmed by creator' : 'Waiting on creator'}</span>`}
+          : c.status === 'verified'
+            ? (c.endorsement_submitted_at
+                ? `<span class="endorsed-tag"><i class="ti ti-circle-check" aria-hidden="true"></i> Endorsement submitted</span>`
+                : `<button class="endorse-btn" onclick="toggleEndorse('${c.id}')">Leave endorsement</button>`)
+            : `<span class="waiting">${c.creator_confirmed ? 'Confirmed by creator' : 'Waiting on creator'}</span>`}
       </div>
     </div>
     ${c.status === 'disputed' && c.dispute_reason ? `<div class="dispute-reason-note"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Creator's reason: ${escapeHtml(c.dispute_reason)}</div>` : ''}
@@ -170,7 +186,99 @@ async function loadSponsorCampaigns() {
       </div>
       <div id="resubmit-msg-${c.id}"></div>
     </div>` : ''}
+    ${c.status === 'verified' && c.endorsement_submitted_at ? `
+    <div class="endorse-summary">
+      ${renderStarsReadonly('Overall', c.sponsor_rating)}
+      ${renderStarsReadonly('Communication', c.communication_rating)}
+      ${renderStarsReadonly('Professionalism', c.professionalism_rating)}
+      ${renderStarsReadonly('Deliverable quality', c.deliverable_quality_rating)}
+      <div style="margin-top:4px">Would hire again: <strong>${c.would_hire_again ? 'Yes' : 'No'}</strong></div>
+      ${c.endorsement_notes ? `<div style="margin-top:4px;font-style:italic">"${escapeHtml(c.endorsement_notes)}"</div>` : ''}
+    </div>` : ''}
+    ${c.status === 'verified' && !c.endorsement_submitted_at ? `
+    <div id="endorse-panel-${c.id}" class="endorse-panel" style="display:none">
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:10px">Rate your experience working with this creator. This feeds their public reliability score and can't be edited once submitted.</div>
+      ${renderStarInput(c.id, 'overall', 'Overall')}
+      ${renderStarInput(c.id, 'comm', 'Communication')}
+      ${renderStarInput(c.id, 'prof', 'Professionalism')}
+      ${renderStarInput(c.id, 'quality', 'Deliverable quality')}
+      <div class="field" style="margin-top:6px"><label>Would you hire this creator again?</label>
+        <div class="yn-row">
+          <button type="button" class="yn-btn" id="yn-yes-${c.id}" onclick="setYN('${c.id}',true)">Yes</button>
+          <button type="button" class="yn-btn" id="yn-no-${c.id}" onclick="setYN('${c.id}',false)">No</button>
+        </div>
+      </div>
+      <div class="field"><label>Notes <span style="color:var(--color-text-tertiary)">(optional, shown on the creator's profile)</span></label>
+        <textarea id="endorse-notes-${c.id}" placeholder="e.g. Great communication, delivered on time"></textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="cta" onclick="submitEndorsement('${c.id}')">Submit endorsement</button>
+        <button class="endorse-btn" onclick="toggleEndorse('${c.id}')">Cancel</button>
+      </div>
+      <div id="endorse-msg-${c.id}"></div>
+    </div>` : ''}
   `).join('') : '<div style="padding:14px;font-size:12px;color:var(--color-text-secondary)">No campaigns logged yet.</div>';
+}
+
+// ── Endorsements (sponsor rates the creator on a verified campaign) ────────
+const endorseState = {}; // { [campaignId]: { overall, comm, prof, quality, wouldHireAgain } }
+
+function renderStarsReadonly(label, value) {
+  if (!value) return '';
+  const stars = [1,2,3,4,5].map(n => `<span class="star ${n <= value ? 'on' : ''}">★</span>`).join('');
+  return `<div class="star-row"><span style="width:120px;display:inline-block;color:var(--color-text-secondary)">${escapeHtml(label)}</span>${stars}</div>`;
+}
+
+function renderStarInput(campaignId, key, label) {
+  const stars = [1,2,3,4,5].map(n =>
+    `<span class="star" id="star-${key}-${campaignId}-${n}" onclick="setStar('${campaignId}','${key}',${n})">★</span>`
+  ).join('');
+  return `<div class="field"><label>${escapeHtml(label)}</label><div class="star-row">${stars}</div></div>`;
+}
+
+function toggleEndorse(id) {
+  const panel = document.getElementById(`endorse-panel-${id}`);
+  if (!endorseState[id]) endorseState[id] = { overall: 0, comm: 0, prof: 0, quality: 0, wouldHireAgain: null };
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function setStar(campaignId, key, n) {
+  if (!endorseState[campaignId]) endorseState[campaignId] = { overall: 0, comm: 0, prof: 0, quality: 0, wouldHireAgain: null };
+  endorseState[campaignId][key] = n;
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`star-${key}-${campaignId}-${i}`).classList.toggle('on', i <= n);
+  }
+}
+
+function setYN(campaignId, val) {
+  if (!endorseState[campaignId]) endorseState[campaignId] = { overall: 0, comm: 0, prof: 0, quality: 0, wouldHireAgain: null };
+  endorseState[campaignId].wouldHireAgain = val;
+  document.getElementById(`yn-yes-${campaignId}`).classList.toggle('selected', val === true);
+  document.getElementById(`yn-no-${campaignId}`).classList.toggle('selected', val === false);
+}
+
+async function submitEndorsement(id) {
+  const state = endorseState[id] || {};
+  const msgEl = document.getElementById(`endorse-msg-${id}`);
+  if (!state.overall) { msgEl.innerHTML = '<div class="msg error">Give an overall rating.</div>'; return; }
+  if (state.wouldHireAgain === null || state.wouldHireAgain === undefined) { msgEl.innerHTML = '<div class="msg error">Let us know if you\'d hire them again.</div>'; return; }
+
+  const notes = document.getElementById(`endorse-notes-${id}`).value.trim();
+
+  // Column-write is also gated server-side by fn_validate_endorsement: only
+  // the sponsor on a verified, not-yet-endorsed campaign can set these.
+  const { error } = await sb.from('campaigns').update({
+    sponsor_rating: state.overall,
+    communication_rating: state.comm || null,
+    professionalism_rating: state.prof || null,
+    deliverable_quality_rating: state.quality || null,
+    would_hire_again: state.wouldHireAgain,
+    endorsement_notes: notes || null,
+    endorsement_submitted_at: new Date().toISOString(),
+  }).eq('id', id);
+
+  if (error) { msgEl.innerHTML = `<div class="msg error">Could not submit: ${escapeHtml(error.message)}</div>`; return; }
+  loadSponsorCampaigns();
 }
 
 function toggleResubmit(id) {
