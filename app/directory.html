@@ -119,8 +119,17 @@ async function toggleSave(creatorId) {
     if (error) { alert('Could not remove: ' + error.message); return; }
     watchlisted.delete(creatorId);
   } else {
+    // Enforce plan-based watchlist limits before inserting
+    const { data: sponsor } = await sb.from('sponsors').select('plan').eq('id', sponsorProfile.id).single();
+    const plan = sponsor?.plan || 'free';
+    const LIMITS = { free: 3, starter: Infinity, team: Infinity };
+    const limit = LIMITS[plan] ?? 3;
+    if (watchlisted.size >= limit) {
+      alert(`Free plan is limited to ${limit} saved creators. Upgrade to Starter or Team for unlimited watchlist access.`);
+      return;
+    }
     const { error } = await sb.from('watchlists').insert({ sponsor_id: sponsorProfile.id, creator_id: creatorId });
-    if (error) { alert(error.message.includes('limited to') ? error.message : 'Could not save: ' + error.message); return; }
+    if (error) { alert('Could not save: ' + error.message); return; }
     watchlisted.add(creatorId);
   }
   render();
