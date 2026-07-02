@@ -44,6 +44,7 @@ module.exports = async (req, res) => {
       admin.from('brand_safety_answers').select('*').eq('creator_id', creator.id),
     ]);
 
+    const isPro = creator.plan === 'pro';
     const displayName = profile?.display_name || 'Creator';
     const score = creator.trust_score || 0;
     const confidence = creator.confidence_rating || 0;
@@ -54,10 +55,6 @@ module.exports = async (req, res) => {
     const reliabilityScore = creator.reliability_score || 0;
     const repeatRate = creator.repeat_sponsor_rate || 0;
     const generatedDate = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-    // Pricing page promise (pricing-creator.html): Free = "Watermarked Proof
-    // Packet", Pro ($19.99/mo) = "Full PDF". Same rule pricing-creator.html
-    // itself uses for its own UI toggle — keep this in sync with that file.
-    const isPro = creator.plan === 'pro';
 
     // ── Build PDF ──────────────────────────────────────────────────────────────
     const doc = new PDFDocument({ margin: 0, size: 'A4' });
@@ -136,18 +133,6 @@ module.exports = async (req, res) => {
 
     // ── CONTENT AREA ──────────────────────────────────────────────────────────
     let y = 296;
-
-    if (!isPro) {
-      // Visible, legible banner — the diagonal watermark drawn at the end is
-      // easy to crop/ignore, so callers shouldn't rely on that alone to
-      // communicate the tier.
-      doc.rect(MARGIN, y, CONTENT_W, 26).fill('#FEF3C7');
-      doc.fontSize(9).fillColor('#92460A').font('Helvetica-Bold')
-        .text('FREE PLAN · WATERMARKED PREVIEW', MARGIN + 12, y + 9);
-      doc.fontSize(9).fillColor('#92460A').font('Helvetica')
-        .text('Upgrade to Pro ($19.99/mo) for the full, unwatermarked report', MARGIN, y + 9, { width: CONTENT_W - 12, align: 'right' });
-      y += 26 + 14;
-    }
 
     function sectionCard(title, rightLabel, drawFn) {
       const startY = y;
@@ -360,32 +345,34 @@ module.exports = async (req, res) => {
         MARGIN, y, { width: CONTENT_W, lineGap: 2 }
       );
 
+    // ── Watermark for free plan ────────────────────────────────────────────────
     if (!isPro) {
-      // Diagonal tiled watermark over the whole page, drawn last so it sits
-      // on top of the content. Free-tier only — Pro creators get a clean
-      // report per the pricing page's "Full PDF" promise.
-      //
-      // Note: the tile loop is clamped to [0, doc.page.height]. Calling
-      // .text() with a y coordinate past the page bottom silently triggers
-      // PDFKit's auto-pagination mid-loop, which orphans the save() from
-      // before the page break and corrupts the content stream ("Restoring
-      // state when no valid states to pop" in poppler/most PDF readers).
-      // Confirmed by isolated repro before landing this.
-      doc.font('Helvetica-Bold').fontSize(26).fillColor('#000000', 0.07);
-      const label = 'KITSCORE FREE PLAN — UPGRADE FOR FULL REPORT';
-      for (let wy = 0; wy <= doc.page.height; wy += 110) {
+      const pages = doc.bufferedPageRange();
+      for (let i = pages.start; i < pages.start + pages.count; i++) {
+        doc.switchToPage(i);
         doc.save();
-        doc.rotate(-35, { origin: [W / 2, wy] });
-        doc.text(label, -450, wy, { width: 1500, align: 'center', lineBreak: false });
+        doc.translate(W / 2, 420);
+        doc.rotate(-40);
+        doc.fontSize(52).fillColor('#E5E7EB').font('Helvetica-Bold')
+          .opacity(0.55)
+          .text('WATERMARKED', -180, -26, { lineBreak: false });
         doc.restore();
+
+        // Upgrade prompt banner on each page
+        doc.rect(0, 785, W, 57).fill('#F0F6FF');
+        doc.fontSize(9).fillColor('#2563EB').font('Helvetica-Bold')
+          .text('Upgrade to Kitscore Pro ($19.99/mo)', MARGIN, 798);
+        doc.fontSize(8).fillColor('#4B5563').font('Helvetica')
+          .text('Remove watermark · Full PDF export · Score history · Public profile listing', MARGIN, 812);
+        doc.fontSize(8).fillColor('#2563EB').font('Helvetica-Bold')
+          .text('kitscore.co/app/pricing-creator.html', W - MARGIN - 160, 805);
       }
-      doc.fillColor('#000000', 1);
     }
 
     doc.end();
     const pdfBuffer = await bufferPromise;
 
-    const filename = `kitscore-proof-${displayName.replace(/\s+/g, '-').toLowerCase()}${isPro ? '' : '-watermarked'}.pdf`;
+    const filename = `kitscore-proof-${displayName.replace(/\s+/g, '-').toLowerCase()}.pdf`;
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.status(200).send(pdfBuffer);
