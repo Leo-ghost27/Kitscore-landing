@@ -4,6 +4,7 @@
 const Stripe = require('stripe');
 const { adminClient } = require('./_supabase-admin');
 const { sendEmail, sponsorReceiptEmail, reportReadyEmail, refundConfirmationEmail } = require('../lib/email');
+const { deriveVerdict, generateAIBrief, fetchCreatorBriefData } = require('../lib/ai-brief');
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -91,6 +92,24 @@ const handler = async (req, res) => {
             const { data: evalRow } = await admin.from('evaluations')
               .select('creator_id, sponsor_id').eq('id', evaluationId).single();
             if (evalRow) {
+              // Generate the AI decision brief now — only ever runs on a
+              // confirmed payment, never on a bare evaluation request, so
+              // an abandoned $0 evaluation never costs an API call.
+              try {
+                const briefData = await fetchCreatorBriefData(admin, evalRow.creator_id);
+                if (briefData) {
+                  const verdict = deriveVerdict(briefData.trustScore, briefData.brandSafety, briefData.verifiedCount);
+                  const { summary, brief } = await generateAIBrief({ ...briefData, verdict });
+                  await admin.from('evaluations').update({
+                    recommendation_verdict: verdict,
+                    recommendation_summary: summary,
+                    ai_summary: brief ? JSON.stringify(brief) : null,
+                  }).eq('id', evaluationId);
+                }
+              } catch (aiErr) {
+                console.error('AI brief generation failed (non-fatal, payment already confirmed):', aiErr);
+              }
+
               const [{ data: creatorProfile }, { data: sponsorProfile }] = await Promise.all([
                 admin.from('profiles').select('display_name').eq('id', evalRow.creator_id).single(),
                 admin.from('profiles').select('email, display_name').eq('id', evalRow.sponsor_id).single(),
