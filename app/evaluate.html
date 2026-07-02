@@ -193,7 +193,7 @@ async function load() {
         <span class="badge ${style_class}"><i class="ti ${icon}"></i> Recommendation: ${label}</span>
         <span class="badge b-blue">${verifiedCount} verified campaigns</span>
       </div>
-      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.7;margin-bottom:12px">${evalRow.recommendation_summary || ''}</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.7;margin-bottom:12px">${escapeHtml(evalRow.recommendation_summary || '')}</div>
       ${(() => {
         try {
           const brief = evalRow.ai_summary ? JSON.parse(evalRow.ai_summary) : null;
@@ -214,11 +214,11 @@ async function load() {
                   <i class="ti ${s.icon}" style="color:#2563EB;font-size:13px;margin-top:1px;flex-shrink:0"></i>
                   <div>
                     <div style="font-size:10px;font-weight:600;color:var(--color-text-primary);margin-bottom:2px">${s.label}</div>
-                    <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">${brief[s.key]}</div>
+                    <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">${escapeHtml(String(brief[s.key]))}</div>
                   </div>
                 </div>
               ` : '').join('')}
-              <div style="font-size:9px;color:var(--color-text-tertiary);margin-top:6px">Generated from ${verifiedCount} verified campaigns · ${evalRow.confidence_rating || creator?.confidence_rating || ''}% confidence · Kitscore AI</div>
+              <div style="font-size:9px;color:var(--color-text-tertiary);margin-top:6px">Generated from ${verifiedCount} verified campaigns · ${escapeHtml(String(creator?.confidence ?? ''))}% confidence · Kitscore AI</div>
             </div>`;
         } catch(e) { return ''; }
       })()}

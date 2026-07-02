@@ -4,6 +4,14 @@
 // Row is always unlocked:false — unlocking only happens via Stripe webhook.
 const { adminClient, getAuthedSponsor } = require('./_supabase-admin');
 
+const BRAND_SAFETY_QUESTIONS = {
+  family_safe: 'Family-safe content',
+  political: 'Political content frequency',
+  gambling: 'Gambling promotion history',
+  adult: 'Adult/mature content',
+  profanity: 'Profanity frequency',
+};
+
 // ── Verdict rules (deterministic — not AI) ────────────────────────────────────
 // Verdict is rule-based so it's consistent and auditable. AI writes the
 // narrative brief that explains the verdict, not the verdict itself.
@@ -24,7 +32,7 @@ async function generateAIBrief(creatorData) {
   const {
     displayName, niche, location, trustScore, confidenceRating,
     badgeTier, verifiedCount, reliabilityScore, repeatRate,
-    components, campaigns, brandSafetyAnswers, verdict,
+    components, campaigns, brandSafetyAnswers, penaltyLookup, verdict,
   } = creatorData;
 
   const compSummary = (components || []).map(c =>
@@ -32,13 +40,16 @@ async function generateAIBrief(creatorData) {
   ).join('\n');
 
   const campaignSummary = (campaigns || []).slice(0, 5).map(c =>
-    `- ${c.brand_name || 'Brand'} | ${c.campaign_name || ''} | ${c.status}`
+    `- ${c.name || 'Campaign'} | ${c.status}`
   ).join('\n') || 'None on record';
 
-  const bsFlags = (brandSafetyAnswers || [])
-    .filter(a => a.flagged)
-    .map(a => a.category)
-    .join(', ') || 'None';
+  // A question is "flagged" if the creator's actual answer carries a
+  // nonzero penalty per brand_safety_penalties (the real lookup table —
+  // there is no per-answer flagged/category column on the answers table).
+  const flaggedLabels = (brandSafetyAnswers || [])
+    .filter(a => (penaltyLookup?.[`${a.question_key}::${a.answer}`] || 0) > 0)
+    .map(a => BRAND_SAFETY_QUESTIONS[a.question_key] || a.question_key);
+  const bsFlags = flaggedLabels.length ? flaggedLabels.join(', ') : 'None';
 
   const prompt = `You are Kitscore AI, a sponsorship intelligence analyst. Generate a concise, professional decision brief for a brand sponsor evaluating a creator partnership.
 
@@ -65,6 +76,8 @@ ${bsFlags}
 VERDICT: ${verdict.toUpperCase()}
 
 Write a decision brief with these exact sections. Be specific — use the actual numbers and data above. Do not be generic. Keep each section 1-3 sentences max.
+
+Use ONLY the data provided above. Do not invent statistics, industry benchmarks, follower counts, engagement rates, or comparisons that were not supplied to you. If data for a section is thin, say so plainly rather than filling the gap with an invented figure — an unsupported claim about a real person is a real-world liability, not a style choice.
 
 Format your response as JSON with these exact keys:
 {
@@ -143,6 +156,7 @@ module.exports = async (req, res) => {
       { data: components },
       { data: campaigns },
       { data: bsAnswers },
+      { data: bsPenalties },
       { data: sponsorProfile },
     ] = await Promise.all([
       admin.from('creators').select('*').eq('id', creatorId).single(),
@@ -150,6 +164,7 @@ module.exports = async (req, res) => {
       admin.from('score_components').select('*').eq('creator_id', creatorId),
       admin.from('campaigns').select('*').eq('creator_id', creatorId).eq('status', 'verified'),
       admin.from('brand_safety_answers').select('*').eq('creator_id', creatorId),
+      admin.from('brand_safety_penalties').select('*'),
       admin.from('profiles').select('display_name, email').eq('id', sponsor.id).single(),
     ]);
 
@@ -166,10 +181,13 @@ module.exports = async (req, res) => {
     const brandSafety = compMap.brand_safety || 0;
     const verifiedCount = (campaigns || []).length;
     const trustScore = creator.trust_score || 0;
-    const confidenceRating = creator.confidence_rating || 0;
+    const confidenceRating = creator.confidence || 0;
 
     // Deterministic verdict
     const verdict = deriveVerdict(trustScore, brandSafety, verifiedCount, confidenceRating);
+
+    const penaltyLookup = {};
+    (bsPenalties || []).forEach(p => { penaltyLookup[`${p.question_key}::${p.answer}`] = Number(p.penalty) || 0; });
 
     // AI brief — personalised narrative
     const displayName = profile?.display_name || 'This creator';
@@ -190,6 +208,7 @@ module.exports = async (req, res) => {
       })),
       campaigns,
       brandSafetyAnswers: bsAnswers,
+      penaltyLookup,
       verdict,
     });
 
