@@ -223,6 +223,7 @@ async function load() {
         } catch(e) { return ''; }
       })()}
       <button class="cta" style="background:#1C7C3F;margin-top:12px" onclick="downloadPdf()"><i class="ti ti-file-download"></i>Download PDF</button>
+      <button class="cta" style="background:var(--color-background-secondary);color:var(--color-text-secondary);margin-top:12px;margin-left:8px" onclick="window.location.href='campaigns.html?creator=${creatorId}'"><i class="ti ti-flag"></i>Log a campaign with this creator</button>
     </div>
     <div class="card">
       <div class="sec">Score breakdown</div>

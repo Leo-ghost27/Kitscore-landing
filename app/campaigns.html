@@ -12,7 +12,14 @@
 <style>
   .ptitle{font-size:16px;font-weight:500;margin-bottom:4px}
   .psub{font-size:11px;color:var(--color-text-secondary);margin-bottom:16px}
-  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0;overflow:hidden}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0;overflow:hidden;margin-bottom:16px}
+  .form-card{padding:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .field{margin-bottom:10px}
+  .field label{display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+  .field input,.field select{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
+  .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:0;font-size:12px;font-weight:500;cursor:pointer}
+  .cta:disabled{opacity:.6;cursor:default}
   .row-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
   .row-item:last-child{border-bottom:none}
   .status-tag{font-size:10px;padding:3px 8px;border-radius:10px;text-transform:capitalize}
@@ -23,6 +30,9 @@
   .confirm-btn:disabled{opacity:.6;cursor:default}
   .waiting{font-size:10px;color:var(--color-text-tertiary)}
   .loading{font-size:12px;color:var(--color-text-secondary);padding:14px}
+  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#1C7C3F}
 </style>
 </head>
 <body>
@@ -30,7 +40,8 @@
   <div class="sidebar" id="sidebar-mount"></div>
   <div class="app-main">
     <div class="ptitle">Campaigns</div>
-    <div class="psub">Verification requires confirmation from both you and the sponsor.</div>
+    <div class="psub" id="psub">Verification requires confirmation from both you and the sponsor.</div>
+    <div id="formArea"></div>
     <div class="card" id="list"><div class="loading">Loading…</div></div>
   </div>
 </div>
@@ -42,10 +53,105 @@
 let profile;
 
 async function load() {
-  profile = await requireRole('creator');
-  if (!profile) return;
-  renderSidebar('creator', 'campaigns');
+  profile = await getCurrentProfile();
+  if (!profile) { window.location.href = 'auth.html'; return; }
+  renderSidebar(profile.role, 'campaigns');
 
+  if (profile.role === 'sponsor') {
+    document.getElementById('psub').textContent = 'Log a campaign you ran with a creator. It only counts toward their verified track record once the creator confirms it too.';
+    await renderSponsorForm();
+    await loadSponsorCampaigns();
+  } else {
+    document.getElementById('formArea').innerHTML = '';
+    await loadCreatorCampaigns();
+  }
+}
+
+// ── Sponsor: log a campaign ────────────────────────────────────────────────
+async function renderSponsorForm() {
+  const { data: creators, error } = await sb.from('creators')
+    .select('id, profiles!inner(display_name)').order('id');
+  const options = error ? [] : (creators || [])
+    .map(c => ({ id: c.id, name: c.profiles.display_name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const preselect = new URLSearchParams(window.location.search).get('creator') || '';
+
+  document.getElementById('formArea').innerHTML = `
+    <div class="card form-card">
+      <div class="sec">Log a new campaign</div>
+      <div class="field"><label>Creator</label>
+        <select id="creatorSel">
+          <option value="">Select a creator…</option>
+          ${options.map(o => `<option value="${escapeHtml(o.id)}" ${o.id === preselect ? 'selected' : ''}>${escapeHtml(o.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Campaign name</label>
+        <input id="campaignName" placeholder="e.g. Summer 2026 Product Launch">
+      </div>
+      <div class="field"><label>Budget range <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+        <input id="budgetRange" placeholder="e.g. $500–$1,000">
+      </div>
+      <div class="field"><label>Objective <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+        <input id="objective" placeholder="e.g. Product awareness, affiliate sales">
+      </div>
+      <button class="cta" id="logBtn" onclick="logCampaign()">Log campaign</button>
+      <div id="formMsg"></div>
+    </div>
+  `;
+}
+
+async function logCampaign() {
+  const creatorId = document.getElementById('creatorSel').value;
+  const name = document.getElementById('campaignName').value.trim();
+  const msgEl = document.getElementById('formMsg');
+  if (!creatorId) { msgEl.innerHTML = '<div class="msg error">Choose a creator.</div>'; return; }
+  if (!name) { msgEl.innerHTML = '<div class="msg error">Give the campaign a name.</div>'; return; }
+
+  const btn = document.getElementById('logBtn');
+  btn.disabled = true;
+
+  // Logging the campaign is itself the sponsor's side of the mutual
+  // confirmation — the creator still has to confirm their side before it
+  // counts as verified (see campaigns.html creator view / DB trigger).
+  const budgetRange = document.getElementById('budgetRange').value.trim();
+  const objective = document.getElementById('objective').value.trim();
+
+  const { error } = await sb.from('campaigns').insert({
+    creator_id: creatorId, sponsor_id: profile.id, name, sponsor_confirmed: true,
+    budget_range: budgetRange || null, objective: objective || null,
+  });
+  if (error) { msgEl.innerHTML = `<div class="msg error">Could not log campaign: ${escapeHtml(error.message)}</div>`; btn.disabled = false; return; }
+
+  msgEl.innerHTML = '<div class="msg ok">Campaign logged. The creator will need to confirm it before it counts as verified.</div>';
+  document.getElementById('campaignName').value = '';
+  document.getElementById('budgetRange').value = '';
+  document.getElementById('objective').value = '';
+  btn.disabled = false;
+  loadSponsorCampaigns();
+}
+
+async function loadSponsorCampaigns() {
+  const { data: campaigns, error } = await sb.from('campaigns')
+    .select('*, creators(profiles(display_name))').eq('sponsor_id', profile.id).order('created_at', { ascending: false });
+  if (error) { document.getElementById('list').innerHTML = 'Could not load: ' + escapeHtml(error.message); return; }
+
+  document.getElementById('list').innerHTML = (campaigns && campaigns.length) ? campaigns.map(c => `
+    <div class="row-item">
+      <div>
+        <div style="font-weight:500">${escapeHtml(c.name)}</div>
+        <div style="color:var(--color-text-secondary);font-size:11px">${escapeHtml(c.creators?.profiles?.display_name || 'Unknown creator')}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="status-tag st-${c.status}">${c.status}</span>
+        <span class="waiting">${c.creator_confirmed ? 'Confirmed by creator' : 'Waiting on creator'}</span>
+      </div>
+    </div>
+  `).join('') : '<div style="padding:14px;font-size:12px;color:var(--color-text-secondary)">No campaigns logged yet.</div>';
+}
+
+// ── Creator: confirm a campaign ─────────────────────────────────────────────
+async function loadCreatorCampaigns() {
   const { data: campaigns, error } = await sb.from('campaigns')
     .select('*, sponsors(company_name)').eq('creator_id', profile.id).order('created_at', { ascending: false });
   if (error) { document.getElementById('list').innerHTML = 'Could not load: ' + escapeHtml(error.message); return; }
@@ -69,7 +175,7 @@ async function load() {
 async function confirmCampaign(id) {
   const { error } = await sb.from('campaigns').update({ creator_confirmed: true }).eq('id', id);
   if (error) { alert('Could not confirm: ' + error.message); return; }
-  load();
+  loadCreatorCampaigns();
 }
 
 load();

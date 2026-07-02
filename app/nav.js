@@ -1,6 +1,5 @@
 // Renders the left sidebar into #sidebar-mount. Only links to pages that
-// actually exist and work — see status doc for what's still missing
-// (Compare, Campaigns, Evidence upload UI, Profile editing, Action plan).
+// actually exist and work.
 const NAV = {
   creator: [
     { key: 'dashboard', href: 'dashboard.html', icon: 'ti-layout-dashboard', label: 'Dashboard' },
@@ -11,6 +10,7 @@ const NAV = {
   ],
   sponsor: [
     { key: 'directory', href: 'directory.html', icon: 'ti-users', label: 'Directory' },
+    { key: 'campaigns', href: 'campaigns.html', icon: 'ti-flag', label: 'Campaigns' },
     { key: 'watchlist', href: 'watchlist.html', icon: 'ti-heart', label: 'Watchlist' },
     { key: 'history', href: 'history.html', icon: 'ti-history', label: 'History' },
     { key: 'compare', href: 'compare.html', icon: 'ti-arrows-exchange', label: 'Compare' },
