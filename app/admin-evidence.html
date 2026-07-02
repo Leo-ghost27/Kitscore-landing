@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evidence Review — Kitscore Admin</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .filters{display:flex;gap:8px;margin-bottom:14px}
+  .filters button{font-size:11px;padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:20px;background:none;cursor:pointer;color:var(--color-text-secondary)}
+  .filters button.active{background:#2563EB;color:#fff;border-color:#2563EB}
+  .row-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;gap:10px}
+  .row-item:last-child{border-bottom:none}
+  .row-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .row-main .fname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row-meta{color:var(--color-text-tertiary);font-size:11px}
+  .row-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .status-tag{font-size:10px;padding:3px 8px;border-radius:10px;text-transform:capitalize}
+  .st-live_verified{background:#E9F7EE;color:#1C7C3F}
+  .st-submitted{background:#FEF6E7;color:#92600A}
+  .st-self_reported{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .link-btn{font-size:11px;color:#2563EB;background:none;border:none;cursor:pointer;white-space:nowrap}
+  select.status-select{font-size:11px;padding:5px 8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);background:#fff}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
+  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  .empty{font-size:12px;color:var(--color-text-secondary);padding:20px 0;text-align:center}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Evidence Review</div>
+    <div class="card">
+      <div class="sec">Filter</div>
+      <div class="filters" id="filters">
+        <button data-status="all" class="active">All</button>
+        <button data-status="self_reported">Self-reported</button>
+        <button data-status="submitted">Submitted</button>
+        <button data-status="live_verified">Live verified</button>
+      </div>
+      <div id="list" class="loading">Loading…</div>
+      <div id="msg"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="nav.js?v=2"></script>
+<script>
+let profile;
+let items = [];
+let activeFilter = 'all';
+
+async function load() {
+  profile = await requireRole('admin');
+  if (!profile) return;
+  renderSidebar('admin', 'admin-evidence');
+
+  const { data, error } = await sb.from('evidence_uploads')
+    .select('*, creators(id, profiles(display_name, email))')
+    .order('uploaded_at', { ascending: false });
+  if (error) { document.getElementById('list').textContent = 'Could not load: ' + error.message; return; }
+
+  items = data || [];
+  render();
+}
+
+function render() {
+  const filtered = activeFilter === 'all' ? items : items.filter(e => e.status === activeFilter);
+  const list = document.getElementById('list');
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty">No evidence in this view.</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(e => {
+    const creatorName = e.creators?.profiles?.display_name || 'Unknown creator';
+    return `
+    <div class="row-item">
+      <div class="row-main">
+        <span class="fname">${escapeHtml(e.file_name)}</span>
+        <span class="row-meta">${escapeHtml(creatorName)} · ${escapeHtml(e.platform || '')} · ${escapeHtml(e.evidence_type || '')} · ${new Date(e.uploaded_at).toLocaleDateString()}</span>
+      </div>
+      <div class="row-actions">
+        <span class="status-tag st-${e.status}">${e.status.replace('_',' ')}</span>
+        ${e.storage_path ? `<button class="link-btn" onclick="download('${e.storage_path}')">View</button>` : ''}
+        <select class="status-select" onchange="updateStatus('${e.id}', this.value)">
+          <option value="self_reported" ${e.status === 'self_reported' ? 'selected' : ''}>Self-reported</option>
+          <option value="submitted" ${e.status === 'submitted' ? 'selected' : ''}>Submitted</option>
+          <option value="live_verified" ${e.status === 'live_verified' ? 'selected' : ''}>Live verified</option>
+        </select>
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+async function updateStatus(id, newStatus) {
+  const { error } = await sb.from('evidence_uploads').update({ status: newStatus }).eq('id', id);
+  if (error) { showMsg('Update failed: ' + error.message, 'error'); return; }
+  const item = items.find(e => e.id === id);
+  if (item) item.status = newStatus;
+  render();
+  showMsg('Status updated.', 'ok');
+}
+
+async function download(path) {
+  const { data, error } = await sb.storage.from('evidence-uploads').createSignedUrl(path, 60);
+  if (error) { alert('Could not get file: ' + error.message); return; }
+  window.open(data.signedUrl, '_blank');
+}
+
+function showMsg(text, type) {
+  const el = document.getElementById('msg');
+  el.innerHTML = `<div class="msg ${type}">${text}</div>`;
+  setTimeout(() => { el.innerHTML = ''; }, 3000);
+}
+
+document.getElementById('filters').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-status]');
+  if (!btn) return;
+  activeFilter = btn.dataset.status;
+  document.querySelectorAll('#filters button').forEach(b => b.classList.toggle('active', b === btn));
+  render();
+});
+
+load();
+</script>
+</body>
+</html>

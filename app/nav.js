@@ -17,14 +17,17 @@ const NAV = {
     { key: 'team', href: 'team.html', icon: 'ti-user-plus', label: 'Team' },
     { key: 'pricing', href: 'pricing.html', icon: 'ti-credit-card', label: 'Plans' },
   ],
+  admin: [
+    { key: 'admin-evidence', href: 'admin-evidence.html', icon: 'ti-shield-check', label: 'Evidence Review' },
+  ],
 };
 
 function renderSidebar(role, activeKey) {
   const mount = document.getElementById('sidebar-mount');
   if (!mount) return;
   const items = NAV[role] || [];
-  const roleLabel = role === 'sponsor' ? 'Sponsor' : 'Creator';
-  const roleIcon  = role === 'sponsor' ? 'ti-building-store' : 'ti-device-camera';
+  const roleLabel = role === 'sponsor' ? 'Sponsor' : role === 'admin' ? 'Admin' : 'Creator';
+  const roleIcon  = role === 'sponsor' ? 'ti-building-store' : role === 'admin' ? 'ti-shield-lock' : 'ti-device-camera';
   mount.innerHTML = `
     <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:8px;text-decoration:none;padding:10px 10px 16px;writing-mode:horizontal-tb;transform:none">
       <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">

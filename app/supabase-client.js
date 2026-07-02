@@ -66,7 +66,8 @@ async function requireRole(expectedRole) {
   const profile = await getCurrentProfile();
   if (!profile) { window.location.href = 'auth.html'; return null; }
   if (profile.role !== expectedRole) {
-    window.location.href = profile.role === 'creator' ? 'dashboard.html' : 'directory.html';
+    const home = profile.role === 'creator' ? 'dashboard.html' : profile.role === 'admin' ? 'admin-evidence.html' : 'directory.html';
+    window.location.href = home;
     return null;
   }
   return profile;
