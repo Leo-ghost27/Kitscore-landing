@@ -19,6 +19,7 @@ const NAV = {
   ],
   admin: [
     { key: 'admin-evidence', href: 'admin-evidence.html', icon: 'ti-shield-check', label: 'Evidence Review' },
+    { key: 'admin-signups', href: 'admin-signups.html', icon: 'ti-users', label: 'Signups' },
   ],
 };
 

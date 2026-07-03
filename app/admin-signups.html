@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signups — Kitscore Admin</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .filters{display:flex;gap:8px;margin-bottom:14px}
+  .filters button{font-size:11px;padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:20px;background:none;cursor:pointer;color:var(--color-text-secondary)}
+  .filters button.active{background:#2563EB;color:#fff;border-color:#2563EB}
+  .row-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;gap:10px}
+  .row-item:last-child{border-bottom:none}
+  .row-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .row-main .fname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+  .row-meta{color:var(--color-text-tertiary);font-size:11px}
+  .role-tag{font-size:10px;padding:3px 8px;border-radius:10px;text-transform:capitalize;white-space:nowrap}
+  .rt-creator{background:#F0F6FE;color:#185FA5}
+  .rt-sponsor{background:#FEF6E7;color:#92600A}
+  .rt-admin{background:#F4F5F7;color:#6B7280}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
+  .empty{font-size:12px;color:var(--color-text-secondary);padding:20px 0;text-align:center}
+  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .stats-row{display:flex;gap:10px;margin-bottom:14px}
+  .stat-box{flex:1;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;text-align:center}
+  .stat-num{font-size:20px;font-weight:600}
+  .stat-label{font-size:10px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Signups</div>
+    <div class="stats-row" id="stats"></div>
+    <div class="card">
+      <div class="sec">Filter</div>
+      <div class="filters" id="filters">
+        <button data-role="all" class="active">All</button>
+        <button data-role="creator">Creators</button>
+        <button data-role="sponsor">Sponsors</button>
+      </div>
+      <div id="list" class="loading">Loading…</div>
+      <div id="msg"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="nav.js?v=2"></script>
+<script>
+let items = [];
+let activeFilter = 'all';
+
+async function load() {
+  const profile = await requireRole('admin');
+  if (!profile) return;
+  renderSidebar('admin', 'admin-signups');
+
+  const { data, error } = await sb.rpc('fn_admin_list_profiles');
+  if (error) {
+    document.getElementById('list').innerHTML = '';
+    document.getElementById('msg').innerHTML = `<div class="msg error">Could not load signups: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  items = data || [];
+  renderStats();
+  render();
+}
+
+function renderStats() {
+  const creators = items.filter(i => i.role === 'creator').length;
+  const sponsors = items.filter(i => i.role === 'sponsor').length;
+  const last7d = items.filter(i => new Date(i.created_at) > new Date(Date.now() - 7*24*60*60*1000)).length;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${items.length}</div><div class="stat-label">Total accounts</div></div>
+    <div class="stat-box"><div class="stat-num">${creators}</div><div class="stat-label">Creators</div></div>
+    <div class="stat-box"><div class="stat-num">${sponsors}</div><div class="stat-label">Sponsors</div></div>
+    <div class="stat-box"><div class="stat-num">${last7d}</div><div class="stat-label">Last 7 days</div></div>
+  `;
+}
+
+function render() {
+  const filtered = activeFilter === 'all' ? items : items.filter(i => i.role === activeFilter);
+  document.getElementById('list').innerHTML = filtered.length ? filtered.map(i => `
+    <div class="row-item">
+      <div class="row-main">
+        <span class="fname">${escapeHtml(i.display_name || '(no name)')}</span>
+        <span class="row-meta">${escapeHtml(i.email || 'no email on file')} · ${new Date(i.created_at).toLocaleString()}</span>
+      </div>
+      <span class="role-tag rt-${i.role}">${i.role}</span>
+    </div>
+  `).join('') : '<div class="empty">No signups in this filter yet.</div>';
+}
+
+document.getElementById('filters').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-role]');
+  if (!btn) return;
+  document.querySelectorAll('#filters button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = btn.dataset.role;
+  render();
+});
+
+load();
+</script>
+</body>
+</html>

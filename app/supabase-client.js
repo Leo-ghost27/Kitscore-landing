@@ -24,7 +24,12 @@ function escapeHtml(str) {
 async function getCurrentProfile() {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return null;
-  const { data, error } = await sb.from('profiles').select('*').eq('auth_user_id', user.id).maybeSingle();
+  // Was: sb.from('profiles').select('*').eq('auth_user_id', user.id).maybeSingle()
+  // profiles.email is no longer directly selectable by anon/authenticated
+  // (see fix_profiles_email_public_leak migration) -- this RPC is scoped
+  // server-side to the caller's own row via auth.uid(), so it's the one
+  // legitimate path back to your own email.
+  const { data, error } = await sb.rpc('fn_get_my_profile');
   if (error) { console.error('getCurrentProfile error:', error); return null; }
   return data;
 }
