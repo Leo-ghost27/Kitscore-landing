@@ -43,8 +43,11 @@ async function load() {
   if (!profile) return;
   renderSidebar('creator', 'profile');
 
-  const { data: c } = await sb.from('creators').select('*').eq('id', profile.id).single();
-  creator = c;
+  const [{ data: c }, { data: email }] = await Promise.all([
+    sb.from('creators').select('niche, location').eq('id', profile.id).single(),
+    sb.rpc('fn_get_my_business_email'),
+  ]);
+  creator = { ...c, business_email: email };
 
   document.getElementById('formWrap').innerHTML = `
     <div class="field"><label>Display name</label><input id="displayName" value="${escapeHtml(profile.display_name || '')}"></div>

@@ -66,7 +66,7 @@ async function load() {
   if (!sponsorProfile) return;
   renderSidebar('sponsor', 'directory');
 
-  const { data: rows, error } = await sb.from('creators').select('*, profiles!inner(display_name), reliability_score, repeat_sponsor_rate');
+  const { data: rows, error } = await sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, updated_at, reliability_score, repeat_sponsor_rate, profiles!inner(display_name)');
   if (error) { document.getElementById('content').textContent = 'Could not load creators: ' + error.message; return; }
 
   const { data: campaigns } = await sb.from('campaigns').select('creator_id, status').eq('status', 'verified');

@@ -90,7 +90,7 @@ async function load() {
       document.getElementById('banner').innerHTML = `<div class="banner pending">Checkout cancelled — no charge was made.</div>`;
     }
   const [{ data: creator }, { data: profileRow }, { data: components }, { data: campaigns }, { data: evalRow }] = await Promise.all([
-    sb.from('creators').select('*').eq('id', creatorId).single(),
+    sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, reliability_score, repeat_sponsor_rate').eq('id', creatorId).single(),
     sb.from('profiles').select('display_name').eq('id', creatorId).single(),
     sb.from('score_components').select('*').eq('creator_id', creatorId),
     sb.from('campaigns').select('status').eq('creator_id', creatorId).eq('status', 'verified'),

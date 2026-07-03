@@ -219,14 +219,15 @@ async function load() {
   renderSidebar('creator', 'dashboard');
   document.getElementById('whoami').textContent = `${profile.display_name} · ${profile.email||''}`;
 
-  const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns }] = await Promise.all([
-    sb.from('creators').select('id,niche,location,business_email,trust_score,confidence,badge_tier,plan,reliability_score,repeat_sponsor_rate,would_hire_again_pct').eq('id', profile.id).single(),
+  const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns },{ data:businessEmail }] = await Promise.all([
+    sb.from('creators').select('id,niche,location,trust_score,confidence,badge_tier,plan,reliability_score,repeat_sponsor_rate,would_hire_again_pct').eq('id', profile.id).single(),
     sb.from('score_components').select('*').eq('creator_id', profile.id).order('weight', {ascending:false}),
     sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at',{ascending:false}),
     sb.from('brand_safety_answers').select('*').eq('creator_id', profile.id),
     sb.from('campaigns').select('*').eq('creator_id', profile.id).order('created_at',{ascending:false}),
+    sb.rpc('fn_get_my_business_email'),
   ]);
-  creator = c;
+  creator = { ...c, business_email: businessEmail };
 
   const answerMap={};
   (answers||[]).forEach(a=>answerMap[a.question_key]=a.answer);

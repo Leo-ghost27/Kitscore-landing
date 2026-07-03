@@ -63,7 +63,7 @@ async function load() {
     ? `Compare unlimited creators side by side (${plan} plan).`
     : `Compare up to ${maxCompare} creators side by side (${plan} plan). Upgrade for more.`;
 
-  const { data, error } = await sb.from('creators').select('*, profiles!inner(display_name)');
+  const { data, error } = await sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, reliability_score, repeat_sponsor_rate, would_hire_again_pct, profiles!inner(display_name)');
   if (error) { document.getElementById('result').textContent = 'Could not load: ' + error.message; return; }
   allCreators = data;
 
