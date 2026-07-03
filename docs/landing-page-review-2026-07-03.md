@@ -30,7 +30,17 @@ Copy and positioning are strong — "should we sponsor this creator?" vs. audien
 ## What's still open
 
 - **No real signups yet**, which is the actual root cause of the "thin proof" feeling — no amount of copy/layout work substitutes for real creators and campaigns. Everything above is the honest ceiling of what's fixable without fabricating data (I did not invent fake testimonials, signup counts, or activity — that would undercut the trust positioning you're selling).
-- **No comparison/positioning page** vs. named competitors — bigger lift, didn't start this session.
 - **No case studies / blog** — needs real completed evaluations to reference, can't be done meaningfully yet.
 - **AI Intelligence section is still a static mock**, not a live/animated reveal — cosmetic upgrade, not started.
 - **No trust/compliance badge in footer** — holding off on this until we know what's actually defensible to claim (e.g. don't want to write "GDPR compliant" if that hasn't been formally assessed).
+
+## Update — July 3, later same day
+
+**Shipped: `compare.html` — Kitscore vs. CreatorScore.** Researched CreatorScore.io directly (their homepage, pricing page, API docs) rather than guessing, so every claim in the table is sourced from their own site: 7 AI scoring agents, 12 platforms, $19.99 (Quick/scraper-based) or $29.99 (Verified/OAuth-authorized) per-creator pricing. Deliberately did **not** name HypeAuditor or Modash — they're a different weight class (HypeAuditor: 100+ employees, $299–$2,999+/mo enterprise pricing, 227M+ creator database) and a different product category (broad discovery + campaign management vs. Kitscore's narrow trust/verification focus). Comparing a zero-signup landing page against an 8-year-old enterprise incumbent would read as reaching; CreatorScore is the honest, same-weight-class comparison. The table frames the real difference: CreatorScore scores AI-analyzed public content ("is this creator's content safe"), Kitscore scores mutually-confirmed campaign history and real sponsor testimony ("will this creator deliver"). Linked from the homepage footer and from the Why Kitscore section CTA row.
+
+**Next up (not started, by your instruction to keep original order): founding-creator acquisition page.** You shared a mockup for a dedicated `for-creators.html` — founding-cohort framing ("first 100"), 3 value props (free media kit, founding badge, discovery), 3-step signup flow, example profile card, single CTA. Agreed this is the right move for the actual bottleneck (need creators before sponsors have anything to browse). Plan, confirmed with you:
+1. Migration: add `founding_cohort boolean` to `creators`, auto-flagged `true` for the first 100 creator signups by order (live tracking, not static copy).
+2. Build `for-creators.html` matching the mockup and the site's design system.
+3. Point the homepage's "For Creators" band CTA at this new page instead of straight to `auth.html`.
+
+If this session ends before it's built, that's the next thing to pick up.

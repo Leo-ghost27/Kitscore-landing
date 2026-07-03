@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kitscore vs. CreatorScore — Sponsorship Trust Comparison</title>
+<link rel="canonical" href="https://kitscore.co/compare.html" />
+<meta name="description" content="How Kitscore's mutually-confirmed campaign verification compares to CreatorScore's AI content-vetting approach — methodology, pricing, and what each is built to answer." />
+<meta property="og:title" content="Kitscore vs. CreatorScore" />
+<meta property="og:description" content="Two different questions: is this creator's content safe, or will this creator actually deliver. Here's how the two platforms compare." />
+<meta property="og:image" content="https://kitscore.co/og-image.png" />
+<meta property="og:url" content="https://kitscore.co/compare.html" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://kitscore.co/og-image.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #FFFFFF; --bg2: #F4F5F7; --bg3: #ECEEF1;
+    --border: #E3E5E9; --border-hover: #C8CDD6;
+    --text: #1A1A1E; --muted: #6B7280;
+    --accent: #2563EB; --accent-light: #2563EB; --accent-dim: #E6F1FB;
+    --green: #3B6D11; --green-dim: #EAF3DE;
+    --amber: #854F0B; --amber-dim: #FAEEDA;
+    --radius: 0; --radius-sm: 0;
+    --font: 'Inter', system-ui, sans-serif;
+    --font-display: 'Playfair Display', Georgia, serif;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent-light); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 60px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); z-index: 100; }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-link { font-size: 14px; color: var(--muted); transition: color 0.15s; text-decoration: none; }
+  .nav-link:hover { color: var(--text); }
+  .nav-cta { background: var(--accent); color: #fff; border: none; padding: 8px 20px; border-radius:0; font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; text-decoration: none; }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 48px; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  .hero { padding: 72px 0 52px; }
+  .hero h1 { font-size: clamp(30px, 4.5vw, 46px); font-weight: 800; font-family: var(--font-display); letter-spacing: -0.01em; line-height: 1.15; margin-bottom: 18px; }
+  .hero-sub { font-size: 17px; color: var(--muted); max-width: 640px; line-height: 1.75; }
+
+  section { padding: 56px 0; }
+  section h2 { font-size: clamp(20px, 2.6vw, 28px); font-weight: 700; font-family: var(--font-display); letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 14px; }
+  section p { font-size: 15px; color: var(--muted); line-height: 1.8; margin-bottom: 16px; }
+  section p strong { color: var(--text); font-weight: 600; }
+
+  /* Comparison table */
+  .cmp-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); margin-top: 24px; font-size: 13.5px; }
+  .cmp-table th, .cmp-table td { padding: 16px 18px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .cmp-table th { background: var(--bg2); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .cmp-table th.brand { color: var(--accent); }
+  .cmp-table td:first-child { font-weight: 600; color: var(--text); width: 22%; }
+  .cmp-table tr:last-child td { border-bottom: none; }
+  .cmp-table td.kit { background: var(--accent-dim); }
+
+  .diff-callout { background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--accent); padding: 24px 28px; margin-top: 40px; }
+  .diff-callout h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .diff-callout p { margin-bottom: 0; }
+
+  .cta-band { background: var(--accent); padding: 64px 2rem; text-align: center; }
+  .cta-band h2 { color: #fff; font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); margin-bottom: 14px; }
+  .cta-band p { color: rgba(255,255,255,0.85); font-size: 15px; margin-bottom: 24px; }
+  .cta-btn { display: inline-block; background: #fff; color: var(--accent); padding: 13px 26px; font-size: 14px; font-weight: 700; text-decoration: none; }
+
+  footer { padding: 24px 48px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--muted); max-width: 1100px; margin: 0 auto; }
+
+  @media (max-width: 700px) {
+    .container { padding: 0 20px; }
+    .cmp-table { font-size: 12.5px; }
+    .cmp-table th, .cmp-table td { padding: 10px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:9px;text-decoration:none">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="16" width="5" height="10" rx="1" fill="#2563EB" opacity="0.5"/>
+      <rect x="9" y="10" width="5" height="16" rx="1" fill="#2563EB" opacity="0.75"/>
+      <rect x="16" y="4" width="5" height="20" rx="1" fill="#2563EB"/>
+      <circle cx="23.5" cy="5.5" r="4.5" fill="#2563EB" stroke="#fff" stroke-width="1"/>
+      <path d="M21.3 5.5l1.5 1.5L25.5 4" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span style="font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;color:#0F172A">Kit<span style="color:#2563EB">score</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="/#how-it-works" class="nav-link">How it works</a>
+    <a href="/#pricing" class="nav-link">Pricing</a>
+    <a href="/methodology.html" class="nav-link">Methodology</a>
+    <a href="/app/auth.html" class="nav-link">Sign in</a>
+  </div>
+  <a href="/app/auth.html" class="nav-cta">Start free</a>
+</nav>
+
+<div class="container">
+  <div class="hero">
+    <div class="section-label">Comparison</div>
+    <h1>Kitscore vs. CreatorScore.</h1>
+    <p class="hero-sub">Both platforms give sponsors a 1–100 trust number for a creator. They're built to answer different questions, using different evidence. Here's the honest breakdown.</p>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<div class="container">
+  <section>
+    <h2>Two different questions</h2>
+    <p>CreatorScore's seven AI agents score a creator's public content and social footprint — content risk, sentiment, authenticity, audience quality, and similar signals — to answer <strong>is this creator's content safe to associate my brand with?</strong> It's a content-vetting tool, and it's fast: a Quick score runs from public data alone, a Verified score adds creator-authorized (OAuth) platform access for a fuller audit trail.</p>
+    <p>Kitscore's Trust Score answers a different question: <strong>will this creator actually deliver on a sponsorship, based on what happened last time?</strong> The core signal isn't scraped content — it's a mutually confirmed campaign: the creator submits evidence a campaign happened, and the sponsor who ran it confirms it. Self-reported claims are always labelled as such and never blended into the verified score.</p>
+    <p>Neither approach replaces the other. A creator can post entirely safe content and still be unreliable to work with — or vice versa. If content risk is the concern, that's CreatorScore's strength. If the concern is "will this person show up and deliver," that's what Kitscore is built around.</p>
+  </section>
+
+  <section style="padding-top:0">
+    <h2>Side by side</h2>
+    <table class="cmp-table">
+      <tr>
+        <th>&nbsp;</th>
+        <th class="brand">Kitscore</th>
+        <th>CreatorScore</th>
+      </tr>
+      <tr>
+        <td>Core question</td>
+        <td class="kit">Will this creator deliver, based on real sponsorship history?</td>
+        <td>Is this creator's content brand-safe?</td>
+      </tr>
+      <tr>
+        <td>Primary evidence source</td>
+        <td class="kit">Mutually confirmed campaigns — creator submits proof, the sponsor who ran it confirms it happened</td>
+        <td>AI analysis of public content and platform data (scraped, or creator-authorized via OAuth for the Verified tier)</td>
+      </tr>
+      <tr>
+        <td>Sponsor testimony</td>
+        <td class="kit">Real ratings from past sponsors (communication, professionalism, deliverable quality)</td>
+        <td>Not a feature — sentiment is inferred from audience comments via NLP, not from sponsors directly</td>
+      </tr>
+      <tr>
+        <td>Self-reported data</td>
+        <td class="kit">Always labelled, never counted toward the verified score</td>
+        <td>Not a distinct category — score reflects analyzed content directly</td>
+      </tr>
+      <tr>
+        <td>Pricing</td>
+        <td class="kit">$29 flat, per evaluation</td>
+        <td>$19.99 (Quick, scraper-based) or $29.99 (Verified, OAuth-authorized) per creator, per creatorscore.io</td>
+      </tr>
+      <tr>
+        <td>AI's role</td>
+        <td class="kit">Narrates and summarizes verified evidence — doesn't generate the underlying score itself</td>
+        <td>Generates the score directly across 7 scoring agents</td>
+      </tr>
+      <tr>
+        <td>Best fit for</td>
+        <td class="kit">Sponsors deciding whether to trust a creator with budget and a timeline</td>
+        <td>Brands and agencies screening rosters at scale for content and brand-safety risk</td>
+      </tr>
+    </table>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="diff-callout">
+      <h3>Why this matters</h3>
+      <p>A creator can pass every content-risk check and still miss deadlines, ghost mid-campaign, or deliver something nothing like the brief — none of which shows up in an analysis of their public posts. That gap is exactly what mutual confirmation is built to close: it's evidence from the sponsor's side of the relationship, not just the creator's public footprint.</p>
+    </div>
+  </section>
+</div>
+
+<div class="cta-band">
+  <h2>See the difference on a real creator.</h2>
+  <p>Trust Score and Confidence Rating are free to view on every profile.</p>
+  <a href="/app/auth.html" class="cta-btn">Browse the directory →</a>
+</div>
+
+<footer>
+  <span>Kitscore.co · Sponsorship trust infrastructure</span>
+  <span style="display:flex;align-items:center;gap:14px">
+    <a href="/#why-kitscore">About</a>
+    <a href="/privacy.html">Privacy</a>
+    <span>© 2026</span>
+  </span>
+</footer>
+
+</body>
+</html>
