@@ -13,8 +13,11 @@
   body{padding:20px;max-width:880px;margin:0 auto}
   .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
   .signout{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none}
-  .controls{display:flex;gap:8px;margin-bottom:14px}
+  .controls{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
   .controls select{padding:7px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:12px}
+  .filter-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .filter-pill{font-size:11px;padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:20px;background:none;cursor:pointer;color:var(--color-text-secondary)}
+  .filter-pill.active{background:#2563EB;color:#fff;border-color:#2563EB}
   .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
   .ccard{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;cursor:pointer;transition:box-shadow .15s}
   .ccard:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
@@ -49,6 +52,7 @@
         <option value="verified">Sort: most verified campaigns</option>
       </select>
     </div>
+    <div class="filter-pills" id="nichePills"></div>
     <div id="content" class="loading">Loading creators from Supabase…</div>
   </div>
 </div>
@@ -60,6 +64,7 @@
 let creators = [];
 let watchlisted = new Set();
 let sponsorProfile;
+let activeNiche = 'all';
 
 async function load() {
   sponsorProfile = await requireRole('sponsor');
@@ -79,12 +84,30 @@ async function load() {
   creators = rows
     .filter(r => r.trust_score && r.trust_score >= 10)
     .map(r => ({ ...r, name: r.profiles.display_name, verified: verifiedCounts[r.id] || 0 }));
+  renderNichePills();
+  render();
+}
+
+function renderNichePills() {
+  const niches = [...new Set(creators.map(c => (c.niche || '').trim()).filter(Boolean))].sort();
+  const el = document.getElementById('nichePills');
+  if (!niches.length) { el.innerHTML = ''; return; }
+  el.innerHTML = ['all', ...niches].map(n =>
+    `<button class="filter-pill ${activeNiche === n ? 'active' : ''}" onclick="setNiche('${n.replace(/'/g, "\\'")}')">${n === 'all' ? 'All' : escapeHtml(n)}</button>`
+  ).join('');
+}
+
+function setNiche(n) {
+  activeNiche = n;
+  renderNichePills();
   render();
 }
 
 function render() {
   const sortBy = document.getElementById('sortSel').value;
-  const sorted = [...creators].sort((a, b) => sortBy === 'verified' ? b.verified - a.verified : b.trust_score - a.trust_score);
+  const filtered = activeNiche === 'all' ? creators : creators.filter(c => (c.niche || '') === activeNiche);
+  const sorted = [...filtered].sort((a, b) => sortBy === 'verified' ? b.verified - a.verified : b.trust_score - a.trust_score);
+  if (!sorted.length) { document.getElementById('content').innerHTML = '<div class="loading">No creators match this filter yet.</div>'; return; }
   document.getElementById('content').innerHTML = `<div class="grid">${sorted.map(c => `
     <div class="ccard" onclick="window.location.href='evaluate.html?creator=${c.id}'">
       <button class="save-btn ${watchlisted.has(c.id)?'saved':''}" onclick="event.stopPropagation(); toggleSave('${c.id}')" title="${watchlisted.has(c.id)?'Remove from watchlist':'Save to watchlist'}">

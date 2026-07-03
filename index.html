@@ -438,6 +438,15 @@
   .sample-btn { margin-top: 10px; font-size: 12px; color: var(--accent); font-weight: 600; cursor: pointer; display: inline-block; }
   .sample-btn:hover { text-decoration: underline; }
 
+  /* FAQ */
+  .faq-item { border-bottom: 0.5px solid var(--border); padding: 18px 2px; }
+  .faq-item:first-child { border-top: 0.5px solid var(--border); }
+  .faq-item summary { font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after { content: '+'; font-size: 18px; font-weight: 400; color: var(--muted); flex-shrink: 0; transition: transform 0.15s; }
+  .faq-item[open] summary::after { content: '−'; }
+  .faq-item p { font-size: 13px; color: var(--muted); line-height: 1.65; margin-top: 12px; }
+
   /* PRICING */
   .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
   .pricing-col-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
@@ -746,25 +755,20 @@
         <div style="position:absolute;bottom:-14px;left:14px;z-index:2;background:var(--accent);color:#fff;border-radius:0;padding:9px 16px;font-size:12px;font-weight:700;box-shadow:var(--shadow-md)">5 Verified Campaigns</div>
       </div>
 
-      <!-- Search bar -->
-      <div style="margin-top:16px">
-        <div class="search-bar">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--muted2);flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input class="search-input" placeholder="Search creator name, niche, or handle…" id="heroSearch">
-          <button class="search-submit" onclick="window.location.href='app/directory.html'">Search</button>
-        </div>
-        <div class="search-tags" style="margin-top:8px">
-          <span class="search-tag" onclick="document.getElementById('heroSearch').value=this.textContent">Fitness</span>
-          <span class="search-tag" onclick="document.getElementById('heroSearch').value=this.textContent">Beauty</span>
-          <span class="search-tag" onclick="document.getElementById('heroSearch').value=this.textContent">Tech</span>
-          <span class="search-tag" onclick="document.getElementById('heroSearch').value=this.textContent">Food</span>
-          <span class="search-tag" onclick="document.getElementById('heroSearch').value=this.textContent">London, UK</span>
-          <span class="search-tag" onclick="document.getElementById('heroSearch').value=this.textContent">New York, US</span>
-        </div>
-      </div>
     </div>
   </div>
 </div>
+
+<!-- FOR CREATORS BAND -->
+<section id="for-creators-band" style="padding:32px 2rem;max-width:1100px;margin:0 auto">
+  <div style="border:0.5px solid var(--border);border-left:3px solid var(--accent);border-radius:0;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:var(--bg)">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <span class="section-label" style="margin:0">For Creators</span>
+      <p style="font-size:13px;color:var(--text);margin:0;line-height:1.6">Claim your free profile, turn verified campaign history into proof sponsors trust — <strong>no follower count required.</strong></p>
+    </div>
+    <a href="app/auth.html" class="btn-ghost" style="text-decoration:none;font-size:12px;padding:9px 18px;white-space:nowrap">Claim Your Profile Free →</a>
+  </div>
+</section>
 
 <hr class="section-divider" />
 
@@ -876,7 +880,7 @@
       </div>
       <div class="dir-info-meta">Lifestyle</div>
       <div class="dir-info-meta">London, UK</div>
-      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">80</span><span class="dir-score-lbl"> /100</span></div>
+      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">81</span><span class="dir-score-lbl"> /100</span></div>
       <div><span class="dir-badge dir-badge-silver">Silver</span></div>
       <div class="dir-cta-link">Evaluate →</div>
     </a>
@@ -887,7 +891,7 @@
       </div>
       <div class="dir-info-meta">Tech</div>
       <div class="dir-info-meta">Bristol, UK</div>
-      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">78</span><span class="dir-score-lbl"> /100</span></div>
+      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">76</span><span class="dir-score-lbl"> /100</span></div>
       <div><span class="dir-badge dir-badge-silver">Silver</span></div>
       <div class="dir-cta-link">Evaluate →</div>
     </a>
@@ -898,8 +902,30 @@
       </div>
       <div class="dir-info-meta">Fitness</div>
       <div class="dir-info-meta">Leeds, UK</div>
-      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">65</span><span class="dir-score-lbl"> /100</span></div>
+      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">64</span><span class="dir-score-lbl"> /100</span></div>
       <div><span class="dir-badge dir-badge-bronze">Bronze</span></div>
+      <div class="dir-cta-link">Evaluate →</div>
+    </a>
+    <a class="dir-row" data-niche="tech" href="app/auth.html" style="text-decoration:none">
+      <div class="dir-row-creator">
+        <div class="dir-av" style="background:#B45309">RC</div>
+        <div class="dir-info-name">Ravi Chandra</div>
+      </div>
+      <div class="dir-info-meta">Tech</div>
+      <div class="dir-info-meta">Glasgow, UK</div>
+      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">83</span><span class="dir-score-lbl"> /100</span></div>
+      <div><span class="dir-badge dir-badge-gold">Gold</span></div>
+      <div class="dir-cta-link">Evaluate →</div>
+    </a>
+    <a class="dir-row" data-niche="beauty" href="app/auth.html" style="text-decoration:none">
+      <div class="dir-row-creator">
+        <div class="dir-av" style="background:#DB2777">CB</div>
+        <div class="dir-info-name">Chloe Bennett</div>
+      </div>
+      <div class="dir-info-meta">Beauty</div>
+      <div class="dir-info-meta">Cardiff, UK</div>
+      <div class="dir-score-box" style="text-align:left"><span class="dir-score-num">72</span><span class="dir-score-lbl"> /100</span></div>
+      <div><span class="dir-badge dir-badge-silver">Silver</span></div>
       <div class="dir-cta-link">Evaluate →</div>
     </a>
   </div>
@@ -1189,17 +1215,17 @@
         <span style="font-size:10px;color:var(--muted)">Powered by Kitscore AI</span>
       </div>
       <div style="padding:18px">
-        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px">AI Decision Brief — Jordan Ellis × Bloom Beverages</div>
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px">AI Decision Brief — Sophie Lau × Willow Skincare</div>
 
         <div style="background:var(--green-bg);border:0.5px solid #A3C68B;border-radius:0;padding:10px 12px;margin-bottom:12px">
           <div style="font-size:10px;font-weight:600;color:var(--green);margin-bottom:3px">✓ RECOMMENDED TO SPONSOR</div>
-          <div style="font-size:12px;color:var(--text);line-height:1.65">Jordan Ellis is a <strong>high-confidence, brand-safe fitness creator</strong> with a verifiable track record. Based on your campaign brief (UK fitness audience, £10K budget, wellness positioning), this creator is a strong fit.</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.65">Sophie Lau is a <strong>high-confidence, brand-safe beauty creator</strong> with a verifiable track record. Based on your campaign brief (UK beauty audience, £8K budget, clean-skincare positioning), this creator is a strong fit.</div>
         </div>
 
         <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
           <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:0;padding:9px 11px">
             <div style="font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Audience fit</div>
-            <div style="font-size:12px;color:var(--text)">82% UK audience · 67% in your target 25–44 bracket · Direct category alignment with wellness.</div>
+            <div style="font-size:12px;color:var(--text)">79% UK audience · 71% in your target 18–34 bracket · Direct category alignment with skincare.</div>
           </div>
           <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:0;padding:9px 11px">
             <div style="font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Risk assessment</div>
@@ -1207,13 +1233,13 @@
           </div>
           <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:0;padding:9px 11px">
             <div style="font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Verified reputation</div>
-            <div style="font-size:12px;color:var(--text)">92% reliability score · 95% of past sponsors would hire again, based on mutually-confirmed campaigns.</div>
+            <div style="font-size:12px;color:var(--text)">94% reliability score · 100% of past sponsors would hire again, based on mutually-confirmed campaigns.</div>
           </div>
         </div>
 
         <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Generated from 5 verified campaigns · High confidence (89%) · Kitscore AI
+          Generated from 4 verified campaigns · High confidence (91%) · Kitscore AI
         </div>
       </div>
     </div>
@@ -1312,6 +1338,42 @@
     </div>
   </div>
 </section>
+
+<hr class="section-divider" />
+
+<!-- FAQ -->
+<section id="faq" style="padding:64px 2rem;max-width:800px;margin:0 auto">
+  <div class="section-label" style="text-align:center">FAQ</div>
+  <h2 class="section-h" style="text-align:center;margin-bottom:32px">Questions sponsors ask<br>before they buy.</h2>
+  <div style="display:flex;flex-direction:column;gap:0">
+    <details class="faq-item" open>
+      <summary>What actually counts as "verified" evidence?</summary>
+      <p>A campaign is marked Verified only after both sides confirm it — the creator submits proof (screenshots, deliverables, platform data) and the sponsor who ran the campaign confirms it happened as described. Self-reported claims are shown as self-reported, never blended into a verified score.</p>
+    </details>
+    <details class="faq-item">
+      <summary>What stops a creator from gaming their self-reported data?</summary>
+      <p>Self-reported data is labelled as such everywhere it appears and carries no weight in the Verified Reputation score. It only becomes evidence once a real sponsor confirms it happened, which requires that sponsor's own account and campaign history — not something a creator can fabricate alone.</p>
+    </details>
+    <details class="faq-item">
+      <summary>What do I get for the $29 evaluation?</summary>
+      <p>A full score breakdown across five components, a risk and brand-safety assessment, audience fit analysis against your campaign brief, an AI-generated decision brief, and a downloadable sponsor decision memo PDF.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Is the Trust Score preview really free?</summary>
+      <p>Yes. The Trust Score and Confidence Rating are visible on every creator profile with no payment or account required to view them. You only pay when you want the full evaluation and decision memo.</p>
+    </details>
+    <details class="faq-item">
+      <summary>How is this different from tools that score creators from scraped social data?</summary>
+      <p>Kitscore's core score is built on mutually confirmed campaign history and sponsor endorsements, not inferred solely from public posts. The AI brief summarizes that verified evidence — it doesn't replace it.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Is it free for creators to join?</summary>
+      <p>Yes. Claiming a profile and submitting evidence is free. Creators build their verified reputation by inviting past sponsors to confirm completed campaigns.</p>
+    </details>
+  </div>
+</section>
+
+<hr class="section-divider" />
 
 <!-- CTA BAND -->
 <div style="background:var(--accent);padding:88px 2rem;text-align:center;position:relative;overflow:hidden">
