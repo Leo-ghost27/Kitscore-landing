@@ -80,6 +80,14 @@
   .example-name span { font-weight: 400; color: var(--muted); font-size: 13px; }
   .example-meta { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 
+  .faq-item { border-bottom: 0.5px solid var(--border); padding: 18px 2px; }
+  .faq-item:first-child { border-top: 0.5px solid var(--border); }
+  .faq-item summary { font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after { content: '+'; font-size: 18px; font-weight: 400; color: var(--muted); flex-shrink: 0; transition: transform 0.15s; }
+  .faq-item[open] summary::after { content: '−'; }
+  .faq-item p { font-size: 13px; color: var(--muted); line-height: 1.65; margin-top: 12px; }
+
   .cta-band { background: var(--accent); padding: 64px 2rem; text-align: center; }
   .cta-band h2 { color: #fff; font-family: var(--font-display); font-size: clamp(22px, 3vw, 30px); margin-bottom: 14px; }
   .cta-band p { color: rgba(255,255,255,0.85); font-size: 15px; margin-bottom: 24px; }
@@ -185,6 +193,29 @@
         <div class="example-name">Jordan Ellis <span>· Founding Creator (example)</span></div>
         <div class="example-meta">Fitness · Trust score 78 · 5 verified campaigns</div>
       </div>
+    </div>
+  </section>
+</div>
+
+<hr class="divider" />
+
+<div class="container">
+  <section>
+    <div class="section-label" style="text-align:center">FAQ</div>
+    <h2>Questions creators ask before they join.</h2>
+    <div style="max-width:640px;margin:32px auto 0">
+      <details class="faq-item" open>
+        <summary>Is it free for creators to join?</summary>
+        <p>Yes. Claiming a profile and submitting evidence is free. Creators build their verified reputation by inviting past sponsors to confirm completed campaigns.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What if I don't have much campaign history yet?</summary>
+        <p>You can still claim a profile and start building it — your score reflects what's actually been verified, so it grows as you add confirmed campaigns. There's no penalty for starting small; the alternative is having no evidence-backed profile at all.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How is my score actually calculated?</summary>
+        <p>From mutually confirmed campaigns — you submit evidence a campaign happened, and the sponsor who ran it confirms it. Self-reported claims are always labelled as such and never blended into your verified score.</p>
+      </details>
     </div>
   </section>
 </div>
