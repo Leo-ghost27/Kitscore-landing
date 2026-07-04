@@ -108,6 +108,7 @@
 
   /* ── Verified badge ── */
   .verified-badge{font-size:10px;background:#E9F7EE;color:#1C7C3F;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
+  .founding-badge{font-size:10px;font-weight:600;background:#FAEEDA;color:#854F0B;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px;width:fit-content}
 
   /* ── Mobile ── */
   @media(max-width:560px){
@@ -220,7 +221,7 @@ async function load() {
   document.getElementById('whoami').textContent = `${profile.display_name} · ${profile.email||''}`;
 
   const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns },{ data:businessEmail }] = await Promise.all([
-    sb.from('creators').select('id,niche,location,trust_score,confidence,badge_tier,plan,reliability_score,repeat_sponsor_rate,would_hire_again_pct').eq('id', profile.id).single(),
+    sb.from('creators').select('id,niche,location,trust_score,confidence,badge_tier,plan,reliability_score,repeat_sponsor_rate,would_hire_again_pct,founding_cohort').eq('id', profile.id).single(),
     sb.from('score_components').select('*').eq('creator_id', profile.id).order('weight', {ascending:false}),
     sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at',{ascending:false}),
     sb.from('brand_safety_answers').select('*').eq('creator_id', profile.id),
@@ -274,6 +275,7 @@ async function load() {
             <span>${BADGE_SVG[creator.badge_tier]}</span>
             ${BADGE_LABEL[creator.badge_tier]}
           </div>
+          ${creator.founding_cohort ? `<div class="founding-badge"><i class="ti ti-award"></i>Founding Creator</div>` : ''}
           ${hasScore?`
           <div class="conf-row">
             <span class="conf-label">Confidence</span>

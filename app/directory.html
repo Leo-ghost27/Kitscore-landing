@@ -24,6 +24,7 @@
   .ccard .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .avatar{width:32px;height:32px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:12px;color:#185FA5}
   .name{font-size:12px;font-weight:500}
+  .founding-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:600;color:#854F0B;background:#FAEEDA;padding:2px 6px;border-radius:8px;vertical-align:middle;margin-left:2px}
   .niche{font-size:10px;color:var(--color-text-secondary)}
   .pbar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
   .pbar-row span:first-child{font-size:10px;color:var(--color-text-secondary)}
@@ -71,7 +72,7 @@ async function load() {
   if (!sponsorProfile) return;
   renderSidebar('sponsor', 'directory');
 
-  const { data: rows, error } = await sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, updated_at, reliability_score, repeat_sponsor_rate, profiles!inner(display_name)');
+  const { data: rows, error } = await sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, updated_at, reliability_score, repeat_sponsor_rate, founding_cohort, profiles!inner(display_name)');
   if (error) { document.getElementById('content').textContent = 'Could not load creators: ' + error.message; return; }
 
   const { data: campaigns } = await sb.from('campaigns').select('creator_id, status').eq('status', 'verified');
@@ -115,7 +116,7 @@ function render() {
       </button>
       <div class="head">
         <div class="avatar">${escapeHtml(c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
-        <div><div class="name">${escapeHtml(c.name)}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
+        <div><div class="name">${escapeHtml(c.name)}${c.founding_cohort ? ` <span class="founding-tag" title="One of Kitscore's first 100 creators"><i class="ti ti-award"></i> Founding</span>` : ''}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
       </div>
       <div class="pbar-row"><span>Trust score</span><div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div><span class="pbar-val">${c.trust_score}</span></div>
       <button class="log-campaign-btn" onclick="event.stopPropagation(); window.location.href='campaigns.html?creator=${c.id}'"><i class="ti ti-flag"></i> Log campaign</button>
