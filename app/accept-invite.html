@@ -41,18 +41,20 @@ async function init() {
   const token = params.get('token');
   if (!token) { showError('Invalid invite link.'); return; }
 
-  // Look up the invite by token
-  const { data, error } = await sb.from('team_invites')
-    .select('*, teams(name)')
-    .eq('token', token)
-    .maybeSingle();
+  // Look up the invite by token via a SECURITY DEFINER RPC -- direct table
+  // access was removed (see fix_team_invites_leak migration) since it let
+  // anyone dump every pending invite's token with no filter at all. This
+  // RPC only ever returns the single row matching the exact token you
+  // already have, and never lets you enumerate others.
+  const { data: rows, error } = await sb.rpc('fn_lookup_team_invite', { p_token: token });
+  const data = rows && rows[0];
 
   if (error || !data) { showError('This invite link is invalid or has expired.'); return; }
   if (data.accepted_at) { showError('This invite has already been accepted.'); return; }
   if (new Date(data.expires_at) < new Date()) { showError('This invite has expired. Ask the team owner to resend it.'); return; }
 
   invite = data;
-  team = data.teams;
+  team = { name: data.team_name };
 
   // Check if already signed in
   const profile = await getCurrentProfile();
