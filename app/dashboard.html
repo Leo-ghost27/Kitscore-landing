@@ -28,9 +28,9 @@
   .ring-wrap svg{width:130px;height:130px;transform:rotate(-90deg)}
   .ring-track{fill:none;stroke:var(--color-border-tertiary);stroke-width:10}
   .ring-fill{fill:none;stroke:#2563EB;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)}
-  .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
-  .ring-num{font-size:32px;font-weight:700;color:var(--color-text-primary);line-height:1.15;white-space:nowrap}
-  .ring-label{font-size:9px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+  .ring-center{position:absolute;inset:0}
+  .ring-num{position:absolute;top:50%;left:50%;transform:translate(-50%,calc(-50% - 16px));font-size:32px;font-weight:700;color:var(--color-text-primary);line-height:1;white-space:nowrap;text-align:center}
+  .ring-label{position:absolute;top:50%;left:50%;transform:translate(-50%,calc(-50% + 14px));font-size:9px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;text-align:center}
   .score-meta{display:flex;flex-direction:column;gap:8px}
   .badge-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:var(--color-background-secondary);color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary);width:fit-content}
   .conf-row{display:flex;align-items:center;gap:8px}
