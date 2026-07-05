@@ -44,16 +44,25 @@
 
   /* ── Stats strip ── */
   .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
-  .stat-box{padding:12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);text-align:center}
-  .stat-box .ml{font-size:10px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-  .stat-box .mv{font-size:22px;font-weight:600;color:var(--color-text-primary)}
+  .stat-box{padding:12px 14px;background:#FAF8F3;border-radius:8px;text-align:left}
+  .stat-box .ml{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--color-text-secondary);font-weight:500;margin-bottom:6px}
+  .stat-box .ml i{font-size:15px}
+  .stat-box .mv{font-size:21px;font-weight:700;color:var(--color-text-primary)}
 
   /* ── Completeness bar ── */
   .progress-track{height:7px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin:8px 0 10px}
   .progress-fill{height:100%;background:#2563EB;border-radius:4px;transition:width .8s ease}
-  .step-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;color:var(--color-text-secondary)}
+  .step-row{display:flex;align-items:center;gap:10px;font-size:13.5px;padding:9px 0;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary)}
+  .step-row:last-child{border-bottom:none}
   .step-row.done{color:var(--color-text-primary)}
-  .step-row i{font-size:14px}
+  .step-row.done .step-label{text-decoration:line-through;text-decoration-color:#C8CDD6}
+  .step-row.current{color:var(--color-text-primary);font-weight:600}
+  .step-row .step-next{margin-left:auto;font-size:11.5px;color:#2563EB;font-weight:600}
+  .step-dot{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .step-dot.dot-done{background:#2563EB}
+  .step-dot.dot-current{border:2px solid #2563EB}
+  .step-dot.dot-current::after{content:'';width:7px;height:7px;border-radius:50%;background:#2563EB}
+  .step-dot.dot-pending{border:1.5px solid #D8DADE}
 
   /* ── Milestone ── */
   .milestone-card{display:flex;align-items:center;gap:14px}
@@ -252,6 +261,7 @@ async function load() {
   ];
   const doneCount=steps.filter(s=>s.done).length;
   const pct=Math.round((doneCount/steps.length)*100);
+  const currentStepIdx=steps.findIndex(s=>!s.done);
 
   // Next milestone
   const nextMs=MILESTONES.find(m=>verifiedCount<m.threshold);
@@ -298,15 +308,15 @@ async function load() {
     <!-- ── Stat strip ── -->
     <div class="g3">
       <div class="stat-box">
-        <div class="ml">Evidence items</div>
+        <div class="ml"><i class="ti ti-file-check" style="color:#2563EB"></i>Evidence items</div>
         <div class="mv">${(evidence||[]).length||0}</div>
       </div>
       <div class="stat-box">
-        <div class="ml">Campaigns</div>
+        <div class="ml"><i class="ti ti-briefcase" style="color:var(--color-text-tertiary)"></i>Campaigns</div>
         <div class="mv">${(campaigns||[]).length||0}</div>
       </div>
       <div class="stat-box">
-        <div class="ml">Profile complete</div>
+        <div class="ml"><i class="ti ti-user-circle" style="color:${pct>=100?'#1D9E75':'#E58C1A'}"></i>Profile complete</div>
         <div class="mv">${pct}%</div>
       </div>
     </div>
@@ -316,11 +326,15 @@ async function load() {
     <div class="card">
       <div class="sec">Complete your trust profile</div>
       <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
-      ${steps.map(s=>`
-        <div class="step-row ${s.done?'done':''}">
-          <i class="ti ${s.done?'ti-circle-check-filled':'ti-circle'}" style="color:${s.done?'#1C7C3F':'var(--color-text-tertiary)'}"></i>
-          ${s.label}
-        </div>`).join('')}
+      ${steps.map((s,i)=>{
+        const state=s.done?'done':(i===currentStepIdx?'current':'pending');
+        return `
+        <div class="step-row ${state}">
+          <div class="step-dot dot-${state}">${state==='done'?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':''}</div>
+          <span class="step-label">${s.label}</span>
+          ${state==='current'?'<span class="step-next">Next step ↗</span>':''}
+        </div>`;
+      }).join('')}
       <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:8px">${pct}% complete · finish all steps to maximise your trust score</div>
     </div>`:''}
 

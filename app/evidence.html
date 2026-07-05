@@ -17,6 +17,13 @@
   .field label{display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
   .field input,.field select{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
   .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .dropzone{border:1.5px dashed #C8CDD6;border-radius:10px;padding:32px 20px;text-align:center;background:#FAFAFA;cursor:pointer;transition:border-color .15s,background .15s}
+  .dropzone:hover,.dropzone.dragover{border-color:#2563EB;background:#F0F6FF}
+  .dropzone .dz-icon{width:40px;height:40px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+  .dropzone .dz-icon i{font-size:20px;color:#2563EB}
+  .dropzone .dz-title{font-size:13.5px;color:var(--color-text-primary);font-weight:600;margin-bottom:4px}
+  .dropzone .dz-hint{font-size:11.5px;color:var(--color-text-tertiary)}
+  .dropzone .dz-filename{font-size:13px;color:#2563EB;font-weight:600}
   .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:0;font-size:12px;font-weight:500;cursor:pointer}
   .cta:disabled{opacity:.6}
   .row-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
@@ -48,8 +55,16 @@
           <select id="evidenceType"><option>Analytics</option><option>Audience</option><option>Campaign</option><option>Other</option></select>
         </div>
       </div>
-      <div class="field"><label>File</label><input type="file" id="fileInput"></div>
-      <button class="cta" id="uploadBtn" onclick="upload()">Upload</button>
+      <div class="field">
+        <label>File</label>
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+          <div class="dz-icon"><i class="ti ti-upload"></i></div>
+          <div class="dz-title" id="dzTitle">Drop a screenshot here, or click to browse</div>
+          <div class="dz-hint" id="dzHint">PNG or JPG, up to 10MB</div>
+        </div>
+        <input type="file" id="fileInput" style="display:none" accept="image/*">
+      </div>
+      <button class="cta" id="uploadBtn" onclick="upload()" style="width:100%;padding:12px;border-radius:8px;font-size:14px;font-weight:600">Upload evidence</button>
       <div id="msg"></div>
     </div>
     <div class="card">
@@ -64,6 +79,38 @@
 <script src="nav.js?v=2"></script>
 <script>
 let profile;
+
+function updateDropzoneLabel(file) {
+  const title = document.getElementById('dzTitle');
+  const hint = document.getElementById('dzHint');
+  if (file) {
+    title.innerHTML = `<span class="dz-filename">${escapeHtml(file.name)}</span>`;
+    hint.textContent = 'Click to choose a different file';
+  } else {
+    title.textContent = 'Drop a screenshot here, or click to browse';
+    hint.textContent = 'PNG or JPG, up to 10MB';
+  }
+}
+
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  updateDropzoneLabel(e.target.files[0] || null);
+});
+
+const dz = document.getElementById('dropzone');
+['dragover', 'dragleave', 'drop'].forEach(evt => {
+  dz.addEventListener(evt, (e) => {
+    e.preventDefault();
+    if (evt === 'dragover') dz.classList.add('dragover');
+    else dz.classList.remove('dragover');
+  });
+});
+dz.addEventListener('drop', (e) => {
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    document.getElementById('fileInput').files = e.dataTransfer.files;
+    updateDropzoneLabel(file);
+  }
+});
 
 async function load() {
   profile = await requireRole('creator');
@@ -81,7 +128,14 @@ async function load() {
         ${e.storage_path ? `<button class="link-btn" onclick="download('${e.storage_path}')">Download</button>` : ''}
       </span>
     </div>
-  `).join('') : '<p style="font-size:12px;color:var(--color-text-secondary)">No evidence uploaded yet.</p>';
+  `).join('') : `
+    <div style="text-align:center;padding:24px 16px">
+      <div style="width:44px;height:44px;border-radius:12px;background:#F0F1F3;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+        <i class="ti ti-photo" style="font-size:20px;color:var(--color-text-tertiary)"></i>
+      </div>
+      <div style="font-size:13px;color:var(--color-text-primary);font-weight:500;margin-bottom:4px">No evidence uploaded yet</div>
+      <div style="font-size:12px;color:var(--color-text-secondary)">Screenshots you upload above will show up here.</div>
+    </div>`;
 }
 
 async function upload() {
@@ -104,6 +158,7 @@ async function upload() {
 
   showMsg('Uploaded.', 'ok');
   document.getElementById('fileInput').value = '';
+  updateDropzoneLabel(null);
   btn.disabled = false;
   load();
 }

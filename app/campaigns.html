@@ -217,7 +217,14 @@ async function loadSponsorCampaigns() {
       </div>
       <div id="endorse-msg-${c.id}"></div>
     </div>` : ''}
-  `).join('') : '<div style="padding:14px;font-size:12px;color:var(--color-text-secondary)">No campaigns logged yet.</div>';
+  `).join('') : `
+    <div style="text-align:center;padding:32px 20px">
+      <div style="width:44px;height:44px;border-radius:12px;background:#F0F1F3;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+        <i class="ti ti-briefcase" style="font-size:20px;color:var(--color-text-tertiary)"></i>
+      </div>
+      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">No campaigns logged yet</div>
+      <div style="font-size:12px;color:var(--color-text-secondary)">Use the form above to log your first one with a creator.</div>
+    </div>`;
 }
 
 // ── Endorsements (sponsor rates the creator on a verified campaign) ────────
@@ -338,7 +345,14 @@ async function loadCreatorCampaigns() {
       </div>
       <div id="dispute-msg-${c.id}"></div>
     </div>
-  `).join('') : '<div style="padding:14px;font-size:12px;color:var(--color-text-secondary)">No campaigns yet.</div>';
+  `).join('') : `
+    <div style="text-align:center;padding:40px 20px">
+      <div style="width:48px;height:48px;border-radius:12px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        <i class="ti ti-briefcase" style="font-size:22px;color:#2563EB"></i>
+      </div>
+      <div style="font-size:14px;font-weight:600;color:var(--color-text-primary);margin-bottom:6px">No campaigns yet</div>
+      <div style="font-size:12.5px;color:var(--color-text-secondary);max-width:320px;margin:0 auto;line-height:1.6">When a sponsor logs a campaign with you, it'll show up here for you to confirm — that mutual confirmation is what builds your trust score.</div>
+    </div>`;
 }
 
 async function confirmCampaign(id) {
