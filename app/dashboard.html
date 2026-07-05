@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2563EB">
+<link rel="apple-touch-icon" href="/public/icons/apple-touch-icon.png">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — Kitscore</title>
@@ -25,9 +28,9 @@
   .ring-wrap svg{width:130px;height:130px;transform:rotate(-90deg)}
   .ring-track{fill:none;stroke:var(--color-border-tertiary);stroke-width:10}
   .ring-fill{fill:none;stroke:#2563EB;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)}
-  .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
-  .ring-num{font-size:32px;font-weight:700;color:var(--color-text-primary);line-height:1}
-  .ring-label{font-size:9px;color:var(--color-text-tertiary);margin-top:3px;text-transform:uppercase;letter-spacing:.06em}
+  .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+  .ring-num{font-size:32px;font-weight:700;color:var(--color-text-primary);line-height:1.15;white-space:nowrap}
+  .ring-label{font-size:9px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
   .score-meta{display:flex;flex-direction:column;gap:8px}
   .badge-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:var(--color-background-secondary);color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary);width:fit-content}
   .conf-row{display:flex;align-items:center;gap:8px}
@@ -523,6 +526,13 @@ async function signOut(){
 }
 
 load();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
