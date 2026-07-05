@@ -50,7 +50,7 @@ async function load() {
   creator = { ...c, business_email: email };
 
   document.getElementById('formWrap').innerHTML = `
-    ${creator.founding_cohort ? `<div style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#854F0B;background:#FAEEDA;padding:5px 12px;border-radius:20px;margin-bottom:14px"><i class="ti ti-award"></i> Founding Creator</div>` : ''}
+    ${creator.founding_cohort ? `<div style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#8A5B0A;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);border:0.5px solid #E8CE8F;padding:4px 10px 4px 6px;border-radius:20px;margin-bottom:14px" title="One of Kitscore's first 100 creators"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg>Founding Creator</div>` : ''}
     <div class="field"><label>Display name</label><input id="displayName" value="${escapeHtml(profile.display_name || '')}"></div>
     <div class="field"><label>Niche</label><input id="niche" value="${escapeHtml(creator.niche || '')}"></div>
     <div class="field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}"></div>

@@ -24,7 +24,7 @@
   .ccard .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .avatar{width:32px;height:32px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:12px;color:#185FA5}
   .name{font-size:12px;font-weight:500}
-  .founding-tag{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:600;color:#854F0B;background:#FAEEDA;padding:2px 6px;border-radius:8px;vertical-align:middle;margin-left:2px}
+  .founding-tag{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:600;color:#8A5B0A;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);border:0.5px solid #E8CE8F;padding:2px 7px 2px 4px;border-radius:9px;vertical-align:middle;margin-left:3px}
   .niche{font-size:10px;color:var(--color-text-secondary)}
   .pbar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
   .pbar-row span:first-child{font-size:10px;color:var(--color-text-secondary)}
@@ -116,7 +116,7 @@ function render() {
       </button>
       <div class="head">
         <div class="avatar">${escapeHtml(c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
-        <div><div class="name">${escapeHtml(c.name)}${c.founding_cohort ? ` <span class="founding-tag" title="One of Kitscore's first 100 creators"><i class="ti ti-award"></i> Founding</span>` : ''}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
+        <div><div class="name">${escapeHtml(c.name)}${c.founding_cohort ? ` <span class="founding-tag" title="One of Kitscore's first 100 creators"><svg width="12" height="12" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg> Founding</span>` : ''}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
       </div>
       <div class="pbar-row"><span>Trust score</span><div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div><span class="pbar-val">${c.trust_score}</span></div>
       <button class="log-campaign-btn" onclick="event.stopPropagation(); window.location.href='campaigns.html?creator=${c.id}'"><i class="ti ti-flag"></i> Log campaign</button>

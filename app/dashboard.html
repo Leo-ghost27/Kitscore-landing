@@ -25,9 +25,9 @@
   .ring-wrap svg{width:130px;height:130px;transform:rotate(-90deg)}
   .ring-track{fill:none;stroke:var(--color-border-tertiary);stroke-width:10}
   .ring-fill{fill:none;stroke:#2563EB;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)}
-  .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
-  .ring-num{font-size:32px;font-weight:700;color:var(--color-text-primary);line-height:1}
-  .ring-label{font-size:9px;color:var(--color-text-tertiary);margin-top:3px;text-transform:uppercase;letter-spacing:.06em}
+  .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring-num{font-size:30px;font-weight:700;color:var(--color-text-primary);line-height:1;margin-bottom:6px}
+  .ring-label{font-size:9px;color:var(--color-text-tertiary);line-height:1;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
   .score-meta{display:flex;flex-direction:column;gap:8px}
   .badge-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:var(--color-background-secondary);color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary);width:fit-content}
   .conf-row{display:flex;align-items:center;gap:8px}
@@ -108,7 +108,7 @@
 
   /* ── Verified badge ── */
   .verified-badge{font-size:10px;background:#E9F7EE;color:#1C7C3F;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
-  .founding-badge{font-size:10px;font-weight:600;background:#FAEEDA;color:#854F0B;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px;width:fit-content}
+  .founding-badge{font-size:10.5px;font-weight:600;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);color:#8A5B0A;padding:4px 10px 4px 6px;border-radius:20px;border:0.5px solid #E8CE8F;display:inline-flex;align-items:center;gap:5px;width:fit-content}
 
   /* ── Mobile ── */
   @media(max-width:560px){
@@ -148,6 +148,7 @@ const BADGE_SVG = {
 };
 const BADGE_LABEL  = { none:'New creator', bronze:'Bronze', silver:'Silver', gold:'Gold', platinum:'Platinum' };
 const BADGE_COLOR  = { none:'#8A909C', bronze:'#CD7F32', silver:'#A8A9AD', gold:'#D4AF37', platinum:'#2563EB' };
+const FOUNDING_SEAL = `<svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg>`;
 const MILESTONES   = [
   { tier:'bronze',   label:'Bronze Trust Badge', threshold:2,  svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#CD7F32"/><path d="M6 10l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
   { tier:'silver',   label:'Silver Trust Badge',  threshold:5,  svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#A8A9AD"/><path d="M6 10l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
@@ -275,7 +276,7 @@ async function load() {
             <span>${BADGE_SVG[creator.badge_tier]}</span>
             ${BADGE_LABEL[creator.badge_tier]}
           </div>
-          ${creator.founding_cohort ? `<div class="founding-badge"><i class="ti ti-award"></i>Founding Creator</div>` : ''}
+          ${creator.founding_cohort ? `<div class="founding-badge" title="One of Kitscore's first 100 creators">${FOUNDING_SEAL}Founding</div>` : ''}
           ${hasScore?`
           <div class="conf-row">
             <span class="conf-label">Confidence</span>
