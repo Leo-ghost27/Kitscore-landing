@@ -173,7 +173,7 @@ const QUESTIONS = [
   {key:'profanity',   label:'Profanity frequency?',                     opts:['None','Occasional','Frequent']},
 ];
 
-let profile, creator;
+let profile, creator, audienceData = {};
 
 function scoreColor(v){ return v>=80?'#1D9E75': v>=60?'#2563EB':'#E58C1A'; }
 
@@ -224,15 +224,17 @@ async function load() {
   renderSidebar('creator', 'dashboard');
   document.getElementById('whoami').textContent = `${profile.display_name} · ${profile.email||''}`;
 
-  const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns },{ data:businessEmail }] = await Promise.all([
+  const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns },{ data:businessEmail },{ data:audience }] = await Promise.all([
     sb.from('creators').select('id,niche,location,trust_score,confidence,badge_tier,plan,reliability_score,repeat_sponsor_rate,would_hire_again_pct,founding_cohort').eq('id', profile.id).single(),
     sb.from('score_components').select('*').eq('creator_id', profile.id).order('weight', {ascending:false}),
     sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at',{ascending:false}),
     sb.from('brand_safety_answers').select('*').eq('creator_id', profile.id),
     sb.from('campaigns').select('*').eq('creator_id', profile.id).order('created_at',{ascending:false}),
     sb.rpc('fn_get_my_business_email'),
+    sb.from('audience_demographics').select('*').eq('creator_id', profile.id).maybeSingle(),
   ]);
   creator = { ...c, business_email: businessEmail };
+  audienceData = audience || {};
 
   const answerMap={};
   (answers||[]).forEach(a=>answerMap[a.question_key]=a.answer);
@@ -418,6 +420,34 @@ async function load() {
         </div>`).join('')}
     </div>
 
+    <!-- ── Audience demographics (self-reported) ── -->
+    <div class="card" id="audience-demographics">
+      <div class="sec">Audience demographics <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— self-reported, shown to sponsors as such</span></div>
+      <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:14px;line-height:1.6">This isn't verified against platform analytics, so it's always labelled self-reported wherever it appears. Still useful — sponsors targeting a specific market can see if your audience is likely a fit before paying for a full evaluation.</div>
+      <div class="field-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">Top country</label>
+          <input id="audTopCountry" value="${escapeHtml(audienceData.top_country||'')}" placeholder="e.g. United Kingdom" style="width:100%;padding:7px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">% of audience there</label>
+          <input id="audTopCountryPct" type="number" min="0" max="100" value="${audienceData.top_country_pct??''}" placeholder="e.g. 70" style="width:100%;padding:7px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
+        </div>
+      </div>
+      <div class="field-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">Dominant age range</label>
+          <input id="audAgeRange" value="${escapeHtml(audienceData.age_range||'')}" placeholder="e.g. 25-34" style="width:100%;padding:7px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
+        </div>
+        <div>
+          <label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">Gender split</label>
+          <input id="audGenderSplit" value="${escapeHtml(audienceData.gender_split||'')}" placeholder="e.g. 60% female / 40% male" style="width:100%;padding:7px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
+        </div>
+      </div>
+      <button class="btn-primary" style="font-size:12px;padding:8px 18px" onclick="saveAudienceDemographics()">Save</button>
+      <span id="audSaveMsg" style="font-size:11px;margin-left:10px"></span>
+    </div>
+
     <!-- ── Evidence ── -->
     <div class="card">
       <div class="sec">Evidence uploads</div>
@@ -519,6 +549,23 @@ async function answerQuestion(key,answer){
     .upsert({creator_id:profile.id,question_key:key,answer},{onConflict:'creator_id,question_key'});
   if(error){alert('Could not save: '+error.message);return;}
   await load();
+}
+
+async function saveAudienceDemographics(){
+  const top_country = document.getElementById('audTopCountry').value.trim() || null;
+  const pctRaw = document.getElementById('audTopCountryPct').value;
+  const top_country_pct = pctRaw === '' ? null : Math.max(0, Math.min(100, parseInt(pctRaw, 10)));
+  const age_range = document.getElementById('audAgeRange').value.trim() || null;
+  const gender_split = document.getElementById('audGenderSplit').value.trim() || null;
+
+  const msgEl = document.getElementById('audSaveMsg');
+  const { error } = await sb.from('audience_demographics')
+    .upsert({ creator_id: profile.id, top_country, top_country_pct, age_range, gender_split, updated_at: new Date().toISOString() }, { onConflict: 'creator_id' });
+
+  if (error) { msgEl.style.color = '#B42318'; msgEl.textContent = 'Could not save: ' + error.message; return; }
+  msgEl.style.color = '#1C7C3F';
+  msgEl.textContent = 'Saved';
+  setTimeout(() => { msgEl.textContent = ''; }, 2500);
 }
 
 async function signOut(){

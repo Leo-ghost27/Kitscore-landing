@@ -88,6 +88,7 @@ module.exports = async (req, res) => {
       { data: safetyAnswers },
       { data: safetyPenaltyTable },
       { data: sponsorRow },
+      { data: audience },
     ] = await Promise.all([
       admin.from('creators').select('*').eq('id', evalRow.creator_id).single(),
       admin.from('profiles').select('display_name').eq('id', evalRow.creator_id).single(),
@@ -98,6 +99,7 @@ module.exports = async (req, res) => {
       admin.from('brand_safety_answers').select('*').eq('creator_id', evalRow.creator_id),
       admin.from('brand_safety_penalties').select('*'),
       admin.from('sponsors').select('company_name').eq('id', sponsor.id).maybeSingle(),
+      admin.from('audience_demographics').select('*').eq('creator_id', evalRow.creator_id).maybeSingle(),
     ]);
 
     const compMap = {};
@@ -234,6 +236,31 @@ module.exports = async (req, res) => {
           doc.font('Helvetica').fontSize(10.5).fillColor('#3D3D3A').text(body, x, cy, { width: w });
           cy += doc.heightOfString(body, { width: w });
           if (idx < briefItems.length - 1) cy += 14;
+        });
+        return cy;
+      });
+    }
+
+    // ---------- AUDIENCE DEMOGRAPHICS (self-reported) ----------
+    // Not verified against platform analytics -- explicitly labeled as
+    // such in the card itself, same trust distinction as evidence_status
+    // self_reported vs live_verified elsewhere in this product.
+    const hasAudienceData = audience && (audience.top_country || audience.age_range || audience.gender_split);
+    if (hasAudienceData) {
+      const audienceRows = [
+        audience.top_country ? ['Top country', audience.top_country_pct != null ? `${audience.top_country} (${audience.top_country_pct}% of audience)` : audience.top_country] : null,
+        audience.age_range ? ['Dominant age range', audience.age_range] : null,
+        audience.gender_split ? ['Gender split', audience.gender_split] : null,
+      ].filter(Boolean);
+      drawCard(50 + audienceRows.length * 18, (x, w, cy) => {
+        cy = sectionLabel(x, w, 'Audience demographics', cy);
+        doc.font('Helvetica-Oblique').fontSize(8.5).fillColor(FAINT)
+          .text('Self-reported by the creator, not verified against platform analytics.', x, cy, { width: w });
+        cy += 18;
+        audienceRows.forEach(([label, value]) => {
+          doc.font('Helvetica').fontSize(9.5).fillColor(FAINT).text(label, x, cy, { width: w * 0.4 });
+          doc.font('Helvetica-Bold').fontSize(9.5).fillColor(INK).text(value, x + w * 0.4, cy, { width: w * 0.6 });
+          cy += 18;
         });
         return cy;
       });

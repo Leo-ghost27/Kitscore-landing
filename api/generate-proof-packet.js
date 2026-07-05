@@ -36,12 +36,14 @@ module.exports = async (req, res) => {
       { data: campaigns },
       { data: evidence },
       { data: bsAnswers },
+      { data: audience },
     ] = await Promise.all([
       admin.from('profiles').select('display_name, email').eq('id', creator.id).single(),
       admin.from('score_components').select('*').eq('creator_id', creator.id),
       admin.from('campaigns').select('*').eq('creator_id', creator.id).eq('status', 'verified'),
       admin.from('evidence_uploads').select('*').eq('creator_id', creator.id),
       admin.from('brand_safety_answers').select('*').eq('creator_id', creator.id),
+      admin.from('audience_demographics').select('*').eq('creator_id', creator.id).maybeSingle(),
     ]);
 
     const isPro = creator.plan === 'pro';
@@ -334,6 +336,39 @@ module.exports = async (req, res) => {
     }
     doc.rect(MARGIN, evStartY, CONTENT_W, y - evStartY).stroke('#E5E4DF').lineWidth(0.5);
     y += 14;
+
+    // ── Audience Demographics (self-reported) ────────────────────────────────
+    const hasAudienceData = audience && (audience.top_country || audience.age_range || audience.gender_split);
+    if (hasAudienceData) {
+      const audRows = [
+        audience.top_country ? ['Top country', audience.top_country_pct != null ? `${audience.top_country} (${audience.top_country_pct}% of audience)` : audience.top_country] : null,
+        audience.age_range ? ['Dominant age range', audience.age_range] : null,
+        audience.gender_split ? ['Gender split', audience.gender_split] : null,
+      ].filter(Boolean);
+
+      const audStartY = y;
+      doc.rect(MARGIN, y, CONTENT_W, 18).fill('#F8F7F4');
+      doc.fontSize(8).fillColor('#9E9E99').font('Helvetica-Bold')
+        .text('AUDIENCE DEMOGRAPHICS', MARGIN + 14, y + 5, { characterSpacing: 0.8 });
+      y += 18;
+
+      doc.rect(MARGIN, y, CONTENT_W, 20).fill('#FFFFFF');
+      doc.fontSize(7.5).fillColor('#9E9E99').font('Helvetica-Oblique')
+        .text('Self-reported by the creator, not verified against platform analytics.', MARGIN + 14, y + 6, { width: CONTENT_W - 28 });
+      y += 20;
+
+      audRows.forEach((row, idx) => {
+        const rY = y + idx * 22;
+        doc.rect(MARGIN, rY, CONTENT_W, 22).fill(idx % 2 === 0 ? '#FFFFFF' : '#FAFAF8');
+        doc.fontSize(9).fillColor('#6B6B67').font('Helvetica')
+          .text(row[0], MARGIN + 14, rY + 6, { width: CONTENT_W * 0.4 });
+        doc.fontSize(9.5).fillColor('#1A1A18').font('Helvetica-Bold')
+          .text(row[1], MARGIN + 14 + CONTENT_W * 0.4, rY + 6, { width: CONTENT_W * 0.55 });
+      });
+      y += audRows.length * 22;
+      doc.rect(MARGIN, audStartY, CONTENT_W, y - audStartY).stroke('#E5E4DF').lineWidth(0.5);
+      y += 14;
+    }
 
     // ── Footer ─────────────────────────────────────────────────────────────────
     doc.moveTo(MARGIN, y).lineTo(W - MARGIN, y).stroke('#E5E4DF').lineWidth(0.5);
