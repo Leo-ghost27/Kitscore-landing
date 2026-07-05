@@ -158,6 +158,7 @@
     .hero2-grid { grid-template-columns: 1fr; }
     .hero2-left { text-align: center; }
     .hero2-left .hero-buttons, .hero2-stats { justify-content: center; }
+    .siia-grid { grid-template-columns: 1fr !important; }
   }
 
   .btn-primary {
@@ -1068,12 +1069,12 @@
 <hr class="section-divider" />
 
 <!-- SEE IT IN ACTION -->
-<section style="padding:64px 2rem;max-width:1100px;margin:0 auto">
+<section id="see-it-in-action" style="padding:64px 2rem;max-width:1100px;margin:0 auto">
   <div class="section-label">See It In Action</div>
   <h2 class="section-h">The real product. Not a mockup.</h2>
-  <p class="section-sub" style="margin-bottom:32px">These are actual screens from the live app — browsing the creator directory and reviewing a full evaluation.</p>
+  <p class="section-sub" style="margin-bottom:32px">These are actual screens from the live app — browsing creators, reviewing a full evaluation, and submitting evidence.</p>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+  <div class="siia-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">
     <div>
       <div style="border:0.5px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04)">
         <div style="background:#F4F5F7;padding:8px 12px;display:flex;gap:6px;border-bottom:0.5px solid var(--border)">
@@ -1095,6 +1096,17 @@
         <img src="assets/product-evaluate.png" alt="Kitscore full evaluation report view" style="width:100%;display:block">
       </div>
       <p style="font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center">Full evaluation — score breakdown and recommendation</p>
+    </div>
+    <div>
+      <div style="border:0.5px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04)">
+        <div style="background:#F4F5F7;padding:8px 12px;display:flex;gap:6px;border-bottom:0.5px solid var(--border)">
+          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
+          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
+          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
+        </div>
+        <img src="assets/product-evidence.png" alt="Kitscore creator evidence upload view" style="width:100%;display:block">
+      </div>
+      <p style="font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center">Creator view — submitting campaign evidence</p>
     </div>
   </div>
 </section>
