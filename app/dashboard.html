@@ -23,7 +23,11 @@
   .info-ic{color:var(--color-text-tertiary);cursor:help;margin-left:3px;vertical-align:-1px}
 
   /* ── Score ring hero ── */
-  .score-hero{display:grid;grid-template-columns:140px 1fr;gap:20px;align-items:center;margin-bottom:12px}
+  .score-hero{display:grid;grid-template-columns:auto auto 1fr;gap:0;align-items:center;margin-bottom:12px}
+  .score-left{display:flex;align-items:center;gap:20px;padding-right:24px}
+  .score-badges{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+  .score-divider{width:1px;align-self:stretch;background:var(--color-border-tertiary);margin:0 24px}
+  .score-right{display:flex;flex-direction:column;gap:10px;padding-left:24px;justify-content:center}
   .ring-wrap{position:relative;width:130px;height:130px;flex-shrink:0}
   .ring-wrap svg{width:130px;height:130px;transform:rotate(-90deg)}
   .ring-track{fill:none;stroke:var(--color-border-tertiary);stroke-width:10}
@@ -31,7 +35,6 @@
   .ring-center{position:absolute;inset:0}
   .ring-num{position:absolute;top:50%;left:50%;transform:translate(-50%,calc(-50% - 16px));font-size:32px;font-weight:700;color:var(--color-text-primary);line-height:1;white-space:nowrap;text-align:center}
   .ring-label{position:absolute;top:50%;left:50%;transform:translate(-50%,calc(-50% + 14px));font-size:9px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;text-align:center}
-  .score-meta{display:flex;flex-direction:column;gap:8px}
   .badge-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:var(--color-background-secondary);color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary);width:fit-content}
   .conf-row{display:flex;align-items:center;gap:8px}
   .conf-label{font-size:11px;color:var(--color-text-secondary);width:90px;flex-shrink:0}
@@ -41,6 +44,14 @@
   .plan-chip{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em;width:fit-content}
   .plan-free{background:var(--color-background-secondary);color:var(--color-text-secondary)}
   .plan-pro{background:#EEF2FF;color:#3730A3}
+  .upgrade-link{font-size:11px;color:#2563EB;text-decoration:none;font-weight:500}
+  .encourage{font-size:12px;color:var(--color-text-secondary);line-height:1.5;margin:0}
+  @media(max-width:620px){
+    .score-hero{grid-template-columns:1fr}
+    .score-left{padding-right:0;margin-bottom:16px}
+    .score-divider{display:none}
+    .score-right{padding-left:0}
+  }
 
   /* ── Stats strip ── */
   .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
@@ -296,13 +307,20 @@ async function load() {
     <!-- ── Score hero ── -->
     <div class="card">
       <div class="score-hero">
-        ${renderRing(score)}
-        <div class="score-meta">
-          <div class="badge-pill">
-            <span>${BADGE_SVG[creator.badge_tier]}</span>
-            ${BADGE_LABEL[creator.badge_tier]}
+        <div class="score-left">
+          ${renderRing(score)}
+          <div class="score-badges">
+            <div class="badge-pill">
+              <span>${BADGE_SVG[creator.badge_tier]}</span>
+              ${BADGE_LABEL[creator.badge_tier]}
+            </div>
+            ${creator.founding_cohort ? `<div class="founding-badge" title="One of Kitscore's first 100 creators">${FOUNDING_SEAL}Founding</div>` : ''}
+            <div class="${'plan-chip plan-'+(creator.plan||'free')}">${(creator.plan||'free').toUpperCase()}</div>
+            ${creator.plan==='free'?`<a href="pricing-creator.html" class="upgrade-link">Upgrade to Pro →</a>`:''}
           </div>
-          ${creator.founding_cohort ? `<div class="founding-badge" title="One of Kitscore's first 100 creators">${FOUNDING_SEAL}Founding</div>` : ''}
+        </div>
+        <div class="score-divider"></div>
+        <div class="score-right">
           ${hasScore?`
           <div class="conf-row">
             <span class="conf-label">Confidence</span>
@@ -310,8 +328,7 @@ async function load() {
             <span class="conf-pct">${conf}%</span>
           </div>`:''}
           <div class="verified-badge">${svgIcon('rosette-discount-check', {size:12})}${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
-          <div class="${'plan-chip plan-'+(creator.plan||'free')}">${(creator.plan||'free').toUpperCase()}</div>
-          ${creator.plan==='free'?`<a href="pricing-creator.html" style="font-size:11px;color:#2563EB;text-decoration:none;font-weight:500">Upgrade to Pro →</a>`:''}
+          <p class="encourage">Verify your first campaign to unlock a real confidence rating on your score.</p>
         </div>
       </div>
     </div>
