@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Directory — Kitscore Admin</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .search-row{display:flex;gap:8px;margin-bottom:14px}
+  .search-row input{flex:1;font-size:12px;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-family:var(--font-sans)}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  thead th{text-align:left;font-size:10.5px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary)}
+  tbody td{padding:10px 10px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  .fname{font-weight:500;color:var(--color-text-primary)}
+  .femail{color:var(--color-text-tertiary);font-size:11px}
+  .plan-chip{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em}
+  .plan-free{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .plan-pro{background:#EEF2FF;color:#3730A3}
+  .founding-tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:#FBEFDC;color:#92600A;margin-left:4px;white-space:nowrap}
+  .badge-tag{font-size:10px;font-weight:500;padding:3px 8px;border-radius:20px;background:var(--color-background-secondary);color:var(--color-text-secondary);white-space:nowrap}
+  .flagged-tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:#FDECEC;color:#B42318;margin-left:4px;white-space:nowrap}
+  .flag-btn{font-size:11px;padding:5px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:none;cursor:pointer;color:var(--color-text-secondary)}
+  .flag-btn:hover{background:#FDECEC;color:#B42318;border-color:#F3C6C4}
+  .flag-btn.is-flagged{background:#FDECEC;color:#B42318;border-color:#F3C6C4}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
+  .empty{font-size:12px;color:var(--color-text-secondary);padding:20px 0;text-align:center}
+  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.success{background:#EAF7F0;color:#1D9E75}
+
+  /* Flag reason modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(16,21,31,.4);display:flex;align-items:center;justify-content:center;z-index:50}
+  .modal-box{background:#fff;border-radius:var(--border-radius-md);padding:20px;width:360px;box-shadow:0 8px 30px rgba(0,0,0,.15)}
+  .modal-box h3{font-size:14px;font-weight:600;margin-bottom:4px}
+  .modal-box p{font-size:11px;color:var(--color-text-secondary);margin-bottom:12px}
+  .modal-box textarea{width:100%;font-size:12px;padding:8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-family:var(--font-sans);resize:vertical;min-height:70px;margin-bottom:12px}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px}
+  .modal-actions button{font-size:12px;padding:7px 14px;border-radius:var(--border-radius-md);cursor:pointer;font-family:var(--font-sans)}
+  .modal-cancel{background:none;border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)}
+  .modal-submit{background:#B42318;border:none;color:#fff;font-weight:500}
+  .modal-submit:disabled{opacity:.5;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Directory</div>
+    <div class="card">
+      <div class="sec">Search</div>
+      <div class="search-row">
+        <input type="text" id="search" placeholder="Search by name or email…">
+      </div>
+      <div id="list" class="loading">Loading…</div>
+      <div id="msg"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="nav.js?v=2"></script>
+<script>
+let items = [];
+let searchTerm = '';
+
+async function load() {
+  const profile = await requireRole('admin');
+  if (!profile) return;
+  renderSidebar('admin', 'admin-directory');
+
+  const { data, error } = await sb.rpc('fn_admin_list_creator_directory');
+  if (error) {
+    document.getElementById('list').innerHTML = '';
+    document.getElementById('msg').innerHTML = `<div class="msg error">Could not load directory: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  items = data || [];
+  render();
+}
+
+function render() {
+  const term = searchTerm.trim().toLowerCase();
+  const filtered = !term ? items : items.filter(i =>
+    (i.display_name || '').toLowerCase().includes(term) ||
+    (i.email || '').toLowerCase().includes(term)
+  );
+
+  if (!filtered.length) {
+    document.getElementById('list').innerHTML = '<div class="empty">No creators match this search.</div>';
+    return;
+  }
+
+  document.getElementById('list').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Plan</th>
+          <th>Trust score</th>
+          <th>Badge</th>
+          <th>Signed up</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map(i => `
+        <tr>
+          <td>
+            <div class="fname">${escapeHtml(i.display_name || '(no name)')}</div>
+            <div class="femail">${escapeHtml(i.email || 'no email on file')}</div>
+          </td>
+          <td><span class="plan-chip plan-${i.plan || 'free'}">${escapeHtml(i.plan || 'free')}</span></td>
+          <td>${i.trust_score ?? 0}</td>
+          <td>
+            <span class="badge-tag">${escapeHtml(i.badge_tier || 'none')}</span>
+            ${i.founding_cohort ? '<span class="founding-tag">Founding</span>' : ''}
+            ${i.is_flagged ? '<span class="flagged-tag">Flagged</span>' : ''}
+          </td>
+          <td>${new Date(i.created_at).toLocaleDateString()}</td>
+          <td>
+            <button class="flag-btn ${i.is_flagged ? 'is-flagged' : ''}" data-id="${i.profile_id}" data-name="${escapeHtml(i.display_name || 'this creator')}">
+              ${i.is_flagged ? 'Flagged' : 'Flag'}
+            </button>
+          </td>
+        </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+
+  document.querySelectorAll('.flag-btn').forEach(btn => {
+    btn.addEventListener('click', () => openFlagModal(btn.dataset.id, btn.dataset.name));
+  });
+}
+
+document.getElementById('search').addEventListener('input', (e) => {
+  searchTerm = e.target.value;
+  render();
+});
+
+function openFlagModal(profileId, name) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h3>Flag ${escapeHtml(name)} for review</h3>
+      <p>This writes an audit record (who flagged, when, and why) — it does not change their account status.</p>
+      <textarea id="flag-reason" placeholder="Reason for flagging…"></textarea>
+      <div class="modal-actions">
+        <button class="modal-cancel" id="flag-cancel">Cancel</button>
+        <button class="modal-submit" id="flag-submit" disabled>Flag for review</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const textarea = overlay.querySelector('#flag-reason');
+  const submitBtn = overlay.querySelector('#flag-submit');
+  textarea.addEventListener('input', () => {
+    submitBtn.disabled = !textarea.value.trim();
+  });
+  overlay.querySelector('#flag-cancel').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+  submitBtn.addEventListener('click', async () => {
+    const reason = textarea.value.trim();
+    if (!reason) return;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Flagging…';
+    const { error } = await sb.rpc('fn_admin_flag_creator', { p_profile_id: profileId, p_reason: reason });
+    overlay.remove();
+    if (error) {
+      document.getElementById('msg').innerHTML = `<div class="msg error">Could not flag: ${escapeHtml(error.message)}</div>`;
+      return;
+    }
+    document.getElementById('msg').innerHTML = `<div class="msg success">Flagged for review.</div>`;
+    await load();
+  });
+}
+
+load();
+</script>
+</body>
+</html>
