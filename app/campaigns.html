@@ -54,7 +54,15 @@
   .yn-row{display:flex;gap:8px;margin-bottom:12px}
   .yn-btn{font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:0;border:1px solid var(--line);background:transparent;color:var(--ink-soft);cursor:pointer}
   .yn-btn.selected{background:var(--blue);color:#fff;border-color:var(--blue)}
-  .endorse-summary{padding:14px 22px 18px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink-soft);line-height:1.6}
+  .campaigns-layout{display:grid;grid-template-columns:1fr 300px;gap:20px}
+  .campaigns-layout.single{display:block}
+  .side-panel{padding:22px;height:fit-content}
+  .side-panel-title{font-size:13.5px;font-weight:600;margin-bottom:14px;color:var(--ink)}
+  .sp-step{display:flex;gap:10px;margin-bottom:16px}
+  .sp-step:last-child{margin-bottom:0}
+  .sp-num{font-family:var(--font-mono);font-size:11px;color:var(--blue);font-weight:700;flex-shrink:0;width:20px}
+  .sp-step p{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+  .sp-step b{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -63,8 +71,18 @@
   <div class="app-main">
     <div class="ptitle">Campaigns</div>
     <div class="psub" id="psub">Verification requires confirmation from both you and the sponsor.</div>
-    <div id="formArea"></div>
-    <div class="card" id="list"><div class="loading">Loading…</div></div>
+    <div class="campaigns-layout single" id="layout">
+      <div id="mainCol">
+        <div id="formArea"></div>
+        <div class="card" id="list"><div class="loading">Loading…</div></div>
+      </div>
+      <div class="card side-panel" id="sidePanel" style="display:none">
+        <div class="side-panel-title">Why log campaigns</div>
+        <div class="sp-step"><span class="sp-num">01</span><p><b>You log it</b> — record the campaign you ran with a creator.</p></div>
+        <div class="sp-step"><span class="sp-num">02</span><p><b>They confirm</b> — the creator verifies the details match.</p></div>
+        <div class="sp-step"><span class="sp-num">03</span><p><b>Record builds</b> — mutually confirmed campaigns strengthen every future evaluation you run on them.</p></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -81,6 +99,8 @@ async function load() {
 
   if (profile.role === 'sponsor') {
     document.getElementById('psub').textContent = 'Log a campaign you ran with a creator. It only counts toward their verified track record once the creator confirms it too.';
+    document.getElementById('layout').classList.remove('single');
+    document.getElementById('sidePanel').style.display = '';
     await renderSponsorForm();
     await loadSponsorCampaigns();
   } else {
@@ -220,12 +240,12 @@ async function loadSponsorCampaigns() {
       <div id="endorse-msg-${c.id}"></div>
     </div>` : ''}
   `).join('') : `
-    <div style="text-align:center;padding:32px 20px">
-      <div style="width:44px;height:44px;border-radius:12px;background:#F0F1F3;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
-        <i class="ti ti-briefcase" style="font-size:20px;color:var(--color-text-tertiary)"></i>
+    <div style="text-align:center;padding:56px 40px">
+      <div style="width:52px;height:52px;background:var(--blue-soft);margin:0 auto 18px;display:flex;align-items:center;justify-content:center">
+        <i class="ti ti-briefcase" style="font-size:24px;color:var(--blue)"></i>
       </div>
-      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">No campaigns logged yet</div>
-      <div style="font-size:12px;color:var(--color-text-secondary)">Use the form above to log your first one with a creator.</div>
+      <div style="font-size:15.5px;font-weight:600;color:var(--ink);margin-bottom:8px">No campaigns logged yet</div>
+      <div style="font-size:13.5px;color:var(--ink-soft);max-width:400px;margin:0 auto;line-height:1.6">Use the form above to log your first one with a creator.</div>
     </div>`;
 }
 

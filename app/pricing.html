@@ -81,7 +81,7 @@
 
   const cardBtn = (tier, label, onclick) => {
     if (plan === tier) return `<button class="btn-current" disabled>Current plan</button>`;
-    return `<button class="${tier === 'starter' ? 'btn-primary' : 'btn-outline'}" onclick="${onclick}">${label}</button>`;
+    return `<button class="${tier === 'team' ? 'btn-primary' : 'btn-outline'}" onclick="${onclick}">${label}</button>`;
   };
 
   document.getElementById('plansWrap').innerHTML = `
@@ -91,13 +91,13 @@
       <ul><li>Full creator evaluation</li><li>Recommendation + risk assessment</li><li>No subscription required</li></ul>
       <button class="btn-outline" onclick="window.location.href='directory.html'">Browse directory</button>
     </div>
-    <div class="plan featured ${plan==='starter' ? 'is-current' : ''}">
+    <div class="plan ${plan==='starter' ? 'is-current' : ''}">
       <h3>Starter</h3>
       <div class="price">$99<span>/mo</span></div>
       <ul><li>25 evaluations/mo</li><li>Saved evaluations &amp; history</li><li>Creator watchlists</li><li>Comparison tools</li></ul>
       ${cardBtn('starter', 'Start Starter', "subscribe('starter')")}
     </div>
-    <div class="plan ${plan==='team' ? 'is-current' : ''}">
+    <div class="plan featured ${plan==='team' ? 'is-current' : ''}">
       <h3>Team</h3>
       <div class="price">$299<span>/mo</span></div>
       <ul><li>150 evaluations/mo</li><li>Team collaboration &amp; shared notes</li><li>Creator monitoring</li><li>Internal approval workflows</li></ul>

@@ -30,6 +30,27 @@
   .msg.ok{background:var(--green-soft);color:#137C52}
   .upgrade-banner{background:var(--card,#fff);border:1px solid var(--blue);box-shadow:0 8px 24px -10px rgba(47,95,224,.2);padding:32px 36px;margin-bottom:22px;font-size:14px;color:var(--ink)}
   .upgrade-banner a{color:var(--blue);font-weight:700;text-decoration:none}
+  .team-hero{background:#fff;border:1px solid var(--blue);box-shadow:0 8px 24px -10px rgba(47,95,224,.2);padding:40px;margin-bottom:22px;position:relative;overflow:hidden}
+  .team-hero-inner{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap}
+  .team-hero-eyebrow{color:var(--blue);display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .team-hero-eyebrow::before{content:"";width:6px;height:6px;background:var(--blue)}
+  .team-hero h2{font-size:26px;font-weight:700;letter-spacing:-.01em;margin-bottom:10px;max-width:460px;color:var(--ink)}
+  .team-hero p{font-size:14px;color:var(--ink-soft);max-width:420px;line-height:1.6}
+  .team-hero-price{text-align:right;flex-shrink:0}
+  .team-hero-price .amt{font-family:var(--font-mono);font-size:38px;font-weight:600;color:var(--ink)}
+  .team-hero-price .per{font-size:13px;color:var(--ink-faint);margin-bottom:14px}
+  .team-hero-btn{background:var(--blue);color:#fff;border:none;font-size:13.5px;font-weight:700;padding:12px 22px;cursor:pointer;white-space:nowrap}
+  .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+  .feature-tile{padding:22px;position:relative}
+  .feature-tile-icon{width:34px;height:34px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+  .feature-tile-icon i{font-size:17px;color:var(--blue)}
+  .feature-tile-title{font-size:14px;font-weight:600;margin-bottom:7px;color:var(--ink)}
+  .feature-tile-text{font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+  .team-lock-chip{position:absolute;top:18px;right:18px;font-family:var(--font-mono);font-size:9px;letter-spacing:.05em;color:var(--blue);border:1px solid var(--blue-line);padding:3px 8px;text-transform:uppercase;white-space:nowrap}
+  .team-bottom-cta{display:flex;justify-content:space-between;align-items:center;background:var(--blue-soft);border:1px solid var(--blue-line);padding:20px 26px;flex-wrap:wrap;gap:14px}
+  .team-bottom-cta p{font-size:13.5px;color:#1F3E9E}
+  .team-bottom-cta p b{color:#122B7A}
+  .team-bottom-btn{background:var(--blue);color:#fff;border:none;font-size:13.5px;font-weight:600;padding:11px 20px;cursor:pointer;white-space:nowrap}
   .note-row{padding:12px 0;border-bottom:1px solid var(--line)}
   .note-row:last-child{border-bottom:none}
   .note-meta{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-faint);margin-bottom:4px}
@@ -63,14 +84,53 @@ async function load() {
     // Check if they just came back from a successful checkout
     const params = new URLSearchParams(window.location.search);
     const justPaid = params.get('checkout') === 'success';
+    if (justPaid) {
+      document.getElementById('content').innerHTML = `
+        <div class="upgrade-banner">
+          <strong>Payment received!</strong> Your plan is being activated — this can take up to 60 seconds. <button onclick="window.location.reload()" style="color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600;text-decoration:underline">Refresh now →</button>
+        </div>
+        <div style="font-size:12px;color:var(--ink-soft);margin-top:8px">If the page still shows this after refreshing, wait 30 seconds and try again.</div>`;
+      return;
+    }
+    const FEATURES = [
+      ['ti-file-text', 'Compliance-ready audit trail', 'Every evaluation, approval, and sign-off exported as a dated PDF/CSV log — ready to justify a sponsorship decision internally or to a client.'],
+      ['ti-bolt', 'Score-change alerts', "Get notified the moment an approved creator's trust score drops — a new red flag, a disclosure lapse — before it becomes your problem."],
+      ['ti-clock', 'Priority 24hr turnaround', 'Team evaluations move to the front of the queue — 24 hours instead of the standard 48.'],
+      ['ti-arrows-exchange', 'API access', 'Pipe evaluations directly into your own CRM or workflow tool instead of exporting manually.'],
+      ['ti-users', 'Roles &amp; permissions', 'Admin, Reviewer, and Viewer seats — junior team members propose, your Head of Partnerships approves.'],
+      ['ti-layout', 'White-labeled reports', "Your agency's logo on the PDF memo when you share it with a client — not Kitscore's."],
+      ['ti-file-text', 'Shared notes &amp; collaboration', "Leave internal notes on a creator's profile that every team member can see before signing off."],
+      ['ti-check', 'Internal approval workflow', 'Route evaluations through your own sign-off chain before a sponsorship is confirmed.'],
+      ['ti-user-circle', 'Dedicated account contact', 'A named point of contact for your account — not a shared support inbox.'],
+    ];
     document.getElementById('content').innerHTML = `
-      <div class="upgrade-banner">
-        ${justPaid
-          ? '<strong>Payment received!</strong> Your plan is being activated — this can take up to 60 seconds. <button onclick="window.location.reload()" style="color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600;text-decoration:underline">Refresh now →</button>'
-          : '<i class="ti ti-users"></i> Team features require the Team plan. <a href="pricing.html">Upgrade to Team — $299/mo →</a>'
-        }
+      <div class="team-hero">
+        <div class="team-hero-inner">
+          <div>
+            <div class="eyebrow team-hero-eyebrow">BUILT FOR AGENCIES &amp; TEAMS</div>
+            <h2>Run your entire creator evaluation practice from one account.</h2>
+            <p>Team includes everything in Starter, plus the collaboration, compliance, and monitoring tools a $299/mo practice should have.</p>
+          </div>
+          <div class="team-hero-price">
+            <div class="amt">$299</div>
+            <div class="per">/ month</div>
+            <button class="team-hero-btn" onclick="window.location.href='pricing.html'">Upgrade to Team →</button>
+          </div>
+        </div>
       </div>
-      ${justPaid ? '<div style="font-size:12px;color:var(--ink-soft);margin-top:8px">If the page still shows this after refreshing, wait 30 seconds and try again.</div>' : ''}`;
+      <div class="feature-grid">
+        ${FEATURES.map(([icon, title, text]) => `
+          <div class="card feature-tile">
+            <div class="feature-tile-icon"><i class="ti ${icon}" aria-hidden="true"></i></div>
+            <div class="feature-tile-title">${title}</div>
+            <div class="feature-tile-text">${text}</div>
+            <span class="team-lock-chip">Team</span>
+          </div>`).join('')}
+      </div>
+      <div class="team-bottom-cta">
+        <p><b>150 evaluations/mo included.</b> Everything in Starter, plus every feature above.</p>
+        <button class="team-bottom-btn" onclick="window.location.href='pricing.html'">Upgrade to Team — $299/mo →</button>
+      </div>`;
     return;
   }
 

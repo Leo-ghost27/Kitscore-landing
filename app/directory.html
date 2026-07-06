@@ -32,8 +32,8 @@
   .founding-tag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#8C6C3B;background:var(--gold-soft);padding:4px 10px;vertical-align:middle}
   .founding-tag svg{width:11px;height:11px;fill:var(--gold)}
   .niche{font-size:12px;color:var(--ink-faint);margin-top:3px}
-  .pbar-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:var(--ink-soft);margin-bottom:6px}
-  .pbar-row .pbar-val{font-family:var(--font-mono);color:var(--ink);font-size:14px;font-weight:600}
+  .cc-score-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:var(--ink-soft);margin-bottom:6px}
+  .cc-score-row b{font-family:var(--font-mono);color:var(--ink);font-size:14px;font-weight:600}
   .pbar-track{height:6px;background:#EEF1F7;margin-bottom:16px;overflow:hidden}
   .pbar-fill{height:100%;background:var(--blue)}
   .verified-badge{font-size:11px;background:var(--green-soft);color:#137C52;padding:4px 10px;display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-weight:600}
@@ -129,7 +129,8 @@ function render() {
         <div class="avatar">${escapeHtml(c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
         <div><div class="name">${escapeHtml(c.name)}${c.founding_cohort ? ` <span class="founding-tag" title="One of Kitscore's first 100 creators"><svg viewBox="0 0 24 24"><path d="M12 2l3 6 6 1-4.5 4.5L18 21l-6-3-6 3 1.5-6.5L3 9l6-1z"/></svg>Founding</span>` : ''}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
       </div>
-      <div class="pbar-row"><span>Trust score</span><div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div><span class="pbar-val">${c.trust_score}</span></div>
+      <div class="cc-score-row"><span>Trust score</span><b>${c.trust_score}</b></div>
+      <div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div>
       <button class="log-campaign-btn" onclick="event.stopPropagation(); window.location.href='campaigns.html?creator=${c.id}'"><i class="ti ti-flag"></i> Log campaign</button>
       <div class="card-reliability">
         <div class="card-rel-item">
