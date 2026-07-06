@@ -104,7 +104,8 @@ async function load() {
   const creatorName = escapeHtml(profileRow?.display_name || 'Creator');
   const trustScore = creator?.trust_score ?? 0;
   const hasScore = (components || []).length > 0;
-  const confidence = hasScore && trustScore >= 75 ? 'High' : trustScore >= 55 ? 'Moderate' : 'Low';
+  const confidencePct = parseInt(creator?.confidence) || 0;
+  const confidence = hasScore && confidencePct >= 70 ? 'High' : confidencePct >= 40 ? 'Moderate' : 'Low';
   const confidenceColor = { High:'#1C7C3F', Moderate:'#92600A', Low:'#B42318' }[confidence];
 
   // ── No evaluation exists yet — show teaser and generate on first view ─────
