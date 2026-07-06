@@ -53,6 +53,12 @@
   .yn-btn{font-size:11px;padding:5px 12px;border-radius:0;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
   .yn-btn.selected{background:#2563EB;color:#fff;border-color:#2563EB}
   .endorse-summary{padding:10px 14px 14px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px;color:var(--color-text-secondary);line-height:1.6}
+  .hw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--color-border-tertiary);margin-top:12px}
+  .hw-step{background:#fff;padding:16px}
+  .hw-num{font-family:monospace;font-size:10.5px;color:#2563EB;font-weight:600;margin-bottom:8px;letter-spacing:.03em}
+  .hw-title{font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:5px}
+  .hw-text{font-size:11.5px;color:var(--color-text-secondary);line-height:1.5}
+  @media(max-width:560px){ .hw-grid{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -353,6 +359,37 @@ async function loadCreatorCampaigns() {
       <div style="font-size:14px;font-weight:600;color:var(--color-text-primary);margin-bottom:6px">No campaigns yet</div>
       <div style="font-size:12.5px;color:var(--color-text-secondary);max-width:320px;margin:0 auto;line-height:1.6">When a sponsor logs a campaign with you, it'll show up here for you to confirm — that mutual confirmation is what builds your trust score.</div>
     </div>`;
+
+  renderHowItWorks();
+}
+
+function renderHowItWorks() {
+  if (document.getElementById('howItWorksCard')) return;
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.id = 'howItWorksCard';
+  el.style.marginBottom = '0';
+  el.innerHTML = `
+    <div class="sec" style="padding:14px 14px 0">How verification works</div>
+    <div class="hw-grid">
+      <div class="hw-step">
+        <div class="hw-num">01 / SPONSOR LOGS IT</div>
+        <div class="hw-title">Sponsor submits a campaign</div>
+        <div class="hw-text">A sponsor you've worked with records the campaign details on their end.</div>
+      </div>
+      <div class="hw-step">
+        <div class="hw-num">02 / YOU CONFIRM</div>
+        <div class="hw-title">You review and confirm</div>
+        <div class="hw-text">It appears here for you to confirm the details match what actually happened.</div>
+      </div>
+      <div class="hw-step">
+        <div class="hw-num">03 / SCORE UPDATES</div>
+        <div class="hw-title">Your trust score updates</div>
+        <div class="hw-text">Mutually confirmed campaigns are the strongest signal in your Kitscore.</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('list').insertAdjacentElement('afterend', el);
 }
 
 async function confirmCampaign(id) {

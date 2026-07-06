@@ -118,6 +118,15 @@
   .empty-state .es-body{font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:12px}
   .empty-state a{font-size:12px;font-weight:600;color:#2563EB;text-decoration:none}
 
+  /* ── Tips grid ── */
+  .tips-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .tip-card{padding:16px;border:0.5px solid var(--color-border-tertiary)}
+  .tip-icon{width:26px;height:26px;background:#EBF1FE;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  .tip-icon i{font-size:14px;color:#2563EB}
+  .tip-title{font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:5px}
+  .tip-text{font-size:11.5px;color:var(--color-text-secondary);line-height:1.5}
+  @media(max-width:560px){ .tips-grid{grid-template-columns:1fr} }
+
   /* ── Verified badge ── */
   .verified-badge{font-size:10px;background:#E9F7EE;color:#1C7C3F;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
   .founding-badge{font-size:10.5px;font-weight:600;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);color:#8A5B0A;padding:4px 10px 4px 6px;border-radius:20px;border:0.5px solid #E8CE8F;display:inline-flex;align-items:center;gap:5px;width:fit-content}
@@ -512,6 +521,28 @@ async function load() {
                <a href="pricing-creator.html" style="font-size:11px;color:#2563EB;font-weight:600;text-decoration:none;white-space:nowrap">Upgrade to Pro →</a>
              </div>`
         }
+      </div>
+    </div>
+
+    <!-- ── Tips to raise your score ── -->
+    <div class="card" style="margin-bottom:0">
+      <div class="sec">Tips to raise your score</div>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-icon"><i class="ti ti-flag"></i></div>
+          <div class="tip-title">Log past campaigns</div>
+          <div class="tip-text">Every confirmed sponsorship adds verified history to your score.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon"><i class="ti ti-file-upload"></i></div>
+          <div class="tip-title">Add more evidence</div>
+          <div class="tip-text">Analytics screenshots strengthen your audience authenticity rating.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon"><i class="ti ti-user"></i></div>
+          <div class="tip-title">Finish your profile</div>
+          <div class="tip-text">A complete profile helps sponsors find you in the right niche searches.</div>
+        </div>
       </div>
     </div>
   `;

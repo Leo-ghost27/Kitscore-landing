@@ -10,21 +10,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
 <style>
-  body{padding:20px;max-width:600px;margin:0 auto}
-  .back{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none;margin-bottom:16px;display:inline-block}
-  .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .plan{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:16px;position:relative}
-  .plan.featured{border:2px solid #2563EB}
-  .plan .badge-pop{position:absolute;top:-9px;left:14px;background:var(--color-background-info);color:#185FA5;font-size:10px;padding:3px 8px;border-radius:10px}
-  .plan h3{font-size:13px;font-weight:500;margin-bottom:4px;margin-top:4px}
-  .plan .price{font-size:22px;font-weight:500;margin-bottom:10px}
-  .plan .price span{font-size:11px;font-weight:400;color:var(--color-text-secondary)}
-  .plan ul{list-style:none;font-size:11px;color:var(--color-text-secondary);margin-bottom:12px;display:flex;flex-direction:column;gap:5px}
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .back{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none;margin-bottom:16px;display:inline-block;padding:0}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:600px}
+  .plan{border:0.5px solid var(--color-border-tertiary);padding:22px;position:relative;background:#fff;box-shadow:0 1px 2px rgba(16,21,31,0.03)}
+  .plan.featured{border:1.5px solid #2563EB}
+  .plan .badge-pop{position:absolute;top:-10px;left:18px;background:#2563EB;color:#fff;font-size:10px;font-weight:600;padding:4px 10px}
+  .plan h3{font-size:14px;font-weight:600;margin-bottom:6px;margin-top:6px;color:var(--color-text-primary)}
+  .plan .price{font-size:26px;font-weight:700;margin-bottom:14px;color:var(--color-text-primary)}
+  .plan .price span{font-size:12px;font-weight:400;color:var(--color-text-secondary)}
+  .plan ul{list-style:none;font-size:12px;color:var(--color-text-secondary);margin-bottom:16px;display:flex;flex-direction:column;gap:8px}
   .plan ul li.off{color:var(--color-text-tertiary)}
-  .plan button{width:100%;padding:9px;border:none;border-radius:0;font-size:12px;font-weight:500;cursor:pointer}
+  .plan button{width:100%;padding:11px;border:none;border-radius:0;font-size:13px;font-weight:600;cursor:pointer}
   .btn-primary{background:#2563EB;color:#fff}
+  .btn-primary:hover{opacity:.9}
   .btn-current{background:var(--color-background-secondary);color:var(--color-text-secondary);cursor:default}
-  .banner{font-size:11px;padding:8px 12px;border-radius:0;margin-bottom:14px;background:#E9F7EE;color:#1C7C3F}
+  .banner{font-size:12px;padding:10px 14px;margin-bottom:16px;background:#E9F7EE;color:#1C7C3F;max-width:600px}
 </style>
 </head>
 <body>
@@ -32,6 +33,7 @@
   <div class="sidebar" id="sidebar-mount"></div>
   <div class="app-main">
     <button class="back" onclick="window.location.href='dashboard.html'">&larr; Back to dashboard</button>
+    <div class="ptitle">Upgrade</div>
     <div id="banner"></div>
     <div class="g2" id="plans">Loading…</div>
   </div>
