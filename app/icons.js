@@ -21,6 +21,10 @@ const ICON_PATHS = {
   code: '<path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/>',
   layout: '<rect x="3" y="3" width="18" height="18"/><path d="M3 9h18"/><path d="M9 21V9"/>',
   'user-contact': '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+  heart: '<path d="M19.5 12.6l-7.5 7.5-7.5-7.5a5 5 0 0 1 7.5-6.6 5 5 0 0 1 7.5 6.6z"/>',
+  'heart-filled': '<path d="M19.5 12.6l-7.5 7.5-7.5-7.5a5 5 0 0 1 7.5-6.6 5 5 0 0 1 7.5 6.6z" fill="currentColor" stroke="none"/>',
+  flag: '<path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/>',
+  'lock-open': '<rect x="5" y="11" width="14" height="9" rx="1"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>',
 };
 
 function svgIcon(name, opts) {

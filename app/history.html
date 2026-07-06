@@ -5,7 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Evaluation History — Kitscore</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
@@ -41,6 +40,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
+<script src="icons.js?v=1"></script>
 <script src="nav.js?v=2"></script>
 <script>
 async function load() {
@@ -54,7 +54,7 @@ async function load() {
   if (plan === 'free') {
     document.getElementById('upgradeTip').innerHTML = `
       <div class="upgrade-tip">
-        <i class="ti ti-lock-open"></i>
+        ${svgIcon('lock-open', {size:15, stroke:'currentColor', strokeWidth:2})}
         You're on the Free plan — only your most recent evaluation per creator is shown.
         <a href="pricing.html" style="color:inherit;font-weight:500;margin-left:4px">Upgrade to Starter →</a>
       </div>`;
@@ -66,14 +66,26 @@ async function load() {
     .order('created_at', { ascending: false });
   if (error) { document.getElementById('content').textContent = 'Could not load: ' + error.message; return; }
 
-  if (!evals || evals.length === 0) {
+  // Free plan: only the most recent evaluation per creator is visible (matches the banner above).
+  // Paid plans (Starter/Team) see full history, including repeat evaluations of the same creator.
+  let visibleEvals = evals || [];
+  if (plan === 'free') {
+    const seen = new Set();
+    visibleEvals = visibleEvals.filter(e => {
+      if (seen.has(e.creator_id)) return false;
+      seen.add(e.creator_id);
+      return true;
+    });
+  }
+
+  if (!visibleEvals.length) {
     document.getElementById('content').innerHTML = `<div class="empty-tip">No evaluations yet. <a href="directory.html">Browse the directory to evaluate a creator →</a></div>`;
     return;
   }
 
   document.getElementById('content').innerHTML = `
     <div class="card">
-      ${evals.map(e => `
+      ${visibleEvals.map(e => `
         <div class="row-item">
           <div>
             <div style="font-weight:600;color:var(--ink);font-size:14px">${escapeHtml(e.creators?.profiles?.display_name || '—')}</div>

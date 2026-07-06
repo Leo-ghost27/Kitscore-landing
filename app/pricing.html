@@ -19,6 +19,7 @@
   .plan h3{font-size:15px;font-weight:600;margin-bottom:10px;color:var(--ink)}
   .plan .price{font-family:var(--font-mono);font-size:30px;font-weight:600;margin-bottom:4px;color:var(--ink)}
   .plan .price span{font-size:13px;font-weight:500;color:var(--ink-soft)}
+  .plan .desc{font-size:12.5px;color:var(--ink-faint);margin-bottom:18px}
   .plan ul{list-style:none;font-size:13px;color:#333B4D;margin-bottom:22px;display:flex;flex-direction:column;gap:6px}
   .plan ul li::before{content:"✓";color:var(--blue);font-weight:700;margin-right:8px}
   .plan button{width:100%;padding:11px;border:1px solid var(--navy);border-radius:0;font-size:13.5px;font-weight:600;cursor:pointer}
@@ -88,19 +89,30 @@
     <div class="plan ${plan==='free' || plan==='pro' ? 'is-current' : ''}">
       <h3>Pay per report</h3>
       <div class="price">$29<span>/report</span></div>
-      <ul><li>Full creator evaluation</li><li>Recommendation + risk assessment</li><li>No subscription required</li></ul>
+      <div class="desc">Full creator evaluation.</div>
+      <ul><li>Recommendation + risk assessment</li><li>No subscription required</li></ul>
       <button class="btn-outline" onclick="window.location.href='directory.html'">Browse directory</button>
     </div>
     <div class="plan ${plan==='starter' ? 'is-current' : ''}">
       <h3>Starter</h3>
       <div class="price">$99<span>/mo</span></div>
-      <ul><li>25 evaluations/mo</li><li>Saved evaluations &amp; history</li><li>Creator watchlists</li><li>Comparison tools</li></ul>
+      <div class="desc">25 evaluations/mo.</div>
+      <ul><li>Saved evaluations &amp; history</li><li>Creator watchlists</li><li>Comparison tools</li></ul>
       ${cardBtn('starter', 'Start Starter', "subscribe('starter')")}
     </div>
     <div class="plan featured ${plan==='team' ? 'is-current' : ''}">
       <h3>Team</h3>
       <div class="price">$299<span>/mo</span></div>
-      <ul><li>150 evaluations/mo</li><li>Team collaboration &amp; shared notes</li><li>Creator monitoring</li><li>Internal approval workflows</li></ul>
+      <div class="desc">150 evaluations/mo. Everything in Starter, plus:</div>
+      <ul>
+        <li>Compliance-ready audit trail export</li>
+        <li>Score-change alerts &amp; monitoring</li>
+        <li>Roles &amp; permissions (seats)</li>
+        <li>White-labeled reports</li>
+        <li>API access</li>
+        <li>Priority 24hr turnaround</li>
+        <li>Dedicated account contact</li>
+      </ul>
       ${cardBtn('team', 'Start Team', "subscribe('team')")}
     </div>
   `;

@@ -8,7 +8,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Creator directory — Kitscore</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
@@ -37,7 +36,7 @@
   .pbar-track{height:6px;background:#EEF1F7;margin-bottom:16px;overflow:hidden}
   .pbar-fill{height:100%;background:var(--blue)}
   .verified-badge{font-size:11px;background:var(--green-soft);color:#137C52;padding:4px 10px;display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-weight:600}
-  .save-btn{position:absolute;top:18px;right:18px;background:none;border:none;cursor:pointer;font-size:16px;color:var(--ink-faint);padding:2px;z-index:1}
+  .save-btn{position:absolute;top:18px;right:18px;background:none;border:none;cursor:pointer;color:var(--ink-faint);padding:2px;z-index:1;display:flex;align-items:center;justify-content:center}
   .save-btn.saved{color:#E0245E}
   .log-campaign-btn{width:100%;margin-bottom:16px;padding:10px;font-size:13px;font-weight:600;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
   .log-campaign-btn:hover{border-color:var(--blue);color:var(--blue)}
@@ -71,6 +70,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
+<script src="icons.js?v=1"></script>
 <script src="nav.js?v=2"></script>
 <script>
 let creators = [];
@@ -123,7 +123,7 @@ function render() {
   document.getElementById('content').innerHTML = `<div class="grid">${sorted.map(c => `
     <div class="ccard" onclick="window.location.href='evaluate.html?creator=${c.id}'">
       <button class="save-btn ${watchlisted.has(c.id)?'saved':''}" onclick="event.stopPropagation(); toggleSave('${c.id}')" title="${watchlisted.has(c.id)?'Remove from watchlist':'Save to watchlist'}">
-        <i class="ti ${watchlisted.has(c.id)?'ti-heart-filled':'ti-heart'}"></i>
+        ${svgIcon(watchlisted.has(c.id)?'heart-filled':'heart', {size:18, stroke:'currentColor', strokeWidth:2})}
       </button>
       <div class="head">
         <div class="avatar">${escapeHtml(c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
@@ -131,7 +131,7 @@ function render() {
       </div>
       <div class="cc-score-row"><span>Trust score</span><b>${c.trust_score}</b></div>
       <div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div>
-      <button class="log-campaign-btn" onclick="event.stopPropagation(); window.location.href='campaigns.html?creator=${c.id}'"><i class="ti ti-flag"></i> Log campaign</button>
+      <button class="log-campaign-btn" onclick="event.stopPropagation(); window.location.href='campaigns.html?creator=${c.id}'">${svgIcon('flag', {size:14, stroke:'currentColor', strokeWidth:2})} Log campaign</button>
       <div class="card-reliability">
         <div class="card-rel-item">
           <span class="card-rel-val gold">${c.reliability_score > 0 ? c.reliability_score : '—'}</span>
