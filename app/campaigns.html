@@ -33,6 +33,7 @@
   .dispute-panel{padding:10px 14px 14px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
   .dispute-panel textarea{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:12px;font-family:inherit;resize:vertical;min-height:56px;margin-bottom:8px}
   .dispute-reason-note{font-size:11px;color:#B42318;padding:0 14px 12px;line-height:1.5}
+  .dispute-reason-note svg{vertical-align:-2px}
   .resolve-btn{font-size:11px;padding:5px 10px;border-radius:0;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
   .resolve-btn:hover{border-color:#2563EB;color:#2563EB}
   .resolve-panel{padding:10px 14px 14px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
@@ -74,6 +75,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
+<script src="icons.js?v=1"></script>
 <script src="nav.js?v=2"></script>
 <script>
 let profile;
@@ -174,12 +176,12 @@ async function loadSponsorCampaigns() {
           ? `<button class="resolve-btn" onclick="toggleResubmit('${c.id}')">Edit &amp; resubmit</button>`
           : c.status === 'verified'
             ? (c.endorsement_submitted_at
-                ? `<span class="endorsed-tag"><i class="ti ti-circle-check" aria-hidden="true"></i> Endorsement submitted</span>`
+                ? `<span class="endorsed-tag">${svgIcon('circle-check', {size:12})} Endorsement submitted</span>`
                 : `<button class="endorse-btn" onclick="toggleEndorse('${c.id}')">Leave endorsement</button>`)
             : `<span class="waiting">${c.creator_confirmed ? 'Confirmed by creator' : 'Waiting on creator'}</span>`}
       </div>
     </div>
-    ${c.status === 'disputed' && c.dispute_reason ? `<div class="dispute-reason-note"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Creator's reason: ${escapeHtml(c.dispute_reason)}</div>` : ''}
+    ${c.status === 'disputed' && c.dispute_reason ? `<div class="dispute-reason-note">${svgIcon('alert-triangle', {size:12})} Creator's reason: ${escapeHtml(c.dispute_reason)}</div>` : ''}
     ${c.status === 'disputed' ? `
     <div id="resubmit-panel-${c.id}" class="resolve-panel" style="display:none">
       <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px">Fix the details and resubmit. This clears the dispute and puts it back in front of the creator to confirm.</div>
@@ -226,7 +228,7 @@ async function loadSponsorCampaigns() {
   `).join('') : `
     <div style="text-align:center;padding:32px 20px">
       <div style="width:44px;height:44px;border-radius:12px;background:#F0F1F3;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
-        <i class="ti ti-briefcase" style="font-size:20px;color:var(--color-text-tertiary)"></i>
+        ${svgIcon('briefcase', {size:20, stroke:'var(--color-text-tertiary)'})}
       </div>
       <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">No campaigns logged yet</div>
       <div style="font-size:12px;color:var(--color-text-secondary)">Use the form above to log your first one with a creator.</div>
@@ -340,7 +342,7 @@ async function loadCreatorCampaigns() {
       </div>
     </div>
     ${c.status === 'disputed' && c.dispute_reason
-      ? `<div class="dispute-reason-note"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Your reason: ${escapeHtml(c.dispute_reason)}</div>`
+      ? `<div class="dispute-reason-note">${svgIcon('alert-triangle', {size:12})} Your reason: ${escapeHtml(c.dispute_reason)}</div>`
       : ''}
     <div id="dispute-panel-${c.id}" class="dispute-panel" style="display:none">
       <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px">Tell us why this campaign is wrong or didn't happen. This only shows to you and the sponsor.</div>
@@ -354,7 +356,7 @@ async function loadCreatorCampaigns() {
   `).join('') : `
     <div style="text-align:center;padding:40px 20px">
       <div style="width:48px;height:48px;border-radius:12px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
-        <i class="ti ti-briefcase" style="font-size:22px;color:#2563EB"></i>
+        ${svgIcon('briefcase', {size:22, stroke:'#2563EB'})}
       </div>
       <div style="font-size:14px;font-weight:600;color:var(--color-text-primary);margin-bottom:6px">No campaigns yet</div>
       <div style="font-size:12.5px;color:var(--color-text-secondary);max-width:320px;margin:0 auto;line-height:1.6">When a sponsor logs a campaign with you, it'll show up here for you to confirm — that mutual confirmation is what builds your trust score.</div>

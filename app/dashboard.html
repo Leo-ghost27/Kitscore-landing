@@ -20,7 +20,7 @@
   .loading{font-size:12px;color:var(--color-text-secondary);padding:40px;text-align:center}
   .sec{font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
   .card{padding:16px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:12px}
-  .info-ic{font-size:11px;color:var(--color-text-tertiary);cursor:help;margin-left:3px}
+  .info-ic{color:var(--color-text-tertiary);cursor:help;margin-left:3px;vertical-align:-1px}
 
   /* ── Score ring hero ── */
   .score-hero{display:grid;grid-template-columns:140px 1fr;gap:20px;align-items:center;margin-bottom:12px}
@@ -46,7 +46,7 @@
   .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
   .stat-box{padding:12px 14px;background:#FAF8F3;border-radius:8px;text-align:left}
   .stat-box .ml{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--color-text-secondary);font-weight:500;margin-bottom:6px}
-  .stat-box .ml i{font-size:15px}
+  .stat-box .ml svg{flex-shrink:0}
   .stat-box .mv{font-size:21px;font-weight:700;color:var(--color-text-primary)}
 
   /* ── Completeness bar ── */
@@ -58,10 +58,10 @@
   .step-row.done .step-label{text-decoration:line-through;text-decoration-color:#C8CDD6}
   .step-row.current{color:var(--color-text-primary);font-weight:600}
   .step-row .step-next{margin-left:auto;font-size:11.5px;color:#2563EB;font-weight:600}
-  .step-dot{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .step-dot{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
   .step-dot.dot-done{background:#2563EB}
   .step-dot.dot-current{border:2px solid #2563EB}
-  .step-dot.dot-current::after{content:'';width:7px;height:7px;border-radius:50%;background:#2563EB}
+  .step-dot.dot-current::after{content:'';width:8px;height:8px;background:#2563EB}
   .step-dot.dot-pending{border:1.5px solid #D8DADE}
 
   /* ── Milestone ── */
@@ -122,13 +122,14 @@
   .tips-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
   .tip-card{padding:16px;border:0.5px solid var(--color-border-tertiary)}
   .tip-icon{width:26px;height:26px;background:#EBF1FE;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
-  .tip-icon i{font-size:14px;color:#2563EB}
+  .tip-icon svg{width:14px;height:14px;color:#2563EB}
   .tip-title{font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:5px}
   .tip-text{font-size:11.5px;color:var(--color-text-secondary);line-height:1.5}
   @media(max-width:560px){ .tips-grid{grid-template-columns:1fr} }
 
   /* ── Verified badge ── */
   .verified-badge{font-size:10px;background:#E9F7EE;color:#1C7C3F;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
+  .verified-badge svg{flex-shrink:0}
   .founding-badge{font-size:10.5px;font-weight:600;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);color:#8A5B0A;padding:4px 10px 4px 6px;border-radius:20px;border:0.5px solid #E8CE8F;display:inline-flex;align-items:center;gap:5px;width:fit-content}
 
   /* ── Mobile ── */
@@ -158,6 +159,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
+<script src="icons.js?v=1"></script>
 <script src="nav.js?v=2"></script>
 <script>
 const BADGE_SVG = {
@@ -307,7 +309,7 @@ async function load() {
             <div class="conf-bar"><div class="conf-fill" id="conf-fill" style="width:0%"></div></div>
             <span class="conf-pct">${conf}%</span>
           </div>`:''}
-          <div class="verified-badge"><i class="ti ti-rosette-discount-check"></i>${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
+          <div class="verified-badge">${svgIcon('rosette-discount-check', {size:12})}${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
           <div class="${'plan-chip plan-'+(creator.plan||'free')}">${(creator.plan||'free').toUpperCase()}</div>
           ${creator.plan==='free'?`<a href="pricing-creator.html" style="font-size:11px;color:#2563EB;text-decoration:none;font-weight:500">Upgrade to Pro →</a>`:''}
         </div>
@@ -317,15 +319,15 @@ async function load() {
     <!-- ── Stat strip ── -->
     <div class="g3">
       <div class="stat-box">
-        <div class="ml"><i class="ti ti-file-check" style="color:#2563EB"></i>Evidence items</div>
+        <div class="ml">${svgIcon('file-check', {size:15, stroke:'#2563EB'})}Evidence items</div>
         <div class="mv">${(evidence||[]).length||0}</div>
       </div>
       <div class="stat-box">
-        <div class="ml"><i class="ti ti-briefcase" style="color:var(--color-text-tertiary)"></i>Campaigns</div>
+        <div class="ml">${svgIcon('briefcase', {size:15, stroke:'var(--color-text-tertiary)'})}Campaigns</div>
         <div class="mv">${(campaigns||[]).length||0}</div>
       </div>
       <div class="stat-box">
-        <div class="ml"><i class="ti ti-user-circle" style="color:${pct>=100?'#1D9E75':'#E58C1A'}"></i>Profile complete</div>
+        <div class="ml">${svgIcon('user-circle', {size:15, stroke: pct>=100?'#1D9E75':'#E58C1A'})}Profile complete</div>
         <div class="mv">${pct}%</div>
       </div>
     </div>
@@ -390,7 +392,7 @@ async function load() {
 
     <!-- ── Score breakdown ── -->
     <div class="card">
-      <div class="sec">Score breakdown <i class="ti ti-info-circle info-ic" title="Each component is weighted. Live verified data scores highest."></i></div>
+      <div class="sec">Score breakdown <svg class="info-ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Each component is weighted. Live verified data scores highest."><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
       ${hasScore?ALL_COMPONENTS.map(ac=>{
         const comp=compMap[ac.key];
         const val=comp?comp.value:null;
@@ -529,17 +531,17 @@ async function load() {
       <div class="sec">Tips to raise your score</div>
       <div class="tips-grid">
         <div class="tip-card">
-          <div class="tip-icon"><i class="ti ti-flag"></i></div>
+          <div class="tip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div>
           <div class="tip-title">Log past campaigns</div>
           <div class="tip-text">Every confirmed sponsorship adds verified history to your score.</div>
         </div>
         <div class="tip-card">
-          <div class="tip-icon"><i class="ti ti-file-upload"></i></div>
+          <div class="tip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
           <div class="tip-title">Add more evidence</div>
           <div class="tip-text">Analytics screenshots strengthen your audience authenticity rating.</div>
         </div>
         <div class="tip-card">
-          <div class="tip-icon"><i class="ti ti-user"></i></div>
+          <div class="tip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
           <div class="tip-title">Finish your profile</div>
           <div class="tip-text">A complete profile helps sponsors find you in the right niche searches.</div>
         </div>

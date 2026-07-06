@@ -21,9 +21,9 @@
 .sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;color:var(--color-text-secondary);font-size:13px;font-weight:500;border-left:3px solid transparent;border-radius:0;text-decoration:none;margin-bottom:2px;transition:background .12s ease,color .12s ease}
 .sb-item:hover{color:var(--color-text-primary);background:var(--color-background-secondary)}
 .sb-item.active{color:#10151F;border-left-color:#2563EB;background:#EBF1FE;font-weight:600}
-.sb-item i{font-size:16px;flex-shrink:0;color:var(--color-text-tertiary)}
-.sb-item:hover i{color:#2563EB}
-.sb-item.active i{color:#2563EB}
+.sb-item svg{width:17px;height:17px;flex-shrink:0;stroke:var(--color-text-tertiary)}
+.sb-item:hover svg{stroke:#2563EB}
+.sb-item.active svg{stroke:#2563EB}
 .sb-nav{flex:1;display:flex;flex-direction:column;gap:0}
 .app-main{flex:1;padding:20px;max-width:780px;margin:0 auto;width:100%}
 body{padding:0!important;max-width:none!important;margin:0!important}
