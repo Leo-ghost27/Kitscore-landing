@@ -75,7 +75,7 @@ async function load() {
   if (!sponsorProfile) return;
   renderSidebar('sponsor', 'directory');
 
-  const { data: rows, error } = await sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, updated_at, reliability_score, repeat_sponsor_rate, founding_cohort, profiles!inner(display_name)');
+  const { data: rows, error } = await sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, updated_at, reliability_score, repeat_sponsor_rate, founding_cohort, profiles!inner(display_name)').eq('is_test', false);
   if (error) { document.getElementById('content').textContent = 'Could not load creators: ' + error.message; return; }
 
   const { data: campaigns } = await sb.from('campaigns').select('creator_id, status').eq('status', 'verified');
