@@ -29,20 +29,23 @@ function renderSidebar(role, activeKey) {
   const items = NAV[role] || [];
   const roleLabel = role === 'sponsor' ? 'Sponsor' : role === 'admin' ? 'Admin' : 'Creator';
   const roleIcon  = role === 'sponsor' ? 'ti-building-store' : role === 'admin' ? 'ti-shield-lock' : 'ti-device-camera';
+  const initials  = roleLabel.slice(0, 2).toUpperCase();
   mount.innerHTML = `
-    <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:8px;text-decoration:none;padding:10px 10px 16px;writing-mode:horizontal-tb;transform:none">
-      <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="16" width="5" height="10" rx="1" fill="#2563EB" opacity="0.5"/>
-        <rect x="9" y="10" width="5" height="16" rx="1" fill="#2563EB" opacity="0.75"/>
-        <rect x="16" y="4" width="5" height="20" rx="1" fill="#2563EB"/>
-        <circle cx="23.5" cy="5.5" r="4.5" fill="#2563EB" stroke="#fff" stroke-width="1"/>
-        <path d="M21.3 5.5l1.5 1.5L25.5 4" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:8px;text-decoration:none;padding:2px 10px 18px;writing-mode:horizontal-tb;transform:none">
+      <svg width="22" height="18" viewBox="0 0 24 20" xmlns="http://www.w3.org/2000/svg">
+        <rect fill="#2F5FE0" x="0" y="10" width="4" height="10"/>
+        <rect fill="#2F5FE0" x="6" y="5" width="4" height="15"/>
+        <rect fill="#2F5FE0" x="12" y="0" width="4" height="20"/>
+        <circle fill="#2F5FE0" cx="20" cy="3" r="3"/>
       </svg>
-      <span style="font-size:14px;font-weight:800;letter-spacing:-0.02em;color:#0F172A">Kit<span style="color:#2563EB">score</span></span>
+      <span style="font-size:16px;font-weight:700;letter-spacing:-0.01em;color:#10151F">Kit<span style="color:#2F5FE0">score</span></span>
     </a>
     <div class="nav-role-badge">
       <i class="ti ${roleIcon}" aria-hidden="true"></i>
-      ${roleLabel} account
+      <div class="nav-role-label">
+        <span>${roleLabel} account</span>
+        <span class="role-sub">${initials}</span>
+      </div>
     </div>
     ${items.map(i => `<a class="sb-item ${i.key === activeKey ? 'active' : ''}" href="${i.href}"><i class="ti ${i.icon}" aria-hidden="true"></i>${i.label}</a>`).join('')}
     <a class="sb-item" href="#" id="sb-signout" style="margin-top:auto"><i class="ti ti-logout" aria-hidden="true"></i>Sign out</a>
