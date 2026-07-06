@@ -4,27 +4,83 @@
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plans — Kitscore</title>
+<title>Upgrade — Kitscore</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
 <style>
-  body{padding:20px;max-width:600px;margin:0 auto}
-  .back{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none;margin-bottom:16px;display:inline-block}
-  .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .plan{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:16px;position:relative}
-  .plan.featured{border:2px solid #2563EB}
-  .plan .badge-pop{position:absolute;top:-9px;left:14px;background:var(--color-background-info);color:#185FA5;font-size:10px;padding:3px 8px;border-radius:10px}
-  .plan h3{font-size:13px;font-weight:500;margin-bottom:4px;margin-top:4px}
-  .plan .price{font-size:22px;font-weight:500;margin-bottom:10px}
-  .plan .price span{font-size:11px;font-weight:400;color:var(--color-text-secondary)}
-  .plan ul{list-style:none;font-size:11px;color:var(--color-text-secondary);margin-bottom:12px;display:flex;flex-direction:column;gap:5px}
-  .plan ul li.off{color:var(--color-text-tertiary)}
-  .plan button{width:100%;padding:9px;border:none;border-radius:0;font-size:12px;font-weight:500;cursor:pointer}
-  .btn-primary{background:#2563EB;color:#fff}
-  .btn-current{background:var(--color-background-secondary);color:var(--color-text-secondary);cursor:default}
-  .banner{font-size:11px;padding:8px 12px;border-radius:0;margin-bottom:14px;background:#E9F7EE;color:#1C7C3F}
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:2px}
+  .psub{font-size:12.5px;color:var(--color-text-secondary);margin-bottom:26px}
+  .back{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none;margin-bottom:16px;display:inline-block;padding:0}
+  .banner{font-size:12px;padding:10px 14px;margin-bottom:16px;background:#E9F7EE;color:#1C7C3F;max-width:640px}
+  .msg{font-size:11px;margin-top:8px;padding:8px}
+  .msg.error{background:#FDECEC;color:#B42318}
+
+  .plans-wrap{display:grid;grid-template-columns:1fr 1.15fr;gap:22px;max-width:680px;align-items:stretch}
+  @media(max-width:680px){ .plans-wrap{grid-template-columns:1fr} }
+
+  /* ── Free plan: understated, receding ── */
+  .plan-free{
+    border:0.5px solid var(--color-border-tertiary);
+    background:#FAFAFA;
+    padding:26px 24px;
+    display:flex;flex-direction:column;
+  }
+  .plan-free .tier-label{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:10px}
+  .plan-free h3{font-size:15px;font-weight:600;color:var(--color-text-secondary);margin-bottom:12px}
+  .plan-free .price{font-family:'Fraunces',serif;font-size:30px;font-weight:500;color:var(--color-text-secondary);margin-bottom:18px}
+  .plan-free .price span{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:400;color:var(--color-text-tertiary)}
+  .plan-free ul{list-style:none;font-size:12px;color:var(--color-text-secondary);margin-bottom:20px;display:flex;flex-direction:column;gap:9px;flex:1}
+  .plan-free ul li{display:flex;align-items:flex-start;gap:8px}
+  .plan-free ul li svg{flex-shrink:0;margin-top:1px}
+  .plan-free ul li.off{color:var(--color-text-tertiary)}
+  .plan-free button{width:100%;padding:11px;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-tertiary);font-size:12px;font-weight:600;cursor:default;letter-spacing:.02em}
+
+  /* ── Pro plan: posh, but white + blue ── */
+  .plan-pro{
+    position:relative;
+    background:#FFFFFF;
+    padding:32px 30px 28px;
+    color:var(--color-text-primary);
+    border:1.5px solid #2563EB;
+    box-shadow:0 20px 48px -24px rgba(37,99,235,0.28);
+    display:flex;flex-direction:column;
+    overflow:hidden;
+  }
+  .plan-pro::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg, #2563EB, #5B8CF5 50%, #2563EB);
+  }
+  .plan-pro .tier-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .plan-pro .tier-label{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#2563EB}
+  .plan-pro .badge-pop{
+    font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:#fff;background:#2563EB;
+    padding:4px 9px;
+  }
+  .plan-pro h3{font-family:'Fraunces',serif;font-size:22px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;letter-spacing:-0.01em}
+  .plan-pro .tagline{font-size:11.5px;color:var(--color-text-secondary);margin-bottom:20px;line-height:1.5}
+  .plan-pro .price{font-family:'Fraunces',serif;font-size:44px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;letter-spacing:-0.02em;display:flex;align-items:baseline;gap:6px}
+  .plan-pro .price span{font-family:'Inter',sans-serif;font-size:12px;font-weight:400;color:var(--color-text-secondary)}
+  .plan-pro .price-note{font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:22px}
+  .plan-pro .divider{height:1px;background:linear-gradient(90deg, rgba(37,99,235,0.3), rgba(37,99,235,0));margin-bottom:20px}
+  .plan-pro ul{list-style:none;font-size:12.5px;color:var(--color-text-primary);margin-bottom:24px;display:flex;flex-direction:column;gap:11px;flex:1}
+  .plan-pro ul li{display:flex;align-items:flex-start;gap:9px}
+  .plan-pro ul li .tick{
+    width:15px;height:15px;flex-shrink:0;margin-top:1px;
+    display:flex;align-items:center;justify-content:center;
+    background:#2563EB;
+  }
+  .plan-pro ul li .tick svg{width:9px;height:9px}
+  .plan-pro button{
+    width:100%;padding:13px;border:none;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.02em;
+    background:#2563EB;color:#fff;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .plan-pro button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px -6px rgba(37,99,235,0.45);background:#1D4FC4}
+  .plan-pro button:disabled{background:var(--color-background-secondary);color:var(--color-text-tertiary);cursor:default}
+  .plan-pro .fine-print{font-size:10px;color:var(--color-text-tertiary);text-align:center;margin-top:10px}
 </style>
 </head>
 <body>
@@ -32,16 +88,20 @@
   <div class="sidebar" id="sidebar-mount"></div>
   <div class="app-main">
     <button class="back" onclick="window.location.href='dashboard.html'">&larr; Back to dashboard</button>
+    <div class="ptitle">Upgrade</div>
+    <div class="psub">Full trust score access, unlimited platforms, and the clean Proof Packet sponsors expect.</div>
     <div id="banner"></div>
-    <div class="g2" id="plans">Loading…</div>
+    <div class="plans-wrap" id="plans">Loading…</div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
+<script src="icons.js?v=1"></script>
 <script src="nav.js?v=2"></script>
 <script>
 let profile, creator;
+const TICK = '<span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>';
 
 (async () => {
   profile = await requireRole('creator');
@@ -57,47 +117,82 @@ let profile, creator;
 
   const isPro = creator.plan === 'pro';
   document.getElementById('plans').innerHTML = `
-    <div class="plan">
+    <div class="plan-free">
+      <div class="tier-label">Standard</div>
       <h3>Free</h3>
-      <div class="price">$0<span>/mo</span></div>
+      <div class="price">$0<span> / mo</span></div>
       <ul>
-        <li>✓ 1 platform · Trust score</li>
-        <li>✓ Watermarked Proof Packet</li>
-        <li class="off">✗ Score history · PDF export</li>
-        <li class="off">✗ Public profile listing</li>
+        <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} 1 platform · Trust score</li>
+        <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Watermarked Proof Packet</li>
+        <li class="off">${svgIcon('x', {size:13, stroke:'#D5D8DE'})} Score history · clean PDF export</li>
+        <li class="off">${svgIcon('x', {size:13, stroke:'#D5D8DE'})} Public profile listing</li>
       </ul>
-      <button class="${isPro ? '' : 'btn-current'}" ${isPro ? '' : 'disabled'}>${isPro ? '' : 'Current plan'}</button>
+      <button disabled>${isPro ? 'Previous plan' : 'Current plan'}</button>
     </div>
-    <div class="plan featured">
-      <span class="badge-pop">Most popular</span>
-      <h3>Pro</h3>
-      <div class="price">$19.99<span>/mo</span></div>
+    <div class="plan-pro">
+      <div class="tier-row">
+        <div class="tier-label">Kitscore Pro</div>
+        <span class="badge-pop">Most popular</span>
+      </div>
+      <h3>Full Access</h3>
+      <div class="tagline">Everything a sponsor needs to trust you at first glance — verified, unwatermarked, and always current.</div>
+      <div class="price">$19.99<span>/ month</span></div>
+      <div class="price-note">Billed monthly · cancel anytime</div>
+      <div class="divider"></div>
       <ul>
-        <li>✓ Unlimited platforms</li>
-        <li>✓ Full PDF · Score history</li>
-        <li>✓ Public profile listing</li>
+        <li>${TICK} Unlimited connected platforms</li>
+        <li>${TICK} Full, unwatermarked Proof Packet PDF</li>
+        <li>${TICK} Complete score history &amp; trend tracking</li>
+        <li>${TICK} Public profile listing in the sponsor directory</li>
       </ul>
-      <button class="${isPro ? 'btn-current' : 'btn-primary'}" ${isPro ? 'disabled' : ''} onclick="${isPro ? '' : 'upgrade()'}">${isPro ? 'Current plan' : 'Upgrade to Pro'}</button>
+      <button id="upgradeBtn" ${isPro ? 'disabled' : ''}>${isPro ? 'Current plan' : 'Upgrade to Pro'}</button>
+      <div id="upgradeMsg"></div>
+      <div class="fine-print">${isPro ? 'You have full access.' : 'Secure checkout via Stripe'}</div>
     </div>
   `;
+
+  if (!isPro) {
+    document.getElementById('upgradeBtn').addEventListener('click', upgrade);
+  }
 })();
 
 async function upgrade() {
+  const btn = document.getElementById('upgradeBtn');
+  const msgEl = document.getElementById('upgradeMsg');
+  msgEl.innerHTML = '';
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Redirecting…';
   try {
     const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      msgEl.innerHTML = '<div class="msg error">You need to be signed in to upgrade. Try refreshing the page.</div>';
+      btn.disabled = false; btn.textContent = originalLabel; return;
+    }
     const res = await fetch('/api/create-checkout-session', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
       body: JSON.stringify({ product: 'creator_pro' }),
     });
     const text = await res.text();
     let json;
-    try { json = JSON.parse(text); } catch { alert('Server did not return JSON (status ' + res.status + '):\n' + text.slice(0, 300)); return; }
-    if (!res.ok) { alert('Could not start checkout: ' + (json.error || 'unknown error')); return; }
+    try { json = JSON.parse(text); } catch {
+      msgEl.innerHTML = `<div class="msg error">Server did not return a valid response (status ${res.status}).</div>`;
+      btn.disabled = false; btn.textContent = originalLabel; return;
+    }
+    if (!res.ok || !json.url) {
+      msgEl.innerHTML = `<div class="msg error">Could not start checkout: ${escapeHtml(json.error || 'unknown error')}</div>`;
+      btn.disabled = false; btn.textContent = originalLabel; return;
+    }
     window.location.href = json.url;
   } catch (err) {
-    alert('Checkout request failed: ' + err.message);
+    msgEl.innerHTML = `<div class="msg error">Checkout request failed: ${escapeHtml(err.message)}</div>`;
+    btn.disabled = false; btn.textContent = originalLabel;
   }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 </script>
 </body>

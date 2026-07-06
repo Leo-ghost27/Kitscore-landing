@@ -35,6 +35,7 @@
   .dispute-panel{padding:14px 22px 18px;border-bottom:1px solid var(--line);background:#FAFBFD}
   .dispute-panel textarea{width:100%;padding:10px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:13px;font-family:inherit;resize:vertical;min-height:56px;margin-bottom:10px}
   .dispute-reason-note{font-size:12.5px;color:#B42318;padding:0 22px 16px;line-height:1.5}
+  .dispute-reason-note svg{vertical-align:-2px}
   .resolve-btn{font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:0;border:1px solid var(--line);background:transparent;color:var(--ink-soft);cursor:pointer}
   .resolve-btn:hover{border-color:var(--blue);color:var(--blue)}
   .resolve-panel{padding:14px 22px 18px;border-bottom:1px solid var(--line);background:#FAFBFD}
@@ -63,6 +64,13 @@
   .sp-num{font-family:var(--font-mono);font-size:11px;color:var(--blue);font-weight:700;flex-shrink:0;width:20px}
   .sp-step p{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
   .sp-step b{color:var(--ink)}
+  .endorse-summary{padding:14px 22px 18px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink-soft);line-height:1.6}
+  .hw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-top:12px}
+  .hw-step{background:#fff;padding:16px}
+  .hw-num{font-family:var(--font-mono);font-size:10.5px;color:var(--blue);font-weight:600;margin-bottom:8px;letter-spacing:.03em}
+  .hw-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:5px}
+  .hw-text{font-size:11.5px;color:var(--ink-soft);line-height:1.5}
+  @media(max-width:560px){ .hw-grid{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -88,6 +96,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
+<script src="icons.js?v=1"></script>
 <script src="nav.js?v=2"></script>
 <script>
 let profile;
@@ -190,12 +199,12 @@ async function loadSponsorCampaigns() {
           ? `<button class="resolve-btn" onclick="toggleResubmit('${c.id}')">Edit &amp; resubmit</button>`
           : c.status === 'verified'
             ? (c.endorsement_submitted_at
-                ? `<span class="endorsed-tag"><i class="ti ti-circle-check" aria-hidden="true"></i> Endorsement submitted</span>`
+                ? `<span class="endorsed-tag">${svgIcon('circle-check', {size:12})} Endorsement submitted</span>`
                 : `<button class="endorse-btn" onclick="toggleEndorse('${c.id}')">Leave endorsement</button>`)
             : `<span class="waiting">${c.creator_confirmed ? 'Confirmed by creator' : 'Waiting on creator'}</span>`}
       </div>
     </div>
-    ${c.status === 'disputed' && c.dispute_reason ? `<div class="dispute-reason-note"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Creator's reason: ${escapeHtml(c.dispute_reason)}</div>` : ''}
+    ${c.status === 'disputed' && c.dispute_reason ? `<div class="dispute-reason-note">${svgIcon('alert-triangle', {size:12})} Creator's reason: ${escapeHtml(c.dispute_reason)}</div>` : ''}
     ${c.status === 'disputed' ? `
     <div id="resubmit-panel-${c.id}" class="resolve-panel" style="display:none">
       <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px">Fix the details and resubmit. This clears the dispute and puts it back in front of the creator to confirm.</div>
@@ -242,7 +251,7 @@ async function loadSponsorCampaigns() {
   `).join('') : `
     <div style="text-align:center;padding:56px 40px">
       <div style="width:52px;height:52px;background:var(--blue-soft);margin:0 auto 18px;display:flex;align-items:center;justify-content:center">
-        <i class="ti ti-briefcase" style="font-size:24px;color:var(--blue)"></i>
+        ${svgIcon('briefcase', {size:24, stroke:'var(--blue)'})}
       </div>
       <div style="font-size:15.5px;font-weight:600;color:var(--ink);margin-bottom:8px">No campaigns logged yet</div>
       <div style="font-size:13.5px;color:var(--ink-soft);max-width:400px;margin:0 auto;line-height:1.6">Use the form above to log your first one with a creator.</div>
@@ -356,7 +365,7 @@ async function loadCreatorCampaigns() {
       </div>
     </div>
     ${c.status === 'disputed' && c.dispute_reason
-      ? `<div class="dispute-reason-note"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Your reason: ${escapeHtml(c.dispute_reason)}</div>`
+      ? `<div class="dispute-reason-note">${svgIcon('alert-triangle', {size:12})} Your reason: ${escapeHtml(c.dispute_reason)}</div>`
       : ''}
     <div id="dispute-panel-${c.id}" class="dispute-panel" style="display:none">
       <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px">Tell us why this campaign is wrong or didn't happen. This only shows to you and the sponsor.</div>
@@ -370,11 +379,42 @@ async function loadCreatorCampaigns() {
   `).join('') : `
     <div style="text-align:center;padding:40px 20px">
       <div style="width:48px;height:48px;border-radius:0;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
-        <i class="ti ti-briefcase" style="font-size:22px;color:var(--blue)"></i>
+        ${svgIcon('briefcase', {size:22, stroke:'var(--blue)'})}
       </div>
       <div style="font-size:14px;font-weight:600;color:var(--color-text-primary);margin-bottom:6px">No campaigns yet</div>
       <div style="font-size:12.5px;color:var(--color-text-secondary);max-width:320px;margin:0 auto;line-height:1.6">When a sponsor logs a campaign with you, it'll show up here for you to confirm — that mutual confirmation is what builds your trust score.</div>
     </div>`;
+
+  renderHowItWorks();
+}
+
+function renderHowItWorks() {
+  if (document.getElementById('howItWorksCard')) return;
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.id = 'howItWorksCard';
+  el.style.marginBottom = '0';
+  el.innerHTML = `
+    <div class="sec" style="padding:14px 14px 0">How verification works</div>
+    <div class="hw-grid">
+      <div class="hw-step">
+        <div class="hw-num">01 / SPONSOR LOGS IT</div>
+        <div class="hw-title">Sponsor submits a campaign</div>
+        <div class="hw-text">A sponsor you've worked with records the campaign details on their end.</div>
+      </div>
+      <div class="hw-step">
+        <div class="hw-num">02 / YOU CONFIRM</div>
+        <div class="hw-title">You review and confirm</div>
+        <div class="hw-text">It appears here for you to confirm the details match what actually happened.</div>
+      </div>
+      <div class="hw-step">
+        <div class="hw-num">03 / SCORE UPDATES</div>
+        <div class="hw-title">Your trust score updates</div>
+        <div class="hw-text">Mutually confirmed campaigns are the strongest signal in your Kitscore.</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('list').insertAdjacentElement('afterend', el);
 }
 
 async function confirmCampaign(id) {
