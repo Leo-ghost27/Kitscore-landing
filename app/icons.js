@@ -14,6 +14,11 @@ const ICON_PATHS = {
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
   photo: '<rect x="3" y="3" width="18" height="18"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
   x: '<path d="M18 6L6 18"/><path d="M6 6l12 12"/>',
+  bolt: '<path d="M13 2L4.5 13.5H11L10 22 19.5 10.5H13z"/>',
+  users: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20a6.2 6.2 0 0 1 12 0"/><path d="M15.5 5.5a3.2 3.2 0 0 1 0 6.2"/><path d="M17.5 14a6.2 6.2 0 0 1 4 5.7"/>',
+  'layout-grid': '<rect x="3" y="3" width="7.5" height="7.5"/><rect x="13.5" y="3" width="7.5" height="7.5"/><rect x="3" y="13.5" width="7.5" height="7.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5"/>',
+  'arrows-exchange': '<path d="M4 12.5a8 8 0 0 1 14.8-4.2"/><path d="M18.8 3.5v5h-5"/><path d="M20 11.5a8 8 0 0 1-14.8 4.2"/><path d="M5.2 20.5v-5h5"/>',
+  'message-dots': '<path d="M4 18.5V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H8l-4 3.5z"/><path d="M8 10.2h.01"/><path d="M12 10.2h.01"/><path d="M16 10.2h.01"/>',
 };
 
 function svgIcon(name, opts) {

@@ -5,7 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Team — Kitscore</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
@@ -43,7 +42,6 @@
   .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
   .feature-tile{padding:22px;position:relative}
   .feature-tile-icon{width:34px;height:34px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
-  .feature-tile-icon i{font-size:17px;color:var(--blue)}
   .feature-tile-title{font-size:14px;font-weight:600;margin-bottom:7px;color:var(--ink)}
   .feature-tile-text{font-size:12.5px;color:var(--ink-soft);line-height:1.55}
   .team-lock-chip{position:absolute;top:18px;right:18px;font-family:var(--font-mono);font-size:9px;letter-spacing:.05em;color:var(--blue);border:1px solid var(--blue-line);padding:3px 8px;text-transform:uppercase;white-space:nowrap}
@@ -69,6 +67,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
+<script src="icons.js?v=1"></script>
 <script src="nav.js?v=2"></script>
 <script>
 let profile, myTeam;
@@ -93,15 +92,15 @@ async function load() {
       return;
     }
     const FEATURES = [
-      ['ti-file-text', 'Compliance-ready audit trail', 'Every evaluation, approval, and sign-off exported as a dated PDF/CSV log — ready to justify a sponsorship decision internally or to a client.'],
-      ['ti-bolt', 'Score-change alerts', "Get notified the moment an approved creator's trust score drops — a new red flag, a disclosure lapse — before it becomes your problem."],
-      ['ti-clock', 'Priority 24hr turnaround', 'Team evaluations move to the front of the queue — 24 hours instead of the standard 48.'],
-      ['ti-arrows-exchange', 'API access', 'Pipe evaluations directly into your own CRM or workflow tool instead of exporting manually.'],
-      ['ti-users', 'Roles &amp; permissions', 'Admin, Reviewer, and Viewer seats — junior team members propose, your Head of Partnerships approves.'],
-      ['ti-layout', 'White-labeled reports', "Your agency's logo on the PDF memo when you share it with a client — not Kitscore's."],
-      ['ti-file-text', 'Shared notes &amp; collaboration', "Leave internal notes on a creator's profile that every team member can see before signing off."],
-      ['ti-check', 'Internal approval workflow', 'Route evaluations through your own sign-off chain before a sponsorship is confirmed.'],
-      ['ti-user-circle', 'Dedicated account contact', 'A named point of contact for your account — not a shared support inbox.'],
+      ['file-check', 'Compliance-ready audit trail', 'Every evaluation, approval, and sign-off exported as a dated PDF/CSV log — ready to justify a sponsorship decision internally or to a client.'],
+      ['bolt', 'Score-change alerts', "Get notified the moment an approved creator's trust score drops — a new red flag, a disclosure lapse — before it becomes your problem."],
+      ['clock', 'Priority 24hr turnaround', 'Team evaluations move to the front of the queue — 24 hours instead of the standard 48.'],
+      ['arrows-exchange', 'API access', 'Pipe evaluations directly into your own CRM or workflow tool instead of exporting manually.'],
+      ['users', 'Roles &amp; permissions', 'Admin, Reviewer, and Viewer seats — junior team members propose, your Head of Partnerships approves.'],
+      ['layout-grid', 'White-labeled reports', "Your agency's logo on the PDF memo when you share it with a client — not Kitscore's."],
+      ['message-dots', 'Shared notes &amp; collaboration', "Leave internal notes on a creator's profile that every team member can see before signing off."],
+      ['circle-check', 'Internal approval workflow', 'Route evaluations through your own sign-off chain before a sponsorship is confirmed.'],
+      ['user-circle', 'Dedicated account contact', 'A named point of contact for your account — not a shared support inbox.'],
     ];
     document.getElementById('content').innerHTML = `
       <div class="team-hero">
@@ -121,7 +120,7 @@ async function load() {
       <div class="feature-grid">
         ${FEATURES.map(([icon, title, text]) => `
           <div class="card feature-tile">
-            <div class="feature-tile-icon"><i class="ti ${icon}" aria-hidden="true"></i></div>
+            <div class="feature-tile-icon">${svgIcon(icon, {size:18, stroke:'var(--blue)', strokeWidth:1.8})}</div>
             <div class="feature-tile-title">${title}</div>
             <div class="feature-tile-text">${text}</div>
             <span class="team-lock-chip">Team</span>
