@@ -10,21 +10,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
 <style>
-  .ptitle{font-size:16px;font-weight:500;margin-bottom:4px}
-  .psub{font-size:11px;color:var(--color-text-secondary);margin-bottom:14px}
-  .picker{display:flex;gap:10px;margin-bottom:12px;align-items:center}
-  .picker select{padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:12px;flex:1}
-  .picker button{padding:8px 14px;background:#2563EB;color:#fff;border:none;border-radius:0;font-size:12px;cursor:pointer}
-  .picker button:disabled{opacity:.5;cursor:default}
-  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-  .chip{display:flex;align-items:center;gap:6px;background:var(--color-background-info);color:#185FA5;font-size:11px;padding:4px 10px;border-radius:14px}
-  .chip button{background:none;border:none;color:#185FA5;cursor:pointer;font-size:12px;padding:0}
-  .cmp-table{display:grid;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden;overflow-x:auto}
-  .cmp-cell{padding:10px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
-  .cmp-head{font-weight:500;background:var(--color-background-secondary)}
-  .win{color:#3B6D11;font-weight:500}
-  .loading{font-size:12px;color:var(--color-text-secondary)}
-  .limit-note{font-size:11px;color:var(--color-text-tertiary);margin-bottom:10px}
+  body{background:var(--canvas)}
+  .app-main{max-width:1180px;padding:40px 48px 80px}
+  .ptitle{font-size:24px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
+  .psub{font-size:14px;color:var(--ink-soft);margin-bottom:18px}
+  .picker{display:flex;gap:12px;margin-bottom:14px;align-items:center}
+  .picker select{max-width:320px;padding:11px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:14px;flex:1;background:#fff;color:var(--ink)}
+  .picker button{padding:10px 18px;background:var(--blue);color:#fff;border:none;border-radius:0;font-size:13.5px;font-weight:600;cursor:pointer}
+  .picker button:disabled{background:#C9D2E6;cursor:default}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .chip{display:flex;align-items:center;gap:8px;background:var(--blue-soft);color:var(--blue);font-size:13px;font-weight:600;padding:6px 12px}
+  .chip button{background:none;border:none;color:var(--blue);cursor:pointer;font-size:13px;font-weight:700;padding:0}
+  .cmp-table{display:grid;background:#fff;border:1px solid var(--line);overflow:hidden;overflow-x:auto}
+  .cmp-cell{padding:14px 20px;border-bottom:1px solid var(--line);font-size:14px;font-family:var(--font-mono)}
+  .cmp-cell:first-child{font-family:var(--font-sans);color:var(--ink-soft);font-weight:500}
+  .cmp-head{font-weight:600;font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);background:#FAFBFD}
+  .cmp-head:first-child{font-family:var(--font-mono)}
+  .win{background:var(--green-soft);color:#137C52;font-weight:600}
+  .loading{font-size:13px;color:var(--ink-soft)}
+  .limit-note{font-size:12px;color:var(--ink-faint);margin-bottom:10px}
 </style>
 </head>
 <body>

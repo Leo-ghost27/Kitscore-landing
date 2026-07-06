@@ -10,55 +10,66 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
 <style>
-  .ptitle{font-size:16px;font-weight:500;margin-bottom:4px}
-  .psub{font-size:11px;color:var(--color-text-secondary);margin-bottom:16px}
-  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0;overflow:hidden;margin-bottom:16px}
-  .form-card{padding:14px}
-  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
-  .field{margin-bottom:10px}
-  .field label{display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
-  .field input,.field select{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
-  .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:0;font-size:12px;font-weight:500;cursor:pointer}
+  body{background:var(--canvas)}
+  .app-main{max-width:1180px;padding:40px 48px 80px}
+  .ptitle{font-size:24px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
+  .psub{font-size:14px;color:var(--ink-soft);margin-bottom:20px}
+  .card{background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,21,31,.03);border-radius:0;padding:0;overflow:hidden;margin-bottom:20px}
+  .form-card{padding:26px 28px}
+  .sec{font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:7px}
+  .field input,.field select{width:100%;padding:11px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:14px;background:#fff;color:var(--ink)}
+  .cta{padding:10px 18px;background:var(--blue);color:#fff;border:none;border-radius:0;font-size:13.5px;font-weight:600;cursor:pointer}
   .cta:disabled{opacity:.6;cursor:default}
-  .row-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+  .row-item{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--line);font-size:13px}
   .row-item:last-child{border-bottom:none}
-  .status-tag{font-size:10px;padding:3px 8px;border-radius:10px;text-transform:capitalize}
-  .st-verified{background:#E9F7EE;color:#1C7C3F}
-  .st-pending{background:#FEF6E7;color:#92600A}
+  .status-tag{font-size:11.5px;font-weight:600;padding:4px 10px;text-transform:capitalize}
+  .st-verified{background:var(--green-soft);color:#137C52}
+  .st-pending{background:var(--gold-soft);color:#8C6C3B}
   .st-disputed{background:#FDECEC;color:#B42318}
-  .confirm-btn{font-size:11px;padding:5px 10px;border-radius:0;border:none;background:#2563EB;color:#fff;cursor:pointer}
+  .confirm-btn{font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:0;border:none;background:var(--blue);color:#fff;cursor:pointer}
   .confirm-btn:disabled{opacity:.6;cursor:default}
-  .dispute-btn{font-size:11px;padding:5px 10px;border-radius:0;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+  .dispute-btn{font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:0;border:1px solid var(--line);background:transparent;color:var(--ink-soft);cursor:pointer}
   .dispute-btn:hover{border-color:#B42318;color:#B42318}
-  .dispute-panel{padding:10px 14px 14px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
-  .dispute-panel textarea{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:12px;font-family:inherit;resize:vertical;min-height:56px;margin-bottom:8px}
-  .dispute-reason-note{font-size:11px;color:#B42318;padding:0 14px 12px;line-height:1.5}
+  .dispute-panel{padding:14px 22px 18px;border-bottom:1px solid var(--line);background:#FAFBFD}
+  .dispute-panel textarea{width:100%;padding:10px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:13px;font-family:inherit;resize:vertical;min-height:56px;margin-bottom:10px}
+  .dispute-reason-note{font-size:12.5px;color:#B42318;padding:0 22px 16px;line-height:1.5}
   .dispute-reason-note svg{vertical-align:-2px}
-  .resolve-btn{font-size:11px;padding:5px 10px;border-radius:0;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
-  .resolve-btn:hover{border-color:#2563EB;color:#2563EB}
-  .resolve-panel{padding:10px 14px 14px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
-  .waiting{font-size:10px;color:var(--color-text-tertiary)}
-  .loading{font-size:12px;color:var(--color-text-secondary);padding:14px}
-  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
+  .resolve-btn{font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:0;border:1px solid var(--line);background:transparent;color:var(--ink-soft);cursor:pointer}
+  .resolve-btn:hover{border-color:var(--blue);color:var(--blue)}
+  .resolve-panel{padding:14px 22px 18px;border-bottom:1px solid var(--line);background:#FAFBFD}
+  .waiting{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint)}
+  .loading{font-size:13px;color:var(--ink-soft);padding:20px}
+  .msg{font-size:12.5px;margin-top:8px;padding:10px 12px;border-radius:0}
   .msg.error{background:#FDECEC;color:#B42318}
-  .msg.ok{background:#E9F7EE;color:#1C7C3F}
-  .endorse-btn{font-size:11px;padding:5px 10px;border-radius:0;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
-  .endorse-btn:hover{border-color:#2563EB;color:#2563EB}
-  .endorsed-tag{font-size:10px;color:#1C7C3F;display:flex;align-items:center;gap:4px}
-  .endorse-panel{padding:10px 14px 14px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
-  .endorse-panel textarea{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:12px;font-family:inherit;resize:vertical;min-height:56px;margin-bottom:8px}
+  .msg.ok{background:var(--green-soft);color:#137C52}
+  .endorse-btn{font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:0;border:1px solid var(--line);background:transparent;color:var(--ink-soft);cursor:pointer}
+  .endorse-btn:hover{border-color:var(--blue);color:var(--blue)}
+  .endorsed-tag{font-size:11.5px;font-weight:600;color:#137C52;display:flex;align-items:center;gap:4px}
+  .endorse-panel{padding:14px 22px 18px;border-bottom:1px solid var(--line);background:#FAFBFD}
+  .endorse-panel textarea{width:100%;padding:10px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:13px;font-family:inherit;resize:vertical;min-height:56px;margin-bottom:10px}
   .star-row{display:flex;align-items:center;gap:2px;margin-bottom:2px}
-  .star-row .star{font-size:16px;color:var(--color-border-tertiary);cursor:pointer;line-height:1}
-  .star-row .star.on{color:#F5A623}
-  .yn-row{display:flex;gap:8px;margin-bottom:10px}
-  .yn-btn{font-size:11px;padding:5px 12px;border-radius:0;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer}
-  .yn-btn.selected{background:#2563EB;color:#fff;border-color:#2563EB}
-  .endorse-summary{padding:10px 14px 14px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px;color:var(--color-text-secondary);line-height:1.6}
-  .hw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--color-border-tertiary);margin-top:12px}
+  .star-row .star{font-size:17px;color:var(--line);cursor:pointer;line-height:1}
+  .star-row .star.on{color:var(--gold)}
+  .yn-row{display:flex;gap:8px;margin-bottom:12px}
+  .yn-btn{font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:0;border:1px solid var(--line);background:transparent;color:var(--ink-soft);cursor:pointer}
+  .yn-btn.selected{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .campaigns-layout{display:grid;grid-template-columns:1fr 300px;gap:20px}
+  .campaigns-layout.single{display:block}
+  .side-panel{padding:22px;height:fit-content}
+  .side-panel-title{font-size:13.5px;font-weight:600;margin-bottom:14px;color:var(--ink)}
+  .sp-step{display:flex;gap:10px;margin-bottom:16px}
+  .sp-step:last-child{margin-bottom:0}
+  .sp-num{font-family:var(--font-mono);font-size:11px;color:var(--blue);font-weight:700;flex-shrink:0;width:20px}
+  .sp-step p{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+  .sp-step b{color:var(--ink)}
+  .endorse-summary{padding:14px 22px 18px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink-soft);line-height:1.6}
+  .hw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-top:12px}
   .hw-step{background:#fff;padding:16px}
-  .hw-num{font-family:monospace;font-size:10.5px;color:#2563EB;font-weight:600;margin-bottom:8px;letter-spacing:.03em}
-  .hw-title{font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:5px}
-  .hw-text{font-size:11.5px;color:var(--color-text-secondary);line-height:1.5}
+  .hw-num{font-family:var(--font-mono);font-size:10.5px;color:var(--blue);font-weight:600;margin-bottom:8px;letter-spacing:.03em}
+  .hw-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:5px}
+  .hw-text{font-size:11.5px;color:var(--ink-soft);line-height:1.5}
   @media(max-width:560px){ .hw-grid{grid-template-columns:1fr} }
 </style>
 </head>
@@ -68,8 +79,18 @@
   <div class="app-main">
     <div class="ptitle">Campaigns</div>
     <div class="psub" id="psub">Verification requires confirmation from both you and the sponsor.</div>
-    <div id="formArea"></div>
-    <div class="card" id="list"><div class="loading">Loading…</div></div>
+    <div class="campaigns-layout single" id="layout">
+      <div id="mainCol">
+        <div id="formArea"></div>
+        <div class="card" id="list"><div class="loading">Loading…</div></div>
+      </div>
+      <div class="card side-panel" id="sidePanel" style="display:none">
+        <div class="side-panel-title">Why log campaigns</div>
+        <div class="sp-step"><span class="sp-num">01</span><p><b>You log it</b> — record the campaign you ran with a creator.</p></div>
+        <div class="sp-step"><span class="sp-num">02</span><p><b>They confirm</b> — the creator verifies the details match.</p></div>
+        <div class="sp-step"><span class="sp-num">03</span><p><b>Record builds</b> — mutually confirmed campaigns strengthen every future evaluation you run on them.</p></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -87,6 +108,8 @@ async function load() {
 
   if (profile.role === 'sponsor') {
     document.getElementById('psub').textContent = 'Log a campaign you ran with a creator. It only counts toward their verified track record once the creator confirms it too.';
+    document.getElementById('layout').classList.remove('single');
+    document.getElementById('sidePanel').style.display = '';
     await renderSponsorForm();
     await loadSponsorCampaigns();
   } else {
@@ -226,12 +249,12 @@ async function loadSponsorCampaigns() {
       <div id="endorse-msg-${c.id}"></div>
     </div>` : ''}
   `).join('') : `
-    <div style="text-align:center;padding:32px 20px">
-      <div style="width:44px;height:44px;border-radius:12px;background:#F0F1F3;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
-        ${svgIcon('briefcase', {size:20, stroke:'var(--color-text-tertiary)'})}
+    <div style="text-align:center;padding:56px 40px">
+      <div style="width:52px;height:52px;background:var(--blue-soft);margin:0 auto 18px;display:flex;align-items:center;justify-content:center">
+        ${svgIcon('briefcase', {size:24, stroke:'var(--blue)'})}
       </div>
-      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">No campaigns logged yet</div>
-      <div style="font-size:12px;color:var(--color-text-secondary)">Use the form above to log your first one with a creator.</div>
+      <div style="font-size:15.5px;font-weight:600;color:var(--ink);margin-bottom:8px">No campaigns logged yet</div>
+      <div style="font-size:13.5px;color:var(--ink-soft);max-width:400px;margin:0 auto;line-height:1.6">Use the form above to log your first one with a creator.</div>
     </div>`;
 }
 
@@ -355,8 +378,8 @@ async function loadCreatorCampaigns() {
     </div>
   `).join('') : `
     <div style="text-align:center;padding:40px 20px">
-      <div style="width:48px;height:48px;border-radius:12px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
-        ${svgIcon('briefcase', {size:22, stroke:'#2563EB'})}
+      <div style="width:48px;height:48px;border-radius:0;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        ${svgIcon('briefcase', {size:22, stroke:'var(--blue)'})}
       </div>
       <div style="font-size:14px;font-weight:600;color:var(--color-text-primary);margin-bottom:6px">No campaigns yet</div>
       <div style="font-size:12.5px;color:var(--color-text-secondary);max-width:320px;margin:0 auto;line-height:1.6">When a sponsor logs a campaign with you, it'll show up here for you to confirm — that mutual confirmation is what builds your trust score.</div>

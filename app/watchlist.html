@@ -10,24 +10,31 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
 <style>
-  .ptitle{font-size:16px;font-weight:500;margin-bottom:4px}
-  .psub{font-size:11px;color:var(--color-text-secondary);margin-bottom:16px}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .ccard{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;cursor:pointer;position:relative}
-  .ccard:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
-  .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-  .avatar{width:32px;height:32px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:12px;color:#185FA5}
-  .name{font-size:12px;font-weight:500}
-  .niche{font-size:10px;color:var(--color-text-secondary)}
-  .pbar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-  .pbar-row span:first-child{font-size:10px;color:var(--color-text-secondary)}
-  .pbar-track{flex:1;height:6px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
-  .pbar-fill{height:100%;background:#2563EB;border-radius:3px}
-  .pbar-val{font-size:11px;font-weight:500;color:#2563EB}
-  .remove-btn{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;font-size:16px;color:#E0245E}
-  .loading{font-size:12px;color:var(--color-text-secondary);padding:20px;text-align:center}
-  .empty-tip{font-size:12px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-sm);padding:14px}
-  .empty-tip a{color:#2563EB;text-decoration:none;font-weight:500}
+  body{background:var(--canvas)}
+  .app-main{max-width:1180px;padding:40px 48px 80px}
+  .ptitle{font-size:24px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
+  .psub{font-size:14px;color:var(--ink-soft);margin-bottom:18px}
+  .card-list{background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,21,31,.03)}
+  .wl-row{display:flex;align-items:center;gap:16px;padding:16px 22px;border-top:1px solid var(--line);cursor:pointer}
+  .wl-row:first-child{border-top:none}
+  .wl-row:hover{background:#FAFBFD}
+  .avatar{width:38px;height:38px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--blue);flex-shrink:0}
+  .name{font-size:14px;font-weight:600;color:var(--ink)}
+  .niche{font-size:12px;color:var(--ink-faint)}
+  .info{flex:1}
+  .pbar-val{font-family:var(--font-mono);font-size:15px;font-weight:600;color:var(--ink)}
+  .wl-progress{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+  .wl-dots{display:flex;gap:5px}
+  .wl-dot{width:8px;height:8px;background:#D5DAE3}
+  .wl-dot.on{background:var(--blue)}
+  .wl-progress-text{font-size:12.5px;color:var(--ink-soft);font-family:var(--font-mono)}
+  .wl-link{font-size:12.5px;color:var(--blue);font-weight:600}
+  .wl-link:hover{text-decoration:underline}
+  .remove-btn{background:none;border:none;cursor:pointer;font-size:18px;color:var(--ink-faint);line-height:1}
+  .remove-btn:hover{color:#E0245E}
+  .loading{font-size:13px;color:var(--ink-soft);padding:40px;text-align:center}
+  .empty-tip{font-size:13.5px;color:var(--ink-soft);text-align:center;padding:56px 40px}
+  .empty-tip a{color:var(--blue);text-decoration:none;font-weight:600}
 </style>
 </head>
 <body>
@@ -52,7 +59,8 @@ async function load() {
   renderSidebar('sponsor', 'watchlist');
 
   const { data: sponsor } = await sb.from('sponsors').select('plan').eq('id', sponsorProfile.id).single();
-  if (sponsor?.plan === 'free') {
+  const plan = sponsor?.plan || 'free';
+  if (plan === 'free') {
     document.getElementById('psub').textContent = "Creators you've saved for quick access — Free plan allows up to 3.";
   }
 
@@ -62,19 +70,24 @@ async function load() {
     .order('created_at', { ascending: false });
   if (error) { document.getElementById('content').textContent = 'Could not load watchlist: ' + error.message; return; }
 
+  const progressHtml = plan === 'free' ? `
+    <div class="wl-progress">
+      <div class="wl-dots">${[0,1,2].map(i => `<div class="wl-dot ${i < saved.length ? 'on' : ''}"></div>`).join('')}</div>
+      <span class="wl-progress-text">${Math.min(saved.length, 3)} of 3 used on the Free plan</span>
+    </div>` : '';
+
   if (!saved || saved.length === 0) {
-    document.getElementById('content').innerHTML = `<div class="empty-tip">No saved creators yet. <a href="directory.html">Browse the directory →</a></div>`;
+    document.getElementById('content').innerHTML = `${progressHtml}<div class="card-list"><div class="empty-tip">No saved creators yet. <a href="directory.html">Browse the directory →</a></div></div>`;
     return;
   }
 
-  document.getElementById('content').innerHTML = `<div class="grid">${saved.map(s => { const c = s.creators; return `
-    <div class="ccard" onclick="window.location.href='evaluate.html?creator=${c.id}'">
-      <button class="remove-btn" onclick="event.stopPropagation(); remove('${c.id}')" title="Remove from watchlist"><i class="ti ti-heart-filled"></i></button>
-      <div class="head">
-        <div class="avatar">${escapeHtml(c.profiles.display_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
-        <div><div class="name">${escapeHtml(c.profiles.display_name)}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
-      </div>
-      <div class="pbar-row"><span>Trust score</span><div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div><span class="pbar-val">${c.trust_score}</span></div>
+  document.getElementById('content').innerHTML = `${progressHtml}<div class="card-list">${saved.map(s => { const c = s.creators; return `
+    <div class="wl-row">
+      <div class="avatar">${escapeHtml(c.profiles.display_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
+      <div class="info"><div class="name">${escapeHtml(c.profiles.display_name)}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
+      <div class="pbar-val">${c.trust_score}</div>
+      <span class="wl-link" onclick="window.location.href='evaluate.html?creator=${c.id}'" style="cursor:pointer">View →</span>
+      <button class="remove-btn" onclick="event.stopPropagation(); remove('${c.id}')" title="Remove from watchlist">×</button>
     </div>
   `; }).join('')}</div>`;
 }

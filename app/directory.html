@@ -13,34 +13,41 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
 <style>
-  body{padding:20px;max-width:880px;margin:0 auto}
-  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-  .signout{font-size:11px;color:#2563EB;cursor:pointer;background:none;border:none}
-  .controls{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
-  .controls select{padding:7px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:12px}
-  .filter-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-  .filter-pill{font-size:11px;padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:20px;background:none;cursor:pointer;color:var(--color-text-secondary)}
-  .filter-pill.active{background:#2563EB;color:#fff;border-color:#2563EB}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .ccard{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;cursor:pointer;transition:box-shadow .15s}
-  .ccard:hover{box-shadow:0 2px 8px rgba(0,0,0,.06)}
-  .ccard .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-  .avatar{width:32px;height:32px;border-radius:50%;background:var(--color-background-info);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:12px;color:#185FA5}
-  .name{font-size:12px;font-weight:500}
-  .founding-tag{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:600;color:#8A5B0A;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);border:0.5px solid #E8CE8F;padding:2px 7px 2px 4px;border-radius:9px;vertical-align:middle;margin-left:3px}
-  .niche{font-size:10px;color:var(--color-text-secondary)}
-  .pbar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-  .pbar-row span:first-child{font-size:10px;color:var(--color-text-secondary)}
-  .pbar-track{flex:1;height:6px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
-  .pbar-fill{height:100%;background:#2563EB;border-radius:3px}
-  .pbar-val{font-size:11px;font-weight:500;color:#2563EB}
-  .verified-badge{font-size:10px;background:#E9F7EE;color:#1C7C3F;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px;margin-top:6px}
-  .save-btn{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;font-size:16px;color:var(--color-text-tertiary);padding:2px}
+  body{padding:0;background:var(--canvas)}
+  .app-main{max-width:1180px;padding:40px 48px 80px}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px}
+  .ptitle{font-size:24px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+  .signout{font-size:13.5px;color:var(--blue);cursor:pointer;background:none;border:none;font-weight:500}
+  .controls{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+  .controls select{max-width:280px;padding:11px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:14px;background:#fff;color:var(--ink)}
+  .filter-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+  .filter-pill{font-size:13px;font-weight:600;padding:8px 16px;border:1px solid var(--line);border-radius:0;background:#fff;cursor:pointer;color:var(--ink-soft)}
+  .filter-pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .ccard{background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,21,31,.03);padding:22px;cursor:pointer;transition:box-shadow .15s;position:relative}
+  .ccard:hover{box-shadow:0 4px 14px rgba(16,21,31,.08)}
+  .ccard .head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .avatar{width:42px;height:42px;border-radius:0;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--blue);flex-shrink:0}
+  .name{font-size:14.5px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px}
+  .founding-tag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#8C6C3B;background:var(--gold-soft);padding:4px 10px;vertical-align:middle}
+  .founding-tag svg{width:11px;height:11px;fill:var(--gold)}
+  .niche{font-size:12px;color:var(--ink-faint);margin-top:3px}
+  .cc-score-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:var(--ink-soft);margin-bottom:6px}
+  .cc-score-row b{font-family:var(--font-mono);color:var(--ink);font-size:14px;font-weight:600}
+  .pbar-track{height:6px;background:#EEF1F7;margin-bottom:16px;overflow:hidden}
+  .pbar-fill{height:100%;background:var(--blue)}
+  .verified-badge{font-size:11px;background:var(--green-soft);color:#137C52;padding:4px 10px;display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-weight:600}
+  .save-btn{position:absolute;top:18px;right:18px;background:none;border:none;cursor:pointer;font-size:16px;color:var(--ink-faint);padding:2px;z-index:1}
   .save-btn.saved{color:#E0245E}
-  .log-campaign-btn{width:100%;margin-bottom:8px;padding:6px 8px;font-size:11px;font-weight:500;background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}
-  .log-campaign-btn:hover{background:var(--color-background-info);color:#185FA5;border-color:transparent}
-  .ccard{position:relative}
-  .loading{font-size:12px;color:var(--color-text-secondary);padding:20px;text-align:center}
+  .log-campaign-btn{width:100%;margin-bottom:16px;padding:10px;font-size:13px;font-weight:600;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+  .log-campaign-btn:hover{border-color:var(--blue);color:var(--blue)}
+  .card-reliability{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);padding-top:14px}
+  .card-rel-item{text-align:center}
+  .card-rel-val{font-family:var(--font-mono);font-size:16px;font-weight:600;color:var(--ink)}
+  .card-rel-val.gold{color:var(--gold)}
+  .card-rel-label{font-family:var(--font-mono);font-size:9.5px;color:var(--ink-faint);letter-spacing:.05em;margin-top:3px}
+  .card-rel-divider{display:none}
+  .loading{font-size:13px;color:var(--ink-soft);padding:40px;text-align:center}
 </style>
 </head>
 <body>
@@ -48,7 +55,8 @@
   <div class="sidebar" id="sidebar-mount"></div>
   <div class="app-main">
     <div class="topbar">
-      <div class="ptitle" style="font-size:16px;font-weight:500">Creator directory</div>
+      <div class="ptitle">Creator directory</div>
+      <button class="signout" onclick="signOut()">Sign out</button>
     </div>
     <div class="controls">
       <select id="sortSel" onchange="render()">
@@ -119,9 +127,10 @@ function render() {
       </button>
       <div class="head">
         <div class="avatar">${escapeHtml(c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
-        <div><div class="name">${escapeHtml(c.name)}${c.founding_cohort ? ` <span class="founding-tag" title="One of Kitscore's first 100 creators"><svg width="12" height="12" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg> Founding</span>` : ''}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
+        <div><div class="name">${escapeHtml(c.name)}${c.founding_cohort ? ` <span class="founding-tag" title="One of Kitscore's first 100 creators"><svg viewBox="0 0 24 24"><path d="M12 2l3 6 6 1-4.5 4.5L18 21l-6-3-6 3 1.5-6.5L3 9l6-1z"/></svg>Founding</span>` : ''}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
       </div>
-      <div class="pbar-row"><span>Trust score</span><div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div><span class="pbar-val">${c.trust_score}</span></div>
+      <div class="cc-score-row"><span>Trust score</span><b>${c.trust_score}</b></div>
+      <div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div>
       <button class="log-campaign-btn" onclick="event.stopPropagation(); window.location.href='campaigns.html?creator=${c.id}'"><i class="ti ti-flag"></i> Log campaign</button>
       <div class="card-reliability">
         <div class="card-rel-item">

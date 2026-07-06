@@ -86,7 +86,10 @@ const handler = async (req, res) => {
         if (product === 'report' || product === 'evaluation_unlock') {
           if (evaluationId) {
             await admin.from('evaluations')
-              .update({ unlocked: true }).eq('id', evaluationId);
+              .update({
+                unlocked: true,
+                stripe_payment_id: session.payment_intent || session.id,
+              }).eq('id', evaluationId);
 
             // Send receipt email to the sponsor
             const { data: evalRow } = await admin.from('evaluations')

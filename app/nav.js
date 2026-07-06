@@ -60,12 +60,12 @@ function renderSidebar(role, activeKey, displayName) {
   mount.innerHTML = `
     <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:8px;text-decoration:none;writing-mode:horizontal-tb;transform:none">
       <svg width="22" height="18" viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0" y="10" width="4" height="10" fill="#2563EB"/>
-        <rect x="6" y="5" width="4" height="15" fill="#2563EB"/>
-        <rect x="12" y="0" width="4" height="20" fill="#2563EB"/>
-        <circle cx="20" cy="3" r="3" fill="#2563EB"/>
+        <rect x="0" y="10" width="4" height="10" fill="#2F5FE0"/>
+        <rect x="6" y="5" width="4" height="15" fill="#2F5FE0"/>
+        <rect x="12" y="0" width="4" height="20" fill="#2F5FE0"/>
+        <circle cx="20" cy="3" r="3" fill="#2F5FE0"/>
       </svg>
-      <span style="font-size:16px;font-weight:700;letter-spacing:-0.01em;color:#10151F">Kit<span style="color:#2563EB">score</span></span>
+      <span style="font-size:16px;font-weight:700;letter-spacing:-0.01em;color:#10151F">Kit<span style="color:#2F5FE0">score</span></span>
     </a>
     <div class="nav-account">
       <div class="nav-account-avatar">${initial}</div>
