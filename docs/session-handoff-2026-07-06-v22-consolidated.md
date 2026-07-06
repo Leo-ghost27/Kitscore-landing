@@ -24,7 +24,7 @@
 
 **Homepage maturity review (vs. CreatorScore.io):** reading as a real, coherent SaaS now, not a landing page bolted onto a prototype. Real screenshots back up the "real product" claim; the Self-Reported / Evidence-Submitted / Live-Verified source-label system is a genuine differentiator, more rigorous than tools that hand over one opaque number; table stakes (Privacy/Terms/Cookie, methodology page, sample reports, FAQ, footer) all done properly. Where CreatorScore is ahead is scale/infrastructure, not trust-model rigor: 7 AI-scoring agents across 12 platforms vs. Kitscore's manual self-reported + mutual-confirmation model, a published API, a free-tools SEO funnel, an attribution/ROI product line, active content marketing. Kitscore's model trades scale for rigor — a legitimate differentiator if leaned into rather than competed against on breadth.
 
-## Session B — Sponsor dashboard, payments, confidence score (branch: `fix/webhook-payment-id-and-price`, **not yet merged to `main`**)
+## Session B — Sponsor dashboard, payments, confidence score (branch: `fix/webhook-payment-id-and-price`, **merged to `main` — see Update below**)
 
 **Sponsor dashboard redesign** — applied the new blue-theme sponsor mock across all 7 sponsor-facing pages (Directory, Campaigns, Watchlist, History, Compare, Team, Plans) plus the shared sidebar. Supabase queries/handlers untouched — purely visual. Iterated against the actual mock spec after an initial pass missed details (trust-score bar structure, Team-vs-Starter "most popular" placement, watchlist usage dots, campaigns side panel, Team upgrade feature grid) — now matches.
 
@@ -49,13 +49,23 @@
 - Implemented as `fn_recalc_confidence()`, same trigger-function pattern as the existing `trust_score` trigger (`fn_recalc_trust_score`). Triggered off both `score_components` and `campaigns`. One-time backfill run for all existing creators.
 - Sanity-checked post-backfill: a founding creator with trust_score 91 came back at 33% confidence — correctly surfacing strong campaign volume but unverified components, rather than falsely implying full confidence just because the score is high.
 
+## Update — post-merge follow-up (same day)
+
+By the time this doc was written, another session had **already merged this branch into `main`** (`fc28971`) and shipped good follow-up cleanup on top — fixed several Tabler-webfont icon classes I'd left in `directory.html`/`history.html`/`team.html` that rendered blank (class names not in the webfont build), fixed a real logic bug in the Free-plan history banner (copy claimed dedup to most-recent-per-creator, query didn't enforce it), and corrected some Team feature-grid icons/copy against the mock. All confirmed live on `main`.
+
+What was still missing from `main` at that point: my last few commits (the `evaluate.html` confidence-badge fix, this doc). Synced those over with a clean, conflict-free merge, pushed to `main` directly.
+
+**Follow-up icon sweep**, prompted by the fixes above: checked `watchlist.html`, `compare.html`, `pricing.html`, `campaigns.html` for the same blank-icon issue. No actual bug in any of the four — `watchlist`/`compare` never used icons at all, `pricing` never used icons, `campaigns` was already fully on `icons.js`/`svgIcon()` from the earlier merge. Removed the dead, unused Tabler CDN `<link>` from `watchlist.html`/`compare.html`/`campaigns.html` anyway (one less thing that can fail to load). **Left the CDN link in place on `admin-directory.html`, `dashboard.html`, `profile.html`, `evidence.html`, `evaluate.html`, `pricing-creator.html`, `auth.html`, `accept-invite.html`, `admin-signups.html`** — outside this session's scope (creator/admin side), some may have working webfont icons still in active use there. Worth a check by whoever owns that side.
+
+**History page empty-state bug, caught from a live screenshot:** the "No evaluations yet" message was rendering as bare text directly on the gray canvas — never got wrapped in `.card` like every other empty state (watchlist, campaigns, directory) was. Fixed.
+
 ## A pattern worth naming explicitly
 
 Both sessions independently hit **the identical bug shape** this window: a table with correct RLS policies but a missing base-level `SELECT` grant for `anon`/`authenticated` (`profiles` in Session A, `creators` in Session B) — `permission denied for table X`, not a silent empty-result RLS miss. Combined with v21's finding of a standing `ALTER DEFAULT PRIVILEGES` rule that auto-grants full access to new tables before RLS is written, this looks less like two isolated typos and more like a systemic gap in how tables get provisioned in this project. Worth a one-time audit of `information_schema.role_table_grants` across every table rather than waiting for each one to surface as a user-facing error.
 
 ## Needs your action
 
-1. **Merge `fix/webhook-payment-id-and-price` into `main`.** It's ready, it's already reconciled against main's parallel sidebar work, and the longer it sits the more chances for another round of drift.
+1. ~~Merge `fix/webhook-payment-id-and-price` into `main`~~ — **done**, live on `main` as of the Update section above.
 2. Founding creators + PDF unlock without the $19.99 Pro fee — you were reviewing this yourself; still open.
 3. Team tier feature-list mismatch (homepage vs. in-app upsell page list different features for the same $299/mo tier) — needs reconciling, not done by either session.
 4. Stripe live Price ID cross-check — the report/unlock price is fixed and verified working this session; still worth a full pass on Starter/Team/Creator Pro IDs if not recently checked.
