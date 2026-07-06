@@ -55,10 +55,11 @@
 
   /* ── Stats strip ── */
   .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
-  .stat-box{padding:12px 14px;background:#FAF8F3;border-radius:8px;text-align:left}
-  .stat-box .ml{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--color-text-secondary);font-weight:500;margin-bottom:6px}
-  .stat-box .ml svg{flex-shrink:0}
-  .stat-box .mv{font-size:21px;font-weight:700;color:var(--color-text-primary)}
+  .stat-box{position:relative;padding:14px 14px 16px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);text-align:left}
+  .stat-box .stat-icon{width:32px;height:32px;border-radius:var(--border-radius-md);background:#EEF2FF;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+  .stat-box .stat-delta{position:absolute;top:14px;right:14px;font-size:10.5px;font-weight:600;color:#1D9E75;background:#EAF7F0;padding:2px 7px;border-radius:20px}
+  .stat-box .mv{font-size:24px;font-weight:700;color:var(--color-text-primary);line-height:1;margin-bottom:4px}
+  .stat-box .ml{font-size:12px;color:var(--color-text-secondary);font-weight:500}
 
   /* ── Completeness bar ── */
   .progress-track{height:7px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin:8px 0 10px}
@@ -336,16 +337,20 @@ async function load() {
     <!-- ── Stat strip ── -->
     <div class="g3">
       <div class="stat-box">
-        <div class="ml">${svgIcon('file-check', {size:15, stroke:'#2563EB'})}Evidence items</div>
+        <div class="stat-icon">${svgIcon('file-check', {size:16, stroke:'#2563EB'})}</div>
         <div class="mv">${(evidence||[]).length||0}</div>
+        <div class="ml">Evidence items</div>
       </div>
       <div class="stat-box">
-        <div class="ml">${svgIcon('briefcase', {size:15, stroke:'var(--color-text-tertiary)'})}Campaigns</div>
+        <div class="stat-icon">${svgIcon('briefcase', {size:16, stroke:'#2563EB'})}</div>
         <div class="mv">${(campaigns||[]).length||0}</div>
+        <div class="ml">Campaigns</div>
       </div>
       <div class="stat-box">
-        <div class="ml">${svgIcon('user-circle', {size:15, stroke: pct>=100?'#1D9E75':'#E58C1A'})}Profile complete</div>
+        <div class="stat-icon">${svgIcon('user-circle', {size:16, stroke:'#2563EB'})}</div>
+        ${pct>0?`<div class="stat-delta">+${pct}%</div>`:''}
         <div class="mv">${pct}%</div>
+        <div class="ml">Profile complete</div>
       </div>
     </div>
 
