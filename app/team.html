@@ -92,15 +92,15 @@ async function load() {
       return;
     }
     const FEATURES = [
-      ['file-check', 'Compliance-ready audit trail', 'Every evaluation, approval, and sign-off exported as a dated PDF/CSV log — ready to justify a sponsorship decision internally or to a client.'],
+      ['file-text', 'Compliance-ready audit trail', 'Every evaluation, approval, and sign-off exported as a dated PDF/CSV log — ready to justify a sponsorship decision internally or to a client.'],
       ['bolt', 'Score-change alerts', "Get notified the moment an approved creator's trust score drops — a new red flag, a disclosure lapse — before it becomes your problem."],
       ['clock', 'Priority 24hr turnaround', 'Team evaluations move to the front of the queue — 24 hours instead of the standard 48.'],
-      ['arrows-exchange', 'API access', 'Pipe evaluations directly into your own CRM or workflow tool instead of exporting manually.'],
+      ['code', 'API access', 'Pipe evaluations directly into your own CRM or workflow tool instead of exporting manually.'],
       ['users', 'Roles &amp; permissions', 'Admin, Reviewer, and Viewer seats — junior team members propose, your Head of Partnerships approves.'],
-      ['layout-grid', 'White-labeled reports', "Your agency's logo on the PDF memo when you share it with a client — not Kitscore's."],
-      ['message-dots', 'Shared notes &amp; collaboration', "Leave internal notes on a creator's profile that every team member can see before signing off."],
-      ['circle-check', 'Internal approval workflow', 'Route evaluations through your own sign-off chain before a sponsorship is confirmed.'],
-      ['user-circle', 'Dedicated account contact', 'A named point of contact for your account — not a shared support inbox.'],
+      ['layout', 'White-labeled reports', "Your agency's logo on the PDF memo when you share it with a client — not Kitscore's."],
+      ['file', 'Shared notes &amp; collaboration', "Leave internal notes on a creator's profile that every team member can see before signing off."],
+      ['check', 'Internal approval workflow', 'Route evaluations through your own sign-off chain before a sponsorship is confirmed.'],
+      ['user-contact', 'Dedicated account contact', 'A named point of contact for your account — not a shared support inbox.'],
     ];
     document.getElementById('content').innerHTML = `
       <div class="team-hero">
@@ -120,7 +120,7 @@ async function load() {
       <div class="feature-grid">
         ${FEATURES.map(([icon, title, text]) => `
           <div class="card feature-tile">
-            <div class="feature-tile-icon">${svgIcon(icon, {size:18, stroke:'var(--blue)', strokeWidth:1.8})}</div>
+            <div class="feature-tile-icon">${svgIcon(icon, {size:17, stroke:'var(--blue)', strokeWidth:2})}</div>
             <div class="feature-tile-title">${title}</div>
             <div class="feature-tile-text">${text}</div>
             <span class="team-lock-chip">Team</span>
