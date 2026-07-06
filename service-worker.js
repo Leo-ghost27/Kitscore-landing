@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitscore-shell-v1';
+const CACHE_NAME = 'kitscore-shell-v2';
 
 const SHELL_URLS = [
   '/',
@@ -44,18 +44,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets (css/js/png/svg): try cache first for speed, refresh in background.
+  // Static assets (css/js/png/svg): network-first, so edits show up immediately.
+  // Only fall back to the cached copy if the network request genuinely fails
+  // (offline). This trades a little offline-speed for always-fresh app code.
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const network = fetch(event.request)
-        .then((response) => {
-          if (response && response.ok) {
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.ok) {
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
