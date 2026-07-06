@@ -36,55 +36,50 @@
   .plan-free ul li.off i{color:#D5D8DE}
   .plan-free button{width:100%;padding:11px;border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-tertiary);font-size:12px;font-weight:600;cursor:default;letter-spacing:.02em}
 
-  /* ── Pro plan: the posh, dark membership card ── */
+  /* ── Pro plan: posh, but white + blue ── */
   .plan-pro{
     position:relative;
-    background:radial-gradient(120% 140% at 15% 0%, #1B2740 0%, #0F1626 55%, #0A0F1C 100%);
+    background:#FFFFFF;
     padding:32px 30px 28px;
-    color:#F2F0E9;
-    box-shadow:0 24px 60px -20px rgba(10,15,28,0.55), 0 2px 0 rgba(212,175,90,0.15) inset;
-    border:1px solid #2B3550;
+    color:var(--color-text-primary);
+    border:1.5px solid #2563EB;
+    box-shadow:0 20px 48px -24px rgba(37,99,235,0.28);
     display:flex;flex-direction:column;
     overflow:hidden;
   }
   .plan-pro::before{
-    content:"";position:absolute;top:0;left:0;right:0;height:2px;
-    background:linear-gradient(90deg, transparent, #D9B36A 20%, #F3DCA0 50%, #D9B36A 80%, transparent);
-  }
-  .plan-pro::after{
-    content:"";position:absolute;top:-40%;right:-30%;width:70%;height:120%;
-    background:radial-gradient(circle, rgba(217,179,106,0.10) 0%, transparent 70%);
-    pointer-events:none;
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg, #2563EB, #5B8CF5 50%, #2563EB);
   }
   .plan-pro .tier-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-  .plan-pro .tier-label{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#D9B36A}
+  .plan-pro .tier-label{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#2563EB}
   .plan-pro .badge-pop{
     font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
-    color:#0F1626;background:linear-gradient(180deg,#F3DCA0,#D9B36A);
+    color:#fff;background:#2563EB;
     padding:4px 9px;
   }
-  .plan-pro h3{font-family:'Fraunces',serif;font-size:22px;font-weight:500;color:#F8F6EF;margin-bottom:4px;letter-spacing:-0.01em}
-  .plan-pro .tagline{font-size:11.5px;color:#8B96AE;margin-bottom:20px;line-height:1.5}
-  .plan-pro .price{font-family:'Fraunces',serif;font-size:44px;font-weight:500;color:#F8F6EF;margin-bottom:4px;letter-spacing:-0.02em;display:flex;align-items:baseline;gap:6px}
-  .plan-pro .price span{font-family:'Inter',sans-serif;font-size:12px;font-weight:400;color:#8B96AE}
-  .plan-pro .price-note{font-size:10.5px;color:#5F6C87;margin-bottom:22px}
-  .plan-pro .divider{height:1px;background:linear-gradient(90deg, rgba(217,179,106,0.35), rgba(217,179,106,0));margin-bottom:20px}
-  .plan-pro ul{list-style:none;font-size:12.5px;color:#C9D2E6;margin-bottom:24px;display:flex;flex-direction:column;gap:11px;flex:1}
+  .plan-pro h3{font-family:'Fraunces',serif;font-size:22px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;letter-spacing:-0.01em}
+  .plan-pro .tagline{font-size:11.5px;color:var(--color-text-secondary);margin-bottom:20px;line-height:1.5}
+  .plan-pro .price{font-family:'Fraunces',serif;font-size:44px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;letter-spacing:-0.02em;display:flex;align-items:baseline;gap:6px}
+  .plan-pro .price span{font-family:'Inter',sans-serif;font-size:12px;font-weight:400;color:var(--color-text-secondary)}
+  .plan-pro .price-note{font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:22px}
+  .plan-pro .divider{height:1px;background:linear-gradient(90deg, rgba(37,99,235,0.3), rgba(37,99,235,0));margin-bottom:20px}
+  .plan-pro ul{list-style:none;font-size:12.5px;color:var(--color-text-primary);margin-bottom:24px;display:flex;flex-direction:column;gap:11px;flex:1}
   .plan-pro ul li{display:flex;align-items:flex-start;gap:9px}
   .plan-pro ul li .tick{
     width:15px;height:15px;flex-shrink:0;margin-top:1px;
     display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(180deg,#F3DCA0,#D9B36A);
+    background:#2563EB;
   }
   .plan-pro ul li .tick svg{width:9px;height:9px}
   .plan-pro button{
     width:100%;padding:13px;border:none;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.02em;
-    background:linear-gradient(180deg,#F3DCA0,#D9B36A);color:#1A1508;
-    transition:transform .12s ease, box-shadow .12s ease;
+    background:#2563EB;color:#fff;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
   }
-  .plan-pro button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px -6px rgba(217,179,106,0.5)}
-  .plan-pro button:disabled{background:#1E2740;color:#5F6C87;cursor:default}
-  .plan-pro .fine-print{font-size:10px;color:#5F6C87;text-align:center;margin-top:10px}
+  .plan-pro button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 16px -6px rgba(37,99,235,0.45);background:#1D4FC4}
+  .plan-pro button:disabled{background:var(--color-background-secondary);color:var(--color-text-tertiary);cursor:default}
+  .plan-pro .fine-print{font-size:10px;color:var(--color-text-tertiary);text-align:center;margin-top:10px}
 </style>
 </head>
 <body>
@@ -104,7 +99,7 @@
 <script src="nav.js?v=2"></script>
 <script>
 let profile, creator;
-const TICK = '<span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#1A1508" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>';
+const TICK = '<span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>';
 
 (async () => {
   profile = await requireRole('creator');
