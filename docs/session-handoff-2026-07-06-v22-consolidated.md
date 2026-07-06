@@ -1,0 +1,74 @@
+# Kitscore — Session Handoff (July 6, 2026 — v22, consolidated)
+
+**Context:** two sessions worked on this repo in parallel this window again (same pattern flagged in v21) — one on the sponsor side (branch work, still unmerged), one on the creator/admin side (against `main` directly). This doc reconciles both into one handoff.
+
+## Session A — Creator dashboard, admin panel, data integrity, homepage (against `main`)
+
+**Creator dashboard**
+- Redesigned stat cards (Evidence Items / Campaigns / Profile Complete): cream background → white square cards with blue icon chips, matching the locked brand system.
+
+**Admin panel**
+- Fixed a critical bug: the `profiles` table was missing a `SELECT` grant for `anon`/`authenticated`, causing "permission denied for table profiles" on Evidence Review. RLS was already correct — table-level grant issue, now fixed. **(Same root-cause pattern as the sponsor-side `creators` table fix below — see note at the bottom.)**
+- Verified Jacqueline's and Halima's dashboards render correctly with no broken states (badge tier, header, niche/location nulls all handled gracefully).
+- Traced Jacqueline's trust score (20) to source: one `brand_safety` component at 100 value × 0.20 weight, derived from her actual questionnaire answers. Confirmed correct.
+- Identified a gap: admins have no visibility into a creator's actual brand-safety questionnaire answers, only the derived score. Flagged as a to-do.
+- Built a new **admin Directory** page: searchable table of all creators (name, email, plan, trust score, badge/founding status, signup date) with a **Flag for review** action, writing to a new `admin_flags` audit table (who/when/why) rather than silently changing account state.
+
+**Data integrity**
+- Discovered test/demo creator accounts (Eve H, Fiona, Fiona R) were visible in the real, sponsor-facing public directory and Compare tool alongside genuine creators.
+- Added an `is_test` flag to `creators`, excluded flagged accounts from the public directory and sponsor-side Compare. Confirmed real signups (Halima, Jacqueline) untouched.
+
+**Marketing homepage**
+- Seeded Eve H's test account with realistic (not maxed-out) demo data: trust score 86 across 5 weighted components, a mutually-verified campaign with a paired test sponsor, consistent brand-safety answers — safe for screenshots now that the account is hidden from the real directory.
+- Replaced homepage product screenshots with six real, current screens: **Creator view** (Dashboard, verified Campaign, Evidence upload) and **Sponsor view** (Directory, Campaign logging, Compare). No mockups.
+
+**Homepage maturity review (vs. CreatorScore.io):** reading as a real, coherent SaaS now, not a landing page bolted onto a prototype. Real screenshots back up the "real product" claim; the Self-Reported / Evidence-Submitted / Live-Verified source-label system is a genuine differentiator, more rigorous than tools that hand over one opaque number; table stakes (Privacy/Terms/Cookie, methodology page, sample reports, FAQ, footer) all done properly. Where CreatorScore is ahead is scale/infrastructure, not trust-model rigor: 7 AI-scoring agents across 12 platforms vs. Kitscore's manual self-reported + mutual-confirmation model, a published API, a free-tools SEO funnel, an attribution/ROI product line, active content marketing. Kitscore's model trades scale for rigor — a legitimate differentiator if leaned into rather than competed against on breadth.
+
+## Session B — Sponsor dashboard, payments, confidence score (branch: `fix/webhook-payment-id-and-price`, **not yet merged to `main`**)
+
+**Sponsor dashboard redesign** — applied the new blue-theme sponsor mock across all 7 sponsor-facing pages (Directory, Campaigns, Watchlist, History, Compare, Team, Plans) plus the shared sidebar. Supabase queries/handlers untouched — purely visual. Iterated against the actual mock spec after an initial pass missed details (trust-score bar structure, Team-vs-Starter "most popular" placement, watchlist usage dots, campaigns side panel, Team upgrade feature grid) — now matches.
+
+**Merged `main`'s parallel sidebar rewrite into this branch already** — `main` picked up an independent sidebar redesign (real account name, inline SVG icons, new `icons.js` helper) while this branch was in progress. Conflicts in `nav.js`/`shared.css`/`campaigns.html` hand-resolved: kept main's sidebar internals, recolored to the new mock's theme, kept the sponsor-page work. So this branch is currently **ahead of and compatible with** `main` as of this doc — merging it will not re-surface that conflict.
+
+**Stripe checkout was completely broken** — resolving to a deleted/invalid Price ID (`No such price`), blocking every $29 unlock and Starter/Team subscription. Root cause: `STRIPE_PRICE_REPORT` env var pointed at a stale ID; fixed directly in Vercel. The `evaluation_unlock` fallback (`STRIPE_PRICE_EVALUATION_UNLOCK || STRIPE_PRICE_REPORT`) needed no code change once that was corrected.
+
+**Webhook wasn't recording `stripe_payment_id` on unlock** — set `unlocked: true` on `checkout.session.completed` but never wrote which payment caused it. Now stores `session.payment_intent` (falls back to `session.id` for subscription-mode).
+
+**Found and reset 2 unlocked-with-no-payment evaluation rows** (Sophie Lau/Eve Co, Aaliya Ahmed/Bloom Beverages) — leftover test data, not an exploitable path, but real unpaid access sitting live. Reset to `unlocked: false`.
+
+**Sponsor-side watchlist RLS bug** — `permission denied for table creators`. Same shape as Session A's `profiles` fix: `authenticated`/`anon` had every grant except `SELECT` on `creators`. RLS was correct but never evaluated because Postgres rejected at the grant level first. Fixed.
+
+**`confidence` score — had no calculation logic. Resolved this session.**
+- The problem: `creators.confidence` was a raw stored column, never computed anywhere, despite copy promising it updates ("verify your first campaign to unlock a real confidence rating," "upload evidence... to raise your confidence rating").
+- A second, conflicting "confidence" was found in the process: `evaluate.html` had its own inline High/Moderate/Low badge derived purely from `trust_score` thresholds — conflating score *magnitude* with *certainty in the score*. Fixed to read the real stored value instead.
+- **Formula** (combines two established industry paradigms):
+  - *Component completeness* (data-completeness confidence, same family as credit-bureau "insufficient data" flags): weighted fraction of `score_components` with `status = 'done'`.
+  - *Volume factor* (sample-size confidence via Laplace/additive smoothing, same family as Wilson score / Reddit ranking / Amazon-eBay seller ratings): `verified_campaigns / (verified_campaigns + 3)` — asymptotic toward 1, never fully saturates on a thin history.
+  - `confidence = round(100 * (0.6 * completeness + 0.4 * volume_factor))`
+  - 60/40 toward completeness: fully-verified components with a short campaign history should still read as reasonably confident; the reverse (lots of campaigns, unverified components) shouldn't cap out high.
+- Implemented as `fn_recalc_confidence()`, same trigger-function pattern as the existing `trust_score` trigger (`fn_recalc_trust_score`). Triggered off both `score_components` and `campaigns`. One-time backfill run for all existing creators.
+- Sanity-checked post-backfill: a founding creator with trust_score 91 came back at 33% confidence — correctly surfacing strong campaign volume but unverified components, rather than falsely implying full confidence just because the score is high.
+
+## A pattern worth naming explicitly
+
+Both sessions independently hit **the identical bug shape** this window: a table with correct RLS policies but a missing base-level `SELECT` grant for `anon`/`authenticated` (`profiles` in Session A, `creators` in Session B) — `permission denied for table X`, not a silent empty-result RLS miss. Combined with v21's finding of a standing `ALTER DEFAULT PRIVILEGES` rule that auto-grants full access to new tables before RLS is written, this looks less like two isolated typos and more like a systemic gap in how tables get provisioned in this project. Worth a one-time audit of `information_schema.role_table_grants` across every table rather than waiting for each one to surface as a user-facing error.
+
+## Needs your action
+
+1. **Merge `fix/webhook-payment-id-and-price` into `main`.** It's ready, it's already reconciled against main's parallel sidebar work, and the longer it sits the more chances for another round of drift.
+2. Founding creators + PDF unlock without the $19.99 Pro fee — you were reviewing this yourself; still open.
+3. Team tier feature-list mismatch (homepage vs. in-app upsell page list different features for the same $299/mo tier) — needs reconciling, not done by either session.
+4. Stripe live Price ID cross-check — the report/unlock price is fixed and verified working this session; still worth a full pass on Starter/Team/Creator Pro IDs if not recently checked.
+5. Confidence formula weighting (0.6/0.4, k=3) is a reasonable default, not gospel — revisit once there's more real campaign volume to see how it feels in practice.
+6. Grant-audit mentioned above — one-time pass across all tables' `information_schema.role_table_grants`, given this is the second independent instance of the same bug shape.
+7. Unchanged from v21: leaked password protection (settled "no"), YouTube→footer (on hold), Anthropic billing (your call), RLS performance on 4 low-traffic tables (deliberately deferred).
+
+## Open / not built (either session)
+
+- Creators can browse the sponsor list (mirror of sponsor Directory, reversed) — not scoped.
+- Admin Directory "promote" action (role change, founding grant) — deferred, flag-only by instruction for now.
+- Flagged creators don't yet surface anywhere besides the admin Directory page itself.
+- Sponsor endorsement flow — still not integration-tested against a real live login.
+- XP/gamification system — discussed, not built.
+- Audience-demographics on-screen parity in `evaluate.html` (currently PDF-only) — easy follow-up if wanted.
+- Whether `evidence_status` (self-reported vs. platform-verified) should factor into the confidence formula's completeness term, since `status='done'` currently doesn't distinguish the two — worth a look if that distinction matters for confidence specifically.
