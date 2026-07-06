@@ -10,28 +10,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
 <style>
-  .ptitle{font-size:16px;font-weight:500;margin-bottom:4px}
-  .psub{font-size:11px;color:var(--color-text-secondary);margin-bottom:16px}
-  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
-  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
-  .field{margin-bottom:10px}
-  .field label{display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
-  .field input,.field textarea{width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
+  body{background:var(--canvas)}
+  .app-main{max-width:1180px;padding:40px 48px 80px}
+  .ptitle{font-size:24px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
+  .psub{font-size:14px;color:var(--ink-soft);margin-bottom:18px}
+  .card{background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,21,31,.03);padding:26px 28px;margin-bottom:20px}
+  .sec{font-family:var(--font-mono);font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:16px}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:7px}
+  .field input,.field textarea{width:100%;padding:11px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:14px;background:#fff;color:var(--ink)}
   .field textarea{height:70px;resize:vertical}
-  .cta{padding:8px 14px;background:#2563EB;color:#fff;border:none;border-radius:0;font-size:12px;font-weight:500;cursor:pointer}
+  .cta{padding:10px 18px;background:var(--blue);color:#fff;border:none;border-radius:0;font-size:13.5px;font-weight:600;cursor:pointer}
   .cta:disabled{opacity:.6}
-  .row-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+  .row-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}
   .row-item:last-child{border-bottom:none}
-  .role-badge{font-size:10px;background:var(--color-background-secondary);color:var(--color-text-secondary);padding:2px 8px;border-radius:10px}
-  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
+  .role-badge{font-size:11px;font-weight:600;background:#F1F3F7;color:var(--ink-soft);padding:3px 9px}
+  .msg{font-size:12px;margin-top:8px;padding:10px 12px;border-radius:0}
   .msg.error{background:#FDECEC;color:#B42318}
-  .msg.ok{background:#E9F7EE;color:#1C7C3F}
-  .upgrade-banner{font-size:11px;padding:12px 14px;background:var(--color-background-info);color:#185FA5;border-radius:var(--border-radius-md);margin-bottom:14px}
-  .upgrade-banner a{color:inherit;font-weight:500}
-  .note-row{padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .msg.ok{background:var(--green-soft);color:#137C52}
+  .upgrade-banner{background:var(--card,#fff);border:1px solid var(--blue);box-shadow:0 8px 24px -10px rgba(47,95,224,.2);padding:32px 36px;margin-bottom:22px;font-size:14px;color:var(--ink)}
+  .upgrade-banner a{color:var(--blue);font-weight:700;text-decoration:none}
+  .note-row{padding:12px 0;border-bottom:1px solid var(--line)}
   .note-row:last-child{border-bottom:none}
-  .note-meta{font-size:10px;color:var(--color-text-tertiary);margin-bottom:3px}
-  .loading{font-size:12px;color:var(--color-text-secondary)}
+  .note-meta{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-faint);margin-bottom:4px}
+  .loading{font-size:13px;color:var(--ink-soft)}
 </style>
 </head>
 <body>
@@ -64,11 +66,11 @@ async function load() {
     document.getElementById('content').innerHTML = `
       <div class="upgrade-banner">
         ${justPaid
-          ? '<strong>Payment received!</strong> Your plan is being activated — this can take up to 60 seconds. <button onclick="window.location.reload()" style="color:#185FA5;background:none;border:none;cursor:pointer;font-weight:600;text-decoration:underline">Refresh now →</button>'
+          ? '<strong>Payment received!</strong> Your plan is being activated — this can take up to 60 seconds. <button onclick="window.location.reload()" style="color:var(--blue);background:none;border:none;cursor:pointer;font-weight:600;text-decoration:underline">Refresh now →</button>'
           : '<i class="ti ti-users"></i> Team features require the Team plan. <a href="pricing.html">Upgrade to Team — $299/mo →</a>'
         }
       </div>
-      ${justPaid ? '<div style="font-size:11px;color:var(--color-text-secondary);margin-top:8px">If the page still shows this after refreshing, wait 30 seconds and try again.</div>' : ''}`;
+      ${justPaid ? '<div style="font-size:12px;color:var(--ink-soft);margin-top:8px">If the page still shows this after refreshing, wait 30 seconds and try again.</div>' : ''}`;
     return;
   }
 
@@ -112,7 +114,7 @@ async function renderTeam() {
   document.getElementById('content').innerHTML = `
     <div class="card">
       <div class="sec">${escapeHtml(myTeam.name)}</div>
-      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:10px">${(members||[]).length} member${(members||[]).length !== 1 ? 's' : ''}</div>
+      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">${(members||[]).length} member${(members||[]).length !== 1 ? 's' : ''}</div>
       ${(members||[]).map(m => `
         <div class="row-item">
           <span>${escapeHtml(m.sponsors?.profiles?.display_name || '—')}</span>
@@ -135,7 +137,7 @@ async function renderTeam() {
       ${pendingInvites.map(i => `
         <div class="row-item">
           <span>${escapeHtml(i.email)}</span>
-          <span style="font-size:10px;color:var(--color-text-tertiary)">Expires ${new Date(i.expires_at).toLocaleDateString('en-GB')}</span>
+          <span style="font-size:11px;font-family:var(--font-mono);color:var(--ink-faint)">Expires ${new Date(i.expires_at).toLocaleDateString('en-GB')}</span>
         </div>`).join('')}
     </div>` : ''}
 
@@ -152,7 +154,7 @@ async function renderTeam() {
         <div class="note-row">
           <div class="note-meta">${escapeHtml(n.sponsors?.profiles?.display_name || '—')} · ${new Date(n.created_at).toLocaleDateString('en-GB')}${n.creators ? ' · re: ' + escapeHtml(n.creators.profiles.display_name) : ''}</div>
           <div style="font-size:12px">${escapeHtml(n.content)}</div>
-        </div>`).join('') : '<div style="font-size:12px;color:var(--color-text-secondary)">No notes yet.</div>'}
+        </div>`).join('') : '<div style="font-size:13px;color:var(--ink-soft)">No notes yet.</div>'}
     </div>
   `;
 }
@@ -174,7 +176,7 @@ async function sendInvite() {
     resultEl.innerHTML = `
       <div class="msg ok">${escapeHtml(json.message)}</div>
       <div style="margin-top:6px;padding:8px;background:var(--color-background-secondary);border-radius:0;font-size:11px;word-break:break-all">
-        <strong>Invite link:</strong> <a href="${escapeHtml(json.acceptLink)}" style="color:#185FA5">${escapeHtml(json.acceptLink)}</a>
+        <strong>Invite link:</strong> <a href="${escapeHtml(json.acceptLink)}" style="color:var(--blue)">${escapeHtml(json.acceptLink)}</a>
       </div>`;
     document.getElementById('inviteEmail').value = '';
     setTimeout(() => renderTeam(), 1500);
