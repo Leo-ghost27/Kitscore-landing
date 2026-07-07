@@ -149,13 +149,17 @@ async function load() {
   const { data: items, error } = await sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at', { ascending: false });
   if (error) { document.getElementById('list').textContent = 'Could not load: ' + error.message; return; }
 
-  document.getElementById('list').innerHTML = (items && items.length) ? items.map(e => `
-    <div class="row-item">
-      <span>${escapeHtml(e.file_name)} <span style="color:var(--color-text-tertiary)">· ${escapeHtml(e.platform || '')} · ${escapeHtml(e.evidence_type || '')}</span></span>
-      <span style="display:flex;align-items:center;gap:10px">
-        <span class="status-tag st-${e.status}">${e.status.replace('_',' ')}</span>
-        ${e.storage_path ? `<button class="link-btn" onclick="download('${e.storage_path}')">Download</button>` : ''}
-      </span>
+  document.getElementById('list').innerHTML = (items && items.length) ? items.map((e,i) => `
+    <div class="row-item" style="flex-direction:column;align-items:stretch;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span>${escapeHtml(e.file_name)} <span style="color:var(--color-text-tertiary)">· ${escapeHtml(e.platform || '')} · ${escapeHtml(e.evidence_type || '')}</span></span>
+        <span style="display:flex;align-items:center;gap:10px">
+          <span class="status-tag st-${e.status}">${e.status.replace('_',' ')}</span>
+          <button class="link-btn" onclick="toggleChain(${i})">Chain of custody</button>
+          ${e.storage_path ? `<button class="link-btn" onclick="download('${e.storage_path}')">Download</button>` : ''}
+        </span>
+      </div>
+      <div id="chain-${i}" style="display:none">${renderChainOfCustody(e)}</div>
     </div>
   `).join('') : `
     <div style="text-align:center;padding:24px 16px">
@@ -196,6 +200,50 @@ async function download(path) {
   const { data, error } = await sb.storage.from('evidence-uploads').createSignedUrl(path, 60);
   if (error) { alert('Could not get file: ' + error.message); return; }
   window.open(data.signedUrl, '_blank');
+}
+
+function fmtDate(iso) {
+  if (!iso) return null;
+  return new Date(iso).toLocaleString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function toggleChain(i) {
+  const el = document.getElementById(`chain-${i}`);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function renderChainOfCustody(e) {
+  const uploadedStep = { title: `${e.evidence_type || 'Evidence'} uploaded`, sub: `self-reported · ${fmtDate(e.uploaded_at) || '—'}`, dot: 'done' };
+
+  let reviewStep;
+  if (e.status === 'live_verified') {
+    reviewStep = { title: 'Reviewed and verified', sub: `live verified${e.reviewed_at ? ' · ' + fmtDate(e.reviewed_at) : ' · date not recorded (reviewed before this feature shipped)'}`, dot: 'done' };
+  } else if (e.status === 'rejected') {
+    reviewStep = { title: 'Rejected on review', sub: `rejected${e.reviewed_at ? ' · ' + fmtDate(e.reviewed_at) : ''}`, dot: 'rejected' };
+  } else {
+    reviewStep = { title: 'Awaiting admin review', sub: 'pending · counts at a capped weight until reviewed', dot: 'pending' };
+  }
+
+  const oauthStep = { title: 'OAuth-verified analytics not connected', sub: 'would carry full weight — not available yet on Kitscore', dot: 'todo' };
+
+  const dotColor = { done:'#1D9E75', pending:'#E58C1A', rejected:'#B42318', todo:'#C9CDD6' };
+  const steps = [uploadedStep, reviewStep, oauthStep];
+
+  return `
+    <div style="padding:12px 4px 4px;border-top:1px dashed var(--color-border-tertiary, #E5E7EB)">
+      ${steps.map((s, idx) => `
+        <div style="display:flex;gap:10px;${idx < steps.length - 1 ? 'padding-bottom:14px' : ''}">
+          <div style="display:flex;flex-direction:column;align-items:center">
+            <div style="width:9px;height:9px;border-radius:50%;background:${dotColor[s.dot]};flex-shrink:0;margin-top:3px"></div>
+            ${idx < steps.length - 1 ? `<div style="width:1px;flex:1;background:var(--color-border-tertiary,#E5E7EB);margin-top:2px"></div>` : ''}
+          </div>
+          <div>
+            <div style="font-size:12.5px;font-weight:600;color:var(--color-text-primary)">${s.title}</div>
+            <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px">${s.sub}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
 }
 
 function showMsg(text, type) { document.getElementById('msg').innerHTML = `<div class="msg ${type}">${text}</div>`; }

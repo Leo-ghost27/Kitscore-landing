@@ -45,6 +45,8 @@
   .plan-free{background:var(--color-background-secondary);color:var(--color-text-secondary)}
   .plan-pro{background:#EEF2FF;color:#3730A3}
   .upgrade-link{font-size:11px;color:#2563EB;text-decoration:none;font-weight:500}
+  .why-score-link{display:inline-block;margin-top:8px;font-size:11.5px;color:#2563EB;text-decoration:none;font-weight:500;border:1px solid #D5DAE3;border-radius:4px;padding:5px 10px}
+  .why-score-link:hover{border-color:#2563EB;background:#F5F8FF}
   .encourage{font-size:12px;color:var(--color-text-secondary);line-height:1.5;margin:0}
   @media(max-width:620px){
     .score-hero{grid-template-columns:1fr}
@@ -310,6 +312,7 @@ async function load() {
       <div class="score-hero">
         <div class="score-left">
           ${renderRing(score)}
+          ${hasScore?`<a href="#score-breakdown" class="why-score-link" onclick="document.getElementById('score-breakdown').scrollIntoView({behavior:'smooth',block:'start'})">Why is my score ${score}?</a>`:''}
           <div class="score-badges">
             <div class="badge-pill">
               <span>${BADGE_SVG[creator.badge_tier]}</span>
@@ -415,7 +418,7 @@ async function load() {
     </div>`:''}
 
     <!-- ── Score breakdown ── -->
-    <div class="card">
+    <div class="card" id="score-breakdown">
       <div class="sec">Score breakdown <svg class="info-ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Each component is weighted. Live verified data scores highest."><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
       ${hasScore?ALL_COMPONENTS.map(ac=>{
         const comp=compMap[ac.key];
@@ -458,6 +461,20 @@ async function load() {
         </div>`;
       }).join('')}
     </div>`:''}
+
+    <!-- ── Rate calculator ── -->
+    <div class="card">
+      <div class="sec">What should I charge? <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— free tool, not part of your score</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <label style="font-size:11px;color:var(--color-text-secondary)">Followers</label>
+        <span id="rc-followers-val" style="font-family:var(--font-mono,monospace);font-size:13px;font-weight:600;color:var(--ink,#0F1B2E)">18,000</span>
+      </div>
+      <input id="rc-followers" type="range" min="500" max="500000" step="500" value="18000" style="width:100%" oninput="updateRateCalc(this.value)">
+      <div style="text-align:center;margin-top:14px">
+        <div id="rc-range" style="font-size:22px;font-weight:700;color:var(--blue,#2563EB)">£90–£180</div>
+        <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Suggested rate per sponsored post, based on typical engagement-tier benchmarks. Not personalized to your niche or engagement rate yet.</div>
+      </div>
+    </div>
 
     <!-- ── Brand safety ── -->
     <div class="card" id="brand-safety">
@@ -637,6 +654,14 @@ async function saveAudienceDemographics(){
   msgEl.style.color = '#1C7C3F';
   msgEl.textContent = 'Saved';
   setTimeout(() => { msgEl.textContent = ''; }, 2500);
+}
+
+function updateRateCalc(followers){
+  followers = Number(followers);
+  document.getElementById('rc-followers-val').textContent = followers.toLocaleString();
+  const min = Math.round(followers * 0.005 / 5) * 5;
+  const max = Math.round(followers * 0.01 / 5) * 5;
+  document.getElementById('rc-range').textContent = `£${min.toLocaleString()}–£${max.toLocaleString()}`;
 }
 
 async function signOut(){
