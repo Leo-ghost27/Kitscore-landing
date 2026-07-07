@@ -29,7 +29,9 @@
   .msg.ok{background:var(--green-soft);color:#137C52}
   .upgrade-banner{background:var(--card,#fff);border:1px solid var(--blue);box-shadow:0 8px 24px -10px rgba(47,95,224,.2);padding:32px 36px;margin-bottom:22px;font-size:14px;color:var(--ink)}
   .upgrade-banner a{color:var(--blue);font-weight:700;text-decoration:none}
-  .team-hero{background:#fff;border:1px solid var(--blue);box-shadow:0 8px 24px -10px rgba(47,95,224,.2);padding:40px;margin-bottom:22px;position:relative;overflow:hidden}
+  .team-hero{background:#fff;border:1px solid var(--blue);box-shadow:0 8px 24px -10px rgba(47,95,224,.2);padding:40px;margin-bottom:22px;position:relative;overflow:hidden;opacity:0;animation:heroIn .5s ease forwards}
+  @keyframes heroIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+  @media (prefers-reduced-motion: reduce){.team-hero{animation:none;opacity:1}}
   .team-hero-inner{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap}
   .team-hero-eyebrow{color:var(--blue);display:flex;align-items:center;gap:8px;margin-bottom:14px}
   .team-hero-eyebrow::before{content:"";width:6px;height:6px;background:var(--blue)}
@@ -39,12 +41,23 @@
   .team-hero-price .amt{font-family:var(--font-mono);font-size:38px;font-weight:600;color:var(--ink)}
   .team-hero-price .per{font-size:13px;color:var(--ink-faint);margin-bottom:14px}
   .team-hero-btn{background:var(--blue);color:#fff;border:none;font-size:13.5px;font-weight:700;padding:12px 22px;cursor:pointer;white-space:nowrap}
-  .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
-  .feature-tile{padding:22px;position:relative}
-  .feature-tile-icon{width:34px;height:34px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+  .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+  .feature-tile{padding:22px;position:relative;transition:transform .18s ease,box-shadow .18s ease;opacity:0;transform:translateY(10px);animation:tileIn .45s ease forwards}
+  .feature-tile:hover{transform:translateY(-3px);box-shadow:0 10px 24px -8px rgba(16,21,31,.12)}
+  .feature-tile-icon{width:34px;height:34px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;margin-bottom:14px;transition:transform .18s ease}
+  .feature-tile:hover .feature-tile-icon{transform:scale(1.08)}
   .feature-tile-title{font-size:14px;font-weight:600;margin-bottom:7px;color:var(--ink)}
   .feature-tile-text{font-size:12.5px;color:var(--ink-soft);line-height:1.55}
   .team-lock-chip{position:absolute;top:18px;right:18px;font-family:var(--font-mono);font-size:9px;letter-spacing:.05em;color:var(--blue);border:1px solid var(--blue-line);padding:3px 8px;text-transform:uppercase;white-space:nowrap}
+  .team-live-chip{position:absolute;top:18px;right:18px;font-family:var(--font-mono);font-size:9px;letter-spacing:.05em;color:#137C52;background:var(--green-soft);border:1px solid transparent;padding:3px 8px;text-transform:uppercase;white-space:nowrap;display:flex;align-items:center;gap:4px}
+  .team-live-chip::before{content:"";width:5px;height:5px;border-radius:50%;background:#1E9E6B;animation:pulseDot 1.8s ease-in-out infinite}
+  .feature-tile.is-live .feature-tile-icon{background:var(--green-soft)}
+  .feature-tile.is-live .feature-tile-icon i{color:#137C52 !important}
+  .feature-section-label{font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .feature-section-label.is-live{color:#137C52}
+  @keyframes tileIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.35}}
+  @media (prefers-reduced-motion: reduce){.feature-tile{animation:none;opacity:1;transform:none}.team-live-chip::before{animation:none}}
   .team-bottom-cta{display:flex;justify-content:space-between;align-items:center;background:var(--blue-soft);border:1px solid var(--blue-line);padding:20px 26px;flex-wrap:wrap;gap:14px}
   .team-bottom-cta p{font-size:13.5px;color:#1F3E9E}
   .team-bottom-cta p b{color:#122B7A}
@@ -110,17 +123,25 @@ async function load() {
         <div style="font-size:12px;color:var(--ink-soft);margin-top:8px">If the page still shows this after refreshing, wait 30 seconds and try again.</div>`;
       return;
     }
-    const FEATURES = [
-      ['file-text', 'Compliance-ready audit trail', 'Every evaluation, approval, and sign-off exported as a dated PDF/CSV log — ready to justify a sponsorship decision internally or to a client.'],
-      ['bolt', 'Score-change alerts', "Get notified the moment an approved creator's trust score drops — a new red flag, a disclosure lapse — before it becomes your problem."],
-      ['clock', 'Priority 24hr turnaround', 'Team evaluations move to the front of the queue — 24 hours instead of the standard 48.'],
-      ['code', 'API access', 'Pipe evaluations directly into your own CRM or workflow tool instead of exporting manually.'],
-      ['users', 'Roles &amp; permissions', 'Team members submit evaluations for review — only your account owner can approve, reject, or unlock a paid report.'],
+    const LIVE_FEATURES = [
+      ['users', 'Roles &amp; permissions', 'Team members submit evaluations for review and file spend requests — only your account owner can approve, reject, or unlock a paid report.'],
+      ['check', 'Internal approval workflow', "Route evaluations and $29 unlocks through your account owner's sign-off before a sponsorship — or a charge — is confirmed."],
       ['layout', 'White-labeled reports', "Your agency's logo on the PDF memo when you share it with a client — not Kitscore's."],
       ['file', 'Shared notes &amp; collaboration', "Leave internal notes on a creator's profile that every team member can see before signing off."],
-      ['check', 'Internal approval workflow', 'Route evaluations through your own sign-off chain before a sponsorship is confirmed.'],
+    ];
+    const COMING_FEATURES = [
+      ['file-text', 'Compliance-ready audit trail', 'Every evaluation, approval, and sign-off exported as a dated PDF/CSV log — ready to justify a sponsorship decision internally or to a client.'],
+      ['bolt', 'Score-change alerts', "Get notified the moment an approved creator's trust score drops — a new red flag, a disclosure lapse — before it becomes your problem."],
+      ['code', 'API access', 'Pipe evaluations directly into your own CRM or workflow tool instead of exporting manually.'],
       ['user-contact', 'Dedicated account contact', 'A named point of contact for your account — not a shared support inbox.'],
     ];
+    const tile = ([icon, title, text], i, live) => `
+      <div class="card feature-tile ${live ? 'is-live' : ''}" style="animation-delay:${i * 60}ms">
+        <div class="feature-tile-icon">${svgIcon(icon, {size:17, stroke: live ? '#137C52' : 'var(--blue)', strokeWidth:2})}</div>
+        <div class="feature-tile-title">${title}</div>
+        <div class="feature-tile-text">${text}</div>
+        <span class="${live ? 'team-live-chip' : 'team-lock-chip'}">${live ? 'Live' : 'Team'}</span>
+      </div>`;
     document.getElementById('content').innerHTML = `
       <div class="team-hero">
         <div class="team-hero-inner">
@@ -136,17 +157,16 @@ async function load() {
           </div>
         </div>
       </div>
+      <div class="feature-section-label is-live">Included now</div>
       <div class="feature-grid">
-        ${FEATURES.map(([icon, title, text]) => `
-          <div class="card feature-tile">
-            <div class="feature-tile-icon">${svgIcon(icon, {size:17, stroke:'var(--blue)', strokeWidth:2})}</div>
-            <div class="feature-tile-title">${title}</div>
-            <div class="feature-tile-text">${text}</div>
-            <span class="team-lock-chip">Team</span>
-          </div>`).join('')}
+        ${LIVE_FEATURES.map((f, i) => tile(f, i, true)).join('')}
+      </div>
+      <div class="feature-section-label">Shipping soon</div>
+      <div class="feature-grid">
+        ${COMING_FEATURES.map((f, i) => tile(f, i + LIVE_FEATURES.length, false)).join('')}
       </div>
       <div class="team-bottom-cta">
-        <p><b>150 evaluations/mo included.</b> Everything in Starter, plus every feature above.</p>
+        <p><b>150 evaluations/mo included.</b> Everything in Starter, plus roles, approvals, and white-labeling above — more shipping soon.</p>
         <button class="team-bottom-btn" onclick="window.location.href='pricing.html'">Upgrade to Team — $299/mo →</button>
       </div>`;
     return;
