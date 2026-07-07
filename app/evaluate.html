@@ -38,6 +38,10 @@
   .banner.ok{background:#E9F7EE;color:#1C7C3F}
   .banner.pending{background:#FEF6E7;color:#92600A}
   .approval-badge{font-size:10px;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
+  .field textarea{width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:0;font-size:12px;font-family:inherit;height:60px;resize:vertical;background:#fff;color:var(--color-text-primary)}
+  .msg{font-size:11px;margin-top:8px;padding:8px 10px;border-radius:0}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#1C7C3F}
 </style>
 </head>
 <body>
@@ -59,7 +63,7 @@ const VERDICT_STYLE = {
   caution: ['b-amber','ti-alert-triangle','Caution'],
   avoid: ['b-red','ti-circle-x','Avoid']
 };
-let creatorId, profile, currentEvalId, isTeamOwner = false;
+let creatorId, profile, currentEvalId, isTeamOwner = false, myTeamId = null;
 
 async function authedFetch(url, body) {
   const { data: { session } } = await sb.auth.getSession();
@@ -95,9 +99,18 @@ async function load() {
     sb.from('score_components').select('*').eq('creator_id', creatorId),
     sb.from('campaigns').select('status').eq('creator_id', creatorId).eq('status', 'verified'),
     sb.from('evaluations').select('*').eq('creator_id', creatorId).eq('sponsor_id', profile.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-    sb.from('team_members').select('role').eq('sponsor_id', profile.id).maybeSingle(),
+    sb.from('team_members').select('team_id, role').eq('sponsor_id', profile.id).maybeSingle(),
   ]);
   isTeamOwner = membership?.role === 'owner';
+  myTeamId = membership?.team_id || null;
+  let creatorNotes = [];
+  if (myTeamId) {
+    const { data: notesData } = await sb.from('team_notes')
+      .select('*, sponsors!author_id(profiles!inner(display_name))')
+      .eq('team_id', myTeamId).eq('creator_id', creatorId)
+      .order('created_at', { ascending: false });
+    creatorNotes = notesData || [];
+  }
 
   const verifiedCount = (campaigns || []).length;
   const compMap = {};
@@ -261,7 +274,29 @@ async function load() {
         <span class="approval-badge b-red"><i class="ti ti-circle-x"></i>Rejected${evalRow.approval_note ? ' — ' + evalRow.approval_note : ''}</span>
       `}
     </div>` : ''}
+    ${myTeamId ? `
+    <div class="card">
+      <div class="sec">Team notes on this creator</div>
+      <div class="field" style="margin-bottom:10px"><textarea id="creatorNoteText" placeholder="Leave a note for your team about this creator…"></textarea></div>
+      <button class="cta" onclick="postCreatorNote()">Post note</button>
+      <div id="creatorNoteMsg"></div>
+      <div style="margin-top:14px">
+        ${creatorNotes.length ? creatorNotes.map(n => `
+          <div style="padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+            <div style="font-size:10px;color:var(--color-text-tertiary);margin-bottom:3px">${escapeHtml(n.sponsors?.profiles?.display_name || '—')} · ${new Date(n.created_at).toLocaleDateString('en-GB')}</div>
+            <div style="font-size:12px">${escapeHtml(n.content)}</div>
+          </div>`).join('') : '<div style="font-size:12px;color:var(--color-text-secondary)">No notes yet on this creator.</div>'}
+      </div>
+    </div>` : ''}
   `;
+}
+
+async function postCreatorNote() {
+  const content = document.getElementById('creatorNoteText').value.trim();
+  if (!content) { document.getElementById('creatorNoteMsg').innerHTML = '<div class="msg error">Note cannot be empty.</div>'; return; }
+  const { error } = await sb.from('team_notes').insert({ team_id: myTeamId, author_id: profile.id, creator_id: creatorId, content });
+  if (error) { document.getElementById('creatorNoteMsg').innerHTML = `<div class="msg error">Could not post: ${escapeHtml(error.message)}</div>`; return; }
+  load();
 }
 
 // First visit: generate evaluation server-side then go straight to Stripe
