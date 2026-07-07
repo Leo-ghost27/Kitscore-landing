@@ -66,6 +66,38 @@
   .note-row:last-child{border-bottom:none}
   .note-meta{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-faint);margin-bottom:4px}
   .loading{font-size:13px;color:var(--ink-soft)}
+
+  /* Team workspace tab nav */
+  .ptitle-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+  .role-chip{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);border:1px solid var(--line);padding:6px 12px;background:#fff;white-space:nowrap}
+  .team-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px}
+  .team-tab{background:#fff;border:1px solid var(--line);padding:20px 14px;text-align:center;cursor:pointer;transition:border-color .15s ease,background .15s ease,transform .15s ease}
+  .team-tab:hover{border-color:var(--blue-line);transform:translateY(-1px)}
+  .team-tab.active{border-color:var(--blue);background:var(--blue-soft)}
+  .team-tab-icon{width:38px;height:38px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:#F1F3F7;color:var(--ink-soft)}
+  .team-tab.active .team-tab-icon{background:#fff;color:var(--blue)}
+  .team-tab-label{font-size:13.5px;font-weight:600;color:var(--ink)}
+  .team-tab.active .team-tab-label{color:var(--blue)}
+  .team-tab-badge{display:inline-block;margin-top:6px;font-family:var(--font-mono);font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);border:1px solid var(--line);padding:2px 7px}
+  .tab-panel{opacity:0;animation:panelIn .25s ease forwards}
+  @keyframes panelIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  @media (prefers-reduced-motion: reduce){.tab-panel{animation:none;opacity:1}}
+
+  /* Clients pipeline */
+  .clients-intro{font-size:13px;color:var(--ink-soft);margin-bottom:20px;line-height:1.6}
+  .clients-add-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:24px}
+  .usage-card{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  .usage-bar-track{flex:1;min-width:160px;height:6px;background:#EEF0F4;position:relative;overflow:hidden}
+  .usage-bar-fill{height:100%;background:var(--blue)}
+  .usage-num{font-family:var(--font-mono);font-size:13px;color:var(--ink);white-space:nowrap}
+  .pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .pipeline-col-head{font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid var(--line)}
+  .pipeline-col-head .n{color:var(--ink-faint)}
+  .pipeline-card{background:#fff;border:1px solid var(--line);padding:12px 14px;margin-bottom:10px}
+  .pipeline-card-name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px}
+  .pipeline-card-meta{font-size:11px;color:var(--ink-faint);margin-bottom:8px}
+  .pipeline-card select{width:100%;font-size:11px;padding:5px 6px;border:1px solid var(--line);background:#fff;color:var(--ink-soft)}
+  .pipeline-empty{font-size:12px;color:var(--ink-faint);padding:8px 0}
 </style>
 </head>
 <body>
@@ -83,7 +115,7 @@
 <script src="icons.js?v=1"></script>
 <script src="nav.js?v=2"></script>
 <script>
-let profile, myTeam, myRole;
+let profile, myTeam, myRole, teamData;
 
 async function load() {
   profile = await requireRole('sponsor');
@@ -216,38 +248,102 @@ async function saveBranding() {
   msgEl.innerHTML = `<div class="msg ok">Saved. Any PDF generated from now on will use this branding, including for already-unlocked evaluations.</div>`;
 }
 
-async function renderTeam() {
+let activeTab = 'roster';
+
+const TEAM_TABS = [
+  ['roster', 'users', 'Roster'],
+  ['notes', 'file-text', 'Notes'],
+  ['approvals', 'circle-check', 'Approvals'],
+  ['branding', 'photo', 'Branding'],
+  ['clients', 'briefcase', 'Clients'],
+];
+
+const CLIENT_STATUSES = [
+  ['prospecting', 'Prospecting'],
+  ['under_review', 'Under review'],
+  ['approved', 'Approved'],
+  ['active', 'Active'],
+];
+
+async function renderTeam(keepTab) {
+  if (!keepTab) activeTab = 'roster';
+
   const approvalsQuery = myRole === 'owner'
     ? sb.rpc('fn_team_pending_approvals', { p_team_id: myTeam.id })
     : sb.from('approval_requests').select('*').eq('team_id', myTeam.id).eq('requested_by', profile.id).order('created_at', { ascending: false }).limit(10);
 
-  const [{ data: members }, { data: notes }, { data: pendingInvites }, { data: approvals }] = await Promise.all([
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+
+  const [{ data: members }, { data: notes }, { data: pendingInvites }, { data: approvals }, { data: clients }, { count: evalCount }] = await Promise.all([
     sb.rpc('fn_team_roster', { p_team_id: myTeam.id }),
     sb.rpc('fn_team_notes', { p_team_id: myTeam.id }),
     sb.from('team_invites').select('email, expires_at').eq('team_id', myTeam.id).is('accepted_at', null).gt('expires_at', new Date().toISOString()),
     approvalsQuery,
+    sb.rpc('fn_team_clients', { p_team_id: myTeam.id }),
+    sb.from('evaluations').select('id', { count: 'exact', head: true }).eq('team_id', myTeam.id).gte('created_at', monthStart.toISOString()),
   ]);
 
+  teamData = {
+    members: members || [],
+    notes: notes || [],
+    pendingInvites: pendingInvites || [],
+    approvals: approvals || [],
+    clients: clients || [],
+    evalCount: evalCount || 0,
+  };
+
+  renderTeamShell();
+}
+
+function renderTeamShell() {
   document.getElementById('content').innerHTML = `
+    <div class="ptitle-row">
+      <div>
+        <div class="ptitle" style="margin-bottom:2px">${escapeHtml(myTeam.name)}</div>
+        <div class="psub" style="margin-bottom:0">Team workspace</div>
+      </div>
+      <span class="role-chip">${escapeHtml(myRole)}</span>
+    </div>
+    <div class="team-tabs">
+      ${TEAM_TABS.map(([key, icon, label]) => `
+        <div class="team-tab ${activeTab === key ? 'active' : ''}" onclick="switchTab('${key}')">
+          <div class="team-tab-icon">${svgIcon(icon, { size: 18 })}</div>
+          <div class="team-tab-label">${label}</div>
+          ${key === 'clients' && !teamData.clients.length ? '<span class="team-tab-badge">New</span>' : ''}
+        </div>`).join('')}
+    </div>
+    <div class="tab-panel" id="tab-panel">${renderTabPanel(activeTab)}</div>
+  `;
+}
+
+function switchTab(key) {
+  activeTab = key;
+  renderTeamShell();
+}
+
+function renderTabPanel(key) {
+  if (key === 'roster') return renderRosterTab();
+  if (key === 'notes') return renderNotesTab();
+  if (key === 'approvals') return renderApprovalsTab();
+  if (key === 'branding') return renderBrandingTab();
+  if (key === 'clients') return renderClientsTab();
+  return '';
+}
+
+function renderRosterTab() {
+  const { members, pendingInvites } = teamData;
+  return `
     <div class="card">
       <div class="sec">${escapeHtml(myTeam.name)}</div>
-      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">${(members||[]).length} member${(members||[]).length !== 1 ? 's' : ''}</div>
-      ${(members||[]).map(m => `
+      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">${members.length} member${members.length !== 1 ? 's' : ''}</div>
+      ${members.map(m => `
         <div class="row-item">
           <span>${escapeHtml(m.display_name || '—')}</span>
           <span class="role-badge">${m.role}</span>
         </div>`).join('')}
     </div>
-
-    ${myRole === 'owner' ? `
-    <div class="card">
-      <div class="sec">White-label branding</div>
-      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:14px">Shown on the PDF sponsor decision memo instead of Kitscore's own branding. Leave blank to use Kitscore branding.</div>
-      <div class="field"><label>Agency name</label><input id="brandName" placeholder="${escapeHtml(myTeam.name)}" value="${escapeHtml(myTeam.agency_display_name || '')}"></div>
-      <div class="field"><label>Logo URL</label><input id="brandLogo" placeholder="https://yourdomain.com/logo.png" value="${escapeHtml(myTeam.logo_url || '')}"></div>
-      <button class="cta" onclick="saveBranding()">Save branding</button>
-      <div id="brandMsg"></div>
-    </div>` : ''}
 
     <div class="card">
       <div class="sec">Invite a team member</div>
@@ -258,7 +354,7 @@ async function renderTeam() {
       <div id="inviteResult" style="margin-top:10px"></div>
     </div>
 
-    ${pendingInvites?.length ? `
+    ${pendingInvites.length ? `
     <div class="card">
       <div class="sec">Pending invites</div>
       ${pendingInvites.map(i => `
@@ -267,28 +363,12 @@ async function renderTeam() {
           <span style="font-size:11px;font-family:var(--font-mono);color:var(--ink-faint)">Expires ${new Date(i.expires_at).toLocaleDateString('en-GB')}</span>
         </div>`).join('')}
     </div>` : ''}
+  `;
+}
 
-    ${myRole === 'owner' ? `
-    <div class="card">
-      <div class="sec">Pending approvals</div>
-      ${(approvals||[]).length ? approvals.map(a => `
-        <div class="row-item" style="align-items:flex-start;flex-wrap:wrap">
-          <span>${escapeHtml(a.requester_display_name || 'A team member')} wants to spend $29 to unlock an evaluation${a.note ? ' — "' + escapeHtml(a.note) + '"' : ''}</span>
-          <span style="display:flex;gap:6px">
-            <button class="cta" style="background:#1C7C3F;padding:6px 12px" onclick="decideApproval('${a.request_id}','approved')">Approve</button>
-            <button class="cta" style="background:#B42318;padding:6px 12px" onclick="decideApproval('${a.request_id}','rejected')">Reject</button>
-          </span>
-        </div>`).join('') : '<div style="font-size:13px;color:var(--ink-soft)">Nothing waiting on you right now.</div>'}
-    </div>` : `
-    <div class="card">
-      <div class="sec">Your requests</div>
-      ${(approvals||[]).length ? approvals.map(a => `
-        <div class="row-item">
-          <span>Unlock request${a.note ? ' — ' + escapeHtml(a.note) : ''}</span>
-          <span class="role-badge" style="${a.status==='approved'?'background:#E9F7EE;color:#1C7C3F':a.status==='rejected'?'background:#FDECEC;color:#B42318':''}">${a.status}</span>
-        </div>`).join('') : '<div style="font-size:13px;color:var(--ink-soft)">No requests yet. When you try to unlock a report, it\'ll ask your team owner to approve.</div>'}
-    </div>`}
-
+function renderNotesTab() {
+  const { notes } = teamData;
+  return `
     <div class="card">
       <div class="sec">Add note</div>
       <div class="field"><textarea id="noteText" placeholder="Write a note for your team about a creator or campaign…"></textarea></div>
@@ -298,13 +378,123 @@ async function renderTeam() {
 
     <div class="card">
       <div class="sec">Team notes</div>
-      ${(notes||[]).length ? notes.map(n => `
+      ${notes.length ? notes.map(n => `
         <div class="note-row">
           <div class="note-meta">${escapeHtml(n.author_display_name || '—')} · ${new Date(n.created_at).toLocaleDateString('en-GB')}${n.creator_display_name ? ' · re: ' + escapeHtml(n.creator_display_name) : ''}</div>
           <div style="font-size:12px">${escapeHtml(n.content)}</div>
         </div>`).join('') : '<div style="font-size:13px;color:var(--ink-soft)">No notes yet.</div>'}
     </div>
   `;
+}
+
+function renderApprovalsTab() {
+  const { approvals } = teamData;
+  if (myRole === 'owner') {
+    return `
+    <div class="card">
+      <div class="sec">Pending approvals</div>
+      ${approvals.length ? approvals.map(a => `
+        <div class="row-item" style="align-items:flex-start;flex-wrap:wrap">
+          <span>${escapeHtml(a.requester_display_name || 'A team member')} wants to spend $29 to unlock an evaluation${a.note ? ' — "' + escapeHtml(a.note) + '"' : ''}</span>
+          <span style="display:flex;gap:6px">
+            <button class="cta" style="background:#1C7C3F;padding:6px 12px" onclick="decideApproval('${a.request_id}','approved')">Approve</button>
+            <button class="cta" style="background:#B42318;padding:6px 12px" onclick="decideApproval('${a.request_id}','rejected')">Reject</button>
+          </span>
+        </div>`).join('') : '<div style="font-size:13px;color:var(--ink-soft)">Nothing waiting on you right now.</div>'}
+    </div>`;
+  }
+  return `
+    <div class="card">
+      <div class="sec">Your requests</div>
+      ${approvals.length ? approvals.map(a => `
+        <div class="row-item">
+          <span>Unlock request${a.note ? ' — ' + escapeHtml(a.note) : ''}</span>
+          <span class="role-badge" style="${a.status === 'approved' ? 'background:#E9F7EE;color:#1C7C3F' : a.status === 'rejected' ? 'background:#FDECEC;color:#B42318' : ''}">${a.status}</span>
+        </div>`).join('') : '<div style="font-size:13px;color:var(--ink-soft)">No requests yet. When you try to unlock a report, it\'ll ask your team owner to approve.</div>'}
+    </div>`;
+}
+
+function renderBrandingTab() {
+  if (myRole !== 'owner') {
+    return `
+    <div class="card">
+      <div class="sec">White-label branding</div>
+      <div style="font-size:13px;color:var(--ink-soft)">Only your account owner can edit branding. Currently set to <strong>${escapeHtml(myTeam.agency_display_name || myTeam.name)}</strong>${myTeam.logo_url ? ' with a custom logo' : ''}.</div>
+    </div>`;
+  }
+  return `
+    <div class="card">
+      <div class="sec">White-label branding</div>
+      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:14px">Shown on the PDF sponsor decision memo instead of Kitscore's own branding. Leave blank to use Kitscore branding.</div>
+      <div class="field"><label>Agency name</label><input id="brandName" placeholder="${escapeHtml(myTeam.name)}" value="${escapeHtml(myTeam.agency_display_name || '')}"></div>
+      <div class="field"><label>Logo URL</label><input id="brandLogo" placeholder="https://yourdomain.com/logo.png" value="${escapeHtml(myTeam.logo_url || '')}"></div>
+      <button class="cta" onclick="saveBranding()">Save branding</button>
+      <div id="brandMsg"></div>
+    </div>`;
+}
+
+function renderClientsTab() {
+  const { clients, evalCount } = teamData;
+  const QUOTA = 150;
+  const pct = Math.min(100, Math.round((evalCount / QUOTA) * 100));
+
+  const cols = CLIENT_STATUSES.map(([statusKey, label]) => {
+    const inCol = clients.filter(c => c.status === statusKey);
+    return `
+      <div>
+        <div class="pipeline-col-head">${label} <span class="n">· ${inCol.length}</span></div>
+        ${inCol.length ? inCol.map(c => `
+          <div class="pipeline-card">
+            <div class="pipeline-card-name">${escapeHtml(c.name)}</div>
+            <div class="pipeline-card-meta">${c.evaluation_count} evaluation${c.evaluation_count !== 1 ? 's' : ''}</div>
+            <select onchange="moveClientStatus('${c.client_id}', this.value)">
+              ${CLIENT_STATUSES.map(([k, l]) => `<option value="${k}" ${k === statusKey ? 'selected' : ''}>${l}</option>`).join('')}
+            </select>
+          </div>`).join('') : '<div class="pipeline-empty">Nothing here yet.</div>'}
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="card">
+      <div class="sec">Clients</div>
+      <div class="clients-intro">Organize evaluations by client and track each one through a pipeline, from first conversation to an active sponsorship.</div>
+      <div class="clients-add-row">
+        <div class="field" style="flex:1;margin-bottom:0"><label>Client name</label><input id="clientName" placeholder="e.g. Bloom Beverages"></div>
+        <button class="cta" onclick="addClient()" style="flex-shrink:0">Add client</button>
+      </div>
+      <div id="clientMsg"></div>
+    </div>
+
+    <div class="card usage-card">
+      <div style="flex-shrink:0">
+        <div class="sec" style="margin-bottom:6px">Usage this month</div>
+        <div style="font-size:12px;color:var(--ink-faint)">Against your Team plan's monthly evaluation allowance</div>
+      </div>
+      <div class="usage-bar-track"><div class="usage-bar-fill" style="width:${pct}%"></div></div>
+      <div class="usage-num">${evalCount} / ${QUOTA}</div>
+    </div>
+
+    <div class="card">
+      <div class="sec">Pipeline</div>
+      ${clients.length ? `<div class="pipeline">${cols}</div>` : '<div style="font-size:13px;color:var(--ink-soft)">No clients yet — add your first one above to start organizing evaluations by client.</div>'}
+    </div>
+  `;
+}
+
+async function addClient() {
+  const nameEl = document.getElementById('clientName');
+  const name = nameEl.value.trim();
+  if (!name) { showMsg('clientMsg', 'Client name is required.', 'error'); return; }
+  const { error } = await sb.from('clients').insert({ team_id: myTeam.id, name, created_by: profile.id });
+  if (error) { showMsg('clientMsg', 'Could not add client: ' + error.message, 'error'); return; }
+  nameEl.value = '';
+  await renderTeam(true);
+}
+
+async function moveClientStatus(clientId, newStatus) {
+  const { error } = await sb.from('clients').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', clientId);
+  if (error) { alert('Could not update client: ' + error.message); return; }
+  await renderTeam(true);
 }
 
 async function sendInvite() {
