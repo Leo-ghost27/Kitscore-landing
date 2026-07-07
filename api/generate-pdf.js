@@ -102,6 +102,28 @@ module.exports = async (req, res) => {
       admin.from('audience_demographics').select('*').eq('creator_id', evalRow.creator_id).maybeSingle(),
     ]);
 
+    // ---------- WHITE-LABEL BRANDING (Team plan only) ----------
+    // evalRow.team_id is only set when the buyer was on a team at generation
+    // time (see generate-evaluation.js). Branding is opt-in: an owner who
+    // hasn't set a logo/name just gets the normal Kitscore-branded memo.
+    let teamBrand = null;
+    let logoBuffer = null;
+    if (evalRow.team_id) {
+      const { data: teamRow } = await admin.from('teams')
+        .select('name, logo_url, agency_display_name').eq('id', evalRow.team_id).maybeSingle();
+      if (teamRow && (teamRow.logo_url || teamRow.agency_display_name)) {
+        teamBrand = teamRow;
+        if (teamRow.logo_url) {
+          try {
+            const imgRes = await fetch(teamRow.logo_url);
+            if (imgRes.ok) logoBuffer = Buffer.from(await imgRes.arrayBuffer());
+          } catch (e) {
+            console.error('white-label logo fetch failed:', e.message);
+          }
+        }
+      }
+    }
+
     const compMap = {};
     (components || []).forEach(c => { compMap[c.component_key] = c; });
 
@@ -152,8 +174,19 @@ module.exports = async (req, res) => {
 
     // ---------- HEADER CARD ----------
     drawCard(150, (x, w, cy) => {
+      const eyebrowText = teamBrand
+        ? `SPONSOR DECISION MEMO · ${(teamBrand.agency_display_name || teamBrand.name).toUpperCase()}`
+        : 'SPONSOR DECISION MEMO · KITSCORE EVALUATION';
+      const eyebrowW = logoBuffer ? w - 90 : w;
       doc.font('Helvetica-Bold').fontSize(9).fillColor(ACCENT)
-        .text('SPONSOR DECISION MEMO · KITSCORE EVALUATION', x, cy, { characterSpacing: 0.8 });
+        .text(eyebrowText, x, cy, { characterSpacing: 0.8, width: eyebrowW });
+      if (logoBuffer) {
+        try {
+          doc.image(logoBuffer, x + w - 72, cy - 6, { fit: [72, 36], align: 'right' });
+        } catch (e) {
+          console.error('white-label logo render failed:', e.message);
+        }
+      }
       cy += 20;
       const creatorName = profileRow?.display_name || 'Creator';
       const niche = creator?.niche ? ` — ${creator.niche}` : '';

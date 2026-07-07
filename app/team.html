@@ -83,6 +83,25 @@ async function load() {
     // Check if they just came back from a successful checkout
     const params = new URLSearchParams(window.location.search);
     const justPaid = params.get('checkout') === 'success';
+
+    // Check for a pending invite addressed to this account. Without this,
+    // an invited member who is already logged in has no way to discover or
+    // accept their invite short of being handed the raw token link.
+    const { data: pendingInvites } = await sb.from('team_invites')
+      .select('token, teams(name)')
+      .is('accepted_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false });
+    const myInvite = pendingInvites && pendingInvites[0];
+    if (myInvite && !justPaid) {
+      document.getElementById('content').innerHTML = `
+        <div class="upgrade-banner">
+          <strong>You've been invited to join ${escapeHtml(myInvite.teams?.name || 'a team')} on Kitscore.</strong>
+          <div style="margin-top:8px"><a href="accept-invite.html?token=${encodeURIComponent(myInvite.token)}">Accept invite →</a></div>
+        </div>`;
+      return;
+    }
+
     if (justPaid) {
       document.getElementById('content').innerHTML = `
         <div class="upgrade-banner">
@@ -164,6 +183,19 @@ async function createTeam() {
   renderTeam();
 }
 
+async function saveBranding() {
+  const name = document.getElementById('brandName').value.trim();
+  const logo = document.getElementById('brandLogo').value.trim();
+  const msgEl = document.getElementById('brandMsg');
+  const { error } = await sb.from('teams')
+    .update({ agency_display_name: name || null, logo_url: logo || null })
+    .eq('id', myTeam.id);
+  if (error) { msgEl.innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`; return; }
+  myTeam.agency_display_name = name || null;
+  myTeam.logo_url = logo || null;
+  msgEl.innerHTML = `<div class="msg ok">Saved. Any PDF generated from now on will use this branding, including for already-unlocked evaluations.</div>`;
+}
+
 async function renderTeam() {
   const approvalsQuery = myRole === 'owner'
     ? sb.from('approval_requests').select('*, sponsors!requested_by(profiles!inner(display_name))').eq('team_id', myTeam.id).eq('status', 'pending').order('created_at', { ascending: true })
@@ -186,6 +218,16 @@ async function renderTeam() {
           <span class="role-badge">${m.role}</span>
         </div>`).join('')}
     </div>
+
+    ${myRole === 'owner' ? `
+    <div class="card">
+      <div class="sec">White-label branding</div>
+      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:14px">Shown on the PDF sponsor decision memo instead of Kitscore's own branding. Leave blank to use Kitscore branding.</div>
+      <div class="field"><label>Agency name</label><input id="brandName" placeholder="${escapeHtml(myTeam.name)}" value="${escapeHtml(myTeam.agency_display_name || '')}"></div>
+      <div class="field"><label>Logo URL</label><input id="brandLogo" placeholder="https://yourdomain.com/logo.png" value="${escapeHtml(myTeam.logo_url || '')}"></div>
+      <button class="cta" onclick="saveBranding()">Save branding</button>
+      <div id="brandMsg"></div>
+    </div>` : ''}
 
     <div class="card">
       <div class="sec">Invite a team member</div>
