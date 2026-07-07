@@ -70,7 +70,7 @@
 <script src="icons.js?v=1"></script>
 <script src="nav.js?v=2"></script>
 <script>
-let profile, myTeam;
+let profile, myTeam, myRole;
 
 async function load() {
   profile = await requireRole('sponsor');
@@ -136,6 +136,7 @@ async function load() {
   // Check if they're already in a team
   const { data: membership } = await sb.from('team_members').select('*, teams(*)').eq('sponsor_id', profile.id).maybeSingle();
   myTeam = membership?.teams || null;
+  myRole = membership?.role || null;
 
   if (!myTeam) { renderCreateTeam(); return; }
   renderTeam();
@@ -164,10 +165,15 @@ async function createTeam() {
 }
 
 async function renderTeam() {
-  const [{ data: members }, { data: notes }, { data: pendingInvites }] = await Promise.all([
+  const approvalsQuery = myRole === 'owner'
+    ? sb.from('approval_requests').select('*, sponsors!requested_by(profiles!inner(display_name))').eq('team_id', myTeam.id).eq('status', 'pending').order('created_at', { ascending: true })
+    : sb.from('approval_requests').select('*').eq('team_id', myTeam.id).eq('requested_by', profile.id).order('created_at', { ascending: false }).limit(10);
+
+  const [{ data: members }, { data: notes }, { data: pendingInvites }, { data: approvals }] = await Promise.all([
     sb.from('team_members').select('*, sponsors(*, profiles!inner(display_name))').eq('team_id', myTeam.id),
     sb.from('team_notes').select('*, sponsors!author_id(profiles!inner(display_name)), creators(profiles!inner(display_name))').eq('team_id', myTeam.id).order('created_at', { ascending: false }),
     sb.from('team_invites').select('email, expires_at').eq('team_id', myTeam.id).is('accepted_at', null).gt('expires_at', new Date().toISOString()),
+    approvalsQuery,
   ]);
 
   document.getElementById('content').innerHTML = `
@@ -199,6 +205,27 @@ async function renderTeam() {
           <span style="font-size:11px;font-family:var(--font-mono);color:var(--ink-faint)">Expires ${new Date(i.expires_at).toLocaleDateString('en-GB')}</span>
         </div>`).join('')}
     </div>` : ''}
+
+    ${myRole === 'owner' ? `
+    <div class="card">
+      <div class="sec">Pending approvals</div>
+      ${(approvals||[]).length ? approvals.map(a => `
+        <div class="row-item" style="align-items:flex-start;flex-wrap:wrap">
+          <span>${escapeHtml(a.sponsors?.profiles?.display_name || 'A team member')} wants to spend $29 to unlock an evaluation${a.note ? ' — "' + escapeHtml(a.note) + '"' : ''}</span>
+          <span style="display:flex;gap:6px">
+            <button class="cta" style="background:#1C7C3F;padding:6px 12px" onclick="decideApproval('${a.id}','approved')">Approve</button>
+            <button class="cta" style="background:#B42318;padding:6px 12px" onclick="decideApproval('${a.id}','rejected')">Reject</button>
+          </span>
+        </div>`).join('') : '<div style="font-size:13px;color:var(--ink-soft)">Nothing waiting on you right now.</div>'}
+    </div>` : `
+    <div class="card">
+      <div class="sec">Your requests</div>
+      ${(approvals||[]).length ? approvals.map(a => `
+        <div class="row-item">
+          <span>Unlock request${a.note ? ' — ' + escapeHtml(a.note) : ''}</span>
+          <span class="role-badge" style="${a.status==='approved'?'background:#E9F7EE;color:#1C7C3F':a.status==='rejected'?'background:#FDECEC;color:#B42318':''}">${a.status}</span>
+        </div>`).join('') : '<div style="font-size:13px;color:var(--ink-soft)">No requests yet. When you try to unlock a report, it\'ll ask your team owner to approve.</div>'}
+    </div>`}
 
     <div class="card">
       <div class="sec">Add note</div>
@@ -251,6 +278,22 @@ async function addNote() {
   if (error) { showMsg('noteMsg', 'Could not post: ' + error.message, 'error'); return; }
   document.getElementById('noteText').value = '';
   renderTeam();
+}
+
+async function decideApproval(requestId, decision) {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/review-approval', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ requestId, decision }),
+    });
+    const json = await res.json();
+    if (!res.ok) { alert(json.error || 'Could not update request.'); return; }
+    renderTeam();
+  } catch (err) {
+    alert('Request failed: ' + err.message);
+  }
 }
 
 function showMsg(id, text, type) { document.getElementById(id).innerHTML = `<div class="msg ${type}">${text}</div>`; }

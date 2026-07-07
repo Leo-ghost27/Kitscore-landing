@@ -59,7 +59,7 @@ const VERDICT_STYLE = {
   caution: ['b-amber','ti-alert-triangle','Caution'],
   avoid: ['b-red','ti-circle-x','Avoid']
 };
-let creatorId, profile, currentEvalId;
+let creatorId, profile, currentEvalId, isTeamOwner = false;
 
 async function authedFetch(url, body) {
   const { data: { session } } = await sb.auth.getSession();
@@ -89,13 +89,15 @@ async function load() {
     } else if (checkoutState === 'cancelled') {
       document.getElementById('banner').innerHTML = `<div class="banner pending">Checkout cancelled — no charge was made.</div>`;
     }
-  const [{ data: creator }, { data: profileRow }, { data: components }, { data: campaigns }, { data: evalRow }] = await Promise.all([
+  const [{ data: creator }, { data: profileRow }, { data: components }, { data: campaigns }, { data: evalRow }, { data: membership }] = await Promise.all([
     sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, reliability_score, repeat_sponsor_rate').eq('id', creatorId).single(),
     sb.from('profiles').select('display_name').eq('id', creatorId).single(),
     sb.from('score_components').select('*').eq('creator_id', creatorId),
     sb.from('campaigns').select('status').eq('creator_id', creatorId).eq('status', 'verified'),
     sb.from('evaluations').select('*').eq('creator_id', creatorId).eq('sponsor_id', profile.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    sb.from('team_members').select('role').eq('sponsor_id', profile.id).maybeSingle(),
   ]);
+  isTeamOwner = membership?.role === 'owner';
 
   const verifiedCount = (campaigns || []).length;
   const compMap = {};
@@ -244,11 +246,15 @@ async function load() {
         <button class="cta" onclick="submitForReview()">Submit for team review</button>
       ` : evalRow.approval_status === 'pending_approval' ? `
         <div class="approval-badge b-amber" style="margin-bottom:10px">Pending team approval</div>
+        ${isTeamOwner ? `
         <div style="display:flex;gap:8px;margin-bottom:8px">
           <button class="cta" style="background:#1C7C3F" onclick="reviewEvaluation('approved')">Approve</button>
           <button class="cta" style="background:#B42318" onclick="reviewEvaluation('rejected')">Reject</button>
         </div>
         <input id="approvalNote" style="width:100%;padding:8px;border:0.5px solid var(--color-border-tertiary);border-radius:0;font-size:12px" placeholder="Optional note…">
+        ` : `
+        <div style="font-size:12px;color:var(--color-text-secondary)">Waiting on your team owner to approve or reject this.</div>
+        `}
       ` : evalRow.approval_status === 'approved' ? `
         <span class="approval-badge b-green"><i class="ti ti-circle-check"></i>Approved${evalRow.approval_note ? ' — ' + evalRow.approval_note : ''}</span>
       ` : `
@@ -273,7 +279,19 @@ async function unlock() {
       evaluationId: currentEvalId,
       creatorId,
     });
-    if (!ok) { alert('Could not start checkout: ' + (json.error || 'unknown error')); return; }
+    if (!ok) {
+      if (json.requiresApproval) {
+        const { ok: reqOk, json: reqJson } = await authedFetch('/api/request-approval', {
+          actionType: 'evaluation_unlock',
+          targetType: 'evaluation',
+          targetId: currentEvalId,
+        });
+        alert(reqOk ? (reqJson.message || 'Sent to your team owner for approval.') : (reqJson.error || 'Could not send request.'));
+        return;
+      }
+      alert('Could not start checkout: ' + (json.error || 'unknown error'));
+      return;
+    }
     window.location.href = json.url;
   } catch (err) { alert('Checkout failed: ' + err.message); }
 }
@@ -285,6 +303,7 @@ async function submitForReview() {
 }
 
 async function reviewEvaluation(status) {
+  if (!isTeamOwner) { alert('Only your team owner can approve or reject.'); return; }
   const note = document.getElementById('approvalNote')?.value?.trim() || null;
   const { error } = await sb.from('evaluations').update({
     approval_status: status, approval_note: note, reviewed_at: new Date().toISOString(),

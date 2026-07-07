@@ -29,6 +29,13 @@ module.exports = async (req, res) => {
     const verdict = deriveVerdict(data.trustScore, data.brandSafety, data.verifiedCount);
     const { summary } = fallbackSummary(verdict);
 
+    // If this sponsor is on a team, tag the evaluation with the team so the
+    // internal review workflow (draft -> pending_approval -> approved/rejected)
+    // in evaluate.html actually activates. Previously this was never set,
+    // so that entire UI was dead code for every team.
+    const { data: membership } = await admin.from('team_members')
+      .select('team_id').eq('sponsor_id', sponsor.id).maybeSingle();
+
     const { data: evalRow, error: insertErr } = await admin.from('evaluations').insert({
       sponsor_id: sponsor.id,
       creator_id: creatorId,
@@ -36,6 +43,8 @@ module.exports = async (req, res) => {
       recommendation_verdict: verdict,
       recommendation_summary: summary,
       ai_summary: null,
+      team_id: membership?.team_id || null,
+      approval_status: membership?.team_id ? 'draft' : null,
     }).select().single();
 
     if (insertErr) return res.status(500).json({ error: insertErr.message });

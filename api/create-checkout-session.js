@@ -45,6 +45,23 @@ module.exports = async (req, res) => {
       const { data: evalRow } = await admin.from('evaluations').select('id')
         .eq('id', evaluationId).eq('sponsor_id', buyer.id).maybeSingle();
       if (!evalRow) return res.status(404).json({ error: 'Evaluation not found for this sponsor' });
+
+      // Team members (not the team owner) need owner sign-off before spending
+      // team money on a paid unlock. Owners are unrestricted.
+      const { data: membership } = await admin.from('team_members')
+        .select('role').eq('sponsor_id', buyer.id).maybeSingle();
+      if (membership && membership.role === 'member') {
+        const { data: approved } = await admin.from('approval_requests')
+          .select('id').eq('requested_by', buyer.id).eq('action_type', 'evaluation_unlock')
+          .eq('target_type', 'evaluation').eq('target_id', evaluationId).eq('status', 'approved')
+          .maybeSingle();
+        if (!approved) {
+          return res.status(403).json({
+            error: 'This unlock needs your team owner\'s approval first.',
+            requiresApproval: true,
+          });
+        }
+      }
     }
 
     const origin = req.headers.origin || `https://${req.headers.host}`;
