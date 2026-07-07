@@ -93,10 +93,12 @@
   .pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
   .pipeline-col-head{font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid var(--line)}
   .pipeline-col-head .n{color:var(--ink-faint)}
-  .pipeline-card{background:#fff;border:1px solid var(--line);padding:12px 14px;margin-bottom:10px}
-  .pipeline-card-name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px}
+  .pipeline-card{background:#fff;border:1px solid var(--line);padding:12px 14px;margin-bottom:10px;position:relative}
+  .pipeline-card-name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px;padding-right:18px}
   .pipeline-card-meta{font-size:11px;color:var(--ink-faint);margin-bottom:8px}
   .pipeline-card select{width:100%;font-size:11px;padding:5px 6px;border:1px solid var(--line);background:#fff;color:var(--ink-soft)}
+  .pipeline-card-del{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--ink-faint);font-size:15px;line-height:1;cursor:pointer;padding:2px 4px}
+  .pipeline-card-del:hover{color:#B42318}
   .pipeline-empty{font-size:12px;color:var(--ink-faint);padding:8px 0}
 </style>
 </head>
@@ -445,6 +447,7 @@ function renderClientsTab() {
         <div class="pipeline-col-head">${label} <span class="n">· ${inCol.length}</span></div>
         ${inCol.length ? inCol.map(c => `
           <div class="pipeline-card">
+            ${myRole === 'owner' ? `<button class="pipeline-card-del" title="Delete client" onclick="deleteClient('${c.client_id}', '${escapeHtml(c.name).replace(/'/g, "\\'")}')">${svgIcon('x', { size: 13 })}</button>` : ''}
             <div class="pipeline-card-name">${escapeHtml(c.name)}</div>
             <div class="pipeline-card-meta">${c.evaluation_count} evaluation${c.evaluation_count !== 1 ? 's' : ''}</div>
             <select onchange="moveClientStatus('${c.client_id}', this.value)">
@@ -494,6 +497,17 @@ async function addClient() {
 async function moveClientStatus(clientId, newStatus) {
   const { error } = await sb.from('clients').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', clientId);
   if (error) { alert('Could not update client: ' + error.message); return; }
+  await renderTeam(true);
+}
+
+async function deleteClient(clientId, name) {
+  const evalCount = (teamData.clients.find(c => c.client_id === clientId) || {}).evaluation_count || 0;
+  const warning = evalCount
+    ? `Delete "${name}"? ${evalCount} evaluation${evalCount !== 1 ? 's' : ''} tagged to this client will be unassigned, not deleted — you can find them again in History. This can't be undone.`
+    : `Delete "${name}"? This can't be undone.`;
+  if (!confirm(warning)) return;
+  const { error } = await sb.from('clients').delete().eq('id', clientId);
+  if (error) { alert('Could not delete client: ' + error.message); return; }
   await renderTeam(true);
 }
 
