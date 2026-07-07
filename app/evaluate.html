@@ -63,7 +63,7 @@ const VERDICT_STYLE = {
   caution: ['b-amber','ti-alert-triangle','Caution'],
   avoid: ['b-red','ti-circle-x','Avoid']
 };
-let creatorId, profile, currentEvalId, isTeamOwner = false, myTeamId = null;
+let creatorId, profile, currentEvalId, isTeamOwner = false, myTeamId = null, teamClients = [];
 
 async function authedFetch(url, body) {
   const { data: { session } } = await sb.auth.getSession();
@@ -110,6 +110,8 @@ async function load() {
       .eq('team_id', myTeamId).eq('creator_id', creatorId)
       .order('created_at', { ascending: false });
     creatorNotes = notesData || [];
+    const { data: clientsData } = await sb.rpc('fn_team_clients', { p_team_id: myTeamId });
+    teamClients = clientsData || [];
   }
 
   const verifiedCount = (campaigns || []).length;
@@ -253,6 +255,17 @@ async function load() {
     </div>
     ${evalRow.team_id ? `
     <div class="card">
+      <div class="sec">Client</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:10px">Organize this evaluation under one of your team's clients.</div>
+      <select id="clientSelect" onchange="assignClient(this.value)" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:0;font-size:12px;background:#fff;color:var(--color-text-primary)">
+        <option value="">— No client —</option>
+        ${teamClients.map(c => `<option value="${c.client_id}" ${evalRow.client_id === c.client_id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
+      </select>
+      ${!teamClients.length ? `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">No clients yet — add one from <a href="team.html" style="color:#2563EB">Team → Clients</a>.</div>` : ''}
+      <div id="clientMsg"></div>
+    </div>` : ''}
+    ${evalRow.team_id ? `
+    <div class="card">
       <div class="sec">Approval workflow</div>
       ${evalRow.approval_status === 'draft' ? `
         <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:8px">Submit to your team for review before acting on it.</div>
@@ -289,6 +302,14 @@ async function load() {
       </div>
     </div>` : ''}
   `;
+}
+
+async function assignClient(clientId) {
+  const msgEl = document.getElementById('clientMsg');
+  const { error } = await sb.from('evaluations').update({ client_id: clientId || null }).eq('id', currentEvalId);
+  if (error) { msgEl.innerHTML = `<div class="msg error">Could not update: ${escapeHtml(error.message)}</div>`; return; }
+  msgEl.innerHTML = `<div class="msg ok">Saved.</div>`;
+  setTimeout(() => { if (msgEl) msgEl.innerHTML = ''; }, 2000);
 }
 
 async function postCreatorNote() {

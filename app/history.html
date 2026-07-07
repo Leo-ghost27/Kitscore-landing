@@ -43,6 +43,8 @@
 <script src="icons.js?v=1"></script>
 <script src="nav.js?v=2"></script>
 <script>
+let allEvals = [], teamClientsList = [], selectedClientFilter = 'all';
+
 async function load() {
   const profile = await requireRole('sponsor');
   if (!profile) return;
@@ -60,8 +62,14 @@ async function load() {
       </div>`;
   }
 
+  const { data: membership } = await sb.from('team_members').select('team_id').eq('sponsor_id', profile.id).maybeSingle();
+  if (membership?.team_id) {
+    const { data: clientsData } = await sb.rpc('fn_team_clients', { p_team_id: membership.team_id });
+    teamClientsList = clientsData || [];
+  }
+
   const { data: evals, error } = await sb.from('evaluations')
-    .select('*, creators(trust_score, niche, profiles!inner(display_name))')
+    .select('*, creators(trust_score, niche, profiles!inner(display_name)), clients(name)')
     .eq('sponsor_id', profile.id)
     .order('created_at', { ascending: false });
   if (error) { document.getElementById('content').textContent = 'Could not load: ' + error.message; return; }
@@ -78,18 +86,42 @@ async function load() {
     });
   }
 
-  if (!visibleEvals.length) {
+  allEvals = visibleEvals;
+  renderList();
+}
+
+function renderList() {
+  if (!allEvals.length) {
     document.getElementById('content').innerHTML = `<div class="card"><div class="empty-tip">No evaluations yet. <a href="directory.html">Browse the directory to evaluate a creator →</a></div></div>`;
     return;
   }
 
-  document.getElementById('content').innerHTML = `
+  let evals = allEvals;
+  if (selectedClientFilter === 'unassigned') evals = evals.filter(e => !e.client_id);
+  else if (selectedClientFilter !== 'all') evals = evals.filter(e => e.client_id === selectedClientFilter);
+
+  const filterBar = teamClientsList.length ? `
+    <div style="margin-bottom:14px;display:flex;align-items:center;gap:8px">
+      <label style="font-size:12.5px;color:var(--ink-soft);font-weight:600">Client</label>
+      <select onchange="selectedClientFilter=this.value;renderList()" style="padding:7px 10px;border:1px solid var(--line);font-size:12.5px;background:#fff;color:var(--ink)">
+        <option value="all" ${selectedClientFilter === 'all' ? 'selected' : ''}>All clients</option>
+        <option value="unassigned" ${selectedClientFilter === 'unassigned' ? 'selected' : ''}>No client</option>
+        ${teamClientsList.map(c => `<option value="${c.client_id}" ${selectedClientFilter === c.client_id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
+      </select>
+    </div>` : '';
+
+  if (!evals.length) {
+    document.getElementById('content').innerHTML = filterBar + `<div class="card"><div class="empty-tip">No evaluations for this client yet.</div></div>`;
+    return;
+  }
+
+  document.getElementById('content').innerHTML = filterBar + `
     <div class="card">
-      ${visibleEvals.map(e => `
+      ${evals.map(e => `
         <div class="row-item">
           <div>
             <div style="font-weight:600;color:var(--ink);font-size:14px">${escapeHtml(e.creators?.profiles?.display_name || '—')}</div>
-            <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);margin-top:2px">${new Date(e.created_at).toLocaleDateString('en-GB')} · TRUST SCORE ${e.creators?.trust_score ?? '—'}</div>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);margin-top:2px">${new Date(e.created_at).toLocaleDateString('en-GB')} · TRUST SCORE ${e.creators?.trust_score ?? '—'}${e.clients?.name ? ' · ' + escapeHtml(e.clients.name) : ''}</div>
           </div>
           <div style="display:flex;align-items:center;gap:10px">
             ${e.recommendation_verdict ? `<span class="verdict-badge v-${e.recommendation_verdict}">${e.recommendation_verdict}</span>` : ''}
