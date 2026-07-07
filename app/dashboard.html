@@ -329,7 +329,9 @@ async function load() {
             <span class="conf-pct">${conf}%</span>
           </div>`:''}
           <div class="verified-badge">${svgIcon('rosette-discount-check', {size:12})}${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
-          <p class="encourage">Verify your first campaign to unlock a real confidence rating on your score.</p>
+          <p class="encourage">${verifiedCount>=1
+            ? `Confidence reflects your verified components and ${verifiedCount} confirmed campaign${verifiedCount===1?'':'s'}.`
+            : `Confidence today is based on your verified components alone. Confirming your first campaign raises it further.`}</p>
         </div>
       </div>
     </div>
