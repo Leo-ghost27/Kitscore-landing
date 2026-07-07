@@ -218,12 +218,12 @@ async function saveBranding() {
 
 async function renderTeam() {
   const approvalsQuery = myRole === 'owner'
-    ? sb.from('approval_requests').select('*, sponsors!requested_by(profiles!inner(display_name))').eq('team_id', myTeam.id).eq('status', 'pending').order('created_at', { ascending: true })
+    ? sb.rpc('fn_team_pending_approvals', { p_team_id: myTeam.id })
     : sb.from('approval_requests').select('*').eq('team_id', myTeam.id).eq('requested_by', profile.id).order('created_at', { ascending: false }).limit(10);
 
   const [{ data: members }, { data: notes }, { data: pendingInvites }, { data: approvals }] = await Promise.all([
-    sb.from('team_members').select('*, sponsors(*, profiles!inner(display_name))').eq('team_id', myTeam.id),
-    sb.from('team_notes').select('*, sponsors!author_id(profiles!inner(display_name)), creators(profiles!inner(display_name))').eq('team_id', myTeam.id).order('created_at', { ascending: false }),
+    sb.rpc('fn_team_roster', { p_team_id: myTeam.id }),
+    sb.rpc('fn_team_notes', { p_team_id: myTeam.id }),
     sb.from('team_invites').select('email, expires_at').eq('team_id', myTeam.id).is('accepted_at', null).gt('expires_at', new Date().toISOString()),
     approvalsQuery,
   ]);
@@ -234,7 +234,7 @@ async function renderTeam() {
       <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">${(members||[]).length} member${(members||[]).length !== 1 ? 's' : ''}</div>
       ${(members||[]).map(m => `
         <div class="row-item">
-          <span>${escapeHtml(m.sponsors?.profiles?.display_name || '—')}</span>
+          <span>${escapeHtml(m.display_name || '—')}</span>
           <span class="role-badge">${m.role}</span>
         </div>`).join('')}
     </div>
@@ -273,10 +273,10 @@ async function renderTeam() {
       <div class="sec">Pending approvals</div>
       ${(approvals||[]).length ? approvals.map(a => `
         <div class="row-item" style="align-items:flex-start;flex-wrap:wrap">
-          <span>${escapeHtml(a.sponsors?.profiles?.display_name || 'A team member')} wants to spend $29 to unlock an evaluation${a.note ? ' — "' + escapeHtml(a.note) + '"' : ''}</span>
+          <span>${escapeHtml(a.requester_display_name || 'A team member')} wants to spend $29 to unlock an evaluation${a.note ? ' — "' + escapeHtml(a.note) + '"' : ''}</span>
           <span style="display:flex;gap:6px">
-            <button class="cta" style="background:#1C7C3F;padding:6px 12px" onclick="decideApproval('${a.id}','approved')">Approve</button>
-            <button class="cta" style="background:#B42318;padding:6px 12px" onclick="decideApproval('${a.id}','rejected')">Reject</button>
+            <button class="cta" style="background:#1C7C3F;padding:6px 12px" onclick="decideApproval('${a.request_id}','approved')">Approve</button>
+            <button class="cta" style="background:#B42318;padding:6px 12px" onclick="decideApproval('${a.request_id}','rejected')">Reject</button>
           </span>
         </div>`).join('') : '<div style="font-size:13px;color:var(--ink-soft)">Nothing waiting on you right now.</div>'}
     </div>` : `
@@ -300,7 +300,7 @@ async function renderTeam() {
       <div class="sec">Team notes</div>
       ${(notes||[]).length ? notes.map(n => `
         <div class="note-row">
-          <div class="note-meta">${escapeHtml(n.sponsors?.profiles?.display_name || '—')} · ${new Date(n.created_at).toLocaleDateString('en-GB')}${n.creators ? ' · re: ' + escapeHtml(n.creators.profiles.display_name) : ''}</div>
+          <div class="note-meta">${escapeHtml(n.author_display_name || '—')} · ${new Date(n.created_at).toLocaleDateString('en-GB')}${n.creator_display_name ? ' · re: ' + escapeHtml(n.creator_display_name) : ''}</div>
           <div style="font-size:12px">${escapeHtml(n.content)}</div>
         </div>`).join('') : '<div style="font-size:13px;color:var(--ink-soft)">No notes yet.</div>'}
     </div>
