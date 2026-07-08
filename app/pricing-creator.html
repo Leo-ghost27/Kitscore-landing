@@ -124,8 +124,8 @@ const TICK = '<span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#f
       <ul>
         <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} 1 platform · Trust score</li>
         <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Watermarked Proof Packet</li>
+        <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Public profile listing &amp; sponsor directory</li>
         <li class="off">${svgIcon('x', {size:13, stroke:'#D5D8DE'})} Score history · clean PDF export</li>
-        <li class="off">${svgIcon('x', {size:13, stroke:'#D5D8DE'})} Public profile listing</li>
       </ul>
       <button disabled>${isPro ? 'Previous plan' : 'Current plan'}</button>
     </div>
@@ -143,7 +143,6 @@ const TICK = '<span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#f
         <li>${TICK} Unlimited connected platforms</li>
         <li>${TICK} Full, unwatermarked Proof Packet PDF</li>
         <li>${TICK} Complete score history &amp; trend tracking</li>
-        <li>${TICK} Public profile listing in the sponsor directory</li>
       </ul>
       <button id="upgradeBtn" ${isPro ? 'disabled' : ''}>${isPro ? 'Current plan' : 'Upgrade to Pro'}</button>
       <div id="upgradeMsg"></div>
