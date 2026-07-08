@@ -356,42 +356,22 @@ function csvEscape(val) {
 }
 
 async function exportAuditTrail() {
-  const [{ data: evals }, { data: approvals }] = await Promise.all([
-    sb.from('evaluations')
-      .select('created_at, unlocked, recommendation_verdict, sponsors(profiles!inner(display_name)), creators(profiles!inner(display_name)), clients(name)')
-      .eq('team_id', myTeam.id)
-      .order('created_at', { ascending: true }),
-    sb.from('approval_requests')
-      .select('created_at, status, note, action_type, reviewed_at, requester:sponsors!requested_by(profiles!inner(display_name)), reviewer:sponsors!reviewed_by(profiles!inner(display_name))')
-      .eq('team_id', myTeam.id)
-      .order('created_at', { ascending: true }),
-  ]);
+  const { data: rows, error } = await sb.rpc('fn_team_audit_trail', { p_team_id: myTeam.id });
+  if (error) { alert('Could not export audit trail: ' + error.message); return; }
 
-  const rows = [];
-  (evals || []).forEach(e => {
-    rows.push([
-      new Date(e.created_at).toISOString(),
-      'Evaluation',
-      e.sponsors?.profiles?.display_name || '',
-      e.creators?.profiles?.display_name || '',
-      e.clients?.name ? `Client: ${e.clients.name}` : '',
-      (e.unlocked ? 'Unlocked' : 'Locked') + (e.recommendation_verdict ? ` / ${e.recommendation_verdict}` : ''),
+  const csvRows = [['Date', 'Type', 'Actor', 'Subject', 'Detail', 'Status']];
+  (rows || []).forEach(r => {
+    csvRows.push([
+      new Date(r.event_date).toISOString(),
+      r.event_type,
+      r.actor_name || '',
+      r.subject_name || '',
+      r.detail || '',
+      r.status || '',
     ]);
   });
-  (approvals || []).forEach(a => {
-    rows.push([
-      new Date(a.reviewed_at || a.created_at).toISOString(),
-      'Approval request',
-      a.requester?.profiles?.display_name || '',
-      a.action_type || '$29 unlock',
-      a.note || '',
-      a.status + (a.reviewer?.profiles?.display_name ? ` by ${a.reviewer.profiles.display_name}` : ''),
-    ]);
-  });
-  rows.sort((a, b) => new Date(a[0]) - new Date(b[0]));
-  rows.unshift(['Date', 'Type', 'Actor', 'Subject', 'Detail', 'Status']);
 
-  const csv = rows.map(r => r.map(csvEscape).join(',')).join('\r\n');
+  const csv = csvRows.map(r => r.map(csvEscape).join(',')).join('\r\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
