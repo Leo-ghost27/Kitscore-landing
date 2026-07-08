@@ -358,7 +358,7 @@ function csvEscape(val) {
 async function exportAuditTrail() {
   const [{ data: evals }, { data: approvals }] = await Promise.all([
     sb.from('evaluations')
-      .select('created_at, unlocked, recommendation_verdict, sponsors!sponsor_id(profiles!inner(display_name)), creators(profiles!inner(display_name)), clients(name)')
+      .select('created_at, unlocked, recommendation_verdict, sponsors(profiles!inner(display_name)), creators(profiles!inner(display_name)), clients(name)')
       .eq('team_id', myTeam.id)
       .order('created_at', { ascending: true }),
     sb.from('approval_requests')
