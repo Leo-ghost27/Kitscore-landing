@@ -294,11 +294,22 @@ async function renderTeam(keepTab) {
     sb.rpc('fn_team_score_alerts', { p_team_id: myTeam.id }),
   ]);
 
+  let enrichedApprovals = approvals || [];
+  const evalTargetIds = [...new Set(enrichedApprovals.filter(a => a.target_type === 'evaluation' && a.target_id).map(a => a.target_id))];
+  if (evalTargetIds.length) {
+    const { data: evalRows } = await sb.from('evaluations')
+      .select('id, creators(profiles!inner(display_name)), clients(name)')
+      .in('id', evalTargetIds);
+    const evalMap = {};
+    (evalRows || []).forEach(e => { evalMap[e.id] = { creatorName: e.creators?.profiles?.display_name, clientName: e.clients?.name }; });
+    enrichedApprovals = enrichedApprovals.map(a => ({ ...a, ...(evalMap[a.target_id] || {}) }));
+  }
+
   teamData = {
     members: members || [],
     notes: notes || [],
     pendingInvites: pendingInvites || [],
-    approvals: approvals || [],
+    approvals: enrichedApprovals,
     clients: clients || [],
     evalCount: evalCount || 0,
     scoreAlerts: scoreAlerts || [],
@@ -463,13 +474,16 @@ function renderNotesTab() {
 
 function renderApprovalsTab() {
   const { approvals } = teamData;
+  const subject = a => a.creatorName
+    ? `${escapeHtml(a.creatorName)}${a.clientName ? ' (' + escapeHtml(a.clientName) + ')' : ''}`
+    : 'an evaluation';
   if (myRole === 'owner') {
     return `
     <div class="card">
       <div class="sec">Pending approvals</div>
       ${approvals.length ? approvals.map(a => `
         <div class="row-item" style="align-items:flex-start;flex-wrap:wrap">
-          <span>${escapeHtml(a.requester_display_name || 'A team member')} wants to spend $29 to unlock an evaluation${a.note ? ' — "' + escapeHtml(a.note) + '"' : ''}</span>
+          <span>${escapeHtml(a.requester_display_name || 'A team member')} wants to spend $29 to unlock ${subject(a)}${a.note ? ' — "' + escapeHtml(a.note) + '"' : ''}</span>
           <span style="display:flex;gap:6px">
             <button class="cta" style="background:#1C7C3F;padding:6px 12px" onclick="decideApproval('${a.request_id}','approved')">Approve</button>
             <button class="cta" style="background:#B42318;padding:6px 12px" onclick="decideApproval('${a.request_id}','rejected')">Reject</button>
@@ -482,7 +496,7 @@ function renderApprovalsTab() {
       <div class="sec">Your requests</div>
       ${approvals.length ? approvals.map(a => `
         <div class="row-item">
-          <span>Unlock request${a.note ? ' — ' + escapeHtml(a.note) : ''}</span>
+          <span>Unlock request — ${subject(a)}${a.note ? ' — ' + escapeHtml(a.note) : ''}</span>
           <span class="role-badge" style="${a.status === 'approved' ? 'background:#E9F7EE;color:#1C7C3F' : a.status === 'rejected' ? 'background:#FDECEC;color:#B42318' : ''}">${a.status}</span>
         </div>`).join('') : '<div style="font-size:13px;color:var(--ink-soft)">No requests yet. When you try to unlock a report, it\'ll ask your team owner to approve.</div>'}
     </div>`;
