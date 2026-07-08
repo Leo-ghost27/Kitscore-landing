@@ -168,19 +168,19 @@ async function load() {
       ['check', 'Internal approval workflow', "Route evaluations and $29 unlocks through your account owner's sign-off before a sponsorship — or a charge — is confirmed."],
       ['layout', 'White-labeled reports', "Your agency's logo on the PDF memo when you share it with a client — not Kitscore's."],
       ['file', 'Shared notes &amp; collaboration', "Leave internal notes on a creator's profile that every team member can see before signing off."],
-    ];
-    const COMING_FEATURES = [
       ['file-text', 'Compliance-ready audit trail', 'Every evaluation, approval, and sign-off exported as a dated PDF/CSV log — ready to justify a sponsorship decision internally or to a client.'],
       ['bolt', 'Score-change alerts', "Get notified the moment an approved creator's trust score drops — a new red flag, a disclosure lapse — before it becomes your problem."],
-      ['code', 'API access', 'Pipe evaluations directly into your own CRM or workflow tool instead of exporting manually.'],
-      ['user-contact', 'Dedicated account contact', 'A named point of contact for your account — not a shared support inbox.'],
+    ];
+    const COMING_FEATURES = [
+      ['code', 'API access', 'Pipe evaluations directly into your own CRM or workflow tool instead of exporting manually. Enterprise plan.'],
+      ['user-contact', 'Dedicated account contact', 'A named point of contact for your account — not a shared support inbox. Enterprise plan.'],
     ];
     const tile = ([icon, title, text], i, live) => `
       <div class="card feature-tile ${live ? 'is-live' : ''}" style="animation-delay:${i * 60}ms">
         <div class="feature-tile-icon">${svgIcon(icon, {size:17, stroke: live ? '#137C52' : 'var(--blue)', strokeWidth:2})}</div>
         <div class="feature-tile-title">${title}</div>
         <div class="feature-tile-text">${text}</div>
-        <span class="${live ? 'team-live-chip' : 'team-lock-chip'}">${live ? 'Live' : 'Team'}</span>
+        <span class="${live ? 'team-live-chip' : 'team-lock-chip'}">${live ? 'Live' : 'Enterprise'}</span>
       </div>`;
     document.getElementById('content').innerHTML = `
       <div class="team-hero">
@@ -201,7 +201,7 @@ async function load() {
       <div class="feature-grid">
         ${LIVE_FEATURES.map((f, i) => tile(f, i, true)).join('')}
       </div>
-      <div class="feature-section-label">Shipping soon</div>
+      <div class="feature-section-label">On the Enterprise plan</div>
       <div class="feature-grid">
         ${COMING_FEATURES.map((f, i) => tile(f, i + LIVE_FEATURES.length, false)).join('')}
       </div>

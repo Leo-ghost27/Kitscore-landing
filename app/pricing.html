@@ -13,6 +13,7 @@
   .app-main{max-width:1180px;padding:40px 48px 80px}
   .back{font-size:13.5px;color:var(--blue);cursor:pointer;background:none;border:none;margin-bottom:20px;display:inline-block;font-weight:500}
   .g2{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .g3{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
   .plan{background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,21,31,.03);padding:28px 24px;position:relative}
   .plan.featured{border:2px solid var(--blue);box-shadow:0 12px 32px -10px rgba(47,95,224,.25)}
   .plan.featured::before{content:"MOST POPULAR";position:absolute;top:-1px;right:-1px;background:var(--blue);color:#fff;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.05em;padding:5px 11px}
@@ -29,11 +30,12 @@
   .current-plan-banner{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border:1px solid var(--line);margin-bottom:22px;background:#FAFBFD}
   .current-plan-banner .label{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
   .current-plan-banner .value{font-size:16px;font-weight:600;text-transform:capitalize;color:var(--ink)}
-  .plan.is-current{border-color:var(--green)}
+  .plan.is-current{border-color:var(--blue)}
   .plan.is-current h3::after{content:'Current plan';font-size:11px;font-weight:600;color:#137C52;background:var(--green-soft);padding:4px 10px;margin-left:8px;vertical-align:middle}
   .btn-current{background:#F1F3F7!important;color:var(--ink-soft)!important;border-color:var(--line)!important;cursor:default!important}
   @media(max-width:900px){
     .g2{grid-template-columns:1fr !important}
+    .g3{grid-template-columns:1fr 1fr !important}
     button{min-height:44px;font-size:15px}
     input,select{font-size:16px} /* prevent iOS zoom */
   }
@@ -46,7 +48,7 @@
     <button class="back" onclick="window.location.href='directory.html'">&larr; Back to directory</button>
     <div id="banner"></div>
     <div id="currentPlanBanner"></div>
-    <div id="plansWrap" class="g2" style="grid-template-columns:1fr 1fr 1fr">Loading…</div>
+    <div id="plansWrap" class="g3" style="grid-template-columns:1fr 1fr 1fr 1fr">Loading…</div>
   </div>
 </div>
 
@@ -109,9 +111,24 @@
         <li>Internal approval workflow</li>
         <li>White-labeled reports</li>
         <li>Shared notes &amp; collaboration</li>
+        <li>Multi-client organization</li>
+        <li>Compliance audit trail export</li>
+        <li>Score-change alerts</li>
       </ul>
-      <div style="font-size:11.5px;color:var(--ink-faint);margin-bottom:18px">+ compliance audit trail, score-change alerts, and more shipping soon</div>
       ${cardBtn('team', 'Start Team', "subscribe('team')")}
+    </div>
+    <div class="plan">
+      <h3>Enterprise</h3>
+      <div class="price">Custom</div>
+      <div class="desc">For agencies running API-connected workflows at volume.</div>
+      <ul style="margin-bottom:8px">
+        <li>Everything in Team</li>
+        <li>Unlimited evaluations</li>
+        <li>API access <span style="color:var(--ink-faint);font-weight:400">(coming soon)</span></li>
+        <li>Dedicated account contact <span style="color:var(--ink-faint);font-weight:400">(coming soon)</span></li>
+        <li>Custom SLA</li>
+      </ul>
+      <button class="btn-outline" onclick="window.location.href='mailto:hello@kitscore.co?subject=Enterprise Plan'">Talk to us</button>
     </div>
   `;
 })();

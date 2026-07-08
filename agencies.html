@@ -111,6 +111,7 @@
   /* ── Pricing ── */
   .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 36px; }
   .pricing-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .pricing-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
   .price-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
   .price-card.featured { border-color: var(--accent); background: linear-gradient(135deg, rgba(37,99,235,0.06), var(--bg2)); }
   .price-label { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
@@ -143,10 +144,13 @@
   footer a:hover { color: var(--text); }
 
   /* ── Responsive ── */
+  @media(max-width: 1024px) {
+    .pricing-grid-4 { grid-template-columns: 1fr 1fr; }
+  }
   @media(max-width: 720px) {
     nav { padding: 0 16px; }
     .nav-links { display: none; }
-    .problem-grid, .steps, .features, .pricing-grid, .pricing-grid-3 { grid-template-columns: 1fr; }
+    .problem-grid, .steps, .features, .pricing-grid, .pricing-grid-3, .pricing-grid-4 { grid-template-columns: 1fr; }
     .stats-row { grid-template-columns: 1fr; }
     .container { padding: 0 16px; }
     section { padding: 56px 0; }
@@ -347,7 +351,7 @@
     <div class="section-label">Pricing</div>
     <h2 class="section-h">Start with one evaluation.<br>Scale with your team.</h2>
     <p class="section-sub">No platform fees until you're ready. Pay per evaluation, or move to a Team plan when your workflow demands it.</p>
-    <div class="pricing-grid pricing-grid-3">
+    <div class="pricing-grid pricing-grid-4">
       <div class="price-card">
         <div class="price-label">Pay as you go</div>
         <div class="price-amount">$29 <span>/ evaluation</span></div>
@@ -382,11 +386,28 @@
         <ul class="price-features">
           <li>150 evaluations per month</li>
           <li>All Starter features</li>
-          <li>✨ Custom AI brief templates</li>
-          <li>Internal approval workflows</li>
-          <li>Priority support</li>
+          <li>Roles &amp; permissions</li>
+          <li>Internal approval workflow</li>
+          <li>White-labeled reports</li>
+          <li>Shared notes &amp; collaboration</li>
+          <li>Multi-client organization</li>
+          <li>Compliance audit trail export</li>
+          <li>Score-change alerts</li>
         </ul>
         <a href="/app/auth.html"><button class="price-btn price-btn-ghost">Get Team</button></a>
+      </div>
+      <div class="price-card">
+        <div class="price-label">Enterprise</div>
+        <div class="price-amount">Custom</div>
+        <div class="price-desc">For agencies running API-connected workflows at volume.</div>
+        <ul class="price-features">
+          <li>Everything in Team</li>
+          <li>Unlimited evaluations</li>
+          <li>API access <span style="color:#6B7280;font-weight:400;">(coming soon)</span></li>
+          <li>Dedicated account contact <span style="color:#6B7280;font-weight:400;">(coming soon)</span></li>
+          <li>Custom SLA</li>
+        </ul>
+        <a href="mailto:hello@kitscore.co?subject=Enterprise Plan"><button class="price-btn price-btn-ghost">Talk to us</button></a>
       </div>
     </div>
     <p class="price-footnote" style="text-align:center;margin-top:24px;color:#6B7280;font-size:14px;">
