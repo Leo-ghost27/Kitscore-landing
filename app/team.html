@@ -70,7 +70,7 @@
   /* Team workspace tab nav */
   .ptitle-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
   .role-chip{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);border:1px solid var(--line);padding:6px 12px;background:#fff;white-space:nowrap}
-  .team-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px}
+  .team-tabs{display:grid;grid-template-columns:repeat(var(--tab-count,5),1fr);gap:12px;margin-bottom:22px}
   .team-tab{background:#fff;border:1px solid var(--line);padding:20px 14px;text-align:center;cursor:pointer;transition:border-color .15s ease,background .15s ease,transform .15s ease}
   .team-tab:hover{border-color:var(--blue-line);transform:translateY(-1px)}
   .team-tab.active{border-color:var(--blue);background:var(--blue-soft)}
@@ -79,6 +79,7 @@
   .team-tab-label{font-size:13.5px;font-weight:600;color:var(--ink)}
   .team-tab.active .team-tab-label{color:var(--blue)}
   .team-tab-badge{display:inline-block;margin-top:6px;font-family:var(--font-mono);font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);border:1px solid var(--line);padding:2px 7px}
+  .team-tab-badge.alert{background:#B42318;border-color:#B42318;color:#fff}
   .tab-panel{opacity:0;animation:panelIn .25s ease forwards}
   @keyframes panelIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
   @media (prefers-reduced-motion: reduce){.tab-panel{animation:none;opacity:1}}
@@ -104,7 +105,8 @@
   /* Audit trail export + score alerts */
   .audit-export-btn{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--ink-soft);background:#fff;border:1px solid var(--line);padding:7px 12px;cursor:pointer;white-space:nowrap}
   .audit-export-btn:hover{border-color:var(--blue-line);color:var(--blue)}
-  .score-alert-banner{display:flex;align-items:flex-start;gap:10px;background:#FFF7ED;border:1px solid #FCD9A8;color:#8A4B0A;padding:12px 16px;margin-bottom:18px;font-size:12.5px;line-height:1.6}
+  .score-alert-banner{display:flex;align-items:flex-start;gap:10px;background:#FFF7ED;border:1px solid #FCD9A8;color:#8A4B0A;padding:12px 16px;margin-bottom:18px;font-size:12.5px;line-height:1.6;cursor:pointer;transition:background .15s ease}
+  .score-alert-banner:hover{background:#FEF0DC}
   .score-alert-banner svg{flex-shrink:0;margin-top:1px}
 </style>
 </head>
@@ -264,6 +266,7 @@ const TEAM_TABS = [
   ['approvals', 'circle-check', 'Approvals'],
   ['branding', 'photo', 'Branding'],
   ['clients', 'briefcase', 'Clients'],
+  ['alerts', 'bolt', 'Alerts'],
 ];
 
 const CLIENT_STATUSES = [
@@ -330,20 +333,21 @@ function renderTeamShell() {
         <span class="role-chip">${escapeHtml(myRole)}</span>
       </span>
     </div>
-    ${teamData.scoreAlerts.length ? `
-    <div class="score-alert-banner">
+    ${teamData.scoreAlerts.length && activeTab !== 'alerts' ? `
+    <div class="score-alert-banner" onclick="switchTab('alerts')" role="button" tabindex="0">
       ${svgIcon('bolt', { size: 16 })}
       <div>
         <strong>${teamData.scoreAlerts.length} approved creator${teamData.scoreAlerts.length !== 1 ? 's' : ''} dropped in trust score</strong> since you approved them:
-        ${teamData.scoreAlerts.map(a => `${escapeHtml(a.creator_name || '—')} (${a.score_then}→${a.score_now})`).join(', ')}
+        ${teamData.scoreAlerts.map(a => `${escapeHtml(a.creator_name || '—')} (${a.score_then}→${a.score_now})`).join(', ')} — <u>view details</u>
       </div>
     </div>` : ''}
-    <div class="team-tabs">
+    <div class="team-tabs" style="--tab-count:${TEAM_TABS.length}">
       ${TEAM_TABS.map(([key, icon, label]) => `
         <div class="team-tab ${activeTab === key ? 'active' : ''}" onclick="switchTab('${key}')">
           <div class="team-tab-icon">${svgIcon(icon, { size: 18 })}</div>
           <div class="team-tab-label">${label}</div>
           ${key === 'clients' && !teamData.clients.length ? '<span class="team-tab-badge">New</span>' : ''}
+          ${key === 'alerts' && teamData.scoreAlerts.length ? `<span class="team-tab-badge alert">${teamData.scoreAlerts.length}</span>` : ''}
         </div>`).join('')}
     </div>
     <div class="tab-panel" id="tab-panel">${renderTabPanel(activeTab)}</div>
@@ -394,7 +398,32 @@ function renderTabPanel(key) {
   if (key === 'approvals') return renderApprovalsTab();
   if (key === 'branding') return renderBrandingTab();
   if (key === 'clients') return renderClientsTab();
+  if (key === 'alerts') return renderAlertsTab();
   return '';
+}
+
+function renderAlertsTab() {
+  const { scoreAlerts } = teamData;
+  if (!scoreAlerts.length) {
+    return `
+    <div class="card">
+      <div class="sec">Score-change alerts</div>
+      <div style="font-size:13px;color:var(--ink-soft)">Nothing to flag right now. You'll see this list if an approved creator's trust score drops below what it was when your team approved them.</div>
+    </div>`;
+  }
+  return `
+    <div class="card">
+      <div class="sec">Score-change alerts</div>
+      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px">Approved creators whose trust score has dropped since your team signed off on them.</div>
+      ${scoreAlerts.map(a => `
+        <div class="row-item" style="align-items:flex-start">
+          <div>
+            <div style="font-weight:600;color:var(--ink);font-size:14px;margin-bottom:2px">${escapeHtml(a.creator_name || '—')}</div>
+            <div style="font-size:12px;color:var(--ink-faint)">Approved ${a.approved_at ? new Date(a.approved_at).toLocaleDateString('en-GB') : '—'} at ${a.score_then} · now ${a.score_now}</div>
+          </div>
+          <span style="font-family:var(--font-mono);font-size:13px;color:#B42318;font-weight:600">${a.score_then} → ${a.score_now}</span>
+        </div>`).join('')}
+    </div>`;
 }
 
 function renderRosterTab() {
