@@ -377,13 +377,13 @@
     .why2-card { border-right: none; }
   }
 
-  .why2-compare { border: 0.5px solid var(--border); border-top: 2px solid var(--accent); border-radius:0; overflow: hidden; margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; }
+  .why2-compare { background: var(--bg); border: 0.5px solid var(--border); border-top: 2px solid var(--accent); border-radius:0; overflow: hidden; margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; box-shadow: var(--shadow-sm); }
   .why2-compare-side { padding: 32px; }
   .why2-compare-side:first-child { border-right: 0.5px solid var(--border); }
   .why2-compare-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
   .why2-compare-eyebrow.accent { color: var(--accent); }
   .why2-compare-q { font-size: 17px; color: var(--muted); }
-  .why2-compare-a { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .why2-compare-a { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
   .why2-compare-sub { font-size: 13px; color: var(--muted); }
   @media (max-width: 640px) {
     .why2-compare { grid-template-columns: 1fr; }

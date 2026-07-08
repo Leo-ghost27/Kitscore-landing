@@ -102,8 +102,9 @@
   .source-card .sc-tag { display: inline-flex; margin-top: 10px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius:0; }
 
   /* ── Badge tiers ── */
-  .badge-tiers { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius:0; overflow: hidden; margin-top: 24px; }
-  .badge-row { background: var(--bg2); display: grid; grid-template-columns: 60px 120px 1fr auto; gap: 16px; align-items: center; padding: 16px 20px; }
+  .badge-tiers { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius:0; overflow: hidden; margin-top: 24px; box-shadow: var(--shadow-sm); }
+  .badge-row { background: var(--bg); display: grid; grid-template-columns: 60px 120px 1fr auto; gap: 16px; align-items: center; padding: 16px 20px; transition: background 0.15s; }
+  .badge-row:not(.header):hover { background: var(--bg2); }
   .badge-row.header { background: var(--bg3); }
   .badge-row.header span { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
   .badge-icon {
@@ -120,7 +121,8 @@
 
   /* ── Brand safety ── */
   .bs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 20px; margin-top: 24px; }
-  .bs-item { background: var(--bg2); border: 1px solid var(--border); border-radius:0; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; }
+  .bs-item { background: var(--bg); border: 1px solid var(--border); border-radius:0; padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+  .bs-item:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
   .bs-icon { width: 28px; height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; border: 1px solid var(--border); background: var(--bg3); color: var(--muted); margin-top: 1px; }
   .bs-name  { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
   .bs-desc  { font-size: 12px; color: var(--muted); line-height: 1.55; }
