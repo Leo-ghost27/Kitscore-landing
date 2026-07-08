@@ -27,6 +27,8 @@
     --green: #3B6D11; --green-dim: #EAF3DE;
     --amber: #854F0B; --amber-dim: #FAEEDA;
     --radius: 12px; --radius-sm: 8px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
     --font: 'Inter', system-ui, sans-serif;
     --font-display: 'Fraunces', Georgia, serif;
   }
@@ -72,7 +74,8 @@
 
   /* ── Problem ── */
   .problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
-  .problem-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+  .problem-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+  .problem-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
   .problem-card .pi { margin-bottom: 12px; color: var(--accent); }
   .problem-card .pi svg { width: 24px; height: 24px; }
   .problem-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
@@ -87,8 +90,8 @@
 
   /* ── Features ── */
   .features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 40px; }
-  .feature { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; transition: border-color 0.2s; }
-  .feature:hover { border-color: var(--border-hover); }
+  .feature { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+  .feature:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
   .feature-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--accent-dim); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; color: var(--accent); }
   .feature-icon svg { width: 20px; height: 20px; }
   .feature h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
@@ -112,8 +115,9 @@
   .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 36px; }
   .pricing-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
   .pricing-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
-  .price-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
-  .price-card.featured { border-color: var(--accent); background: linear-gradient(135deg, rgba(37,99,235,0.06), var(--bg2)); }
+  .price-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+  .price-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .price-card.featured { border-color: var(--accent); background: linear-gradient(135deg, rgba(37,99,235,0.06), var(--bg)); }
   .price-label { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
   .price-amount { font-size: 36px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 4px; }
   .price-amount span { font-size: 16px; font-weight: 400; color: var(--muted); }
