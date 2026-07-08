@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirm sponsorship — Kitscore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  body{display:flex;min-height:100vh;align-items:center;justify-content:center;background:var(--color-background-tertiary)}
+  .card{width:400px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:26px}
+  .card h1{font-size:18px;font-weight:600;margin-bottom:6px;color:var(--ink,#0F1B2E)}
+  .card p{font-size:13px;color:var(--color-text-secondary);line-height:1.5;margin-bottom:14px}
+  .detail-box{background:var(--color-background-secondary);border-radius:6px;padding:14px 16px;margin-bottom:16px}
+  .detail-box .label{font-size:11px;color:var(--color-text-tertiary);margin-bottom:3px}
+  .detail-box .value{font-size:13.5px;color:var(--ink,#0F1B2E)}
+  .detail-box .value + .label{margin-top:10px}
+  .email-line{font-size:12px;color:var(--color-text-secondary);margin-bottom:16px}
+  .email-line b{color:var(--ink,#0F1B2E)}
+  .submit{width:100%;padding:11px;background:#2563EB;color:#fff;border:none;border-radius:var(--border-radius-sm);font-size:13.5px;font-weight:600;cursor:pointer}
+  .submit:disabled{opacity:.6;cursor:default}
+  .fineprint{font-size:11px;color:var(--color-text-tertiary);margin-top:12px;text-align:center;line-height:1.5}
+  .msg{font-size:12px;margin-top:12px;padding:10px 12px;border-radius:6px}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  .loading{font-size:13px;color:var(--color-text-secondary);text-align:center;padding:24px}
+  .kitscore-logo{font-size:15px;font-weight:700;color:var(--ink,#0F1B2E);margin-bottom:18px;text-align:center}
+  .kitscore-logo span{color:#2563EB}
+</style>
+</head>
+<body>
+  <div>
+    <div class="kitscore-logo">Kit<span>score</span></div>
+    <div class="card" id="card">
+      <div class="loading">Loading invite…</div>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script>
+let invite, token;
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  token = params.get('token');
+  if (!token) { showError('This confirmation link is invalid.'); return; }
+
+  const { data: rows, error } = await sb.rpc('fn_lookup_campaign_invite', { p_token: token });
+  const data = rows && rows[0];
+  if (error || !data) { showError('This confirmation link is invalid or has expired.'); return; }
+  invite = data;
+
+  if (invite.status === 'confirmed') {
+    showConfirmed();
+    return;
+  }
+  if (invite.status === 'expired' || new Date(invite.expires_at) < new Date()) {
+    showError('This confirmation link has expired. Ask the creator to resend it.');
+    return;
+  }
+
+  // If a magic-link click just landed here with an active session, try to
+  // confirm immediately rather than showing the button again.
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await tryConfirm();
+    return;
+  }
+
+  renderInviteCard();
+}
+
+function renderInviteCard() {
+  document.getElementById('card').innerHTML = `
+    <h1>${escapeHtml(invite.creator_display_name)} wants you to confirm a sponsorship</h1>
+    <p>Confirming takes a few seconds, creates your free Kitscore sponsor account, and lets you browse verified creators too. No password needed.</p>
+    ${(invite.description || invite.budget_range) ? `
+    <div class="detail-box">
+      ${invite.description ? `<div class="label">What they described</div><div class="value">${escapeHtml(invite.description)}</div>` : ''}
+      ${invite.budget_range ? `<div class="label">Budget range</div><div class="value">${escapeHtml(invite.budget_range)}</div>` : ''}
+    </div>` : ''}
+    <div class="email-line">Confirming as <b>${escapeHtml(invite.sponsor_email)}</b></div>
+    <button class="submit" id="submitBtn" onclick="sendMagicLink()">Confirm this sponsorship</button>
+    <div id="msg"></div>
+    <p class="fineprint">We'll email a one-click confirmation link to ${escapeHtml(invite.sponsor_email)} — no password to set.</p>
+  `;
+}
+
+async function sendMagicLink() {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  const { error } = await sb.auth.signInWithOtp({
+    email: invite.sponsor_email,
+    options: {
+      emailRedirectTo: window.location.href,
+      data: {
+        role: 'sponsor',
+        display_name: invite.sponsor_name || invite.sponsor_email.split('@')[0],
+      },
+    },
+  });
+
+  if (error) { showMsg(error.message, 'error'); btn.disabled = false; btn.textContent = 'Confirm this sponsorship'; return; }
+
+  document.getElementById('card').innerHTML = `
+    <h1>Check your email</h1>
+    <p>We sent a confirmation link to <b>${escapeHtml(invite.sponsor_email)}</b>. Click it to confirm the sponsorship — no password needed.</p>
+  `;
+}
+
+async function tryConfirm() {
+  document.getElementById('card').innerHTML = `<div class="loading">Confirming…</div>`;
+
+  const { data: { user } } = await sb.auth.getUser();
+  if (user) await ensureProfile(user); // belt-and-suspenders in case the DB trigger hasn't landed yet
+
+  const { data: campaignId, error } = await sb.rpc('fn_confirm_campaign_invite', { p_token: token });
+  if (error) { showError(error.message || 'Could not confirm this sponsorship.'); return; }
+
+  showConfirmed();
+}
+
+function showConfirmed() {
+  document.getElementById('card').innerHTML = `
+    <h1>You're confirmed 🎉</h1>
+    <p>Thanks for confirming — this strengthens ${escapeHtml(invite.creator_display_name)}'s Kitscore, and you're now set up as a Kitscore sponsor too.</p>
+    <a href="directory.html" style="display:block;text-align:center;padding:11px;background:#2563EB;color:#fff;text-decoration:none;border-radius:var(--border-radius-sm);font-size:13.5px;font-weight:600">Browse verified creators →</a>
+  `;
+}
+
+function showError(text) {
+  document.getElementById('card').innerHTML = `<h1>Can't confirm this</h1><p>${escapeHtml(text)}</p>`;
+}
+
+function showMsg(text, type) {
+  document.getElementById('msg').innerHTML = `<div class="msg ${type}">${escapeHtml(text)}</div>`;
+}
+
+init();
+</script>
+</body>
+</html>

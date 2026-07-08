@@ -382,6 +382,17 @@ async function loadCreatorCampaigns() {
       </div>
       <div style="font-size:14px;font-weight:600;color:var(--color-text-primary);margin-bottom:6px">No campaigns yet</div>
       <div style="font-size:12.5px;color:var(--color-text-secondary);max-width:320px;margin:0 auto;line-height:1.6">When a sponsor logs a campaign with you, it'll show up here for you to confirm — that mutual confirmation is what builds your trust score.</div>
+      <button class="confirm-btn" style="margin-top:16px" onclick="toggleInviteSponsorForm()">Invite a past sponsor to confirm</button>
+      <div id="invite-sponsor-form" style="display:none;max-width:340px;margin:16px auto 0;text-align:left">
+        <div class="field"><label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Sponsor email</label>
+          <input id="inv-email" type="email" placeholder="sponsor@brand.com" style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:13px"></div>
+        <div class="field" style="margin-top:8px"><label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Their name / company (optional)</label>
+          <input id="inv-name" type="text" placeholder="Acme Co." style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:13px"></div>
+        <div class="field" style="margin-top:8px"><label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">What was the campaign? (optional)</label>
+          <textarea id="inv-desc" placeholder="e.g. Instagram Reel for their spring launch, March 2026" style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:13px;min-height:60px"></textarea></div>
+        <button class="confirm-btn" style="width:100%;margin-top:10px" onclick="sendSponsorInvite()" id="invite-sponsor-btn">Send confirmation invite</button>
+        <div id="invite-sponsor-msg"></div>
+      </div>
     </div>`;
 
   renderHowItWorks();
@@ -414,6 +425,44 @@ function renderHowItWorks() {
     </div>
   `;
   document.getElementById('list').insertAdjacentElement('afterend', el);
+}
+
+function toggleInviteSponsorForm() {
+  const el = document.getElementById('invite-sponsor-form');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function sendSponsorInvite() {
+  const btn = document.getElementById('invite-sponsor-btn');
+  const email = document.getElementById('inv-email').value.trim();
+  const sponsorName = document.getElementById('inv-name').value.trim();
+  const description = document.getElementById('inv-desc').value.trim();
+  const msgEl = document.getElementById('invite-sponsor-msg');
+
+  if (!email) { msgEl.innerHTML = `<div class="msg error">Enter the sponsor's email.</div>`; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/invite-sponsor-confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ sponsorEmail: email, sponsorName, description }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not send invite.');
+    msgEl.innerHTML = `<div class="msg ok">Invite sent to ${escapeHtml(email)}. It'll show up here as "Waiting on sponsor" once they confirm.</div>`;
+    document.getElementById('inv-email').value = '';
+    document.getElementById('inv-name').value = '';
+    document.getElementById('inv-desc').value = '';
+  } catch (err) {
+    msgEl.innerHTML = `<div class="msg error">${escapeHtml(err.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Send confirmation invite';
+  }
 }
 
 async function confirmCampaign(id) {
