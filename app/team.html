@@ -100,6 +100,12 @@
   .pipeline-card-del{position:absolute;top:9px;right:9px;background:#F1F3F7;border:none;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);cursor:pointer;padding:0}
   .pipeline-card-del:hover{background:#FDECEC;color:#B42318}
   .pipeline-empty{font-size:12px;color:var(--ink-faint);padding:8px 0}
+
+  /* Audit trail export + score alerts */
+  .audit-export-btn{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--ink-soft);background:#fff;border:1px solid var(--line);padding:7px 12px;cursor:pointer;white-space:nowrap}
+  .audit-export-btn:hover{border-color:var(--blue-line);color:var(--blue)}
+  .score-alert-banner{display:flex;align-items:flex-start;gap:10px;background:#FFF7ED;border:1px solid #FCD9A8;color:#8A4B0A;padding:12px 16px;margin-bottom:18px;font-size:12.5px;line-height:1.6}
+  .score-alert-banner svg{flex-shrink:0;margin-top:1px}
 </style>
 </head>
 <body>
@@ -278,13 +284,14 @@ async function renderTeam(keepTab) {
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
-  const [{ data: members }, { data: notes }, { data: pendingInvites }, { data: approvals }, { data: clients }, { count: evalCount }] = await Promise.all([
+  const [{ data: members }, { data: notes }, { data: pendingInvites }, { data: approvals }, { data: clients }, { count: evalCount }, { data: scoreAlerts }] = await Promise.all([
     sb.rpc('fn_team_roster', { p_team_id: myTeam.id }),
     sb.rpc('fn_team_notes', { p_team_id: myTeam.id }),
     sb.from('team_invites').select('email, expires_at').eq('team_id', myTeam.id).is('accepted_at', null).gt('expires_at', new Date().toISOString()),
     approvalsQuery,
     sb.rpc('fn_team_clients', { p_team_id: myTeam.id }),
     sb.from('evaluations').select('id', { count: 'exact', head: true }).eq('team_id', myTeam.id).gte('created_at', monthStart.toISOString()),
+    sb.rpc('fn_team_score_alerts', { p_team_id: myTeam.id }),
   ]);
 
   teamData = {
@@ -294,6 +301,7 @@ async function renderTeam(keepTab) {
     approvals: approvals || [],
     clients: clients || [],
     evalCount: evalCount || 0,
+    scoreAlerts: scoreAlerts || [],
   };
 
   renderTeamShell();
@@ -306,8 +314,19 @@ function renderTeamShell() {
         <div class="ptitle" style="margin-bottom:2px">${escapeHtml(myTeam.name)}</div>
         <div class="psub" style="margin-bottom:0">Team workspace</div>
       </div>
-      <span class="role-chip">${escapeHtml(myRole)}</span>
+      <span style="display:flex;align-items:center;gap:8px">
+        <button class="audit-export-btn" onclick="exportAuditTrail()">${svgIcon('file-text', { size: 13 })} Export audit trail</button>
+        <span class="role-chip">${escapeHtml(myRole)}</span>
+      </span>
     </div>
+    ${teamData.scoreAlerts.length ? `
+    <div class="score-alert-banner">
+      ${svgIcon('bolt', { size: 16 })}
+      <div>
+        <strong>${teamData.scoreAlerts.length} approved creator${teamData.scoreAlerts.length !== 1 ? 's' : ''} dropped in trust score</strong> since you approved them:
+        ${teamData.scoreAlerts.map(a => `${escapeHtml(a.creator_name || '—')} (${a.score_then}→${a.score_now})`).join(', ')}
+      </div>
+    </div>` : ''}
     <div class="team-tabs">
       ${TEAM_TABS.map(([key, icon, label]) => `
         <div class="team-tab ${activeTab === key ? 'active' : ''}" onclick="switchTab('${key}')">
@@ -318,6 +337,59 @@ function renderTeamShell() {
     </div>
     <div class="tab-panel" id="tab-panel">${renderTabPanel(activeTab)}</div>
   `;
+}
+
+function csvEscape(val) {
+  const s = String(val ?? '');
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+async function exportAuditTrail() {
+  const [{ data: evals }, { data: approvals }] = await Promise.all([
+    sb.from('evaluations')
+      .select('created_at, unlocked, recommendation_verdict, sponsors!sponsor_id(profiles!inner(display_name)), creators(profiles!inner(display_name)), clients(name)')
+      .eq('team_id', myTeam.id)
+      .order('created_at', { ascending: true }),
+    sb.from('approval_requests')
+      .select('created_at, status, note, action_type, reviewed_at, requester:sponsors!requested_by(profiles!inner(display_name)), reviewer:sponsors!reviewed_by(profiles!inner(display_name))')
+      .eq('team_id', myTeam.id)
+      .order('created_at', { ascending: true }),
+  ]);
+
+  const rows = [];
+  (evals || []).forEach(e => {
+    rows.push([
+      new Date(e.created_at).toISOString(),
+      'Evaluation',
+      e.sponsors?.profiles?.display_name || '',
+      e.creators?.profiles?.display_name || '',
+      e.clients?.name ? `Client: ${e.clients.name}` : '',
+      (e.unlocked ? 'Unlocked' : 'Locked') + (e.recommendation_verdict ? ` / ${e.recommendation_verdict}` : ''),
+    ]);
+  });
+  (approvals || []).forEach(a => {
+    rows.push([
+      new Date(a.reviewed_at || a.created_at).toISOString(),
+      'Approval request',
+      a.requester?.profiles?.display_name || '',
+      a.action_type || '$29 unlock',
+      a.note || '',
+      a.status + (a.reviewer?.profiles?.display_name ? ` by ${a.reviewer.profiles.display_name}` : ''),
+    ]);
+  });
+  rows.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+  rows.unshift(['Date', 'Type', 'Actor', 'Subject', 'Detail', 'Status']);
+
+  const csv = rows.map(r => r.map(csvEscape).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${myTeam.name.replace(/[^a-z0-9]+/gi, '-')}-audit-trail-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function switchTab(key) {
