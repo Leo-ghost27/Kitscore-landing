@@ -64,7 +64,7 @@
   section h2 { font-size: clamp(20px, 2.6vw, 28px); font-weight: 700; font-family: var(--font-display); letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 14px; text-align: center; }
   section > p.section-sub { font-size: 15px; color: var(--muted); line-height: 1.8; margin: 0 auto 40px; text-align: center; max-width: 560px; }
 
-  .value-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
   .value-card { background: var(--bg); padding: 32px 28px; }
   .value-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--accent-dim); color: var(--accent); margin-bottom: 18px; font-size: 18px; font-weight: 700; font-family: var(--font-display); }
   .value-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
@@ -164,6 +164,11 @@
         <h3>Get discovered</h3>
         <p>Sponsors browse the directory by niche, location, and trust score — no algorithm gatekeeping who shows up.</p>
       </div>
+      <div class="value-card">
+        <div class="value-icon">04</div>
+        <h3>See exactly why your score is what it is</h3>
+        <p>No black box. Every component is named and labelled by how it was verified — live-confirmed, evidence-submitted, or self-reported — so you always know what to fix.</p>
+      </div>
     </div>
   </section>
 
@@ -180,7 +185,7 @@
       <div class="step">
         <div class="step-num">02</div>
         <h3>Add your evidence</h3>
-        <p>Past campaigns and a short brand-safety questionnaire. This is what your score is actually built from.</p>
+        <p>Past campaigns and a short brand-safety questionnaire — plus you can invite a past sponsor directly by email to confirm a campaign happened. This is what your score is actually built from.</p>
       </div>
       <div class="step">
         <div class="step-num">03</div>

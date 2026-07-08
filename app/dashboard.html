@@ -215,6 +215,41 @@ let profile, creator, audienceData = {};
 
 function scoreColor(v){ return v>=80?'#1D9E75': v>=60?'#2563EB':'#E58C1A'; }
 
+// Sample trend used only for the free-tier locked preview -- never real data.
+const SAMPLE_HISTORY_PREVIEW = [40, 44, 43, 51, 58, 55, 63, 68, 71, 74];
+
+function renderScoreHistorySvg(scores, isSample){
+  const w = 560, h = 120, pad = 8;
+  const min = Math.min(...scores), max = Math.max(...scores);
+  const range = (max - min) || 1;
+  const stepX = scores.length > 1 ? (w - pad*2) / (scores.length - 1) : 0;
+  const points = scores.map((s,i) => {
+    const x = pad + i*stepX;
+    const y = pad + (1 - (s - min)/range) * (h - pad*2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const color = isSample ? '#C9CDD6' : '#2563EB';
+  return `
+    <svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block">
+      <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>`;
+}
+
+function renderScoreHistory(history){
+  const rows = history || [];
+  if (rows.length < 2) {
+    return `<div style="font-size:12px;color:var(--color-text-tertiary);padding:8px 0">Your score history starts now — check back once your score changes to see the trend.</div>`;
+  }
+  const scores = rows.map(r => Number(r.trust_score));
+  const first = new Date(rows[0].recorded_at).toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+  const last = new Date(rows[rows.length-1].recorded_at).toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+  return `
+    ${renderScoreHistorySvg(scores, false)}
+    <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--color-text-tertiary);margin-top:4px">
+      <span>${first}</span><span>${last}</span>
+    </div>`;
+}
+
 function renderRing(score){
   const r = 54, circ = 2*Math.PI*r;
   const pct = Math.min(score||0, 100)/100;
@@ -262,7 +297,7 @@ async function load() {
   renderSidebar('creator', 'dashboard');
   document.getElementById('whoami').textContent = `${profile.display_name} · ${profile.email||''}`;
 
-  const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns },{ data:businessEmail },{ data:audience }] = await Promise.all([
+  const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns },{ data:businessEmail },{ data:audience },{ data:history }] = await Promise.all([
     sb.from('creators').select('id,niche,location,trust_score,confidence,badge_tier,plan,reliability_score,repeat_sponsor_rate,would_hire_again_pct,founding_cohort').eq('id', profile.id).single(),
     sb.from('score_components').select('*').eq('creator_id', profile.id).order('weight', {ascending:false}),
     sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at',{ascending:false}),
@@ -270,6 +305,7 @@ async function load() {
     sb.from('campaigns').select('*').eq('creator_id', profile.id).order('created_at',{ascending:false}),
     sb.rpc('fn_get_my_business_email'),
     sb.from('audience_demographics').select('*').eq('creator_id', profile.id).maybeSingle(),
+    sb.from('trust_score_history').select('trust_score,recorded_at').eq('creator_id', profile.id).order('recorded_at',{ascending:true}),
   ]);
   creator = { ...c, business_email: businessEmail };
   audienceData = audience || {};
@@ -467,6 +503,19 @@ async function load() {
         </div>`;
       }).join('')}
     </div>`:''}
+
+    <!-- ── Score history ── -->
+    <div class="card">
+      <div class="sec">Score history <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— Pro</span></div>
+      ${creator.plan==='pro' ? renderScoreHistory(history) : `
+        <div style="position:relative">
+          ${renderScoreHistorySvg(SAMPLE_HISTORY_PREVIEW, true)}
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,0.72);gap:8px">
+            <div style="font-size:12.5px;font-weight:600;color:var(--color-text-primary)">See your trend over time</div>
+            <a href="pricing-creator.html" class="upgrade-link" style="border:1px solid #D5DAE3;border-radius:4px;padding:6px 12px">Upgrade to Pro →</a>
+          </div>
+        </div>`}
+    </div>
 
     <!-- ── Rate calculator ── -->
     <div class="card">
