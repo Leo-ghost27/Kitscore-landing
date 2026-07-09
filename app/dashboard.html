@@ -330,7 +330,7 @@ async function load() {
   renderSidebar('creator', 'dashboard');
   document.getElementById('whoami').textContent = `${profile.display_name} · ${profile.email||''}`;
 
-  const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns },{ data:businessEmail },{ data:audience },{ data:history }] = await Promise.all([
+  const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns },{ data:businessEmail },{ data:audience },{ data:history },{ data:platformConnections }] = await Promise.all([
     sb.from('creators').select('id,niche,location,trust_score,confidence,badge_tier,plan,reliability_score,repeat_sponsor_rate,would_hire_again_pct,founding_cohort,slug').eq('id', profile.id).single(),
     sb.from('score_components').select('*').eq('creator_id', profile.id).order('weight', {ascending:false}),
     sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at',{ascending:false}),
@@ -339,6 +339,10 @@ async function load() {
     sb.rpc('fn_get_my_business_email'),
     sb.from('audience_demographics').select('*').eq('creator_id', profile.id).maybeSingle(),
     sb.from('trust_score_history').select('trust_score,recorded_at').eq('creator_id', profile.id).order('recorded_at',{ascending:true}),
+    // Token-free summary (handle, follower count, verification_method) --
+    // never returns access_token/refresh_token, see
+    // fn_creator_platform_summary in supabase/2026-07-09-platform-connections.sql.
+    sb.rpc('fn_creator_platform_summary', { p_creator_id: profile.id }),
   ]);
   creator = { ...c, business_email: businessEmail };
   audienceData = audience || {};
@@ -383,7 +387,7 @@ async function load() {
 
   dash = { components, evidence, answers, answerMap, campaigns, history, verifiedCount, hasScore,
     score, conf, steps, doneCount, pct, currentStepIdx, nextMs, msPct, compMap, improvements,
-    usedPlatforms, unlimitedPlatforms };
+    usedPlatforms, unlimitedPlatforms, platformConnections: platformConnections || [] };
 
   renderDashboardShell();
 
@@ -688,8 +692,32 @@ function renderProfileTab() {
 }
 
 function renderEvidenceTab() {
-  const { evidence, answerMap, usedPlatforms, unlimitedPlatforms } = dash;
+  const { evidence, answerMap, usedPlatforms, unlimitedPlatforms, platformConnections } = dash;
+  const yt = (platformConnections||[]).find(p=>p.platform==='youtube');
   return `
+    <!-- ── Connected platforms ── -->
+    <div class="card">
+      <div class="sec">Connected platforms</div>
+      <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:14px;line-height:1.6">
+        Link your YouTube channel to pull in live subscriber and view counts. This confirms the channel exists — it doesn't confirm you own it, so it's labelled "linked" everywhere it appears, not "verified."
+      </div>
+      ${yt ? `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:var(--color-background-secondary);border-radius:8px;margin-bottom:10px">
+        <div>
+          <div style="font-size:12.5px;font-weight:600">${escapeHtml(yt.platform_handle||'YouTube channel')}</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary)">
+            ${yt.follower_count!=null?`${Number(yt.follower_count).toLocaleString()} subscribers · `:''}Linked ${yt.last_synced_at?'· synced '+new Date(yt.last_synced_at).toLocaleDateString():''}
+          </div>
+        </div>
+        <span style="font-size:10px;font-weight:600;color:#2563EB;background:#F0F6FF;padding:3px 8px;border-radius:10px;white-space:nowrap">Linked</span>
+      </div>` : ''}
+      <div style="display:flex;gap:8px">
+        <input id="ytHandleInput" placeholder="YouTube @handle (e.g. mrbeast)" value="${escapeHtml(yt?.platform_handle||'')}" style="flex:1;padding:8px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
+        <button class="btn-primary" style="font-size:12px;padding:8px 16px;white-space:nowrap" onclick="connectYoutube()" id="ytConnectBtn">${yt?'Update':'Connect'}</button>
+      </div>
+      <span id="ytConnectMsg" style="font-size:11px;display:block;margin-top:8px"></span>
+    </div>
+
     <!-- ── Evidence ── -->
     <div class="card">
       <div class="sec">Evidence uploads</div>
@@ -828,6 +856,47 @@ async function downloadProofPacket() {
   } finally {
     btn.disabled = false;
     btn.textContent = 'Download PDF';
+  }
+}
+
+async function connectYoutube(){
+  const input = document.getElementById('ytHandleInput');
+  const btn = document.getElementById('ytConnectBtn');
+  const msgEl = document.getElementById('ytConnectMsg');
+  const handle = input.value.trim();
+  if (!handle) { msgEl.textContent = 'Enter a @handle first.'; msgEl.style.color = '#DC2626'; return; }
+
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Connecting…';
+  msgEl.textContent = '';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/connect-youtube', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`,
+      },
+      body: JSON.stringify({ handle }),
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      msgEl.textContent = j.error || 'Could not connect that channel.';
+      msgEl.style.color = '#DC2626';
+      return;
+    }
+    msgEl.textContent = 'Connected.';
+    msgEl.style.color = '#16A34A';
+    await load();
+    switchTab('evidence');
+  } catch (err) {
+    msgEl.textContent = 'Error: ' + err.message;
+    msgEl.style.color = '#DC2626';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
   }
 }
 
