@@ -108,6 +108,10 @@
   .score-alert-banner{display:flex;align-items:flex-start;gap:10px;background:#FFF7ED;border:1px solid #FCD9A8;color:#8A4B0A;padding:12px 16px;margin-bottom:18px;font-size:12.5px;line-height:1.6;cursor:pointer;transition:background .15s ease}
   .score-alert-banner:hover{background:#FEF0DC}
   .score-alert-banner svg{flex-shrink:0;margin-top:1px}
+
+  .team-switcher{display:flex;gap:6px;margin-bottom:12px;align-items:center}
+  .team-switch-pill{font-size:11.5px;font-weight:600;padding:5px 11px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer;border-radius:0}
+  .team-switch-pill.active{border-color:var(--blue);background:var(--blue-soft);color:var(--blue)}
 </style>
 </head>
 <body>
@@ -125,7 +129,7 @@
 <script src="icons.js?v=1"></script>
 <script src="nav.js?v=2"></script>
 <script>
-let profile, myTeam, myRole, teamData;
+let profile, myTeam, myRole, myTeams, teamData;
 
 async function load() {
   profile = await requireRole('sponsor');
@@ -214,19 +218,37 @@ async function load() {
     return;
   }
 
-  // Check if they're already in a team
-  const { data: membership } = await sb.from('team_members').select('*, teams(*)').eq('sponsor_id', profile.id).maybeSingle();
-  myTeam = membership?.teams || null;
-  myRole = membership?.role || null;
+  // Check if they're already in a team (up to 2 memberships are possible)
+  const { data: memberships } = await sb.from('team_members').select('*, teams(*)').eq('sponsor_id', profile.id);
+  myTeams = memberships || [];
 
-  if (!myTeam) { renderCreateTeam(); return; }
+  if (!myTeams.length) { renderCreateTeam(); return; }
+
+  const activeId = getActiveTeamId();
+  const active = myTeams.find(m => m.team_id === activeId) || myTeams[0];
+  myTeam = active.teams;
+  myRole = active.role;
   renderTeam();
 }
 
+function getActiveTeamId() {
+  const stored = localStorage.getItem('kitscore_active_team_id');
+  if (stored && myTeams.some(m => m.team_id === stored)) return stored;
+  return myTeams[0]?.team_id || null;
+}
+
+function switchActiveTeam(teamId) {
+  localStorage.setItem('kitscore_active_team_id', teamId);
+  load();
+}
+
 function renderCreateTeam() {
+  const isSecond = myTeams && myTeams.length === 1;
   document.getElementById('content').innerHTML = `
+    ${isSecond ? `<div style="margin-bottom:14px"><a href="#" onclick="switchActiveTeam('${myTeams[0].team_id}');return false" style="font-size:12.5px;color:var(--blue)">← Back to ${escapeHtml(myTeams[0].teams.name)}</a></div>` : ''}
     <div class="card">
-      <div class="sec">Create your team</div>
+      <div class="sec">${isSecond ? 'Create a second team' : 'Create your team'}</div>
+      ${isSecond ? '<div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px">Sponsor accounts can belong to up to 2 teams.</div>' : ''}
       <div class="field"><label>Team name</label><input id="teamName" placeholder="e.g. Bloom Beverages Partnerships"></div>
       <button class="cta" onclick="createTeam()">Create team</button>
       <div id="createMsg"></div>
@@ -240,9 +262,11 @@ async function createTeam() {
   const { data: team, error: teamErr } = await sb.from('teams').insert({ name, owner_id: profile.id }).select().single();
   if (teamErr) { showMsg('createMsg', 'Could not create team: ' + teamErr.message, 'error'); return; }
 
-  await sb.from('team_members').insert({ team_id: team.id, sponsor_id: profile.id, role: 'owner' });
-  myTeam = team;
-  renderTeam();
+  const { error: memberErr } = await sb.from('team_members').insert({ team_id: team.id, sponsor_id: profile.id, role: 'owner' });
+  if (memberErr) { showMsg('createMsg', 'Could not finish setup: ' + memberErr.message, 'error'); return; }
+
+  localStorage.setItem('kitscore_active_team_id', team.id);
+  load();
 }
 
 async function saveBranding() {
@@ -322,7 +346,13 @@ async function renderTeam(keepTab) {
 }
 
 function renderTeamShell() {
+  const switcherHtml = myTeams.length > 1 ? `
+    <div class="team-switcher">
+      ${myTeams.map(m => `<button class="team-switch-pill ${m.team_id === myTeam.id ? 'active' : ''}" onclick="switchActiveTeam('${m.team_id}')">${escapeHtml(m.teams.name)}</button>`).join('')}
+    </div>` : (myTeams.length === 1 ? `<div class="team-switcher"><a href="#" onclick="renderCreateTeam();return false" style="font-size:12px;color:var(--blue)">+ Create a second team</a></div>` : '');
+
   document.getElementById('content').innerHTML = `
+    ${switcherHtml}
     <div class="ptitle-row">
       <div>
         <div class="ptitle" style="margin-bottom:2px">${escapeHtml(myTeam.name)}</div>
@@ -512,14 +542,24 @@ function renderApprovalsTab() {
 }
 
 function renderBrandingTab() {
+  const settingsCard = myRole === 'owner' ? `
+    <div class="card">
+      <div class="sec">Team settings</div>
+      <div class="field"><label>Team name</label><input id="teamRename" value="${escapeHtml(myTeam.name)}"></div>
+      <button class="cta" onclick="renameTeam()">Save name</button>
+      <div id="renameMsg"></div>
+    </div>` : '';
+
   if (myRole !== 'owner') {
     return `
+    ${settingsCard}
     <div class="card">
       <div class="sec">White-label branding</div>
       <div style="font-size:13px;color:var(--ink-soft)">Only your account owner can edit branding. Currently set to <strong>${escapeHtml(myTeam.agency_display_name || myTeam.name)}</strong>${myTeam.logo_url ? ' with a custom logo' : ''}.</div>
     </div>`;
   }
   return `
+    ${settingsCard}
     <div class="card">
       <div class="sec">White-label branding</div>
       <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:14px">Shown on the PDF sponsor decision memo instead of Kitscore's own branding. Leave blank to use Kitscore branding.</div>
@@ -528,6 +568,16 @@ function renderBrandingTab() {
       <button class="cta" onclick="saveBranding()">Save branding</button>
       <div id="brandMsg"></div>
     </div>`;
+}
+
+async function renameTeam() {
+  const name = document.getElementById('teamRename').value.trim();
+  if (!name) { showMsg('renameMsg', 'Team name is required.', 'error'); return; }
+  const { error } = await sb.from('teams').update({ name }).eq('id', myTeam.id);
+  if (error) { showMsg('renameMsg', 'Could not rename: ' + error.message, 'error'); return; }
+  myTeam.name = name;
+  showMsg('renameMsg', 'Saved.', 'ok');
+  renderTeamShell();
 }
 
 function renderClientsTab() {

@@ -99,10 +99,16 @@ async function load() {
     sb.from('score_components').select('*').eq('creator_id', creatorId),
     sb.from('campaigns').select('status').eq('creator_id', creatorId).eq('status', 'verified'),
     sb.from('evaluations').select('*').eq('creator_id', creatorId).eq('sponsor_id', profile.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-    sb.from('team_members').select('team_id, role').eq('sponsor_id', profile.id).maybeSingle(),
+    sb.from('team_members').select('team_id, role').eq('sponsor_id', profile.id),
   ]);
-  isTeamOwner = membership?.role === 'owner';
-  myTeamId = membership?.team_id || null;
+  // A sponsor can belong to up to 2 teams. maybeSingle() would throw once
+  // that's possible, so this resolves the same "active team" the switcher
+  // on team.html sets, defaulting to the first membership if unset/stale.
+  const memberships = membership || [];
+  const activeTeamId = localStorage.getItem('kitscore_active_team_id');
+  const activeMembership = memberships.find(m => m.team_id === activeTeamId) || memberships[0] || null;
+  isTeamOwner = activeMembership?.role === 'owner';
+  myTeamId = activeMembership?.team_id || null;
   let creatorNotes = [];
   if (myTeamId) {
     const { data: notesData } = await sb.from('team_notes')
@@ -322,7 +328,7 @@ async function postCreatorNote() {
 
 // First visit: generate evaluation server-side then go straight to Stripe
 async function generateAndUnlock() {
-  const { ok, json } = await authedFetch('/api/generate-evaluation', { creatorId });
+  const { ok, json } = await authedFetch('/api/generate-evaluation', { creatorId, teamId: myTeamId });
   if (!ok) { alert('Could not generate evaluation: ' + (json.error || 'unknown error')); return; }
   currentEvalId = json.evaluation.id;
   await unlock();

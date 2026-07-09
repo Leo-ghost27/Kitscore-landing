@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
     const sponsor = await getAuthedSponsor(req);
     if (!sponsor) return res.status(401).json({ error: 'Not authenticated as a sponsor' });
 
-    const { creatorId } = req.body || {};
+    const { creatorId, teamId } = req.body || {};
     if (!creatorId) return res.status(400).json({ error: 'creatorId is required' });
 
     const admin = adminClient();
@@ -24,6 +24,14 @@ module.exports = async (req, res) => {
     // in evaluate.html actually activates. Previously this was never set,
     // so that entire UI was dead code for every team.
     //
+    // A sponsor can belong to up to 2 teams, so this can no longer just grab
+    // "the" membership -- the client sends which team is active (same
+    // selection the switcher on team.html drives), and this verifies that
+    // membership actually exists server-side rather than trusting the
+    // client's word for it. If no teamId is sent (or it doesn't check out),
+    // falls back to whatever membership exists -- covers the common single-
+    // team case without requiring every caller to know about teamId.
+    //
     // Errors from this query used to be silently discarded (only `data` was
     // destructured), which made "the query failed" indistinguishable from
     // "this sponsor isn't on a team" -- both fell through to team_id: null
@@ -31,8 +39,9 @@ module.exports = async (req, res) => {
     // evaluation ended up with team_id NULL despite her team_members row
     // existing and predating the evaluation by a full day. Failing loudly
     // here instead of silently mistagging the row.
-    const { data: membership, error: membershipErr } = await admin.from('team_members')
-      .select('team_id').eq('sponsor_id', sponsor.id).maybeSingle();
+    let membershipQuery = admin.from('team_members').select('team_id').eq('sponsor_id', sponsor.id);
+    membershipQuery = teamId ? membershipQuery.eq('team_id', teamId).maybeSingle() : membershipQuery.limit(1).maybeSingle();
+    const { data: membership, error: membershipErr } = await membershipQuery;
     if (membershipErr) {
       return res.status(500).json({ error: 'Could not verify team membership: ' + membershipErr.message });
     }

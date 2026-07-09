@@ -62,9 +62,11 @@ async function load() {
       </div>`;
   }
 
-  const { data: membership } = await sb.from('team_members').select('team_id').eq('sponsor_id', profile.id).maybeSingle();
-  if (membership?.team_id) {
-    const { data: clientsData } = await sb.rpc('fn_team_clients', { p_team_id: membership.team_id });
+  const { data: memberships } = await sb.from('team_members').select('team_id').eq('sponsor_id', profile.id);
+  const activeTeamId = localStorage.getItem('kitscore_active_team_id');
+  const activeMembership = (memberships || []).find(m => m.team_id === activeTeamId) || (memberships || [])[0] || null;
+  if (activeMembership?.team_id) {
+    const { data: clientsData } = await sb.rpc('fn_team_clients', { p_team_id: activeMembership.team_id });
     teamClientsList = clientsData || [];
   }
 
