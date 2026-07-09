@@ -20,6 +20,19 @@
   .loading{font-size:12px;color:var(--color-text-secondary);padding:40px;text-align:center}
   .sec{font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
   .card{padding:16px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:12px}
+  .dash-tabs{display:grid;grid-template-columns:repeat(var(--tab-count,5),1fr);gap:10px;margin-bottom:16px}
+  .dash-tab{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:16px 10px;text-align:center;cursor:pointer;transition:border-color .15s ease,background .15s ease,transform .15s ease}
+  .dash-tab:hover{border-color:#2563EB;transform:translateY(-1px)}
+  .dash-tab.active{border-color:#2563EB;background:#F0F6FF}
+  .dash-tab-icon{width:32px;height:32px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;background:var(--color-background-secondary);color:var(--color-text-secondary);border-radius:var(--border-radius-md)}
+  .dash-tab.active .dash-tab-icon{background:#fff;color:#2563EB}
+  .dash-tab-label{font-size:12.5px;font-weight:600;color:var(--color-text-primary)}
+  .dash-tab.active .dash-tab-label{color:#2563EB}
+  .dash-tab-badge{display:inline-block;margin-top:5px;font-family:var(--font-mono,monospace);font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--color-text-tertiary);border:1px solid var(--color-border-tertiary);border-radius:8px;padding:1px 6px}
+  .tab-panel{opacity:0;animation:panelIn .2s ease forwards}
+  @keyframes panelIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+  @media (prefers-reduced-motion: reduce){.tab-panel{animation:none;opacity:1}}
+  @media(max-width:640px){.dash-tabs{grid-template-columns:repeat(3,1fr)}}
   .info-ic{color:var(--color-text-tertiary);cursor:help;margin-left:3px;vertical-align:-1px}
 
   /* ── Score ring hero ── */
@@ -212,6 +225,16 @@ const QUESTIONS = [
 ];
 
 let profile, creator, audienceData = {};
+let dash = {}; // holds all data computed in load(), read by tab renderers
+let activeTab = 'overview';
+
+const CREATOR_TABS = [
+  ['overview', 'layout', 'Overview'],
+  ['score', 'circle-check', 'Score'],
+  ['profile', 'user-circle', 'Profile'],
+  ['evidence', 'file-check', 'Evidence'],
+  ['tools', 'bolt', 'Tools'],
+];
 
 function scoreColor(v){ return v>=80?'#1D9E75': v>=60?'#2563EB':'#E58C1A'; }
 
@@ -355,6 +378,33 @@ async function load() {
     .sort((a,b)=>(compMap[a.key]?.value||0)-(compMap[b.key]?.value||0))
     .slice(0,3);
 
+  const usedPlatforms=[...new Set((evidence||[]).map(e=>e.platform).filter(Boolean))];
+  const unlimitedPlatforms = creator.plan==='pro' || !!creator.founding_cohort;
+
+  dash = { components, evidence, answers, answerMap, campaigns, history, verifiedCount, hasScore,
+    score, conf, steps, doneCount, pct, currentStepIdx, nextMs, msPct, compMap, improvements,
+    usedPlatforms, unlimitedPlatforms };
+
+  renderDashboardShell();
+
+  // Animate ring + confidence bar after initial render
+  requestAnimationFrame(()=>{
+    animateRing(score);
+    const cf=document.getElementById('conf-fill');
+    if(cf) setTimeout(()=>cf.style.width=conf+'%',100);
+  });
+}
+
+function switchTab(key) {
+  activeTab = key;
+  document.getElementById('tab-panel').innerHTML = renderTabPanel(activeTab);
+  document.querySelectorAll('.dash-tab').forEach(el => {
+    el.classList.toggle('active', el.dataset.tabKey === key);
+  });
+}
+
+function renderDashboardShell() {
+  const { score, conf, verifiedCount, hasScore } = dash;
   document.getElementById('content').innerHTML = `
 
     <!-- ── Score hero ── -->
@@ -363,7 +413,7 @@ async function load() {
         <div class="score-left">
           ${renderRing(score)}
           <div class="score-left-info">
-            ${hasScore?`<a href="#score-breakdown" class="why-score-link" onclick="document.getElementById('score-breakdown').scrollIntoView({behavior:'smooth',block:'start'})">Why is my score ${score}?</a>`:''}
+            ${hasScore?`<a href="#score-breakdown" class="why-score-link" onclick="switchTab('score');setTimeout(()=>document.getElementById('score-breakdown')?.scrollIntoView({behavior:'smooth',block:'start'}),50)">Why is my score ${score}?</a>`:''}
             <div class="score-badges">
               <div class="badge-pill">
                 <span>${BADGE_SVG[creator.badge_tier]}</span>
@@ -391,6 +441,31 @@ async function load() {
       </div>
     </div>
 
+    <!-- ── Tab nav ── -->
+    <div class="dash-tabs" style="--tab-count:${CREATOR_TABS.length}">
+      ${CREATOR_TABS.map(([key,icon,label])=>`
+        <div class="dash-tab ${activeTab===key?'active':''}" data-tab-key="${key}" onclick="switchTab('${key}')">
+          <div class="dash-tab-icon">${svgIcon(icon,{size:17})}</div>
+          <div class="dash-tab-label">${label}</div>
+          ${key==='score' && dash.improvements.length ? `<span class="dash-tab-badge">${dash.improvements.length} to fix</span>`:''}
+        </div>`).join('')}
+    </div>
+    <div class="tab-panel" id="tab-panel">${renderTabPanel(activeTab)}</div>
+  `;
+}
+
+function renderTabPanel(key) {
+  if (key==='overview') return renderOverviewTab();
+  if (key==='score') return renderScoreTab();
+  if (key==='profile') return renderProfileTab();
+  if (key==='evidence') return renderEvidenceTab();
+  if (key==='tools') return renderToolsTab();
+  return '';
+}
+
+function renderOverviewTab() {
+  const { evidence, campaigns, pct, steps, doneCount, currentStepIdx, nextMs, msPct, verifiedCount } = dash;
+  return `
     <!-- ── Stat strip ── -->
     <div class="g3">
       <div class="stat-box">
@@ -447,14 +522,30 @@ async function load() {
       <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">You've reached the highest trust tier.</div>
     </div>`}
 
+    <!-- ── Why verify ── -->
+    <div class="card" style="background:var(--color-background-secondary);margin-bottom:0">
+      <div class="sec">Why verify campaigns?</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:2">
+        ✓ Increases your Trust Score &nbsp;·&nbsp;
+        ✓ Unlocks Trust Badges &nbsp;·&nbsp;
+        ✓ Improves sponsor confidence &nbsp;·&nbsp;
+        ✓ Improves directory ranking
+      </div>
+      <a href="campaigns.html" style="font-size:12px;font-weight:500;color:#2563EB;text-decoration:none;display:inline-block;margin-top:8px">Manage campaigns →</a>
+    </div>
+  `;
+}
 
+function renderScoreTab() {
+  const { hasScore, compMap, improvements, verifiedCount, history } = dash;
+  return `
     <!-- ── Verified Reputation ── -->
     ${(verifiedCount>0)?`
     <div class="card">
       <div class="sec">Verified Sponsorship Reputation</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
         <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-sm);padding:10px;text-align:center">
-          <div style="font-size:18px;font-weight:600;color:${creator.reliability_score>=80?'#D4AF37':'var(--color-text-primary)}'}">${creator.reliability_score||0}</div>
+          <div style="font-size:18px;font-weight:600;color:${creator.reliability_score>=80?'#D4AF37':'var(--color-text-primary)'}">${creator.reliability_score||0}</div>
           <div style="font-size:10px;color:var(--color-text-secondary);margin-top:2px">Reliability Score</div>
         </div>
         <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-sm);padding:10px;text-align:center">
@@ -514,17 +605,6 @@ async function load() {
       }).join('')}
     </div>`:''}
 
-    <!-- ── Shareable trust profile ── -->
-    <div class="card" style="background:#F5F8FF;border-color:#D5E2FC">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
-        <div>
-          <div style="font-size:13.5px;font-weight:600;color:var(--ink,#0F1B2E)">Your shareable trust profile</div>
-          <div id="profile-link-text" style="font-family:var(--font-mono,monospace);font-size:12px;color:#2563EB;margin-top:3px">kitscore.co/p/${creator.slug||''}</div>
-        </div>
-        <button class="confirm-btn" style="background:#2563EB;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer" onclick="copyProfileLink()">Copy link</button>
-      </div>
-    </div>
-
     <!-- ── Score history ── -->
     <div class="card">
       <div class="sec">Score history <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— Pro</span></div>
@@ -538,35 +618,23 @@ async function load() {
         </div>`}
     </div>
 
-    <!-- ── Rate calculator ── -->
-    <div class="card">
-      <div class="sec">What should I charge? <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— free tool, not part of your score</span></div>
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-        <label style="font-size:11px;color:var(--color-text-secondary)">Followers</label>
-        <span id="rc-followers-val" style="font-family:var(--font-mono,monospace);font-size:13px;font-weight:600;color:var(--ink,#0F1B2E)">18,000</span>
-      </div>
-      <input id="rc-followers" type="range" min="500" max="500000" step="500" value="18000" style="width:100%" oninput="updateRateCalc(this.value)">
-      <div style="text-align:center;margin-top:14px">
-        <div id="rc-range" style="font-size:22px;font-weight:700;color:var(--blue,#2563EB)">£90–£180</div>
-        <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Suggested rate per sponsored post, based on typical engagement-tier benchmarks. Not personalized to your niche or engagement rate yet.</div>
-        <div style="margin-top:8px">
-          <select id="rc-currency" onchange="updateRateCalc(document.getElementById('rc-followers').value)" style="font-size:10.5px;color:var(--color-text-tertiary);border:1px solid var(--color-border-tertiary,#E5E7EB);border-radius:4px;padding:2px 6px;background:transparent">
-            <option value="GBP">£ GBP</option>
-            <option value="USD">$ USD</option>
-          </select>
+  `;
+}
+
+function renderProfileTab() {
+  return `
+    <!-- ── Shareable trust profile ── -->
+    <div class="card" style="background:#F5F8FF;border-color:#D5E2FC">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:13.5px;font-weight:600;color:var(--ink,#0F1B2E)">Your shareable trust profile</div>
+          <div id="profile-link-text" style="font-family:var(--font-mono,monospace);font-size:12px;color:#2563EB;margin-top:3px">kitscore.co/p/${creator.slug||''}</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Free for every creator — share it anywhere, on or off Kitscore.</div>
         </div>
+        <button class="confirm-btn" style="background:#2563EB;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer" onclick="copyProfileLink()">Copy link</button>
       </div>
     </div>
 
-    <!-- ── Brand safety ── -->
-    <div class="card" id="brand-safety">
-      <div class="sec">Brand safety questionnaire <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— updates your score live</span></div>
-      ${QUESTIONS.map(q=>`
-        <div class="qrow">
-          <span style="font-size:12px">${q.label}</span>
-          <span class="opts">${q.opts.map(o=>`<button class="${answerMap[q.key]===o?'sel':''}" onclick="answerQuestion('${q.key}','${o}')">${o}</button>`).join('')}</span>
-        </div>`).join('')}
-    </div>
 
     <!-- ── Audience demographics (self-reported) ── -->
     <div class="card" id="audience-demographics">
@@ -596,9 +664,19 @@ async function load() {
       <span id="audSaveMsg" style="font-size:11px;margin-left:10px"></span>
     </div>
 
+  `;
+}
+
+function renderEvidenceTab() {
+  const { evidence, answerMap, usedPlatforms, unlimitedPlatforms } = dash;
+  return `
     <!-- ── Evidence ── -->
     <div class="card">
       <div class="sec">Evidence uploads</div>
+      ${!unlimitedPlatforms ? `
+      <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:10px;background:var(--color-background-secondary);border-radius:6px;padding:8px 10px">
+        Free plan is limited to one platform${usedPlatforms.length?` (currently ${escapeHtml(usedPlatforms[0])})`:''}. <a href="pricing-creator.html" style="color:#2563EB;font-weight:600;text-decoration:none">Upgrade to Pro</a> for unlimited platforms — founding creators get this free.
+      </div>`:''}
       ${(evidence||[]).length?(evidence||[]).map(e=>`
         <div class="ev-row">
           <span class="ev-name">${escapeHtml(e.file_name)}</span>
@@ -614,17 +692,42 @@ async function load() {
       ${(evidence||[]).length?`<div style="margin-top:10px"><a href="evidence.html" style="font-size:12px;font-weight:500;color:#2563EB;text-decoration:none">Manage evidence →</a></div>`:''}
     </div>
 
-    <!-- ── Why verify ── -->
-    <div class="card" style="background:var(--color-background-secondary)">
-      <div class="sec">Why verify campaigns?</div>
-      <div style="font-size:12px;color:var(--color-text-secondary);line-height:2">
-        ✓ Increases your Trust Score &nbsp;·&nbsp;
-        ✓ Unlocks Trust Badges &nbsp;·&nbsp;
-        ✓ Improves sponsor confidence &nbsp;·&nbsp;
-        ✓ Improves directory ranking
-      </div>
-      <a href="campaigns.html" style="font-size:12px;font-weight:500;color:#2563EB;text-decoration:none;display:inline-block;margin-top:8px">Manage campaigns →</a>
+
+    <!-- ── Brand safety ── -->
+    <div class="card" id="brand-safety">
+      <div class="sec">Brand safety questionnaire <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— updates your score live</span></div>
+      ${QUESTIONS.map(q=>`
+        <div class="qrow">
+          <span style="font-size:12px">${q.label}</span>
+          <span class="opts">${q.opts.map(o=>`<button class="${answerMap[q.key]===o?'sel':''}" onclick="answerQuestion('${q.key}','${o}')">${o}</button>`).join('')}</span>
+        </div>`).join('')}
     </div>
+
+  `;
+}
+
+function renderToolsTab() {
+  return `
+    <!-- ── Rate calculator ── -->
+    <div class="card">
+      <div class="sec">What should I charge? <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— free tool, not part of your score</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <label style="font-size:11px;color:var(--color-text-secondary)">Followers</label>
+        <span id="rc-followers-val" style="font-family:var(--font-mono,monospace);font-size:13px;font-weight:600;color:var(--ink,#0F1B2E)">18,000</span>
+      </div>
+      <input id="rc-followers" type="range" min="500" max="500000" step="500" value="18000" style="width:100%" oninput="updateRateCalc(this.value)">
+      <div style="text-align:center;margin-top:14px">
+        <div id="rc-range" style="font-size:22px;font-weight:700;color:var(--blue,#2563EB)">£90–£180</div>
+        <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Suggested rate per sponsored post, based on typical engagement-tier benchmarks. Not personalized to your niche or engagement rate yet.</div>
+        <div style="margin-top:8px">
+          <select id="rc-currency" onchange="updateRateCalc(document.getElementById('rc-followers').value)" style="font-size:10.5px;color:var(--color-text-tertiary);border:1px solid var(--color-border-tertiary,#E5E7EB);border-radius:4px;padding:2px 6px;background:transparent">
+            <option value="GBP">£ GBP</option>
+            <option value="USD">$ USD</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
 
     <!-- ── Proof Packet ── -->
     <div class="card" style="border:1.5px solid ${creator.plan==='pro'?'#2563EB':'#E5E7EB'};background:${creator.plan==='pro'?'#F0F6FF':'var(--color-background-secondary)'}">
@@ -636,7 +739,7 @@ async function load() {
           <div style="font-size:13px;font-weight:600;color:#0F172A">${creator.plan==='pro'?'Download your Proof Packet':'Watermarked Proof Packet'}</div>
           <div style="font-size:11px;color:#4B5563;margin-top:2px">${creator.plan==='pro'
             ? 'Full PDF — share with sponsors. Includes trust score, verified campaigns, evidence and score breakdown.'
-            : 'Free plan includes a watermarked PDF. Upgrade to Pro for the full clean PDF, score history and public profile listing.'
+            : 'Free plan includes a watermarked PDF. Upgrade to Pro for the full clean PDF and complete score history.'
           }</div>
         </div>
         ${creator.plan==='pro'
@@ -648,6 +751,7 @@ async function load() {
         }
       </div>
     </div>
+
 
     <!-- ── Tips to raise your score ── -->
     <div class="card" style="margin-bottom:0">
@@ -671,13 +775,6 @@ async function load() {
       </div>
     </div>
   `;
-
-  // Animate ring + confidence bar after render
-  requestAnimationFrame(()=>{
-    animateRing(score);
-    const cf=document.getElementById('conf-fill');
-    if(cf) setTimeout(()=>cf.style.width=conf+'%',100);
-  });
 }
 
 async function downloadProofPacket() {

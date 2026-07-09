@@ -122,9 +122,11 @@ const TICK = '<span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#f
       <h3>Free</h3>
       <div class="price">$0<span> / mo</span></div>
       <ul>
-        <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} 1 platform · Trust score</li>
+        <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} 1 platform · Trust score <span style="color:#9CA3AF;font-size:11px">(unlimited for founding creators)</span></li>
         <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Watermarked Proof Packet</li>
         <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Public profile listing &amp; sponsor directory</li>
+        <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Shareable trust profile link</li>
+        <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Rate calculator &amp; score breakdown</li>
         <li class="off">${svgIcon('x', {size:13, stroke:'#D5D8DE'})} Score history · clean PDF export</li>
       </ul>
       <button disabled>${isPro ? 'Previous plan' : 'Current plan'}</button>
