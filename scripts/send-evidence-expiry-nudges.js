@@ -68,9 +68,20 @@ async function main() {
   for (const [creatorId, items] of byCreator) {
     const { data: profile } = await admin.from('profiles')
       .select('display_name, email').eq('id', creatorId).maybeSingle();
+    const { data: creatorRow } = await admin.from('creators')
+      .select('plan').eq('id', creatorId).maybeSingle();
 
     if (!profile?.email) {
       console.log(`Skipping creator ${creatorId} — no email on file.`);
+      skipped++;
+      continue;
+    }
+
+    // Proactive email reminders are a Pro perk. Free creators still see the
+    // "Expiring soon"/"Expired" badge in the evidence.html UI (that stays
+    // free/informational) — they just don't get emailed automatically.
+    if (creatorRow?.plan !== 'pro') {
+      console.log(`Skipping ${profile.email} — free plan, no email nudge (still sees the in-app badge).`);
       skipped++;
       continue;
     }

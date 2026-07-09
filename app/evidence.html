@@ -83,7 +83,10 @@
           <div id="msg"></div>
         </div>
         <div class="card">
-          <div class="sec">Your evidence</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div class="sec" style="margin-bottom:0">Your evidence</div>
+            <div id="export-row"></div>
+          </div>
           <div id="list" class="loading">Loading…</div>
         </div>
       </div>
@@ -112,6 +115,8 @@
 <script src="nav.js?v=2"></script>
 <script>
 let profile;
+let creatorPlan = 'free';
+let allEvidenceItems = [];
 
 function updateDropzoneLabel(file) {
   const title = document.getElementById('dzTitle');
@@ -150,8 +155,20 @@ async function load() {
   if (!profile) return;
   renderSidebar('creator', 'evidence');
 
-  const { data: items, error } = await sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at', { ascending: false });
+  const [{ data: items, error }, { data: creatorRow }] = await Promise.all([
+    sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at', { ascending: false }),
+    sb.from('creators').select('plan').eq('id', profile.id).single(),
+  ]);
   if (error) { document.getElementById('list').textContent = 'Could not load: ' + error.message; return; }
+
+  creatorPlan = creatorRow?.plan || 'free';
+  allEvidenceItems = items || [];
+
+  document.getElementById('export-row').innerHTML = allEvidenceItems.length ? (
+    creatorPlan === 'pro'
+      ? `<button class="link-btn" onclick="exportEvidenceCsv()">Export evidence log (CSV) →</button>`
+      : `<span style="font-size:11px;color:var(--color-text-tertiary)">Export with analytics is a Pro feature. <a href="pricing-creator.html" style="color:#2563EB;font-weight:600;text-decoration:none">Upgrade →</a></span>`
+  ) : '';
 
   document.getElementById('list').innerHTML = (items && items.length) ? items.map((e,i) => `
     <div class="row-item" style="flex-direction:column;align-items:stretch;gap:8px">
@@ -174,6 +191,24 @@ async function load() {
       <div style="font-size:13px;color:var(--color-text-primary);font-weight:500;margin-bottom:4px">No evidence uploaded yet</div>
       <div style="font-size:12px;color:var(--color-text-secondary)">Screenshots you upload above will show up here.</div>
     </div>`;
+}
+
+function exportEvidenceCsv() {
+  const header = ['File name', 'Evidence type', 'Platform', 'Status', 'Uploaded at', 'Reviewed at'];
+  const rows = allEvidenceItems.map(e => [
+    e.file_name, e.evidence_type || '', e.platform || '', e.status || '',
+    e.uploaded_at || '', e.reviewed_at || '',
+  ]);
+  const csv = [header, ...rows]
+    .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'kitscore-evidence-log.csv';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 async function upload() {
@@ -215,8 +250,9 @@ function fmtDate(iso) {
 function freshnessBadge(uploadedAt) {
   if (!uploadedAt) return '';
   const days = Math.floor((Date.now() - new Date(uploadedAt).getTime()) / (1000*60*60*24));
-  if (days >= 90) return `<span class="fresh-tag fresh-stale" title="Add fresh evidence to keep this score input current">Expired · ${days}d old</span>`;
-  if (days >= 75) return `<span class="fresh-tag fresh-soon" title="Expires in ${90-days} day${90-days===1?'':'s'}">Expiring soon</span>`;
+  const proHint = creatorPlan !== 'pro' ? ' · Pro gets emailed automatically' : '';
+  if (days >= 90) return `<span class="fresh-tag fresh-stale" title="Add fresh evidence to keep this score input current${proHint}">Expired · ${days}d old</span>`;
+  if (days >= 75) return `<span class="fresh-tag fresh-soon" title="Expires in ${90-days} day${90-days===1?'':'s'}${proHint}">Expiring soon</span>`;
   return '';
 }
 
