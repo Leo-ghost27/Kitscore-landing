@@ -224,6 +224,7 @@ async function loadSponsorCampaigns() {
       ${renderStarsReadonly('Deliverable quality', c.deliverable_quality_rating)}
       <div style="margin-top:4px">Would hire again: <strong>${c.would_hire_again ? 'Yes' : 'No'}</strong></div>
       ${c.endorsement_notes ? `<div style="margin-top:4px;font-style:italic">"${escapeHtml(c.endorsement_notes)}"</div>` : ''}
+      <div style="margin-top:4px;font-size:11px;color:var(--color-text-tertiary)">${c.endorsement_public_consent ? 'Shown publicly with your company name' : 'Shown publicly as "Verified sponsor" (anonymous)'}</div>
     </div>` : ''}
     ${c.status === 'verified' && !c.endorsement_submitted_at ? `
     <div id="endorse-panel-${c.id}" class="endorse-panel" style="display:none">
@@ -240,6 +241,10 @@ async function loadSponsorCampaigns() {
       </div>
       <div class="field"><label>Notes <span style="color:var(--color-text-tertiary)">(optional, shown on the creator's profile)</span></label>
         <textarea id="endorse-notes-${c.id}" placeholder="e.g. Great communication, delivered on time"></textarea>
+      </div>
+      <div class="field" style="display:flex;align-items:flex-start;gap:8px;margin-top:2px">
+        <input type="checkbox" id="endorse-consent-${c.id}" style="margin-top:2px">
+        <label for="endorse-consent-${c.id}" style="font-weight:400;color:var(--color-text-secondary)">Show my company name alongside this feedback publicly. If unchecked, it appears as "Verified sponsor" — anonymous by default, matching how most B2B review platforms handle attribution.</label>
       </div>
       <div style="display:flex;gap:8px">
         <button class="cta" onclick="submitEndorsement('${c.id}')">Submit endorsement</button>
@@ -301,6 +306,7 @@ async function submitEndorsement(id) {
   if (state.wouldHireAgain === null || state.wouldHireAgain === undefined) { msgEl.innerHTML = '<div class="msg error">Let us know if you\'d hire them again.</div>'; return; }
 
   const notes = document.getElementById(`endorse-notes-${id}`).value.trim();
+  const publicConsent = document.getElementById(`endorse-consent-${id}`).checked;
 
   // Column-write is also gated server-side by fn_validate_endorsement: only
   // the sponsor on a verified, not-yet-endorsed campaign can set these.
@@ -311,6 +317,7 @@ async function submitEndorsement(id) {
     deliverable_quality_rating: state.quality || null,
     would_hire_again: state.wouldHireAgain,
     endorsement_notes: notes || null,
+    endorsement_public_consent: publicConsent,
     endorsement_submitted_at: new Date().toISOString(),
   }).eq('id', id);
 

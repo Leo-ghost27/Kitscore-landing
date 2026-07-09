@@ -33,6 +33,10 @@
   .st-submitted{background:#FEF6E7;color:#92600A}
   .st-self_reported{background:var(--color-background-secondary);color:var(--color-text-secondary)}
   .st-rejected{background:#FDECEC;color:#B42318}
+  .fresh-tag{font-size:10px;padding:3px 8px;border-radius:10px}
+  .fresh-ok{display:none}
+  .fresh-soon{background:#FEF6E7;color:#92600A}
+  .fresh-stale{background:#FDECEC;color:#B42318}
   .link-btn{font-size:11px;color:#2563EB;background:none;border:none;cursor:pointer}
   .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
   .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
@@ -155,6 +159,7 @@ async function load() {
         <span>${escapeHtml(e.file_name)} <span style="color:var(--color-text-tertiary)">· ${escapeHtml(e.platform || '')} · ${escapeHtml(e.evidence_type || '')}</span></span>
         <span style="display:flex;align-items:center;gap:10px">
           <span class="status-tag st-${e.status}">${e.status.replace('_',' ')}</span>
+          ${freshnessBadge(e.uploaded_at)}
           <button class="link-btn" onclick="toggleChain(${i})">Chain of custody</button>
           ${e.storage_path ? `<button class="link-btn" onclick="download('${e.storage_path}')">Download</button>` : ''}
         </span>
@@ -205,6 +210,14 @@ async function download(path) {
 function fmtDate(iso) {
   if (!iso) return null;
   return new Date(iso).toLocaleString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function freshnessBadge(uploadedAt) {
+  if (!uploadedAt) return '';
+  const days = Math.floor((Date.now() - new Date(uploadedAt).getTime()) / (1000*60*60*24));
+  if (days >= 90) return `<span class="fresh-tag fresh-stale" title="Add fresh evidence to keep this score input current">Expired · ${days}d old</span>`;
+  if (days >= 75) return `<span class="fresh-tag fresh-soon" title="Expires in ${90-days} day${90-days===1?'':'s'}">Expiring soon</span>`;
+  return '';
 }
 
 function toggleChain(i) {

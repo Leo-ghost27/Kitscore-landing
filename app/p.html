@@ -26,6 +26,12 @@
   .stat{flex:1}
   .stat-num{font-size:18px;font-weight:700;color:var(--ink,#0F1B2E)}
   .stat-label{font-size:10px;color:var(--color-text-tertiary);margin-top:2px}
+  .endorse-section{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:20px 22px;margin-top:14px;text-align:left}
+  .endorse-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-tertiary);margin-bottom:12px}
+  .endorse-hire-pct{font-size:13px;color:var(--ink,#0F1B2E);margin-bottom:14px}
+  .endorse-hire-pct b{color:#1D9E75}
+  .endorse-note{border-left:2px solid #2563EB;background:#F5F8FE;padding:9px 12px;font-size:12.5px;font-style:italic;color:var(--ink,#0F1B2E);line-height:1.55;margin-bottom:8px;border-radius:0 4px 4px 0}
+  .endorse-note-src{font-size:11px;color:var(--color-text-tertiary);margin-top:4px;font-style:normal}
   .cta{display:block;margin-top:22px;padding:11px;background:#2563EB;color:#fff;text-decoration:none;border-radius:var(--border-radius-sm);font-size:13px;font-weight:600}
   .footer-note{text-align:center;font-size:11px;color:var(--color-text-tertiary);margin-top:16px}
   .loading, .notfound{text-align:center;padding:40px 20px;color:var(--color-text-secondary);font-size:13px}
@@ -83,10 +89,34 @@ async function init() {
       <div class="stat-row">
         <div class="stat"><div class="stat-num">${profile.verified_campaign_count}</div><div class="stat-label">verified campaigns</div></div>
         <div class="stat"><div class="stat-num">${Math.round(Number(profile.confidence)||0)}%</div><div class="stat-label">confidence</div></div>
+        ${profile.reliability_score != null ? `<div class="stat"><div class="stat-num">${Math.round(Number(profile.reliability_score))}</div><div class="stat-label">reliability</div></div>` : ''}
       </div>
       <a href="/for-creators.html" class="cta">Get your own Kitscore →</a>
     </div>
+    <div id="endorseWrap"></div>
     <div class="footer-note">Verified with mutually confirmed campaign evidence, not follower count. · kitscore.co</div>
+  `;
+
+  loadEndorsements(slug);
+}
+
+async function loadEndorsements(slug) {
+  const { data, error } = await sb.rpc('fn_get_public_endorsements', { p_slug: slug });
+  if (error || !data || !data.total_endorsements) return; // no endorsements yet — section simply doesn't render
+
+  const notesHtml = (data.notes || []).map(n => `
+    <div class="endorse-note">
+      "${escapeHtml(n.note)}"
+      <div class="endorse-note-src">— ${escapeHtml(n.sponsor_label)} · ${escapeHtml(n.submitted_month)}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('endorseWrap').innerHTML = `
+    <div class="endorse-section">
+      <div class="endorse-title">Sponsor feedback</div>
+      ${data.would_hire_again_pct != null ? `<div class="endorse-hire-pct"><b>${data.would_hire_again_pct}%</b> of sponsors would hire again <span style="color:var(--color-text-tertiary)">(${data.total_endorsements} verified ${data.total_endorsements === 1 ? 'endorsement' : 'endorsements'})</span></div>` : ''}
+      ${notesHtml}
+    </div>
   `;
 }
 
