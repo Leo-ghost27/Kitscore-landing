@@ -66,7 +66,8 @@ function ringSvg(score) {
 }
 
 async function init() {
-  const slug = window.location.pathname.split('/').filter(Boolean).pop();
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get('slug') || window.location.pathname.split('/').filter(Boolean).pop();
   const { data, error } = await sb.rpc('fn_get_public_profile', { p_slug: slug });
   const profile = data && data[0];
 

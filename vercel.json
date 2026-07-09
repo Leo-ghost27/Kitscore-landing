@@ -8,7 +8,7 @@
   "trailingSlash": false,
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
-    { "source": "/p/:slug", "destination": "/app/p.html" }
+    { "source": "/p/:slug", "destination": "/app/p.html?slug=:slug" }
   ],
   "crons": [
     { "path": "/api/cron-evidence-nudges", "schedule": "0 9 * * 1" }
