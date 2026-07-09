@@ -1,12 +1,13 @@
 // scripts/send-evidence-expiry-nudges.js
 //
+// MANUAL FALLBACK — the primary path is now api/cron-evidence-nudges.js,
+// running automatically via Vercel Cron (see vercel.json, weekly Monday
+// 9am UTC). This script does the same thing by hand — useful for testing
+// without waiting a week, or as a backup if the cron ever needs debugging.
+//
 // Finds evidence_uploads older than 90 days that haven't been nudged in
 // the last 30 days, groups them by creator, and sends one reminder email
-// per creator (not one per item). Not deployed — run locally/manually,
-// same as scripts/retry-failed-notifications.js. If this needs to run on
-// a schedule, wire it up as a Vercel Cron hitting a thin API route that
-// calls the same logic; not built yet since it doesn't need to run more
-// than weekly and there's no cron infra deployed yet.
+// per creator (not one per item).
 //
 // Usage:
 //   RESEND_API_KEY=re_... \

@@ -10,6 +10,9 @@
     { "source": "/", "destination": "/index.html" },
     { "source": "/p/:slug", "destination": "/app/p.html" }
   ],
+  "crons": [
+    { "path": "/api/cron-evidence-nudges", "schedule": "0 9 * * 1" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
