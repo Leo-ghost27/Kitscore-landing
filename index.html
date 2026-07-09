@@ -363,8 +363,9 @@
   .why-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
   /* WHY KITSCORE v2 */
-  .why2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 0.5px solid var(--border); border-radius:0; overflow: hidden; }
-  .why2-card { background: var(--bg); padding: 32px; border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
+  .why2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 0.5px solid var(--border); border-radius:0; overflow: hidden; box-shadow: var(--shadow-sm); }
+  .why2-card { background: var(--bg); padding: 32px; border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); transition: background 0.15s; }
+  .why2-card:hover { background: var(--bg2); }
   .why2-card:nth-child(2n) { border-right: none; }
   .why2-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
   .why2-icon { width: 22px; height: 22px; color: var(--accent); display: flex; align-items: center; justify-content: center; }
@@ -406,11 +407,11 @@
   .vc-result strong { color: var(--text); }
   .vc-flow { display: flex; flex-direction: column; gap: 8px; }
   .vc-step {
-    background: var(--bg2); border: 0.5px solid var(--border);
+    background: var(--bg); border: 0.5px solid var(--border);
     border-radius:0; padding: 11px 14px;
     font-size: 13px; color: var(--muted);
     display: flex; align-items: center; gap: 10px;
-    font-weight: 500;
+    font-weight: 500; box-shadow: var(--shadow-sm);
   }
   .vc-step-dot { width: 7px; height: 7px; border-radius:0; background: var(--accent); flex-shrink: 0; }
 
@@ -1189,21 +1190,21 @@
   <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:24px 28px;margin-bottom:14px;box-shadow:var(--shadow-sm)">
     <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:16px;padding-bottom:12px;border-bottom:0.5px solid var(--border)">Sponsor endorsement ratings</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
-      <div style="background:var(--bg2);border-radius:0;padding:12px;border:0.5px solid var(--border)">
+      <div style="background:var(--bg);border-radius:0;padding:12px;border:0.5px solid var(--border);box-shadow:var(--shadow-sm)">
         <div style="font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500">Communication</div>
         <div style="display:flex;align-items:baseline;gap:5px">
           <div style="font-size:20px;font-weight:700;color:var(--text)">4.9</div>
           <div style="font-size:11px;color:var(--amber)">★★★★★</div>
         </div>
       </div>
-      <div style="background:var(--bg2);border-radius:0;padding:12px;border:0.5px solid var(--border)">
+      <div style="background:var(--bg);border-radius:0;padding:12px;border:0.5px solid var(--border);box-shadow:var(--shadow-sm)">
         <div style="font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500">Professionalism</div>
         <div style="display:flex;align-items:baseline;gap:5px">
           <div style="font-size:20px;font-weight:700;color:var(--text)">4.8</div>
           <div style="font-size:11px;color:var(--amber)">★★★★★</div>
         </div>
       </div>
-      <div style="background:var(--bg2);border-radius:0;padding:12px;border:0.5px solid var(--border)">
+      <div style="background:var(--bg);border-radius:0;padding:12px;border:0.5px solid var(--border);box-shadow:var(--shadow-sm)">
         <div style="font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500">Deliverable Quality</div>
         <div style="display:flex;align-items:baseline;gap:5px">
           <div style="font-size:20px;font-weight:700;color:var(--text)">4.9</div>
