@@ -28,7 +28,8 @@
     display:flex;flex-direction:column;
   }
   .plan-free .tier-label{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:10px}
-  .plan-free h3{font-size:15px;font-weight:600;color:var(--color-text-secondary);margin-bottom:12px}
+  .plan-free h3{font-size:15px;font-weight:600;color:var(--color-text-secondary);margin-bottom:4px}
+  .plan-free .tagline{font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:18px;line-height:1.5}
   .plan-free .price{font-family:'Fraunces',serif;font-size:30px;font-weight:500;color:var(--color-text-secondary);margin-bottom:18px}
   .plan-free .price span{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:400;color:var(--color-text-tertiary)}
   .plan-free ul{list-style:none;font-size:12px;color:var(--color-text-secondary);margin-bottom:20px;display:flex;flex-direction:column;gap:9px;flex:1}
@@ -118,13 +119,15 @@ const TICK = '<span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#f
   const isPro = creator.plan === 'pro';
   document.getElementById('plans').innerHTML = `
     <div class="plan-free">
-      <div class="tier-label">Standard</div>
+      <div class="tier-label">Free</div>
       <h3>Free</h3>
-      <div class="price">$0<span> / mo</span></div>
+      <div class="tagline">Get your profile on the map.</div>
+      <div class="price">$0<span> forever</span></div>
       <ul>
         <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} 1 OAuth-verified platform <span style="color:#9CA3AF;font-size:11px">(unlimited for founding creators)</span></li>
         <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Unlimited linked platforms &amp; evidence uploads</li>
-        <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Trust score · public profile &amp; sponsor directory</li>
+        <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Trust score</li>
+        <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Public profile &amp; sponsor directory listing</li>
         <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Shareable trust profile link</li>
         <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Rate calculator &amp; score breakdown</li>
         <li class="off">${svgIcon('x', {size:13, stroke:'#D5D8DE'})} Proof Packet PDF export · score history</li>
@@ -133,11 +136,11 @@ const TICK = '<span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#f
     </div>
     <div class="plan-pro">
       <div class="tier-row">
-        <div class="tier-label">Kitscore Pro</div>
+        <div class="tier-label">Pro</div>
         <span class="badge-pop">Most popular</span>
       </div>
       <h3>Full Access</h3>
-      <div class="tagline">Everything a sponsor needs to trust you at first glance — verified and always current.</div>
+      <div class="tagline">For creators serious about brand partnerships.</div>
       <div class="price">$19.99<span>/ month</span></div>
       <div class="price-note">Billed monthly · cancel anytime</div>
       <div class="divider"></div>
