@@ -773,7 +773,7 @@ function renderEvidenceTab() {
         <div>
           <div style="font-size:12.5px;font-weight:600">${escapeHtml(tt.platform_handle||'TikTok account')}</div>
           <div style="font-size:11px;color:var(--color-text-tertiary)">
-            Verified ${tt.last_synced_at?'· connected '+new Date(tt.last_synced_at).toLocaleDateString():''}
+            ${tt.follower_count!=null?`${Number(tt.follower_count).toLocaleString()} followers · `:''}${tt.video_count!=null?`${Number(tt.video_count).toLocaleString()} videos · `:''}Verified ${tt.last_synced_at?'· connected '+new Date(tt.last_synced_at).toLocaleDateString():''}
           </div>
         </div>
         <span style="font-size:10px;font-weight:600;color:#16A34A;background:#F0FDF4;padding:3px 8px;border-radius:10px;white-space:nowrap">Verified</span>
