@@ -743,16 +743,23 @@ function renderEvidenceTab() {
         <div>
           <div style="font-size:12.5px;font-weight:600">${escapeHtml(yt.platform_handle||'YouTube channel')}</div>
           <div style="font-size:11px;color:var(--color-text-tertiary)">
-            ${yt.follower_count!=null?`${Number(yt.follower_count).toLocaleString()} subscribers · `:''}Linked ${yt.last_synced_at?'· synced '+new Date(yt.last_synced_at).toLocaleDateString():''}
+            ${yt.follower_count!=null?`${Number(yt.follower_count).toLocaleString()} subscribers · `:''}${yt.verification_method==='oauth'?'Verified':'Linked'} ${yt.last_synced_at?'· synced '+new Date(yt.last_synced_at).toLocaleDateString():''}
           </div>
         </div>
-        <span style="font-size:10px;font-weight:600;color:#2563EB;background:#F0F6FF;padding:3px 8px;border-radius:10px;white-space:nowrap">Linked</span>
+        ${yt.verification_method==='oauth'
+          ? `<span style="font-size:10px;font-weight:600;color:#16A34A;background:#F0FDF4;padding:3px 8px;border-radius:10px;white-space:nowrap">Verified</span>`
+          : `<span style="font-size:10px;font-weight:600;color:#2563EB;background:#F0F6FF;padding:3px 8px;border-radius:10px;white-space:nowrap">Linked</span>`}
       </div>` : ''}
       <div style="display:flex;gap:8px">
         <input id="ytHandleInput" placeholder="YouTube @handle (e.g. mrbeast)" value="${escapeHtml(yt?.platform_handle||'')}" style="flex:1;padding:8px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
         <button class="btn-primary" style="font-size:12px;padding:8px 16px;white-space:nowrap" onclick="connectYoutube()" id="ytConnectBtn">${yt?'Update':'Connect'}</button>
       </div>
       <span id="ytConnectMsg" style="font-size:11px;display:block;margin-top:8px"></span>
+      ${yt?.verification_method!=='oauth' ? `
+      <div style="margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)">
+        <button class="btn-primary" style="font-size:12px;padding:8px 16px;white-space:nowrap;background:#fff;color:#0F1B2E;border:0.5px solid var(--color-border-tertiary)" onclick="connectYoutubeOauth()" id="ytOauthBtn">Verify ownership with Google</button>
+        <span style="font-size:11px;color:var(--color-text-tertiary);display:block;margin-top:6px">Sign in with Google to prove you own this channel — upgrades this to "Verified" and counts as verified evidence toward your Confidence score.</span>
+      </div>` : ''}
     </div>
 
     <!-- ── Connect TikTok (OAuth — ownership-verified) ── -->
@@ -956,6 +963,44 @@ async function connectYoutube(){
   }
 }
 
+async function connectYoutubeOauth(){
+  const btn = document.getElementById('ytOauthBtn');
+  const msgEl = document.getElementById('ytConnectMsg');
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Redirecting…';
+  msgEl.textContent = '';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/youtube-oauth-callback?action=start', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`,
+      },
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || !j.authorizeUrl) {
+      msgEl.textContent = j.error || 'Could not start YouTube verification.';
+      msgEl.style.color = '#DC2626';
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      return;
+    }
+    // Full-page navigation to Google's consent screen -- it redirects back
+    // to /api/youtube-oauth-callback, which then redirects here with
+    // ?youtube_connected=1 or ?youtube_error=..., handled by
+    // showYoutubeStatusFromQuery() on load below.
+    window.location.href = j.authorizeUrl;
+  } catch (err) {
+    msgEl.textContent = 'Error: ' + err.message;
+    msgEl.style.color = '#DC2626';
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+}
+
 async function connectTiktok(){
   const btn = document.getElementById('ttConnectBtn');
   const msgEl = document.getElementById('ttConnectMsg');
@@ -992,6 +1037,37 @@ async function connectTiktok(){
     btn.disabled = false;
     btn.textContent = originalLabel;
   }
+}
+
+// Reads ?youtube_connected=1 / ?youtube_error=... left by the YouTube
+// OAuth callback redirect, shows a one-time banner, then strips the
+// params from the URL so a page refresh doesn't re-show it. Same shape as
+// showTiktokStatusFromQuery() below.
+function showYoutubeStatusFromQuery(){
+  const params = new URLSearchParams(window.location.search);
+  const connected = params.get('youtube_connected');
+  const error = params.get('youtube_error');
+  if (!connected && !error) return;
+
+  const banner = document.getElementById('tiktokStatusBanner');
+  if (banner) {
+    const messages = {
+      missing_params: 'YouTube verification was cancelled or incomplete.',
+      invalid_state: 'That YouTube verification link expired or was already used — please try again.',
+      platform_cap: 'Free plan is limited to one platform. Upgrade to Pro for unlimited platforms.',
+      save_failed: 'YouTube verified, but saving it failed — please try again.',
+    };
+    const text = connected
+      ? 'YouTube channel verified.'
+      : (messages[error] || `YouTube verification failed: ${error}`);
+    const color = connected ? '#16A34A' : '#DC2626';
+    banner.innerHTML = `<div style="font-size:12px;color:${color};padding:10px 12px;background:${connected?'#F0FDF4':'#FEF2F2'};border-radius:8px;margin-bottom:14px">${escapeHtml(text)}</div>`;
+  }
+
+  params.delete('youtube_connected');
+  params.delete('youtube_error');
+  const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+  window.history.replaceState({}, '', newUrl);
 }
 
 // Reads ?tiktok_connected=1 / ?tiktok_error=... left by the OAuth
@@ -1083,6 +1159,12 @@ async function signOut(){
   window.location.href='auth.html';
 }
 
+// If we're landing back from the YouTube OAuth redirect, jump straight to
+// the Evidence tab (where the status banner and Connect platforms card live)
+if (window.location.search.includes('youtube_connected') || window.location.search.includes('youtube_error')) {
+  activeTab = 'evidence';
+}
+
 // If we're landing back from the TikTok OAuth redirect, jump straight to
 // the Evidence tab (where the status banner and Connect TikTok card live)
 // before the first render, instead of defaulting to Overview.
@@ -1090,7 +1172,7 @@ if (window.location.search.includes('tiktok_connected') || window.location.searc
   activeTab = 'evidence';
 }
 
-load().then(() => { showTiktokStatusFromQuery(); });
+load().then(() => { showYoutubeStatusFromQuery(); showTiktokStatusFromQuery(); });
 initRateCalc();
 </script>
 <script>
