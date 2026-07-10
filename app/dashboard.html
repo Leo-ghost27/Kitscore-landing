@@ -382,10 +382,13 @@ async function load() {
     .sort((a,b)=>(compMap[a.key]?.value||0)-(compMap[b.key]?.value||0))
     .slice(0,3);
 
-  const usedPlatforms=[...new Set([
-    ...(evidence||[]).map(e=>e.platform).filter(Boolean),
-    ...(platformConnections||[]).map(p=>p.platform).filter(Boolean),
-  ])];
+  // Only OAuth-verified connections count toward the free-tier cap as of
+  // 2026-07-10 (see supabase/2026-07-10-scope-platform-cap-to-oauth.sql).
+  // Self-reported evidence and handle-lookup (public_lookup) connections
+  // are free/unlimited for everyone and excluded here.
+  const usedPlatforms=[...new Set(
+    (platformConnections||[]).filter(p=>p.verification_method==='oauth').map(p=>p.platform).filter(Boolean)
+  )];
   const unlimitedPlatforms = creator.plan==='pro' || !!creator.founding_cohort;
 
   dash = { components, evidence, answers, answerMap, campaigns, history, verifiedCount, hasScore,
@@ -789,7 +792,7 @@ function renderEvidenceTab() {
       <div class="sec">Evidence uploads</div>
       ${!unlimitedPlatforms ? `
       <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:10px;background:var(--color-background-secondary);border-radius:6px;padding:8px 10px">
-        Free plan is limited to one platform${usedPlatforms.length?` (currently ${escapeHtml(usedPlatforms[0])})`:''}. <a href="pricing-creator.html" style="color:#2563EB;font-weight:600;text-decoration:none">Upgrade to Pro</a> for unlimited platforms — founding creators get this free.
+        Free plan is limited to one OAuth-verified platform${usedPlatforms.length?` (currently ${escapeHtml(usedPlatforms[0])})`:''}. Linked (handle-only) platforms and evidence uploads are always unlimited. <a href="pricing-creator.html" style="color:#2563EB;font-weight:600;text-decoration:none">Upgrade to Pro</a> for unlimited OAuth-verified platforms — founding creators get this free.
       </div>`:''}
       ${(evidence||[]).length?(evidence||[]).map(e=>`
         <div class="ev-row">
@@ -1054,7 +1057,7 @@ function showYoutubeStatusFromQuery(){
     const messages = {
       missing_params: 'YouTube verification was cancelled or incomplete.',
       invalid_state: 'That YouTube verification link expired or was already used — please try again.',
-      platform_cap: 'Free plan is limited to one platform. Upgrade to Pro for unlimited platforms.',
+      platform_cap: 'Free plan is limited to one OAuth-verified platform. Upgrade to Pro for unlimited platforms.',
       save_failed: 'YouTube verified, but saving it failed — please try again.',
     };
     const text = connected
@@ -1084,7 +1087,7 @@ function showTiktokStatusFromQuery(){
     const messages = {
       missing_params: 'TikTok connection was cancelled or incomplete.',
       invalid_state: 'That TikTok connection link expired or was already used — please try connecting again.',
-      platform_cap: 'Free plan is limited to one platform. Upgrade to Pro for unlimited platforms.',
+      platform_cap: 'Free plan is limited to one OAuth-verified platform. Upgrade to Pro for unlimited platforms.',
       save_failed: 'TikTok connected, but saving it failed — please try again.',
     };
     const text = connected
