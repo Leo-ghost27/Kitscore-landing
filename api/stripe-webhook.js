@@ -2,9 +2,9 @@
 // Verifies Stripe signature then routes events. This is the only code path
 // that mutates billing state — never trust client-reported plan changes.
 const Stripe = require('stripe');
-const { adminClient } = require('./_supabase-admin');
+const { adminClient } = require('../lib/supabase-admin');
 const { sendEmail, sponsorReceiptEmail, reportReadyEmail, refundConfirmationEmail } = require('../lib/email');
-const { deriveVerdict, generateAIBrief, fetchCreatorBriefData } = require('../lib/ai-brief');
+const { deriveVerdict, fallbackSummary, fetchCreatorBriefData } = require('../lib/ai-brief');
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -95,22 +95,24 @@ const handler = async (req, res) => {
             const { data: evalRow } = await admin.from('evaluations')
               .select('creator_id, sponsor_id').eq('id', evaluationId).single();
             if (evalRow) {
-              // Generate the AI decision brief now — only ever runs on a
-              // confirmed payment, never on a bare evaluation request, so
-              // an abandoned $0 evaluation never costs an API call.
+              // Re-derive the verdict + template summary now that payment is
+              // confirmed. This used to also call out to Claude for a
+              // narrative AI brief (ai_summary) — removed July 2026 along
+              // with the ANTHROPIC_API_KEY dependency; recommendation_summary
+              // is now always the deterministic template sentence from
+              // fallbackSummary(). See docs/session-handoff for context.
               try {
                 const briefData = await fetchCreatorBriefData(admin, evalRow.creator_id);
                 if (briefData) {
                   const verdict = deriveVerdict(briefData.trustScore, briefData.brandSafety, briefData.verifiedCount);
-                  const { summary, brief } = await generateAIBrief({ ...briefData, verdict });
+                  const { summary } = fallbackSummary(verdict);
                   await admin.from('evaluations').update({
                     recommendation_verdict: verdict,
                     recommendation_summary: summary,
-                    ai_summary: brief ? JSON.stringify(brief) : null,
                   }).eq('id', evaluationId);
                 }
-              } catch (aiErr) {
-                console.error('AI brief generation failed (non-fatal, payment already confirmed):', aiErr);
+              } catch (summaryErr) {
+                console.error('Verdict/summary refresh failed (non-fatal, payment already confirmed):', summaryErr);
               }
 
               const [{ data: creatorProfile }, { data: sponsorProfile }] = await Promise.all([

@@ -663,7 +663,7 @@ async function sendInvite() {
 
   try {
     const { data: { session } } = await sb.auth.getSession();
-    const res = await fetch('/api/invite-team-member', {
+    const res = await fetch('/api/team?action=invite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
       body: JSON.stringify({ teamId: myTeam.id, email }),
@@ -694,7 +694,7 @@ async function addNote() {
 async function decideApproval(requestId, decision) {
   try {
     const { data: { session } } = await sb.auth.getSession();
-    const res = await fetch('/api/review-approval', {
+    const res = await fetch('/api/team?action=review-approval', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
       body: JSON.stringify({ requestId, decision }),

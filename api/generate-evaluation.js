@@ -4,7 +4,7 @@
 // Stripe webhook, and that's also where the AI-generated brief gets
 // attached (see stripe-webhook.js) so an API call is never spent on an
 // evaluation the sponsor never actually pays for.
-const { adminClient, getAuthedSponsor } = require('./_supabase-admin');
+const { adminClient, getAuthedSponsor } = require('../lib/supabase-admin');
 const { deriveVerdict, fallbackSummary, fetchCreatorBriefData } = require('../lib/ai-brief');
 
 module.exports = async (req, res) => {

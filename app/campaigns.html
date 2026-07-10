@@ -453,7 +453,7 @@ async function sendSponsorInvite() {
 
   try {
     const { data: { session } } = await sb.auth.getSession();
-    const res = await fetch('/api/invite-sponsor-confirm', {
+    const res = await fetch('/api/creator-actions?action=invite-sponsor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
       body: JSON.stringify({ sponsorEmail: email, sponsorName, description }),
@@ -507,11 +507,11 @@ async function submitDispute(id) {
   // notifications.js can't help with, since nothing gets queued server-side
   // if the request never arrived. Failures that DO reach the server (e.g.
   // Resend itself erroring) are queued in notification_failures by
-  // /api/notify-dispute and retried from there instead — no need to
+  // /api/creator-actions (notify-dispute) and retried from there instead — no need to
   // hammer the endpoint again here for those.
   try {
     const { data: { session } } = await sb.auth.getSession();
-    await fetchWithRetry('/api/notify-dispute', {
+    await fetchWithRetry('/api/creator-actions?action=notify-dispute', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
       body: JSON.stringify({ campaignId: id }),

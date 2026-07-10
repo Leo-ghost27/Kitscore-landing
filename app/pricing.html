@@ -92,14 +92,14 @@
       <h3>Pay per report</h3>
       <div class="price">$29<span>/report</span></div>
       <div class="desc">Full creator evaluation.</div>
-      <ul><li>✨ AI-generated decision brief</li><li>Recommendation + risk assessment</li><li>No subscription required</li></ul>
+      <ul><li>Recommendation + risk assessment</li><li>No subscription required</li></ul>
       <button class="btn-outline" onclick="window.location.href='directory.html'">Browse directory</button>
     </div>
     <div class="plan ${plan==='starter' ? 'is-current' : ''}">
       <h3>Starter</h3>
       <div class="price">$99<span>/mo</span></div>
       <div class="desc">For sponsors evaluating creators regularly, solo.</div>
-      <ul><li>25 evaluations/mo</li><li>✨ Sponsorship Intelligence AI briefs</li><li>Saved evaluations &amp; history</li><li>Unlimited watchlist</li><li>Comparison tools</li></ul>
+      <ul><li>25 evaluations/mo</li><li>Saved evaluations &amp; history</li><li>Unlimited watchlist</li><li>Comparison tools</li></ul>
       ${cardBtn('starter', 'Start Starter', "subscribe('starter')")}
     </div>
     <div class="plan featured ${plan==='team' ? 'is-current' : ''}">
@@ -107,7 +107,6 @@
       <div class="price">$299<span>/mo</span></div>
       <div class="desc">150 evaluations/mo. Everything in Starter, plus:</div>
       <ul style="margin-bottom:8px">
-        <li>✨ Sponsorship Intelligence AI briefs</li>
         <li>Roles &amp; permissions</li>
         <li>Internal approval workflow</li>
         <li>White-labeled reports</li>
@@ -137,7 +136,7 @@
 async function manageSubscription() {
   try {
     const { data: { session } } = await sb.auth.getSession();
-    const res = await fetch('/api/create-portal-session', {
+    const res = await fetch('/api/billing?action=portal', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
     });
@@ -154,7 +153,7 @@ async function manageSubscription() {
 async function subscribe(product) {
   try {
     const { data: { session } } = await sb.auth.getSession();
-    const res = await fetch('/api/create-checkout-session', {
+    const res = await fetch('/api/billing?action=checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
       body: JSON.stringify({ product }),

@@ -336,14 +336,14 @@ async function generateAndUnlock() {
 
 async function unlock() {
   try {
-    const { ok, json } = await authedFetch('/api/create-checkout-session', {
+    const { ok, json } = await authedFetch('/api/billing?action=checkout', {
       product: 'evaluation_unlock',
       evaluationId: currentEvalId,
       creatorId,
     });
     if (!ok) {
       if (json.requiresApproval) {
-        const { ok: reqOk, json: reqJson } = await authedFetch('/api/request-approval', {
+        const { ok: reqOk, json: reqJson } = await authedFetch('/api/team?action=request-approval', {
           actionType: 'evaluation_unlock',
           targetType: 'evaluation',
           targetId: currentEvalId,
@@ -377,7 +377,7 @@ async function reviewEvaluation(status) {
 async function downloadPdf() {
   try {
     const { data: { session } } = await sb.auth.getSession();
-    const res = await fetch('/api/generate-pdf', {
+    const res = await fetch('/api/documents?type=sponsor-memo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
       body: JSON.stringify({ evaluationId: currentEvalId }),

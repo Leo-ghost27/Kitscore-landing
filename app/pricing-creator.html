@@ -123,11 +123,10 @@ const TICK = '<span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#f
       <div class="price">$0<span> / mo</span></div>
       <ul>
         <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} 1 platform · Trust score <span style="color:#9CA3AF;font-size:11px">(unlimited for founding creators)</span></li>
-        <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Watermarked Proof Packet</li>
         <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Public profile listing &amp; sponsor directory</li>
         <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Shareable trust profile link</li>
         <li>${svgIcon('check', {size:13, stroke:'#9CA3AF'})} Rate calculator &amp; score breakdown</li>
-        <li class="off">${svgIcon('x', {size:13, stroke:'#D5D8DE'})} Score history · clean PDF export</li>
+        <li class="off">${svgIcon('x', {size:13, stroke:'#D5D8DE'})} Proof Packet PDF export · score history</li>
       </ul>
       <button disabled>${isPro ? 'Previous plan' : 'Current plan'}</button>
     </div>
@@ -137,17 +136,17 @@ const TICK = '<span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#f
         <span class="badge-pop">Most popular</span>
       </div>
       <h3>Full Access</h3>
-      <div class="tagline">Everything a sponsor needs to trust you at first glance — verified, unwatermarked, and always current.</div>
+      <div class="tagline">Everything a sponsor needs to trust you at first glance — verified and always current.</div>
       <div class="price">$19.99<span>/ month</span></div>
       <div class="price-note">Billed monthly · cancel anytime</div>
       <div class="divider"></div>
       <ul>
         <li>${TICK} Unlimited connected platforms</li>
-        <li>${TICK} Full, unwatermarked Proof Packet PDF</li>
+        <li>${TICK} Full Proof Packet PDF export</li>
         <li>${TICK} Complete score history &amp; trend tracking</li>
         <li>${TICK} Verified sponsorship reputation (reliability, would-hire-again, repeat sponsors)</li>
-        <li>${TICK} Automatic evidence-freshness email reminders</li>
-        <li>${TICK} Evidence log export with analytics</li>
+        <li>${TICK} Evidence-freshness alerts in your dashboard</li>
+        <li>${TICK} Evidence log export with analytics &amp; chain of custody</li>
       </ul>
       <button id="upgradeBtn" ${isPro ? 'disabled' : ''}>${isPro ? 'Current plan' : 'Upgrade to Pro'}</button>
       <div id="upgradeMsg"></div>
@@ -173,7 +172,7 @@ async function upgrade() {
       msgEl.innerHTML = '<div class="msg error">You need to be signed in to upgrade. Try refreshing the page.</div>';
       btn.disabled = false; btn.textContent = originalLabel; return;
     }
-    const res = await fetch('/api/create-checkout-session', {
+    const res = await fetch('/api/billing?action=checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
       body: JSON.stringify({ product: 'creator_pro' }),

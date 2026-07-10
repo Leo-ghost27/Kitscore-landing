@@ -166,8 +166,8 @@ async function load() {
 
   document.getElementById('export-row').innerHTML = allEvidenceItems.length ? (
     creatorPlan === 'pro'
-      ? `<button class="link-btn" onclick="exportEvidenceCsv()">Export evidence log (CSV) →</button>`
-      : `<span style="font-size:11px;color:var(--color-text-tertiary)">Export with analytics is a Pro feature. <a href="pricing-creator.html" style="color:#2563EB;font-weight:600;text-decoration:none">Upgrade →</a></span>`
+      ? `<button class="link-btn" onclick="exportEvidenceCsv()">Export evidence log — analytics &amp; chain of custody (CSV) →</button>`
+      : `<span style="font-size:11px;color:var(--color-text-tertiary)">Evidence export with analytics &amp; chain of custody is a Pro feature. <a href="pricing-creator.html" style="color:#2563EB;font-weight:600;text-decoration:none">Upgrade →</a></span>`
   ) : '';
 
   document.getElementById('list').innerHTML = (items && items.length) ? items.map((e,i) => `
@@ -178,7 +178,6 @@ async function load() {
           <span class="status-tag st-${e.status}">${e.status.replace('_',' ')}</span>
           ${freshnessBadge(e.uploaded_at)}
           <button class="link-btn" onclick="toggleChain(${i})">Chain of custody</button>
-          ${e.storage_path ? `<button class="link-btn" onclick="download('${e.storage_path}')">Download</button>` : ''}
         </span>
       </div>
       <div id="chain-${i}" style="display:none">${renderChainOfCustody(e)}</div>
@@ -234,12 +233,6 @@ async function upload() {
   updateDropzoneLabel(null);
   btn.disabled = false;
   load();
-}
-
-async function download(path) {
-  const { data, error } = await sb.storage.from('evidence-uploads').createSignedUrl(path, 60);
-  if (error) { alert('Could not get file: ' + error.message); return; }
-  window.open(data.signedUrl, '_blank');
 }
 
 function fmtDate(iso) {
