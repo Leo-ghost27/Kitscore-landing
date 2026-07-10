@@ -743,7 +743,7 @@ function renderEvidenceTab() {
         <div>
           <div style="font-size:12.5px;font-weight:600">${escapeHtml(yt.platform_handle||'YouTube channel')}</div>
           <div style="font-size:11px;color:var(--color-text-tertiary)">
-            ${yt.follower_count!=null?`${Number(yt.follower_count).toLocaleString()} subscribers · `:''}${yt.verification_method==='oauth'?'Verified':'Linked'} ${yt.last_synced_at?'· synced '+new Date(yt.last_synced_at).toLocaleDateString():''}
+            ${yt.follower_count!=null?`${Number(yt.follower_count).toLocaleString()} subscribers · `:''}${yt.video_count!=null?`${Number(yt.video_count).toLocaleString()} videos · `:''}${yt.verification_method==='oauth'?'Verified':'Linked'} ${yt.last_synced_at?'· synced '+new Date(yt.last_synced_at).toLocaleDateString():''}
           </div>
         </div>
         ${yt.verification_method==='oauth'
