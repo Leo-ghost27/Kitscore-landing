@@ -382,7 +382,10 @@ async function load() {
     .sort((a,b)=>(compMap[a.key]?.value||0)-(compMap[b.key]?.value||0))
     .slice(0,3);
 
-  const usedPlatforms=[...new Set((evidence||[]).map(e=>e.platform).filter(Boolean))];
+  const usedPlatforms=[...new Set([
+    ...(evidence||[]).map(e=>e.platform).filter(Boolean),
+    ...(platformConnections||[]).map(p=>p.platform).filter(Boolean),
+  ])];
   const unlimitedPlatforms = creator.plan==='pro' || !!creator.founding_cohort;
 
   dash = { components, evidence, answers, answerMap, campaigns, history, verifiedCount, hasScore,
