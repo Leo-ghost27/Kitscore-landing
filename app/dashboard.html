@@ -628,7 +628,7 @@ function renderScoreTab() {
         const val=comp?comp.value:null;
         const status=comp?comp.status:'pending';
         const tagClass=status==='live_verified'?'tag-live':status==='evidence_submitted'?'tag-ev':'tag-pend';
-        const tagLabel=status==='live_verified'?'Live':status==='evidence_submitted'?'Self-reported':'Pending';
+        const tagLabel=status==='live_verified'?'Live':status==='evidence_submitted'?'Evidence':'Pending';
         const barColor=val>=80?'#1D9E75':val>=60?'#2563EB':'#E58C1A';
         return `
         <div class="pbar-row">
