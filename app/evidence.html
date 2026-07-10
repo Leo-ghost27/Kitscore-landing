@@ -243,9 +243,8 @@ function fmtDate(iso) {
 function freshnessBadge(uploadedAt) {
   if (!uploadedAt) return '';
   const days = Math.floor((Date.now() - new Date(uploadedAt).getTime()) / (1000*60*60*24));
-  const proHint = creatorPlan !== 'pro' ? ' · Pro gets emailed automatically' : '';
-  if (days >= 90) return `<span class="fresh-tag fresh-stale" title="Add fresh evidence to keep this score input current${proHint}">Expired · ${days}d old</span>`;
-  if (days >= 75) return `<span class="fresh-tag fresh-soon" title="Expires in ${90-days} day${90-days===1?'':'s'}${proHint}">Expiring soon</span>`;
+  if (days >= 90) return `<span class="fresh-tag fresh-stale" title="Add fresh evidence to keep this score input current">Expired · ${days}d old</span>`;
+  if (days >= 75) return `<span class="fresh-tag fresh-soon" title="Expires in ${90-days} day${90-days===1?'':'s'}">Expiring soon</span>`;
   return '';
 }
 
