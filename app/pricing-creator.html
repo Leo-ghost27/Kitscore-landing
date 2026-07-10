@@ -43,24 +43,20 @@
   .plan-pro{
     position:relative;
     background:#FFFFFF;
-    padding:32px 30px 28px;
+    padding:0 30px 28px;
     color:var(--color-text-primary);
     border:1.5px solid #2563EB;
     box-shadow:0 20px 48px -24px rgba(37,99,235,0.28);
     display:flex;flex-direction:column;
     overflow:hidden;
   }
-  .plan-pro::before{
-    content:"";position:absolute;top:0;left:0;right:0;height:3px;
-    background:linear-gradient(90deg, #2563EB, #5B8CF5 50%, #2563EB);
+  .plan-pro .banner-pop{
+    background:#2563EB;color:#fff;font-size:11px;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;text-align:center;
+    padding:10px;margin:0 -30px 24px;
   }
-  .plan-pro .tier-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .plan-pro .tier-row{margin-bottom:16px;padding-top:32px}
   .plan-pro .tier-label{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#2563EB}
-  .plan-pro .badge-pop{
-    font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
-    color:#fff;background:#2563EB;
-    padding:4px 9px;
-  }
   .plan-pro h3{font-family:'Fraunces',serif;font-size:22px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;letter-spacing:-0.01em}
   .plan-pro .tagline{font-size:11.5px;color:var(--color-text-secondary);margin-bottom:20px;line-height:1.5}
   .plan-pro .price{font-family:'Fraunces',serif;font-size:44px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;letter-spacing:-0.02em;display:flex;align-items:baseline;gap:6px}
@@ -130,9 +126,9 @@ let profile, creator;
       <button disabled>${isPro ? 'Previous plan' : 'Current plan'}</button>
     </div>
     <div class="plan-pro">
+      <div class="banner-pop">Most Popular</div>
       <div class="tier-row">
         <div class="tier-label">Pro</div>
-        <span class="badge-pop">Most popular</span>
       </div>
       <h3>Full Access</h3>
       <div class="tagline">For creators serious about brand partnerships.</div>
