@@ -153,6 +153,35 @@
   .hero2-stat-num { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
   .hero2-stat-num.accent { color: var(--accent); }
   .hero2-stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  .dm-wrap { perspective: 1400px; width: 100%; max-width: 380px; height: 460px; margin: 0 auto; }
+  .dm-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; cursor: pointer; transition: transform .15s ease-out; }
+  .dm-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; transform-style: preserve-3d; }
+  .dm-front { background: var(--bg); border: 1px solid var(--border); box-shadow: var(--shadow-md); }
+  .dm-back { background: #0C1E3D; transform: rotateY(180deg); padding: 26px 24px; }
+  .dm-topbar { display: flex; align-items: center; gap: 8px; padding: 12px 18px; border-bottom: 1px solid var(--border); background: var(--bg2); transform: translateZ(14px); }
+  .dm-topbar span { font-size: 12px; color: var(--muted); }
+  .dm-body { padding: 22px 22px 18px; display: flex; flex-direction: column; flex: 1; position: relative; }
+  .dm-verdict { background: var(--green-bg); border: 1px solid var(--green); border-radius: 0; padding: 13px 15px; margin-bottom: 20px; transform: translateZ(28px); }
+  .dm-verdict-title { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #173404; margin-bottom: 4px; }
+  .dm-verdict p { font-size: 12.5px; color: #27500A; margin: 0; line-height: 1.4; }
+  .dm-rings { display: flex; justify-content: center; gap: 26px; margin: 2px 0 22px; transform: translateZ(36px); }
+  .dm-facts { display: flex; flex-direction: column; gap: 9px; font-size: 12.5px; color: var(--muted); margin-bottom: auto; transform: translateZ(20px); }
+  .dm-facts div { display: flex; justify-content: space-between; }
+  .dm-facts span:last-child { color: var(--text); font-weight: 600; }
+  .dm-fact-good { color: #173404 !important; }
+  .dm-ribbon { position: absolute; top: 16px; right: -32px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 4px 36px; transform: rotate(40deg) translateZ(30px); letter-spacing: .04em; }
+  .dm-hint { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: var(--muted2); padding-top: 16px; transform: translateZ(14px); }
+  .dm-back-eyebrow { font-size: 12px; color: #7FA8E0; margin: 0 0 4px; letter-spacing: .04em; }
+  .dm-back-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; color: #fff; margin: 0 0 24px; }
+  .dm-feats { display: flex; flex-direction: column; gap: 17px; flex: 1; }
+  .dm-feat { display: flex; gap: 12px; align-items: flex-start; }
+  .dm-feat svg { flex-shrink: 0; margin-top: 1px; }
+  .dm-feat p:first-child { font-size: 13.5px; color: #fff; margin: 0; font-weight: 600; }
+  .dm-feat p:last-child { font-size: 12px; color: #7FA8E0; margin: 2px 0 0; line-height: 1.4; }
+  .dm-back-hint { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: #7FA8E0; padding-top: 16px; }
+  .dm-caption { text-align: center; font-size: 12px; color: var(--muted2); margin-top: 16px; }
+  @media (max-width: 1024px) { .dm-wrap { max-width: 320px; height: 420px; } }
   @media (max-width: 900px) {
     .hero2-grid { grid-template-columns: 1fr; }
     .hero2-left { text-align: center; }
@@ -710,60 +739,83 @@
       </div>
     </div>
 
-    <div>
-      <!-- Mock creator card -->
-      <div style="position:relative">
-        <div class="cpc">
-        <div class="cpc-header" style="position:relative">
-          <div class="cpc-avatar">JE</div>
-          <div><div class="cpc-name">Jordan Ellis</div><div class="cpc-handle">@jordanellis · Fitness · London</div></div>
-          <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-            <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#22C55E"><span style="width:6px;height:6px;border-radius:50%;background:#22C55E"></span>Live</span>
-            <div style="background:#fff;border:1.5px solid var(--accent);padding:6px 10px;text-align:right;box-shadow:0 2px 8px rgba(37,99,235,0.12)">
-              <div style="font-size:11px;font-weight:700;color:var(--accent)">88% Confidence</div>
-              <div style="font-size:10px;color:var(--muted)">High evidence backing</div>
-            </div>
-          </div>
-        </div>
-        <div style="padding:24px">
-          <div style="display:flex;gap:24px;align-items:center;margin-bottom:20px">
-            <div style="text-align:center">
-              <div class="cpc-ring" style="width:80px;height:80px">
-                <svg viewBox="0 0 70 70" style="width:80px;height:80px">
-                  <circle class="cpc-ring-track" cx="35" cy="35" r="32"/>
-                  <circle class="cpc-ring-fill" cx="35" cy="35" r="32"/>
-                </svg>
-                <div class="cpc-ring-inner"><div class="cpc-ring-num" style="font-size:20px">87</div><div class="cpc-ring-sub">/ 100</div></div>
-              </div>
-              <div class="cpc-badge" style="margin-top:6px">Gold</div>
-            </div>
-            <div style="text-align:center">
-              <div class="cpc-ring" style="width:80px;height:80px">
-                <svg viewBox="0 0 70 70" style="width:80px;height:80px">
-                  <circle class="cpc-ring-track" cx="35" cy="35" r="32"/>
-                  <circle cx="35" cy="35" r="32" fill="none" stroke="var(--green)" stroke-width="6" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="14" transform="rotate(-90 35 35)"/>
-                </svg>
-                <div class="cpc-ring-inner"><div class="cpc-ring-num" style="font-size:20px;color:var(--green)">93</div><div class="cpc-ring-sub">Reliability</div></div>
-              </div>
-              <div style="font-size:11px;color:var(--green);font-weight:600;margin-top:6px">100% Hire Again</div>
-            </div>
-          </div>
-          <div class="cpc-comps">
-            <div class="cpc-comp-row"><span class="cpc-comp-name">Audience auth.</span><div class="cpc-bar-bg"><div class="cpc-bar" style="width:91%;background:#3B6D11"></div></div><span class="cpc-comp-val">91</span><span class="cpc-comp-tag cpc-tag-live">Live</span></div>
-            <div class="cpc-comp-row"><span class="cpc-comp-name">Engagement</span><div class="cpc-bar-bg"><div class="cpc-bar" style="width:88%;background:#3B6D11"></div></div><span class="cpc-comp-val">88</span><span class="cpc-comp-tag cpc-tag-live">Live</span></div>
-            <div class="cpc-comp-row"><span class="cpc-comp-name">Brand safety</span><div class="cpc-bar-bg"><div class="cpc-bar" style="width:82%;background:#2563EB"></div></div><span class="cpc-comp-val">82</span><span class="cpc-comp-tag cpc-tag-ev">Evidence</span></div>
-            <div class="cpc-comp-row"><span class="cpc-comp-name">Consistency</span><div class="cpc-bar-bg"><div class="cpc-bar" style="width:84%;background:#3B6D11"></div></div><span class="cpc-comp-val">84</span><span class="cpc-comp-tag cpc-tag-live">Live</span></div>
-            <div class="cpc-comp-row"><span class="cpc-comp-name">Professionalism</span><div class="cpc-bar-bg"><div class="cpc-bar" style="width:85%;background:#3B6D11"></div></div><span class="cpc-comp-val">85</span><span class="cpc-comp-tag cpc-tag-live">Live</span></div>
-          </div>
-          <div style="margin-top:16px">
-            <button onclick="window.location.href='app/auth.html'" style="width:100%;background:var(--accent);color:#fff;border:none;padding:13px;font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;border-radius:0">Unlock Full Evaluation — $29</button>
-            <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:8px">Score breakdown · Risk assessment · Decision memo PDF</div>
-          </div>
-        </div>
-        </div>
-        <div style="position:absolute;bottom:-14px;left:14px;z-index:2;background:var(--accent);color:#fff;border-radius:0;padding:9px 16px;font-size:12px;font-weight:700;box-shadow:var(--shadow-md)">5 Verified Campaigns</div>
-      </div>
+    <div class="dm-col">
+      <div class="dm-wrap" id="dmWrap">
+        <div class="dm-card" id="dmCard">
 
+          <div class="dm-face dm-front">
+            <div class="dm-topbar">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9 13h6M9 17h6"/></svg>
+              <span>decision memo · sophie x willow skincare</span>
+            </div>
+            <div class="dm-body">
+              <div class="dm-verdict">
+                <div class="dm-verdict-title">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#173404" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                  recommended to sponsor
+                </div>
+                <p>high-confidence, brand-safe fit for your brief</p>
+              </div>
+
+              <div class="dm-rings">
+                <svg width="82" height="82" viewBox="0 0 92 92">
+                  <circle cx="46" cy="46" r="38" fill="none" stroke="var(--border)" stroke-width="7"/>
+                  <circle cx="46" cy="46" r="38" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="238.76" transform="rotate(-90 46 46)" id="dmRing1"/>
+                  <text x="46" y="42" text-anchor="middle" font-size="19" font-weight="700" fill="var(--text)" id="dmNum1">0</text>
+                  <text x="46" y="59" text-anchor="middle" font-size="9" fill="var(--muted)">trust</text>
+                </svg>
+                <svg width="82" height="82" viewBox="0 0 92 92">
+                  <circle cx="46" cy="46" r="38" fill="none" stroke="var(--border)" stroke-width="7"/>
+                  <circle cx="46" cy="46" r="38" fill="none" stroke="var(--green)" stroke-width="7" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="238.76" transform="rotate(-90 46 46)" id="dmRing2"/>
+                  <text x="46" y="42" text-anchor="middle" font-size="19" font-weight="700" fill="var(--text)" id="dmNum2">0</text>
+                  <text x="46" y="59" text-anchor="middle" font-size="9" fill="var(--muted)">confidence</text>
+                </svg>
+              </div>
+
+              <div class="dm-facts">
+                <div><span>audience fit</span><span>79% UK · 18-34</span></div>
+                <div><span>risk assessment</span><span class="dm-fact-good">low risk</span></div>
+              </div>
+
+              <div class="dm-ribbon">EVIDENCE-BACKED</div>
+
+              <div class="dm-hint">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+                tap to see why we recommend her
+              </div>
+            </div>
+          </div>
+
+          <div class="dm-face dm-back">
+            <p class="dm-back-eyebrow">before you commit budget</p>
+            <p class="dm-back-title">why we recommend her</p>
+            <div class="dm-feats">
+              <div class="dm-feat">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#85B7EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                <div><p>4 mutually confirmed campaigns</p><p>Confirmed by sponsors, not self-reported</p></div>
+              </div>
+              <div class="dm-feat">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#85B7EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+                <div><p>8-point brand safety check</p><p>Zero flags across every category</p></div>
+              </div>
+              <div class="dm-feat">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#85B7EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4M7 22l-4-4 4-4M3 6h13a4 4 0 0 1 4 4M21 18H8a4 4 0 0 1-4-4"/></svg>
+                <div><p>100% would-hire-again rate</p><p>Every past sponsor, no exceptions</p></div>
+              </div>
+              <div class="dm-feat">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#85B7EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9 13h6M9 17h6"/></svg>
+                <div><p>Published scoring formula</p><p>No black box, weights are public</p></div>
+              </div>
+            </div>
+            <div class="dm-back-hint">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v1"/></svg>
+              tap to flip back
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <p class="dm-caption">the sponsor's view · move your cursor, click to flip</p>
     </div>
   </div>
 </div>
@@ -1703,6 +1755,42 @@ async function loadHomeDirectory() {
   }
 }
 loadHomeDirectory();
+</script>
+
+<script>
+(function(){
+  var wrap = document.getElementById('dmWrap');
+  var card = document.getElementById('dmCard');
+  if (!wrap || !card) return;
+  var flipped = false, tiltX = 0, tiltY = 0;
+  function render(){
+    var flipDeg = flipped ? 180 : 0;
+    card.style.transform = 'rotateX(' + tiltX + 'deg) rotateY(' + (flipDeg + tiltY) + 'deg)';
+  }
+  wrap.addEventListener('mousemove', function(e){
+    var r = wrap.getBoundingClientRect();
+    var px = (e.clientX - r.left) / r.width - 0.5;
+    var py = (e.clientY - r.top) / r.height - 0.5;
+    tiltX = py * -12;
+    tiltY = px * 12;
+    render();
+  });
+  wrap.addEventListener('mouseleave', function(){ tiltX = 0; tiltY = 0; render(); });
+  wrap.addEventListener('click', function(){ flipped = !flipped; render(); });
+
+  var dur = 1100, start = null;
+  function step(ts){
+    if (!start) start = ts;
+    var p = Math.min((ts - start) / dur, 1);
+    var e = 1 - Math.pow(1 - p, 3);
+    document.getElementById('dmNum1').textContent = Math.round(87 * e);
+    document.getElementById('dmNum2').textContent = Math.round(91 * e);
+    document.getElementById('dmRing1').setAttribute('stroke-dashoffset', 238.76 * (1 - 0.87 * e));
+    document.getElementById('dmRing2').setAttribute('stroke-dashoffset', 238.76 * (1 - 0.91 * e));
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+})();
 </script>
 
 <script>
