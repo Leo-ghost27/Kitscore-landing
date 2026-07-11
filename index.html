@@ -378,7 +378,8 @@
     .why2-card { border-right: none; }
   }
 
-  .why2-compare { background: var(--bg); border: 0.5px solid var(--border); border-top: 2px solid var(--accent); border-radius:0; overflow: hidden; margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; box-shadow: var(--shadow-sm); }
+  .why2-compare { background: var(--bg); border: 0.5px solid var(--border); border-top: 2px solid var(--accent); border-radius:0; overflow: hidden; margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; box-shadow: var(--shadow-sm); transition: border-color .2s ease, box-shadow .2s ease; }
+  .why2-compare:hover { border-color: var(--accent); box-shadow: 0 12px 32px -10px rgba(37,99,235,0.35); }
   .why2-compare-side { padding: 32px; }
   .why2-compare-side:first-child { border-right: 0.5px solid var(--border); }
   .why2-compare-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
