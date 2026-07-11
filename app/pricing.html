@@ -89,24 +89,33 @@
 
   document.getElementById('plansWrap').innerHTML = `
     <div class="plan ${plan==='free' || plan==='pro' ? 'is-current' : ''}">
-      <h3>Pay per report</h3>
+      <h3>Pay As You Go</h3>
       <div class="price">$29<span>/report</span></div>
-      <div class="desc">Full creator evaluation.</div>
-      <ul><li>Recommendation + risk assessment</li><li>No subscription required</li></ul>
+      <div class="desc">Perfect for one-off decisions.</div>
+      <ul>
+        <li>Full trust score + confidence rating</li>
+        <li>Sponsor decision memo PDF</li>
+        <li>5-point brand safety assessment</li>
+        <li>Verified campaign history</li>
+        <li>Audience fit analysis</li>
+        <li>No subscription required</li>
+      </ul>
       <button class="btn-outline" onclick="window.location.href='directory.html'">Browse directory</button>
     </div>
     <div class="plan ${plan==='starter' ? 'is-current' : ''}">
       <h3>Starter</h3>
       <div class="price">$99<span>/mo</span></div>
       <div class="desc">For sponsors evaluating creators regularly, solo.</div>
-      <ul><li>25 evaluations/mo</li><li>Saved evaluations &amp; history</li><li>Unlimited watchlist</li><li>Comparison tools</li></ul>
+      <ul><li>25 evaluations per month</li><li>All pay-as-you-go features</li><li>Unlimited watchlist</li><li>Saved history &amp; comparison tools</li></ul>
       ${cardBtn('starter', 'Start Starter', "subscribe('starter')")}
     </div>
     <div class="plan featured ${plan==='team' ? 'is-current' : ''}">
       <h3>Team</h3>
       <div class="price">$299<span>/mo</span></div>
-      <div class="desc">150 evaluations/mo. Everything in Starter, plus:</div>
+      <div class="desc">For agencies and in-house brand teams running multiple campaigns.</div>
       <ul style="margin-bottom:8px">
+        <li>150 evaluations per month</li>
+        <li>All Starter features</li>
         <li>Roles &amp; permissions</li>
         <li>Internal approval workflow</li>
         <li>White-labeled reports</li>
