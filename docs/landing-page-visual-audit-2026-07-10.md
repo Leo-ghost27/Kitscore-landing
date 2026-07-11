@@ -27,33 +27,22 @@ the premium serif. Font-weight also drifted (700 vs. 600 everywhere else).
 **Fix:** added `font-family: var(--font-display)` and aligned weight to 600.
 Pushed in commit `ced446e`.
 
-### 🟡 OPEN — needs a call — band-alt rhythm breaks once
-Section background alternates white/cream perfectly for 4 straight transitions,
-then breaks: **"Sample Reports" (white) → "See It In Action" (white)** sit
-back-to-back with no cream band between them — the only adjacent-pair repeat
-on the page. Every other transition alternates cleanly:
+### 🟢 FIXED — band-alt rhythm break
+Resolved by merging "Sample Reports" + "See It In Action" into one continuous
+white section (divider removed between them). Merging drops one section from
+the alternating count, so keeping the merged block **white** (not cream)
+restores perfect alternation for every section after it with zero other
+changes needed — the fix was simpler than it first looked.
+Pushed in commit `aae03f8`.
 
-```
-for-creators-band   white
-how-it-works        cream  ← band-alt
-directory           white
-why-kitscore        cream  ← band-alt
-sample-reports      white
-see-it-in-action     white   ← repeat, breaks rhythm
-reputation           cream  ← band-alt
-methodology-teaser  white
-decision-memo        cream  ← band-alt
-pricing              white
-faq                  cream  ← band-alt
-```
-
-Fixing this by wrapping "See It In Action" in `.band-alt` would just push the
-collision one section later (it'd then sit next to "reputation," also alt).
-Real fix needs one of: (a) merge Sample Reports + See It In Action into one
-band-alt section since they're both proof/demo content anyway, or (b) accept
-the one-time repeat as-is since it's a single deviation in an 11-section page.
-**Need your call before I touch this** — it's a structural edit, not a
-one-line fix.
+### 🟢 FIXED — comparison block structural asymmetry
+"Other tools ask" (left column) had only an eyebrow + question, while
+"Kitscore answers" (right column) had eyebrow + bold headline + explanatory
+subline — leaving the left side visually sparse/unfinished next to the right.
+Added a matching subline to the left column ("A single metric, disconnected
+from any hiring decision.") so both sides share the same structure while
+preserving the intentional muted-vs-bold tone contrast.
+Pushed in commit `aae03f8`.
 
 ### 🟢 Reviewed, no issue — worth noting so it isn't re-flagged later
 - App-side pages (`app/*.html`) intentionally use a second typeface,
