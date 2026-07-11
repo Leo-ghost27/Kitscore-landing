@@ -853,10 +853,11 @@
       <h2 class="section-h" style="margin-bottom:6px">Browse verified creators.<br>Evaluate before you commit.</h2>
       <p style="font-size:13px;color:var(--muted)">Every profile shows verified campaign history and reliability data. Unlock a full evaluation for $29.</p>
     </div>
-    <div class="dir-filter-row">
+    <div class="dir-filter-row" id="dirFilterRow">
       <button class="dir-filter-btn active" onclick="kitFilterDir(this,'all')">All</button>
       <button class="dir-filter-btn" onclick="kitFilterDir(this,'fitness')">Fitness</button>
       <button class="dir-filter-btn" onclick="kitFilterDir(this,'beauty')">Beauty</button>
+      <button class="dir-filter-btn" onclick="kitFilterDir(this,'lifestyle')">Lifestyle</button>
       <button class="dir-filter-btn" onclick="kitFilterDir(this,'tech')">Tech</button>
     </div>
   </div>
@@ -1618,6 +1619,33 @@ function kitFilterDir(btn, niche) {
     row.style.display = (niche === 'all' || row.dataset.niche === niche) ? 'grid' : 'none';
   });
 }
+
+// Builds the filter chip row as a facet of whatever niches are actually present
+// in `niches` (raw display-case strings, e.g. from creator records), instead of
+// a hardcoded set that can silently drift from the real data -- see the
+// Aaliya Ahmed / "Fashion" directory-filter-gap finding (2026-07-10). "All" is
+// always first and stays active by default. Case-insensitive de-dupe so
+// "Beauty" and "beauty" from different sources collapse into one chip.
+function renderDirFilterChips(niches) {
+  const row = document.getElementById('dirFilterRow');
+  if (!row) return;
+  const seen = new Map();
+  (niches || []).forEach(raw => {
+    const trimmed = (raw || '').trim();
+    if (!trimmed) return;
+    const key = trimmed.toLowerCase();
+    if (!seen.has(key)) {
+      seen.set(key, trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase());
+    }
+  });
+  const chips = ['<button class="dir-filter-btn active" onclick="kitFilterDir(this,\'all\')">All</button>'];
+  Array.from(seen.entries())
+    .sort((a, b) => a[1].localeCompare(b[1]))
+    .forEach(([key, label]) => {
+      chips.push(`<button class="dir-filter-btn" onclick="kitFilterDir(this,'${key}')">${label}</button>`);
+    });
+  row.innerHTML = chips.join('');
+}
 window.addEventListener('load', () => {
   const fill = document.querySelector('.cpc-ring-fill');
   if (fill) {
@@ -1666,6 +1694,7 @@ async function loadHomeDirectory() {
     // never leave visitors looking at an empty or stuck state.
     if (rows.length) {
       grid.innerHTML = rows.map(dirRowHtml).join('');
+      renderDirFilterChips(rows.map(r => r.niche));
     }
   } catch (err) {
     clearTimeout(timeout);
