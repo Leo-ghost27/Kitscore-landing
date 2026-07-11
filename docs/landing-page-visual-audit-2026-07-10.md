@@ -63,3 +63,83 @@ Pushed in commit `aae03f8`.
 
 ## Next up (pending your steer)
 Sponsor-side review — bigger scope, tomorrow per your note.
+
+---
+
+## Sponsor pricing/messaging pass — 2026-07-11
+
+### 🟢 FIXED — pricing synced across landing / agencies / checkout
+Tier 1 had three different names ("Single Evaluation" / "Pay as you go" /
+"Pay per report") and three different feature lists for the identical $29
+product. Renamed to **"On Demand"** everywhere, unified feature list to the
+richest/most accurate version, and synced Starter + Team wording across all
+three surfaces (`index.html` #pricing-sponsors, `agencies.html`,
+`app/pricing.html` checkout). Enterprise/Custom confirmed correctly absent
+from the landing page, present only on agencies + checkout, per your rule.
+
+### 🟢 FIXED — Pro pricing bullet was overselling
+"Verified sponsorship reputation — reliability, would-hire-again %,
+repeat-sponsor rate" implied all three were Pro-exclusive. Checked
+`app/p.html` (public shareable profile) directly: reliability_score and
+would_hire_again_pct are unguarded and show for free creators. Only
+repeat_sponsor_rate is genuinely Pro-only. Reworded to "Repeat-sponsor rate,
+plus your full reputation breakdown always up to date in your dashboard."
+
+### 🟢 FIXED — "Sponsorship Intelligence" → "Sponsorship Due Diligence"
+AI-adjacent branding swapped for a name that still sounds premium without
+implying AI, which would've undercut the site's own anti-AI-scoring
+positioning (see compare.html).
+
+### 🟢 CHECKED — AI's role claim on compare.html
+Was already fixed in a separate session before I re-checked (confirmed via
+fresh fetch + commit history) — no longer claims AI narrates the memo.
+Verified against the actual code (`api/generate-evaluation.js`): deterministic
+template, zero AI API calls anywhere in the codebase. No action needed.
+
+### 🟢 FIXED — CTA text unified
+Was 5+ different variants for the same actions. Standardized:
+- **Nav CTA** (all pages): "Get Started"
+- **Sponsor primary CTA**: "Evaluate a Creator →"
+- **Creator primary CTA**: "Claim Your Founding Spot →"
+Plan-specific buttons (e.g. "Start Team Plan") and genuinely different
+actions (e.g. "Browse full directory") left alone — not duplicates of the
+primary CTA, don't need unifying.
+
+### 🟢 FIXED — Score terminology capitalization
+"Trust Score" / "Confidence Rating" / "Reliability Score" were inconsistently
+cased throughout (~28 instances across index.html, agencies.html,
+methodology.html). Standardized to always-capitalized as proper product
+names.
+
+### 🟢 FIXED — Starter/Team tier gap
+25→150 evals was a 6x volume jump for only 3x the price, no middle option.
+Added overage pricing to Starter instead of a new tier or raising the cap
+(keeps Team's collaboration features — roles, approval workflow, multi-client
+— as the actual reason to upgrade, not just volume). Copy now live on
+landing/agencies/checkout: **"Additional evaluations at $12 each."**
+
+**Backend**: `lib/handlers/billing-checkout.js` now has `starter_overage`
+wired into `PRICE_MAP` and `PRODUCT_CONFIG` as a one-off payment product
+(same pattern as `report`/`evaluation_unlock`), reading from a new env var
+`STRIPE_PRICE_STARTER_OVERAGE`. **This is checkout plumbing only** — it does
+not yet include the logic to detect a Starter sponsor has hit their 25/mo
+cap and prompt the overage purchase in the UI. That's a separate, still-open
+piece of work (likely lives in the evaluate/directory flow, checking usage
+against the cap before letting a Starter sponsor run an evaluation).
+
+**To finish wiring this up, in Stripe:**
+1. Stripe Dashboard → Product catalog → **+ Add product**
+2. Name it something like "Starter Overage Evaluation" (keeps it distinct in
+   your Stripe reporting from the $29 On Demand product, even though the
+   checkout code treats it the same way — a one-off payment)
+3. Set pricing: **$12.00, one-time** (not recurring — this is per-evaluation,
+   charged each time a Starter sponsor goes over their 25/mo)
+4. Save, then open the price you just created and copy its **Price ID**
+   (starts with `price_...`)
+5. In Vercel → your Kitscore project → Settings → Environment Variables →
+   add `STRIPE_PRICE_STARTER_OVERAGE` = that Price ID → apply to Production
+   and Preview → redeploy so the serverless functions pick it up
+6. Once that's live, the checkout endpoint will accept
+   `{ product: 'starter_overage' }` — but something in the app still needs to
+   *call* it at the right moment (the missing piece noted above)
+
