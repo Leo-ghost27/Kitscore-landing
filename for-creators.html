@@ -49,19 +49,53 @@
 
   .badge { display: inline-flex; align-items: center; gap: 6px; background: var(--amber-dim); color: var(--amber); font-size: 12px; font-weight: 600; padding: 6px 14px; margin-bottom: 20px; }
 
-  .hero { padding: 64px 0 48px; text-align: center; }
-  .hero h1 { font-size: clamp(30px, 4.5vw, 48px); font-weight: 800; font-family: var(--font-display); letter-spacing: -0.01em; line-height: 1.15; margin-bottom: 18px; max-width: 720px; margin-left: auto; margin-right: auto; }
-  .hero h1 em { font-style: normal; color: var(--accent); }
-  .hero-sub { font-size: 17px; color: var(--muted); max-width: 560px; line-height: 1.75; margin: 0 auto 32px; }
+  .hero { padding: 64px 0 48px; display: grid; grid-template-columns: 1fr 360px; gap: 56px; align-items: center; text-align: left; }
+  .hero-copy h1 { font-size: clamp(30px, 4.5vw, 46px); font-weight: 800; font-family: var(--font-display); letter-spacing: -0.01em; line-height: 1.15; margin-bottom: 18px; }
+  .hero-copy h1 em { font-style: normal; color: var(--accent); }
+  .hero-sub { font-size: 17px; color: var(--muted); max-width: 520px; line-height: 1.75; margin: 0 0 32px; }
   .hero-cta { display: inline-block; background: var(--accent); color: #fff; padding: 15px 32px; font-size: 15px; font-weight: 700; text-decoration: none; }
   .hero-cta:hover { text-decoration: none; opacity: .92; }
   .hero-note { font-size: 12.5px; color: #9CA3AF; margin-top: 12px; }
 
-  .counter { max-width: 340px; margin: 36px auto 0; }
-  .counter-label { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 8px; }
+  .counter { max-width: 340px; margin: 36px 0 0; }
+  .counter-label { font-size: 12px; color: var(--muted); text-align: left; margin-bottom: 8px; }
   .counter-track { height: 6px; background: var(--bg3); position: relative; overflow: hidden; }
   .counter-fill { height: 100%; background: var(--accent); transition: width .4s ease; }
-  .counter-num { text-align: center; font-size: 12.5px; color: var(--text); font-weight: 600; margin-top: 8px; }
+  .counter-num { text-align: left; font-size: 12.5px; color: var(--text); font-weight: 600; margin-top: 8px; }
+
+  /* ── Flip card ───────────────────────────────────────────────────────── */
+  .hero-visual { perspective: 1600px; display: flex; justify-content: center; }
+  .flip-card { position: relative; width: 100%; max-width: 320px; height: 400px; cursor: pointer; transform-style: preserve-3d; }
+  .flip-card-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transform: rotateX(0) rotateY(0); }
+  .flip-card-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: var(--shadow-md); display: flex; flex-direction: column; padding: 30px 26px; }
+  .flip-card-front { background: #fff; border: 1px solid var(--border); color: var(--text); }
+  .flip-card-back { background: #0F1B2E; border: 1px solid #0F1B2E; color: #fff; transform: rotateY(180deg); }
+  .fc-eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .fc-eyebrow.on-dark { color: #7CA8F0; }
+  .fc-link { font-family: 'SFMono-Regular', Menlo, monospace; font-size: 11px; color: var(--muted); margin-bottom: 22px; word-break: break-all; }
+  .fc-avatar { width: 48px; height: 48px; background: var(--accent-dim); color: var(--accent); font-weight: 700; font-size: 17px; font-family: var(--font-display); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+  .fc-name { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+  .fc-meta { font-size: 12.5px; color: var(--muted); margin-bottom: 24px; }
+  .fc-score-row { display: flex; gap: 24px; margin-bottom: auto; }
+  .fc-score-num { font-family: var(--font-display); font-size: 34px; font-weight: 700; line-height: 1; }
+  .fc-score-label { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 6px; }
+  .fc-badge-gold { display: inline-block; font-size: 11px; font-weight: 700; color: #8C6C3B; background: #FBF0DA; padding: 4px 10px; margin-top: 10px; }
+  .fc-hint { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 20px; }
+  .flip-card-back .fc-hint { color: #93A3BE; }
+  .fc-back-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; line-height: 1.25; margin-bottom: 22px; }
+  .fc-check-list { list-style: none; display: flex; flex-direction: column; gap: 16px; margin-bottom: auto; }
+  .fc-check-list li { display: flex; align-items: flex-start; gap: 10px; }
+  .fc-check-box { width: 15px; height: 15px; border: 1.5px solid #4A6389; flex-shrink: 0; margin-top: 2px; }
+  .fc-check-title { font-size: 13.5px; font-weight: 600; color: #fff; }
+  .fc-check-desc { font-size: 12px; color: #93A3BE; margin-top: 2px; line-height: 1.5; }
+
+  @media (max-width: 760px) {
+    .hero { grid-template-columns: 1fr; gap: 32px; text-align: center; }
+    .hero-sub { margin-left: auto; margin-right: auto; }
+    .counter { margin-left: auto; margin-right: auto; }
+    .counter-label, .counter-num { text-align: center; }
+    .flip-card { max-width: 280px; height: 360px; }
+  }
 
   section { padding: 56px 0; }
   section h2 { font-size: clamp(20px, 2.6vw, 28px); font-weight: 700; font-family: var(--font-display); letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 14px; text-align: center; }
@@ -137,16 +171,79 @@
 
 <div class="container">
   <div class="hero">
-    <span class="badge">★ Founding Creator Cohort — First 100</span>
-    <h1>Get a free, evidence-backed<br><em>Kitscore.</em></h1>
-    <p class="hero-sub">One profile you can send to any brand — a free, shareable trust link with a trust score and reliability score, built from verified campaign history, not follower count. Founding Creators also get unlimited OAuth-verified platforms free, normally a $19.99/mo Pro perk.</p>
-    <a href="/app/auth.html" class="hero-cta">Claim Your Founding Spot →</a>
-    <div class="hero-note">Free forever. No card required. Takes about 2 minutes.</div>
+    <div class="hero-copy">
+      <span class="badge">★ Founding Creator Cohort — First 100</span>
+      <h1>Get a free, evidence-backed<br><em>Kitscore.</em></h1>
+      <p class="hero-sub">One profile you can send to any brand — a free, shareable trust link with a trust score and reliability score, built from verified campaign history, not follower count. Founding Creators also get unlimited OAuth-verified platforms free, normally a $19.99/mo Pro perk.</p>
+      <a href="/app/auth.html" class="hero-cta">Claim Your Founding Spot →</a>
+      <div class="hero-note">Free forever. No card required. Takes about 2 minutes.</div>
 
-    <div class="counter">
-      <div class="counter-label">Founding Creator spots claimed</div>
-      <div class="counter-track"><div class="counter-fill" id="counterFill" style="width:0%"></div></div>
-      <div class="counter-num" id="counterNum">Loading…</div>
+      <div class="counter">
+        <div class="counter-label">Founding Creator spots claimed</div>
+        <div class="counter-track"><div class="counter-fill" id="counterFill" style="width:0%"></div></div>
+        <div class="counter-num" id="counterNum">Loading…</div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="flip-card" id="jordanCard">
+        <div class="flip-card-inner" id="jordanCardInner">
+          <div class="flip-card-face flip-card-front">
+            <div class="fc-eyebrow">Shared with</div>
+            <div class="fc-link">kitscore.co/j/jordan-ellis</div>
+            <div class="fc-avatar">JE</div>
+            <div class="fc-name">Jordan Ellis</div>
+            <div class="fc-meta">Fitness &amp; Wellness · Austin, TX</div>
+            <div class="fc-score-row">
+              <div>
+                <div class="fc-score-num">91</div>
+                <div class="fc-score-label">Trust Score</div>
+              </div>
+              <div>
+                <div class="fc-score-num">93</div>
+                <div class="fc-score-label">Reliability</div>
+              </div>
+            </div>
+            <div class="fc-badge-gold">Gold Tier</div>
+            <div class="fc-hint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Tap to see what's behind it</div>
+          </div>
+          <div class="flip-card-face flip-card-back">
+            <div class="fc-eyebrow on-dark">Behind every score</div>
+            <div class="fc-back-title">What Jordan's link proves</div>
+            <ul class="fc-check-list">
+              <li>
+                <div class="fc-check-box"></div>
+                <div>
+                  <div class="fc-check-title">Verified campaign history</div>
+                  <div class="fc-check-desc">Confirmed by both sides, not self-reported</div>
+                </div>
+              </li>
+              <li>
+                <div class="fc-check-box"></div>
+                <div>
+                  <div class="fc-check-title">8-point brand safety check</div>
+                  <div class="fc-check-desc">Run fresh on every profile update</div>
+                </div>
+              </li>
+              <li>
+                <div class="fc-check-box"></div>
+                <div>
+                  <div class="fc-check-title">Published scoring formula</div>
+                  <div class="fc-check-desc">No black box, weights are public</div>
+                </div>
+              </li>
+              <li>
+                <div class="fc-check-box"></div>
+                <div>
+                  <div class="fc-check-title">Free, shareable forever</div>
+                  <div class="fc-check-desc">One link, sent to any brand</div>
+                </div>
+              </li>
+            </ul>
+            <div class="fc-hint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Tap to flip back</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -281,6 +378,32 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
     const counter = document.querySelector('.counter');
     if (counter) counter.style.display = 'none';
   }
+})();
+
+// Flip card: click toggles front/back, mousemove adds a subtle 3D tilt.
+// Tilt tracks the cursor with no transition (instant); the flip itself and
+// the return-to-rest on mouseleave use a slower eased transition so the
+// reveal feels intentional rather than snappy.
+(function initFlipCard() {
+  const card = document.getElementById('jordanCard');
+  const inner = document.getElementById('jordanCardInner');
+  if (!card || !inner) return;
+  let flipped = false;
+
+  function apply(tiltX, tiltY, eased) {
+    inner.style.transition = eased ? 'transform 0.6s cubic-bezier(0.34, 1.2, 0.4, 1)' : 'none';
+    const baseY = flipped ? 180 : 0;
+    inner.style.transform = `rotateX(${tiltX}deg) rotateY(${baseY + (flipped ? -tiltY : tiltY)}deg)`;
+  }
+
+  card.addEventListener('mousemove', (e) => {
+    const r = card.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width;
+    const py = (e.clientY - r.top) / r.height;
+    apply((0.5 - py) * 12, (px - 0.5) * 12, false);
+  });
+  card.addEventListener('mouseleave', () => apply(0, 0, true));
+  card.addEventListener('click', () => { flipped = !flipped; apply(0, 0, true); });
 })();
 </script>
 
