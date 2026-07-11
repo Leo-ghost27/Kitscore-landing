@@ -56,6 +56,7 @@
   .hero { padding: 72px 0 60px; }
   .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--border); color: var(--accent); font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; padding: 6px 14px; border-radius:0; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
   .hero h1 { font-size: clamp(30px, 4.5vw, 48px); font-weight: 800; font-family: var(--font-display); letter-spacing: -0.01em; line-height: 1.12; margin-bottom: 18px; }
+  .hero h1 em { font-style: normal; color: var(--accent); }
   .hero-sub { font-size: 17px; color: var(--muted); max-width: 600px; line-height: 1.75; margin-bottom: 36px; }
   .toc { display: flex; flex-wrap: wrap; gap: 8px; }
   .toc-link { background: var(--bg2); border: 1px solid var(--border); color: var(--muted); font-size: 13px; padding: 6px 14px; border-radius:0; text-decoration: none; transition: border-color 0.15s, color 0.15s; }
@@ -179,11 +180,11 @@
 <nav>
   <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:9px;text-decoration:none">
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="16" width="5" height="10" rx="1" fill="#2563EB" opacity="0.5"/>
-      <rect x="9" y="10" width="5" height="16" rx="1" fill="#2563EB" opacity="0.75"/>
-      <rect x="16" y="4" width="5" height="20" rx="1" fill="#2563EB"/>
-      <circle cx="23.5" cy="5.5" r="4.5" fill="#2563EB" stroke="#fff" stroke-width="1"/>
-      <path d="M21.3 5.5l1.5 1.5L25.5 4" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="2" y="19" width="5" height="7" rx="1" fill="#2563EB" opacity="0.5"/>
+      <rect x="9" y="14" width="5" height="12" rx="1" fill="#2563EB" opacity="0.75"/>
+      <rect x="16" y="10" width="5" height="16" rx="1" fill="#2563EB"/>
+      <circle cx="23.5" cy="4.5" r="3.5" fill="#2563EB" stroke="#fff" stroke-width="1"/>
+      <path d="M21.8 4.5l1.2 1.2L25.1 3.3" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <span style="font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;color:#0F172A">Kit<span style="color:#2563EB">score</span></span>
   </a>
@@ -201,7 +202,7 @@
 <div class="hero">
   <div class="container">
     <div class="hero-eyebrow"><span style="width:7px;height:7px;border-radius:50%;background:#22C55E;flex-shrink:0"></span>Methodology</div>
-    <h1>Every number<br>comes with proof.</h1>
+    <h1>Every number<br><em>comes with proof.</em></h1>
     <p class="hero-sub">Kitscore doesn't ask you to trust a score. It shows you exactly what went into it — every component, every source, every weight. Here's how it works.</p>
     <div class="toc">
       <a href="#trust-score"    class="toc-link">Trust Score</a>
