@@ -140,6 +140,38 @@ against the cap before letting a Starter sponsor run an evaluation).
    add `STRIPE_PRICE_STARTER_OVERAGE` = that Price ID → apply to Production
    and Preview → redeploy so the serverless functions pick it up
 6. Once that's live, the checkout endpoint will accept
-   `{ product: 'starter_overage' }` — but something in the app still needs to
-   *call* it at the right moment (the missing piece noted above)
+   `{ product: 'starter_overage' }`
+
+---
+
+## Starter Eval Cap — Built (2026-07-11)
+
+**Bigger finding than expected**: checked `evaluate.html`'s unlock flow before
+building the cap and found there was no cap to build on top of — every
+sponsor, regardless of plan, hit the same $29-per-evaluation paywall.
+Starter/Team subscribers were paying $99/$299 per month for zero actual
+included evaluations; nothing in the codebase checked `sponsor.plan` before
+charging. Confirmed via search: no usage/credit tracking table existed
+anywhere (`evals_used_this_period`, `eval_credits`, etc. — zero hits).
+
+**Built for Starter, end to end:**
+- New `sponsors` columns: `evals_used_this_period`, `period_start`
+  (migration `supabase/2026-07-11-starter-eval-cap.sql`, already applied
+  live via Supabase MCP — not just a file sitting in the repo)
+- `lib/handlers/billing-checkout.js`: on `evaluation_unlock`, checks if the
+  buyer is a Starter sponsor under 25 for the period — if so, unlocks the
+  evaluation directly with **no Stripe charge at all**, increments the
+  counter, and returns success. At/over 25, swaps to the $12 overage price
+  instead of the standard $29 (`94cbeef`)
+- `api/stripe-webhook.js`: new `invoice.paid` case resets the counter to 0
+  on each successful renewal — deliberately not on `subscription.updated`,
+  since that fires for reasons that shouldn't reset usage mid-period
+  (`4348082`)
+
+**Team plan — intentionally left out, needs your decision:**
+Same $12 overage rate, a different rate, or something else entirely (e.g.
+push toward Enterprise instead of a per-eval overage at that volume)? Once
+decided, it's the same pattern as Starter — small addition to the same two
+files, no new architecture needed.
+
 
