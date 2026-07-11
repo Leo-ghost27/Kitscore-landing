@@ -175,3 +175,22 @@ decided, it's the same pattern as Starter — small addition to the same two
 files, no new architecture needed.
 
 
+
+---
+
+## Bug found during live testing — 2026-07-11
+
+### 🟢 FIXED — evaluation creation broken for every solo sponsor
+Found while testing the Starter cap live: `api/generate-evaluation.js` was
+explicitly passing `approval_status: null` for any sponsor not on a team.
+The column is `NOT NULL` with a default of `'draft'`, and an explicit `null`
+overrides a column default in Postgres (defaults only apply when the field
+is omitted entirely) — so this failed the constraint on every single non-team
+evaluation. Since only Team-plan sponsors with an active team ever have
+`team_id` set, this meant **any solo sponsor — On Demand, Starter, or Free —
+could not generate an evaluation at all**, site-wide, until this fix.
+Fixed by omitting the field for non-team evaluations instead of explicitly
+nulling it, letting the column default apply. Harmless for solo evaluations
+since `evaluate.html` only surfaces the approval-workflow UI when `team_id`
+is set — nothing branches on `approval_status` otherwise.
+Pushed in commit `83f41ed`.
