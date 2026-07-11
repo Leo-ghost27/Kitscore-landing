@@ -197,6 +197,26 @@ const handler = async (req, res) => {
         });
         break;
       }
+      // ── invoice.paid ──────────────────────────────────────────────────────
+      // Fires when a subscription invoice (including renewals) is paid
+      // successfully. This is the signal that a new billing period has
+      // actually started — resets the Starter plan's included-evaluations
+      // counter here rather than on subscription.updated, since that fires
+      // for other reasons too (plan changes, trial endings) that shouldn't
+      // reset usage mid-period.
+      case 'invoice.paid': {
+        const invoice = event.data.object;
+        if (!invoice.customer) break;
+        const account = await accountByCustomerId(admin, invoice.customer);
+        if (!account || account.table !== 'sponsors') break;
+        if (account.plan !== 'starter') break;
+
+        await admin.from('sponsors')
+          .update({ evals_used_this_period: 0, period_start: new Date().toISOString() })
+          .eq('id', account.id);
+        break;
+      }
+
       // Fires when a renewal charge fails. Mark as past_due — Stripe will
       // retry before ultimately cancelling, so don't downgrade immediately.
       case 'invoice.payment_failed': {
