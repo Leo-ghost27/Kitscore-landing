@@ -144,6 +144,7 @@
   .hero2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
   .hero2-left { text-align: left; }
   .hero2-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: #fff; color: var(--accent); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; border-radius:0; border: 1px solid var(--border); margin-bottom: 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .hero2-ai-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); margin-left: 10px; }
   .hero2-left h1 { font-family: var(--font-display); font-size: clamp(2rem, 4.2vw, 3rem); font-weight: 600; line-height: 1.12; letter-spacing: -0.01em; color: var(--text); margin-bottom: 20px; }
   .hero2-left h1 .accent { color: var(--accent); }
   .hero2-left .hero-sub { margin: 0 0 16px; max-width: 100%; }
@@ -683,12 +684,12 @@
     <a href="#how-it-works" class="nav-link">How it works</a>
     <a href="#directory" class="nav-link">Directory</a>
     <a href="#decision-memo" class="nav-link">Decision Memo</a>
-    <a href="/methodology.html" class="nav-link">Methodology</a>
+    <a href="methodology.html" class="nav-link">Methodology</a>
     <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="/agencies.html" class="nav-link">Agencies</a>
-    <a href="/app/auth.html" class="nav-link">Sign in</a>
+    <a href="agencies.html" class="nav-link">Agencies</a>
+    <a href="app/auth.html" class="nav-link">Sign in</a>
   </div>
-  <a href="/app/auth.html" class="nav-cta" style="text-decoration:none">Get Started</a>
+  <a href="app/auth.html" class="nav-cta" style="text-decoration:none">Get Started</a>
 </nav>
 
 <!-- HERO -->
@@ -696,12 +697,13 @@
   <div class="hero2-grid">
     <div class="hero2-left">
       <span class="hero2-eyebrow"><span style="width:7px;height:7px;border-radius:50%;background:#22C55E;flex-shrink:0"></span>Verified Sponsorship Reputation</span>
+      <span class="hero2-ai-tag"><span style="width:6px;height:6px;border-radius:0;background:var(--accent);display:inline-block"></span>Now with sponsor decision memos</span>
       <h1>Know Before<br><span class="accent">You Sponsor</span></h1>
       <p class="hero-sub">Evaluate creators using verified campaign history, sponsor endorsements, reliability scores, and evidence-backed reports. Make sponsorship decisions using proof, not guesswork.</p>
       <p class="hero-unlock">See a creator's <strong>Trust Score</strong> and <strong>Reliability Score</strong> instantly. Unlock the full evaluation, risk analysis, and sponsor decision memo for <strong>$29</strong>.</p>
       <div class="hero-buttons">
-        <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Evaluate a Creator →</a>
-        <a href="/sample-sponsor-decision-memo.html" target="_blank" class="btn-ghost" style="text-decoration:none">View Sample Report</a>
+        <a href="app/auth.html" class="btn-primary" style="text-decoration:none">Evaluate a Creator →</a>
+        <a href="./sample-sponsor-decision-memo.html" target="_blank" class="btn-ghost" style="text-decoration:none">View Sample Report</a>
       </div>
       <div class="hero2-stats">
         <div><div class="hero2-stat-num">100%</div><div class="hero2-stat-label">Evidence-Backed</div></div>
@@ -775,7 +777,7 @@
       <span class="section-label" style="margin:0">For Creators</span>
       <p style="font-size:13px;color:var(--text);margin:0;line-height:1.6">Claim your free profile, turn verified campaign history into proof sponsors trust — <strong>no follower count required.</strong></p>
     </div>
-    <a href="/for-creators.html" class="btn-ghost" style="text-decoration:none;font-size:12px;padding:9px 18px;white-space:nowrap">Claim Your Founding Spot →</a>
+    <a href="for-creators.html" class="btn-ghost" style="text-decoration:none;font-size:12px;padding:9px 18px;white-space:nowrap">Claim Your Founding Spot →</a>
   </div>
 </section>
 
@@ -812,7 +814,7 @@
       </div>
     </div>
     <div style="text-align:center">
-      <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Start Evaluating Creators →</a>
+      <a href="app/auth.html" class="btn-primary" style="text-decoration:none">Evaluate a Creator →</a>
     </div>
   </div>
 
@@ -835,7 +837,7 @@
       </div>
     </div>
     <div style="text-align:center">
-      <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Claim Your Profile Free →</a>
+      <a href="app/auth.html" class="btn-primary" style="text-decoration:none">Claim Your Founding Spot →</a>
     </div>
   </div>
 </section>
@@ -851,11 +853,10 @@
       <h2 class="section-h" style="margin-bottom:6px">Browse verified creators.<br>Evaluate before you commit.</h2>
       <p style="font-size:13px;color:var(--muted)">Every profile shows verified campaign history and reliability data. Unlock a full evaluation for $29.</p>
     </div>
-    <div class="dir-filter-row" id="dirFilterRow">
+    <div class="dir-filter-row">
       <button class="dir-filter-btn active" onclick="kitFilterDir(this,'all')">All</button>
       <button class="dir-filter-btn" onclick="kitFilterDir(this,'fitness')">Fitness</button>
       <button class="dir-filter-btn" onclick="kitFilterDir(this,'beauty')">Beauty</button>
-      <button class="dir-filter-btn" onclick="kitFilterDir(this,'lifestyle')">Lifestyle</button>
       <button class="dir-filter-btn" onclick="kitFilterDir(this,'tech')">Tech</button>
     </div>
   </div>
@@ -863,7 +864,7 @@
     <span>Creator</span><span>Niche</span><span>Location</span><span>Trust Score</span><span>Tier</span><span></span>
   </div>
   <div class="dir-rows" id="kitDirGrid">
-    <a class="dir-row" data-niche="fitness" href="/app/auth.html" style="text-decoration:none">
+    <a class="dir-row" data-niche="fitness" href="app/auth.html" style="text-decoration:none">
       <div class="dir-row-creator">
         <div class="dir-av" style="background:#2563EB">MK</div>
         <div class="dir-info-name">Marcus Khoury</div>
@@ -874,7 +875,7 @@
       <div><span class="dir-badge dir-badge-gold">Gold</span></div>
       <div class="dir-cta-link">Evaluate →</div>
     </a>
-    <a class="dir-row" data-niche="beauty" href="/app/auth.html" style="text-decoration:none">
+    <a class="dir-row" data-niche="beauty" href="app/auth.html" style="text-decoration:none">
       <div class="dir-row-creator">
         <div class="dir-av" style="background:#DB2777">SL</div>
         <div class="dir-info-name">Sophie Lau</div>
@@ -885,7 +886,7 @@
       <div><span class="dir-badge dir-badge-gold">Gold</span></div>
       <div class="dir-cta-link">Evaluate →</div>
     </a>
-    <a class="dir-row" data-niche="lifestyle" href="/app/auth.html" style="text-decoration:none">
+    <a class="dir-row" data-niche="lifestyle" href="app/auth.html" style="text-decoration:none">
       <div class="dir-row-creator">
         <div class="dir-av" style="background:#7C3AED">AA</div>
         <div class="dir-info-name">Aaliya Ahmed</div>
@@ -896,7 +897,7 @@
       <div><span class="dir-badge dir-badge-silver">Silver</span></div>
       <div class="dir-cta-link">Evaluate →</div>
     </a>
-    <a class="dir-row" data-niche="tech" href="/app/auth.html" style="text-decoration:none">
+    <a class="dir-row" data-niche="tech" href="app/auth.html" style="text-decoration:none">
       <div class="dir-row-creator">
         <div class="dir-av" style="background:#0891B2">JP</div>
         <div class="dir-info-name">James Patel</div>
@@ -907,7 +908,7 @@
       <div><span class="dir-badge dir-badge-silver">Silver</span></div>
       <div class="dir-cta-link">Evaluate →</div>
     </a>
-    <a class="dir-row" data-niche="fitness" href="/app/auth.html" style="text-decoration:none">
+    <a class="dir-row" data-niche="fitness" href="app/auth.html" style="text-decoration:none">
       <div class="dir-row-creator">
         <div class="dir-av" style="background:#059669">PN</div>
         <div class="dir-info-name">Priya Nair</div>
@@ -918,7 +919,7 @@
       <div><span class="dir-badge dir-badge-bronze">Bronze</span></div>
       <div class="dir-cta-link">Evaluate →</div>
     </a>
-    <a class="dir-row" data-niche="tech" href="/app/auth.html" style="text-decoration:none">
+    <a class="dir-row" data-niche="tech" href="app/auth.html" style="text-decoration:none">
       <div class="dir-row-creator">
         <div class="dir-av" style="background:#B45309">RC</div>
         <div class="dir-info-name">Ravi Chandra</div>
@@ -929,7 +930,7 @@
       <div><span class="dir-badge dir-badge-gold">Gold</span></div>
       <div class="dir-cta-link">Evaluate →</div>
     </a>
-    <a class="dir-row" data-niche="beauty" href="/app/auth.html" style="text-decoration:none">
+    <a class="dir-row" data-niche="beauty" href="app/auth.html" style="text-decoration:none">
       <div class="dir-row-creator">
         <div class="dir-av" style="background:#DB2777">CB</div>
         <div class="dir-info-name">Chloe Bennett</div>
@@ -942,7 +943,7 @@
     </a>
   </div>
   <div style="margin-top:14px;text-align:center">
-    <a href="/app/directory.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:9px 22px">Browse full directory →</a>
+    <a href="app/directory.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:9px 22px">Browse full directory →</a>
   </div>
 </section>
 
@@ -1027,8 +1028,8 @@
       <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:14px">Kitscore was built because sponsorship decisions were being made on the wrong signals. Follower counts, reach screenshots, and self-reported media kits were passing as due diligence.</p>
       <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:24px">We built the infrastructure to change that — verified campaign history, mutual confirmation, sponsor endorsements, reliability scores. A platform where every number comes with proof.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <a href="/app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Get started</a>
-        <a href="/compare.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Kitscore vs. AI Content-Scoring Tools →</a>
+        <a href="app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Evaluate a Creator →</a>
+        <a href="compare.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Kitscore vs. AI Content-Scoring Tools →</a>
         <a href="mailto:hello@kitscore.co" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Contact us</a>
       </div>
     </div>
@@ -1054,7 +1055,7 @@
       <div>
         <h3>Sample Creator Proof Packet</h3>
         <p>The verified evidence packet a creator shares with brands and agencies.</p>
-        <a href="/sample-creator-proof-packet.html" target="_blank" class="sample-btn">Download Sample →</a>
+        <a href="./sample-creator-proof-packet.html" target="_blank" class="sample-btn">Download Sample →</a>
       </div>
     </div>
     <div class="sample-card">
@@ -1062,7 +1063,7 @@
       <div>
         <h3>Sample Sponsor Decision Memo</h3>
         <p>The full PDF decision memo delivered to sponsors after a paid evaluation.</p>
-        <a href="/sample-sponsor-decision-memo.html" target="_blank" class="sample-btn">Download Sample →</a>
+        <a href="./sample-sponsor-decision-memo.html" target="_blank" class="sample-btn">Download Sample →</a>
       </div>
     </div>
   </div>
@@ -1227,18 +1228,18 @@
     <div style="display:flex;flex-direction:column;gap:8px">
       <div style="border-left:2px solid var(--accent);padding:10px 14px;background:var(--accent-dim);border-radius:0;font-size:13px;color:var(--text);font-style:italic;line-height:1.65">
         "Delivered exactly what was briefed, ahead of schedule. Would absolutely work with them again."
-        <div style="font-size:11px;color:var(--muted);margin-top:5px;font-style:normal">— Verified sponsor · July 2026</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;font-style:normal">— Verified sponsor · Zest Protein · April 2026</div>
       </div>
       <div style="border-left:2px solid var(--border-hover);padding:10px 14px;background:var(--bg2);border-radius:0;font-size:13px;color:var(--text);font-style:italic;line-height:1.65">
         "Professional, responsive, and the content performed above our benchmarks."
-        <div style="font-size:11px;color:var(--muted);margin-top:5px;font-style:normal">— Verified sponsor · July 2026</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;font-style:normal">— Verified sponsor · NovaSleep · February 2026</div>
       </div>
     </div>
   </div>
 
   <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <a href="/app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Evaluate a Creator</a>
-    <a href="/sample-creator-proof-packet.html" target="_blank" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">View Creator Proof Packet →</a>
+    <a href="app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Evaluate a Creator →</a>
+    <a href="sample-creator-proof-packet.html" target="_blank" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">View Creator Proof Packet →</a>
   </div>
 </section>
 </div>
@@ -1252,7 +1253,7 @@
       <div class="section-label">Methodology</div>
       <h2 class="section-h" style="margin-bottom:14px">Every number<br>comes with proof.</h2>
       <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:20px">No black box. Every component, weight, and confidence rating is documented — so sponsors know exactly what they're buying.</p>
-      <a href="/methodology.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:9px 18px">Read the full methodology →</a>
+      <a href="methodology.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:9px 18px">Read the full methodology →</a>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px">
       <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:14px 18px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-sm)">
@@ -1282,7 +1283,7 @@
       <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:14px 18px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-sm)">
         <div style="width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(37,99,235,0.15)">04</div>
         <div style="flex:1">
-          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">8-point brand safety</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">5-point brand safety</div>
           <div style="font-size:11px;color:var(--muted)">FTC disclosure, misinformation, controversy — all scored</div>
         </div>
         <div style="font-size:10px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:0;white-space:nowrap">Compliance</div>
@@ -1298,22 +1299,22 @@
 <section id="decision-memo" style="padding:64px 2rem;max-width:960px;margin:0 auto">
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center">
     <div>
-      <div class="section-label section-label--pill">Sponsorship Intelligence</div>
+      <div class="section-label section-label--pill">Sponsorship Due Diligence</div>
       <h2 class="section-h" style="margin-bottom:14px">Evidence-first.<br>Sponsor-ready.</h2>
       <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:14px">Every decision memo is built directly from verified evidence — mutually confirmed campaigns, sponsor endorsements, and your specific campaign brief — into a clear recommendation, audience fit read, and risk assessment.</p>
       <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:20px">Unlike platforms that score creators from scraped public data alone, Kitscore's memo is built on top of <strong style="color:var(--text)">mutually confirmed campaigns, sponsor endorsements, and human-verified evidence</strong>. Nothing in it is inferred from a public post — it's either verified, or it isn't in the memo.</p>
       <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:0">
         <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px">
-          Built entirely from verified data
+          <span style="color:var(--accent)">✓</span> Built entirely from verified data
         </div>
         <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px">
-          Campaign-brief aware recommendations
+          <span style="color:var(--accent)">✓</span> Campaign-brief aware recommendations
         </div>
         <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px">
-          Content risk flag detection
+          <span style="color:var(--accent)">✓</span> Content risk flag detection
         </div>
         <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px">
-          Budget range disclosure
+          <span style="color:var(--accent)">✓</span> Budget range estimation
         </div>
       </div>
     </div>
@@ -1323,7 +1324,7 @@
       <div style="background:var(--bg2);padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between">
         <div style="display:flex;align-items:center;gap:7px">
           <div style="width:7px;height:7px;border-radius:0;background:var(--accent);animation:pulse 2s infinite"></div>
-          <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Sponsorship Intelligence</span>
+          <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Sponsorship Due Diligence</span>
         </div>
         <span style="font-size:10px;color:var(--muted)">Kitscore Decision Memo</span>
       </div>
@@ -1342,7 +1343,7 @@
           </div>
           <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:0;padding:9px 11px">
             <div style="font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Risk assessment</div>
-            <div style="font-size:12px;color:var(--text)">Low risk. No brand safety flags across all 8 checks. FTC disclosure consistently applied.</div>
+            <div style="font-size:12px;color:var(--text)">Low risk. No brand safety flags across all 5 checks. FTC disclosure consistently applied.</div>
           </div>
           <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:0;padding:9px 11px">
             <div style="font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Verified reputation</div>
@@ -1385,12 +1386,12 @@
       <ul class="plan-card2-features">
         <li>Full trust score + confidence rating</li>
         <li>Sponsor decision memo PDF</li>
-        <li>8-point brand safety assessment</li>
+        <li>5-point brand safety assessment</li>
         <li>Verified campaign history</li>
         <li>Audience fit analysis</li>
         <li>No subscription required</li>
       </ul>
-      <a href="/app/auth.html" class="plan-card2-cta outline">Evaluate a Creator</a>
+      <a href="app/auth.html" class="plan-card2-cta outline">Evaluate a Creator</a>
     </div>
     <div class="plan-card2 featured">
       <div class="plan-card2-banner">Most Popular</div>
@@ -1404,7 +1405,7 @@
         <li>Unlimited watchlist</li>
         <li>Saved history & comparison tools</li>
       </ul>
-      <a href="/app/auth.html" class="plan-card2-cta solid">Get Starter</a>
+      <a href="app/auth.html" class="plan-card2-cta solid">Get Starter</a>
     </div>
     <div class="plan-card2">
       <div class="plan-card2-eyebrow">Team</div>
@@ -1422,7 +1423,7 @@
         <li>Compliance audit trail export</li>
         <li>Score-change alerts</li>
       </ul>
-      <a href="/app/auth.html" class="plan-card2-cta outline">Get Team</a>
+      <a href="app/auth.html" class="plan-card2-cta outline">Get Team</a>
     </div>
   </div>
 
@@ -1441,7 +1442,7 @@
         <li>Shareable trust profile link</li>
         <li>Rate calculator &amp; score breakdown</li>
       </ul>
-      <a href="/app/auth.html" class="plan-card2-cta outline">Get Started Free</a>
+      <a href="app/auth.html" class="plan-card2-cta outline">Get Started Free</a>
     </div>
     <div class="plan-card2 featured">
       <div class="plan-card2-banner">Most Popular</div>
@@ -1457,7 +1458,7 @@
         <li>Evidence-freshness alerts — never let your profile go stale before a pitch</li>
         <li>Evidence log export with chain of custody — audit-ready for bigger deals</li>
       </ul>
-      <a href="/app/auth.html" class="plan-card2-cta solid">Start Pro</a>
+      <a href="app/auth.html" class="plan-card2-cta solid">Start Pro</a>
     </div>
   </div>
 </section>
@@ -1508,8 +1509,8 @@
     <h2 style="font-family:var(--font-display);font-size:clamp(2rem,4.5vw,3rem);font-weight:600;color:#fff;line-height:1.2;letter-spacing:-0.02em;margin-bottom:18px">The smarter way<br><strong>to sponsor.</strong></h2>
     <p style="font-size:1.05rem;color:rgba(255,255,255,0.85);line-height:1.6;margin-bottom:36px">Stop guessing. Start evaluating creators with verified proof — not follower counts.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:56px">
-      <a href="/app/auth.html" style="text-decoration:none;background:#fff;color:var(--accent);padding:14px 28px;border-radius:0;font-size:15px;font-weight:700;font-family:var(--font)">Evaluate a Creator — $29 →</a>
-      <a href="/app/auth.html" style="text-decoration:none;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.6);padding:14px 28px;border-radius:0;font-size:15px;font-weight:600;font-family:var(--font)">Claim Creator Profile Free</a>
+      <a href="app/auth.html" style="text-decoration:none;background:#fff;color:var(--accent);padding:14px 28px;border-radius:0;font-size:15px;font-weight:700;font-family:var(--font)">Evaluate a Creator — $29 →</a>
+      <a href="app/auth.html" style="text-decoration:none;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.6);padding:14px 28px;border-radius:0;font-size:15px;font-weight:600;font-family:var(--font)">Claim Creator Profile Free</a>
     </div>
     <div style="display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap">
       <div><div style="font-size:15px;font-weight:700;color:#fff">Sponsor evaluates</div><div style="font-size:11px;color:rgba(255,255,255,0.65);margin-top:2px">$29 per eval</div></div>
@@ -1541,32 +1542,32 @@
         </div>
         <p style="font-size:13px;color:#8A909C;line-height:1.7;max-width:260px;margin-bottom:18px">The sponsorship due diligence platform. Evaluate creators using verified campaign history, not guesswork.</p>
         <div style="display:flex;gap:10px">
-          <a href="/app/auth.html" style="text-decoration:none;background:var(--accent);color:#fff;padding:9px 18px;border-radius:0;font-size:12px;font-weight:600;font-family:var(--font)">Get Started</a>
-          <a href="/sample-sponsor-decision-memo.html" target="_blank" style="text-decoration:none;background:transparent;color:#fff;border:0.5px solid #333;padding:9px 18px;border-radius:0;font-size:12px;font-weight:500;font-family:var(--font)">View Sample</a>
+          <a href="app/auth.html" style="text-decoration:none;background:var(--accent);color:#fff;padding:9px 18px;border-radius:0;font-size:12px;font-weight:600;font-family:var(--font)">Get Started</a>
+          <a href="./sample-sponsor-decision-memo.html" target="_blank" style="text-decoration:none;background:transparent;color:#fff;border:0.5px solid #333;padding:9px 18px;border-radius:0;font-size:12px;font-weight:500;font-family:var(--font)">View Sample</a>
         </div>
       </div>
       <div>
         <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;margin-bottom:14px">Product</div>
         <div style="display:flex;flex-direction:column;gap:9px">
           <a href="#how-it-works" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">How It Works</a>
-          <a href="/app/directory.html" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Creator Directory</a>
+          <a href="app/directory.html" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Creator Directory</a>
           <a href="#pricing" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Pricing</a>
-          <a href="/sample-sponsor-decision-memo.html" target="_blank" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Sample Report</a>
+          <a href="sample-sponsor-decision-memo.html" target="_blank" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Sample Report</a>
         </div>
       </div>
       <div>
         <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;margin-bottom:14px">Company</div>
         <div style="display:flex;flex-direction:column;gap:9px">
           <a href="#why-kitscore" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Why Kitscore</a>
-          <a href="/methodology.html" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Methodology</a>
-          <a href="/compare.html" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Kitscore vs. AI Content-Scoring Tools</a>
+          <a href="methodology.html" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Methodology</a>
+          <a href="compare.html" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Kitscore vs. AI Content-Scoring Tools</a>
           <a href="mailto:hello@kitscore.co" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Contact</a>
         </div>
       </div>
       <div>
         <div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6B7280;margin-bottom:14px">Legal</div>
         <div style="display:flex;flex-direction:column;gap:9px">
-          <a href="/privacy.html" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Privacy Policy</a>
+          <a href="privacy.html" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Privacy Policy</a>
           <a href="/terms.html" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Terms of Service</a>
           <a href="/cookies.html" style="font-size:13px;color:#9CA3AF;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">Cookie Policy</a>
         </div>
@@ -1578,7 +1579,7 @@
         <a href="https://www.instagram.com/kitscore.co" target="_blank" rel="noopener" title="Instagram" style="color:#6B7280;display:inline-flex;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#6B7280'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
         <a href="https://x.com/kitscoreCo" target="_blank" rel="noopener" title="X" style="color:#6B7280;display:inline-flex;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#6B7280'"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.857L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
         <span style="width:1px;height:12px;background:#333"></span>
-        <a href="/terms.html" style="font-size:12px;color:#6B7280;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#6B7280'">Terms</a>
+        <a href="terms.html" style="font-size:12px;color:#6B7280;text-decoration:none;transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#6B7280'">Terms</a>
       </div>
     </div>
   </div>
@@ -1617,33 +1618,6 @@ function kitFilterDir(btn, niche) {
     row.style.display = (niche === 'all' || row.dataset.niche === niche) ? 'grid' : 'none';
   });
 }
-
-// Builds the filter chip row as a facet of whatever niches are actually present
-// in `niches` (raw display-case strings, e.g. from creator records), instead of
-// a hardcoded set that can silently drift from the real data -- see the
-// Aaliya Ahmed / "Fashion" directory-filter-gap finding (2026-07-10). "All" is
-// always first and stays active by default. Case-insensitive de-dupe so
-// "Beauty" and "beauty" from different sources collapse into one chip.
-function renderDirFilterChips(niches) {
-  const row = document.getElementById('dirFilterRow');
-  if (!row) return;
-  const seen = new Map();
-  (niches || []).forEach(raw => {
-    const trimmed = (raw || '').trim();
-    if (!trimmed) return;
-    const key = trimmed.toLowerCase();
-    if (!seen.has(key)) {
-      seen.set(key, trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase());
-    }
-  });
-  const chips = ['<button class="dir-filter-btn active" onclick="kitFilterDir(this,\'all\')">All</button>'];
-  Array.from(seen.entries())
-    .sort((a, b) => a[1].localeCompare(b[1]))
-    .forEach(([key, label]) => {
-      chips.push(`<button class="dir-filter-btn" onclick="kitFilterDir(this,'${key}')">${label}</button>`);
-    });
-  row.innerHTML = chips.join('');
-}
 window.addEventListener('load', () => {
   const fill = document.querySelector('.cpc-ring-fill');
   if (fill) {
@@ -1663,7 +1637,7 @@ function dirRowHtml(c, i) {
   const niche = (c.niche || '').toLowerCase();
   const badge = DIR_BADGES[c.badge_tier] || '—';
   return `
-    <a class="dir-row" data-niche="${niche}" href="/app/auth.html" style="text-decoration:none">
+    <a class="dir-row" data-niche="${niche}" href="app/auth.html" style="text-decoration:none">
       <div class="dir-row-creator">
         <div class="dir-av" style="background:${DIR_AVATAR_COLORS[i % DIR_AVATAR_COLORS.length]}">${dirInitials(c.display_name)}</div>
         <div class="dir-info-name">${c.display_name || 'Creator'}</div>
@@ -1692,7 +1666,6 @@ async function loadHomeDirectory() {
     // never leave visitors looking at an empty or stuck state.
     if (rows.length) {
       grid.innerHTML = rows.map(dirRowHtml).join('');
-      renderDirFilterChips(rows.map(r => r.niche));
     }
   } catch (err) {
     clearTimeout(timeout);
