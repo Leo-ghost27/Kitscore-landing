@@ -26,7 +26,7 @@
     --accent: #2563EB; --accent-light: #185FA5; --accent-dim: #E6F1FB;
     --green: #3B6D11; --green-dim: #EAF3DE;
     --amber: #854F0B; --amber-dim: #FAEEDA;
-    --radius: 0; --radius-sm: 0;
+    --radius: 12px; --radius-sm: 8px;
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
     --font: 'Inter', system-ui, sans-serif;
@@ -85,7 +85,7 @@
   .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 40px; position: relative; }
   .step { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; position: relative; box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
   .step:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-  .step-num { width: 28px; height: 28px; border-radius: 0; background: var(--accent-dim); border: 1px solid rgba(37,99,235,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 14px; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-dim); border: 1px solid rgba(37,99,235,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 14px; }
   .step h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
   .step p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
@@ -97,7 +97,7 @@
   .feature-icon svg { width: 20px; height: 20px; }
   .feature h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
   .feature p { font-size: 14px; color: var(--muted); line-height: 1.65; }
-  .feature .tag { display: inline-flex; margin-top: 12px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 0; }
+  .feature .tag { display: inline-flex; margin-top: 12px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
   .tag-green { background: var(--green-dim); color: var(--green); }
   .tag-accent { background: var(--accent-dim); color: var(--accent); }
   .tag-amber { background: var(--amber-dim); color: var(--amber); }
@@ -120,7 +120,6 @@
   .pricing-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
   .pricing-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
   .price-card { background: var(--bg); border: 1px solid var(--border); border-radius: 0; padding: 28px; box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
-  .price-card-banner { background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; text-align: center; padding: 10px; margin: -28px -28px 20px; }
   .price-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
   .price-card.featured { border-color: var(--accent); background: linear-gradient(135deg, rgba(37,99,235,0.06), var(--bg)); }
   .price-label { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
@@ -142,7 +141,7 @@
   .quote-attr strong { color: var(--text); font-style: normal; }
 
   /* ── CTA ── */
-  .cta-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 0; padding: 56px 40px; text-align: center; }
+  .cta-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 56px 40px; text-align: center; }
   .cta-block h2 { font-size: clamp(24px, 3.5vw, 36px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 14px; }
   .cta-block p { font-size: 16px; color: var(--muted); margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto; }
   .cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
@@ -182,13 +181,12 @@
     <span style="font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;color:#0F172A">Kit<span style="color:#2563EB">score</span></span>
   </a>
   <div class="nav-links">
-    <a href="#how-it-works" class="nav-link">How it works</a>
-    <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="/methodology.html" class="nav-link">Methodology</a>
+    <a href="/#how-it-works" class="nav-link">How it works</a>
+    <a href="/#pricing" class="nav-link">Pricing</a>
     <a href="/" class="nav-link">For sponsors</a>
     <a href="/app/auth.html" class="nav-link">Sign in</a>
   </div>
-  <a href="/app/auth.html" class="nav-cta">Start free</a>
+  <a href="/app/auth.html" class="nav-cta">Get Started</a>
 </nav>
 
 <!-- ── HERO ── -->
@@ -198,7 +196,7 @@
     <h1>Know Before<br><em>You Sponsor.</em></h1>
     <p class="hero-sub">Kitscore is the sponsorship due diligence platform for agencies. Verified campaign history, reliability scores, sponsor endorsements, and decision memos — built for every client, every creator.</p>
     <div class="hero-buttons">
-      <a href="/app/auth.html" class="btn-primary">Start Free</a>
+      <a href="/app/auth.html" class="btn-primary">Start Team Plan</a>
       <a href="/sample-sponsor-decision-memo.html" target="_blank" class="btn-ghost">View Sample Report</a>
     </div>
 
@@ -294,7 +292,7 @@
       </div>
       <div class="feature">
         <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-        <h3>8-point brand safety assessment</h3>
+        <h3>5-point brand safety assessment</h3>
         <p>Adult content, gambling, political, profanity, family safety, FTC paid disclosure, misinformation history, and controversy history — scored and documented on every creator.</p>
         <span class="tag tag-accent">Compliance ready</span>
       </div>
@@ -352,7 +350,7 @@
       </thead>
       <tbody>
         <tr><td>Verified trust score with confidence rating</td><td class="col-kit"><span class="check">✓</span> Yes</td><td class="col-no"><span class="cross">✗</span> No</td><td class="col-no"><span class="cross">✗</span> No</td></tr>
-        <tr><td>8-point brand safety assessment</td><td class="col-kit"><span class="check">✓</span> Yes</td><td class="col-no"><span class="cross">✗</span> Partial</td><td class="col-no"><span class="cross">✗</span> Manual</td></tr>
+        <tr><td>5-point brand safety assessment</td><td class="col-kit"><span class="check">✓</span> Yes</td><td class="col-no"><span class="cross">✗</span> Partial</td><td class="col-no"><span class="cross">✗</span> Manual</td></tr>
         <tr><td>FTC disclosure compliance check</td><td class="col-kit"><span class="check">✓</span> Yes</td><td class="col-no"><span class="cross">✗</span> No</td><td class="col-no"><span class="cross">✗</span> Manual</td></tr>
         <tr><td>Mutually confirmed campaign history</td><td class="col-kit"><span class="check">✓</span> Yes</td><td class="col-no"><span class="cross">✗</span> No</td><td class="col-no"><span class="cross">✗</span> No</td></tr>
         <tr><td>Structured decision memo for clients</td><td class="col-kit"><span class="check">✓</span> Yes</td><td class="col-no"><span class="cross">✗</span> No</td><td class="col-no"><span class="cross">✗</span> Manual</td></tr>
@@ -369,35 +367,8 @@
 
 <hr class="divider" />
 
-<!-- ── TEAM WORKSPACE ── -->
-<section>
-  <div class="container">
-    <div class="section-label">Team Workspace</div>
-    <h2 class="section-h">One workspace for<br>your whole agency.</h2>
-    <p class="section-sub">The Team plan isn't just a higher evaluation limit — it's a shared operating layer for how your agency actually runs creator sponsorships.</p>
-    <div style="margin-top:32px">
-      <div style="border:0.5px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04)">
-        <div style="background:#F4F5F7;padding:8px 12px;display:flex;gap:6px;border-bottom:0.5px solid var(--border)">
-          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
-          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
-          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
-        </div>
-        <img src="assets/product-team-workspace-clients.png" alt="Kitscore Team workspace showing client pipeline, roster, notes, approvals, branding, and alerts" style="width:100%;display:block">
-      </div>
-      <p style="font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center">A real Team workspace — client pipeline, roster, notes, approvals, branding, and alerts, all in one place.</p>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:36px">
-      <div style="font-size:13px;color:var(--muted);line-height:1.7"><strong style="color:var(--text)">Up to 2 teams per account.</strong> The account owner can create or delete teams as your agency structure changes, each with its own roster, branding, and client pipeline.</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.7"><strong style="color:var(--text)">Approval built in.</strong> Invite members and route their evaluation purchases through the account owner's sign-off before they're confirmed.</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.7"><strong style="color:var(--text)">Stay ahead of risk.</strong> Get alerted the moment a creator you've approved sees their score change, and export a full audit trail for client reporting.</div>
-    </div>
-  </div>
-</section>
-
-<hr class="divider" />
-
 <!-- ── PRICING ── -->
-<section id="pricing">
+<section>
   <div class="container">
     <div class="section-label">Pricing</div>
     <h2 class="section-h">Start with one evaluation.<br>Scale with your team.</h2>
@@ -410,14 +381,14 @@
         <ul class="price-features">
           <li>Full trust score + confidence rating</li>
           <li>Sponsor decision memo PDF</li>
-          <li>8-point brand safety assessment</li>
+          <li>5-point brand safety assessment</li>
           <li>Verified campaign history</li>
           <li>Audience fit analysis</li>
           <li>No subscription required</li>
         </ul>
         <a href="/app/auth.html"><button class="price-btn price-btn-ghost">Request evaluation</button></a>
       </div>
-      <div class="price-card">
+      <div class="price-card featured">
         <div class="price-label">Starter</div>
         <div class="price-amount">$99 <span>/ month</span></div>
         <div class="price-desc">For a single decision-maker moving fast — before you need a full team workflow.</div>
@@ -427,10 +398,9 @@
           <li>Unlimited watchlist</li>
           <li>Saved history & comparison tools</li>
         </ul>
-        <a href="/app/auth.html"><button class="price-btn price-btn-ghost">Get Starter</button></a>
+        <a href="/app/auth.html"><button class="price-btn price-btn-primary">Get Starter</button></a>
       </div>
-      <div class="price-card featured">
-        <div class="price-card-banner">Most Popular</div>
+      <div class="price-card">
         <div class="price-label">Team</div>
         <div class="price-amount">$299 <span>/ month</span></div>
         <div class="price-desc">For agencies and in-house brand teams running multiple campaigns.</div>
@@ -445,7 +415,7 @@
           <li>Compliance audit trail export</li>
           <li>Score-change alerts</li>
         </ul>
-        <a href="/app/auth.html"><button class="price-btn price-btn-primary">Get Team</button></a>
+        <a href="/app/auth.html"><button class="price-btn price-btn-ghost">Get Team</button></a>
       </div>
       <div class="price-card">
         <div class="price-label">Enterprise</div>
@@ -475,9 +445,9 @@
   <div style="position:relative;max-width:640px;margin:0 auto">
     <div style="font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,0.75);margin-bottom:18px">Get started</div>
     <h2 style="font-size:clamp(24px,3.5vw,36px);font-weight:700;color:#fff;line-height:1.2;letter-spacing:-0.02em;margin-bottom:18px">The next creator you evaluate<br>should be verified, not guessed at.</h2>
-    <p style="font-size:16px;color:rgba(255,255,255,0.85);line-height:1.6;margin-bottom:32px">Create an account free. Run your first evaluation for $29 — or go straight to the Team plan for full-agency workflow, roles, and audit trail.</p>
+    <p style="font-size:16px;color:rgba(255,255,255,0.85);line-height:1.6;margin-bottom:32px">Create an account free. Run your first evaluation for $29. See the full decision memo before you commit budget.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <a href="#pricing" style="text-decoration:none;background:#fff;color:var(--accent);padding:13px 28px;border-radius:var(--radius-sm);font-size:15px;font-weight:700;font-family:var(--font)">See Team Plan</a>
+      <a href="/app/auth.html" style="text-decoration:none;background:#fff;color:var(--accent);padding:13px 28px;border-radius:var(--radius-sm);font-size:15px;font-weight:700;font-family:var(--font)">Start Team Plan</a>
       <a href="mailto:hello@kitscore.co?subject=Agency enquiry" style="text-decoration:none;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.6);padding:13px 28px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;font-family:var(--font)">Talk to the team</a>
     </div>
   </div>
