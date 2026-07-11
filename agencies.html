@@ -26,7 +26,7 @@
     --accent: #2563EB; --accent-light: #185FA5; --accent-dim: #E6F1FB;
     --green: #3B6D11; --green-dim: #EAF3DE;
     --amber: #854F0B; --amber-dim: #FAEEDA;
-    --radius: 12px; --radius-sm: 8px;
+    --radius: 0; --radius-sm: 0;
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
     --font: 'Inter', system-ui, sans-serif;
@@ -85,7 +85,7 @@
   .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 40px; position: relative; }
   .step { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; position: relative; box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
   .step:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-  .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-dim); border: 1px solid rgba(37,99,235,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 14px; }
+  .step-num { width: 28px; height: 28px; border-radius: 0; background: var(--accent-dim); border: 1px solid rgba(37,99,235,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 14px; }
   .step h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
   .step p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
@@ -97,7 +97,7 @@
   .feature-icon svg { width: 20px; height: 20px; }
   .feature h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
   .feature p { font-size: 14px; color: var(--muted); line-height: 1.65; }
-  .feature .tag { display: inline-flex; margin-top: 12px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .feature .tag { display: inline-flex; margin-top: 12px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 0; }
   .tag-green { background: var(--green-dim); color: var(--green); }
   .tag-accent { background: var(--accent-dim); color: var(--accent); }
   .tag-amber { background: var(--amber-dim); color: var(--amber); }
@@ -141,7 +141,7 @@
   .quote-attr strong { color: var(--text); font-style: normal; }
 
   /* ── CTA ── */
-  .cta-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 56px 40px; text-align: center; }
+  .cta-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 0; padding: 56px 40px; text-align: center; }
   .cta-block h2 { font-size: clamp(24px, 3.5vw, 36px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 14px; }
   .cta-block p { font-size: 16px; color: var(--muted); margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto; }
   .cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
