@@ -91,7 +91,14 @@ module.exports = async (req, res) => {
       recommendation_summary: summary,
       ai_summary: null,
       team_id: membership?.team_id || null,
-      approval_status: membership?.team_id ? 'draft' : null,
+      // approval_status is NOT NULL with a default of 'draft' — explicitly
+      // passing null here (instead of omitting the key) overrides that
+      // default and violates the constraint. Omitting it lets Postgres
+      // apply 'draft' for every row; harmless for solo (non-team)
+      // evaluations since evaluate.html only ever surfaces the approval
+      // workflow UI when team_id is set, never branches on this value
+      // otherwise.
+      ...(membership?.team_id ? { approval_status: 'draft' } : {}),
     }).select().single();
 
     if (insertErr) return res.status(500).json({ error: insertErr.message });
