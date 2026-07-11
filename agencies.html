@@ -119,7 +119,7 @@
   .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 36px; }
   .pricing-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
   .pricing-grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
-  .price-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+  .price-card { background: var(--bg); border: 1px solid var(--border); border-radius: 0; padding: 28px; box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
   .price-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
   .price-card.featured { border-color: var(--accent); background: linear-gradient(135deg, rgba(37,99,235,0.06), var(--bg)); }
   .price-label { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
@@ -127,9 +127,9 @@
   .price-amount span { font-size: 16px; font-weight: 400; color: var(--muted); }
   .price-desc { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
   .price-features { list-style: none; margin-bottom: 24px; }
-  .price-features li { font-size: 13px; color: var(--muted); padding: 5px 0; display: flex; align-items: center; gap: 8px; }
-  .price-features li::before { content: '✓'; color: var(--green); font-weight: 600; flex-shrink: 0; }
-  .price-btn { width: 100%; padding: 11px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; border: none; }
+  .price-features li { font-size: 13px; color: var(--muted); padding: 7px 0 7px 14px; position: relative; }
+  .price-features li::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; background: var(--accent); }
+  .price-btn { width: 100%; padding: 11px; border-radius: 0; font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; border: none; }
   .price-btn-primary { background: var(--accent); color: #fff; }
   .price-btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border-hover); }
   .price-btn:hover { opacity: 0.85; }
@@ -375,7 +375,7 @@
     <p class="section-sub">No platform fees until you're ready. Pay per evaluation, or move to a Team plan when your workflow demands it.</p>
     <div class="pricing-grid pricing-grid-4">
       <div class="price-card">
-        <div class="price-label">Pay As You Go</div>
+        <div class="price-label">On Demand</div>
         <div class="price-amount">$29 <span>/ evaluation</span></div>
         <div class="price-desc">For agencies evaluating creators on a campaign-by-campaign basis.</div>
         <ul class="price-features">
@@ -394,7 +394,7 @@
         <div class="price-desc">For a single decision-maker moving fast — before you need a full team workflow.</div>
         <ul class="price-features">
           <li>25 evaluations per month</li>
-          <li>All pay-as-you-go features</li>
+          <li>All On Demand features</li>
           <li>Unlimited watchlist</li>
           <li>Saved history & comparison tools</li>
         </ul>
