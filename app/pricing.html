@@ -21,8 +21,9 @@
   .plan .price{font-family:var(--font-mono);font-size:30px;font-weight:600;margin-bottom:4px;color:var(--ink)}
   .plan .price span{font-size:13px;font-weight:500;color:var(--ink-soft)}
   .plan .desc{font-size:12.5px;color:var(--ink-faint);margin-bottom:18px}
-  .plan ul{list-style:none;font-size:13px;color:#333B4D;margin-bottom:22px;display:flex;flex-direction:column;gap:6px}
-  .plan ul li::before{content:"✓";color:var(--blue);font-weight:700;margin-right:8px}
+  .plan ul{list-style:none;font-size:13px;color:#333B4D;margin-bottom:22px;display:flex;flex-direction:column;gap:2px}
+  .plan ul li{padding:7px 0 7px 14px;position:relative}
+  .plan ul li::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;background:var(--blue)}
   .plan button{width:100%;padding:11px;border:1px solid var(--navy);border-radius:0;font-size:13.5px;font-weight:600;cursor:pointer}
   .btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
   .btn-outline{background:#fff;border:1px solid var(--navy)!important;color:var(--navy)}
@@ -89,9 +90,9 @@
 
   document.getElementById('plansWrap').innerHTML = `
     <div class="plan ${plan==='free' || plan==='pro' ? 'is-current' : ''}">
-      <h3>Pay As You Go</h3>
+      <h3>On Demand</h3>
       <div class="price">$29<span>/report</span></div>
-      <div class="desc">Perfect for one-off decisions.</div>
+      <div class="desc">For agencies evaluating creators on a campaign-by-campaign basis.</div>
       <ul>
         <li>Full trust score + confidence rating</li>
         <li>Sponsor decision memo PDF</li>
@@ -105,8 +106,8 @@
     <div class="plan ${plan==='starter' ? 'is-current' : ''}">
       <h3>Starter</h3>
       <div class="price">$99<span>/mo</span></div>
-      <div class="desc">For sponsors evaluating creators regularly, solo.</div>
-      <ul><li>25 evaluations per month</li><li>All pay-as-you-go features</li><li>Unlimited watchlist</li><li>Saved history &amp; comparison tools</li></ul>
+      <div class="desc">For a single decision-maker moving fast — before you need a full team workflow.</div>
+      <ul><li>25 evaluations per month</li><li>All On Demand features</li><li>Unlimited watchlist</li><li>Saved history &amp; comparison tools</li></ul>
       ${cardBtn('starter', 'Start Starter', "subscribe('starter')")}
     </div>
     <div class="plan featured ${plan==='team' ? 'is-current' : ''}">
