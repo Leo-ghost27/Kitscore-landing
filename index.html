@@ -172,15 +172,28 @@
   .dm-fact-good { color: #173404 !important; }
   .dm-ribbon { position: absolute; top: 16px; right: -32px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 4px 36px; transform: rotate(40deg) translateZ(30px); letter-spacing: .04em; }
   .dm-hint { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: var(--muted2); padding-top: 16px; transform: translateZ(14px); }
-  .dm-back-eyebrow { font-size: 12px; color: #7FA8E0; margin: 0 0 4px; letter-spacing: .04em; }
-  .dm-back-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; color: #fff; margin: 0 0 24px; }
-  .dm-feats { display: flex; flex-direction: column; gap: 17px; flex: 1; }
-  .dm-feat { display: flex; gap: 12px; align-items: flex-start; }
-  .dm-feat svg { flex-shrink: 0; margin-top: 1px; }
-  .dm-feat p:first-child { font-size: 13.5px; color: #fff; margin: 0; font-weight: 600; }
-  .dm-feat p:last-child { font-size: 12px; color: #7FA8E0; margin: 2px 0 0; line-height: 1.4; }
   .dm-back-hint { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: #7FA8E0; padding-top: 16px; }
   .dm-caption { text-align: center; font-size: 12px; color: var(--muted2); margin-top: 16px; }
+
+  .dm-mk-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+  .dm-mk-label { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted2); }
+  .dm-mk-flag { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; color: #B45309; background: #FEF3E2; padding: 3px 8px; }
+  .dm-mk-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--bg3); color: var(--muted2); font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .dm-mk-name { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .dm-mk-handle { font-size: 12px; color: var(--muted); margin-bottom: 22px; }
+  .dm-mk-stats { display: flex; gap: 26px; margin-bottom: auto; }
+  .dm-mk-num { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--text); line-height: 1; }
+  .dm-mk-statlabel { font-size: 9.5px; color: var(--muted2); text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
+  .dm-mk-caption { font-size: 12px; color: var(--muted2); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 14px; margin-top: 14px; }
+
+  .dm-back-topbar { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; font-size: 11px; color: #7FA8E0; }
+  .dm-verdict-dark { background: rgba(59,109,17,.18); border: 1px solid rgba(97,180,52,.35); padding: 13px 15px; margin-bottom: 20px; }
+  .dm-verdict-dark-title { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #B7E39A; margin-bottom: 4px; }
+  .dm-verdict-dark p { font-size: 12.5px; color: #9FCF7C; margin: 0; line-height: 1.4; }
+  .dm-facts-dark { display: flex; flex-direction: column; gap: 9px; font-size: 12.5px; color: #7FA8E0; margin-bottom: auto; }
+  .dm-facts-dark div { display: flex; justify-content: space-between; }
+  .dm-facts-dark span:last-child { color: #fff; font-weight: 600; }
+  .dm-fact-good-dark { color: #B7E39A !important; }
   @media (max-width: 1024px) { .dm-wrap { max-width: 320px; height: 420px; } }
   @media (max-width: 900px) {
     .hero2-grid { grid-template-columns: 1fr; }
@@ -726,6 +739,7 @@
     <div class="hero2-left">
       <span class="hero2-eyebrow"><span style="width:7px;height:7px;border-radius:50%;background:#22C55E;flex-shrink:0"></span>Verified Sponsorship Reputation</span>
       <h1>Know Before<br><span class="accent">You Sponsor</span></h1>
+      <p style="font-size:15px;font-weight:600;color:var(--text);margin:0 0 12px">Every media kit is self-reported. Every Kitscore isn't.</p>
       <p class="hero-sub">Evaluate creators using verified campaign history, sponsor endorsements, reliability scores, and evidence-backed reports. Make sponsorship decisions using proof, not guesswork.</p>
       <p class="hero-unlock">See a creator's <strong>Trust Score</strong> and <strong>Reliability Score</strong> instantly. Unlock the full evaluation, risk analysis, and sponsor decision memo for <strong>$29</strong>.</p>
       <div class="hero-buttons">
@@ -746,66 +760,61 @@
           <div class="dm-face dm-front">
             <div class="dm-topbar">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9 13h6M9 17h6"/></svg>
-              <span>decision memo · sophie x willow skincare</span>
+              <span>media kit · sophie x willow skincare</span>
             </div>
             <div class="dm-body">
-              <div class="dm-verdict">
-                <div class="dm-verdict-title">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#173404" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-                  recommended to sponsor
-                </div>
-                <p>high-confidence, brand-safe fit for your brief</p>
+              <div class="dm-mk-row">
+                <span class="dm-mk-label">self-reported</span>
+                <span class="dm-mk-flag">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                  unverified
+                </span>
               </div>
-
-              <div class="dm-rings">
-                <svg width="82" height="82" viewBox="0 0 92 92">
-                  <circle cx="46" cy="46" r="38" fill="none" stroke="var(--border)" stroke-width="7"/>
-                  <circle cx="46" cy="46" r="38" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="238.76" transform="rotate(-90 46 46)" id="dmRing1"/>
-                  <text x="46" y="42" text-anchor="middle" font-size="19" font-weight="700" fill="var(--text)" id="dmNum1">0</text>
-                  <text x="46" y="59" text-anchor="middle" font-size="9" fill="var(--muted)">trust</text>
-                </svg>
-                <svg width="82" height="82" viewBox="0 0 92 92">
-                  <circle cx="46" cy="46" r="38" fill="none" stroke="var(--border)" stroke-width="7"/>
-                  <circle cx="46" cy="46" r="38" fill="none" stroke="var(--green)" stroke-width="7" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="238.76" transform="rotate(-90 46 46)" id="dmRing2"/>
-                  <text x="46" y="42" text-anchor="middle" font-size="19" font-weight="700" fill="var(--text)" id="dmNum2">0</text>
-                  <text x="46" y="59" text-anchor="middle" font-size="9" fill="var(--muted)">confidence</text>
-                </svg>
+              <div class="dm-mk-avatar">SL</div>
+              <div class="dm-mk-name">Sophie Lau</div>
+              <div class="dm-mk-handle">@sophielau</div>
+              <div class="dm-mk-stats">
+                <div><div class="dm-mk-num">58.1K</div><div class="dm-mk-statlabel">Followers</div></div>
+                <div><div class="dm-mk-num">4.1%</div><div class="dm-mk-statlabel">Engagement</div></div>
               </div>
-
-              <div class="dm-facts">
-                <div><span>audience fit</span><span>79% UK · 18-34</span></div>
-                <div><span>risk assessment</span><span class="dm-fact-good">low risk</span></div>
-              </div>
-
-              <div class="dm-ribbon">EVIDENCE-BACKED</div>
-
+              <p class="dm-mk-caption">Numbers from her media kit. No way to check if any of it's true.</p>
               <div class="dm-hint">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
-                tap to see why we recommend her
+                tap to see the verified version
               </div>
             </div>
           </div>
 
           <div class="dm-face dm-back">
-            <p class="dm-back-eyebrow">before you commit budget</p>
-            <p class="dm-back-title">why we recommend her</p>
-            <div class="dm-feats">
-              <div class="dm-feat">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#85B7EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-                <div><p>4 mutually confirmed campaigns</p><p>Confirmed by sponsors, not self-reported</p></div>
+            <div class="dm-ribbon">EVIDENCE-BACKED</div>
+            <div class="dm-back-topbar">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7FA8E0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9 13h6M9 17h6"/></svg>
+              decision memo · sophie x willow skincare
+            </div>
+            <div class="dm-verdict-dark">
+              <div class="dm-verdict-dark-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B7E39A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                recommended to sponsor
               </div>
-              <div class="dm-feat">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#85B7EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
-                <div><p>8-point brand safety check</p><p>Zero flags across every category</p></div>
-              </div>
-              <div class="dm-feat">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#85B7EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4M7 22l-4-4 4-4M3 6h13a4 4 0 0 1 4 4M21 18H8a4 4 0 0 1-4-4"/></svg>
-                <div><p>100% would-hire-again rate</p><p>Every past sponsor, no exceptions</p></div>
-              </div>
-              <div class="dm-feat">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#85B7EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9 13h6M9 17h6"/></svg>
-                <div><p>Published scoring formula</p><p>No black box, weights are public</p></div>
-              </div>
+              <p>high-confidence, brand-safe fit for your brief</p>
+            </div>
+            <div class="dm-rings">
+              <svg width="82" height="82" viewBox="0 0 92 92">
+                <circle cx="46" cy="46" r="38" fill="none" stroke="rgba(127,168,224,.25)" stroke-width="7"/>
+                <circle cx="46" cy="46" r="38" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="238.76" transform="rotate(-90 46 46)" id="dmRing1"/>
+                <text x="46" y="42" text-anchor="middle" font-size="19" font-weight="700" fill="#fff" id="dmNum1">0</text>
+                <text x="46" y="59" text-anchor="middle" font-size="9" fill="#7FA8E0">trust</text>
+              </svg>
+              <svg width="82" height="82" viewBox="0 0 92 92">
+                <circle cx="46" cy="46" r="38" fill="none" stroke="rgba(127,168,224,.25)" stroke-width="7"/>
+                <circle cx="46" cy="46" r="38" fill="none" stroke="#8FD65C" stroke-width="7" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="238.76" transform="rotate(-90 46 46)" id="dmRing2"/>
+                <text x="46" y="42" text-anchor="middle" font-size="19" font-weight="700" fill="#fff" id="dmNum2">0</text>
+                <text x="46" y="59" text-anchor="middle" font-size="9" fill="#7FA8E0">confidence</text>
+              </svg>
+            </div>
+            <div class="dm-facts-dark">
+              <div><span>audience fit</span><span>79% UK · 18-34</span></div>
+              <div><span>risk assessment</span><span class="dm-fact-good-dark">low risk</span></div>
             </div>
             <div class="dm-back-hint">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v1"/></svg>
