@@ -828,14 +828,25 @@ function renderToolsTab() {
     <!-- ── Rate calculator ── -->
     <div class="card">
       <div class="sec">What should I charge? <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— free tool, not part of your score</span></div>
+      ${(function(){
+        const sources = rateCalcSources();
+        if (sources.length > 1) {
+          return `<div style="margin-bottom:12px">
+            <select id="rc-platform" onchange="onRateCalcPlatformChange()" style="font-size:12px;padding:6px 8px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;width:100%">
+              ${sources.map(s=>`<option value="${escapeHtml(s.platform)}">${escapeHtml(s.platform.charAt(0).toUpperCase()+s.platform.slice(1))} — ${Number(s.follower_count).toLocaleString()} followers</option>`).join('')}
+            </select>
+          </div>`;
+        }
+        return `<select id="rc-platform" style="display:none">${(sources[0]?[`<option value="${escapeHtml(sources[0].platform)}" selected>${escapeHtml(sources[0].platform)}</option>`]:[`<option value="instagram" selected>instagram</option>`]).join('')}</select>`;
+      })()}
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
         <label style="font-size:11px;color:var(--color-text-secondary)">Followers</label>
         <span id="rc-followers-val" style="font-family:var(--font-mono,monospace);font-size:13px;font-weight:600;color:var(--ink,#0F1B2E)">18,000</span>
       </div>
-      <input id="rc-followers" type="range" min="500" max="500000" step="500" value="18000" style="width:100%" oninput="updateRateCalc(this.value)">
+      <input id="rc-followers" type="range" min="500" max="2000000" step="500" value="18000" style="width:100%" oninput="updateRateCalc(this.value)">
       <div style="text-align:center;margin-top:14px">
         <div id="rc-range" style="font-size:22px;font-weight:700;color:var(--blue,#2563EB)">£90–£180</div>
-        <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Suggested rate per sponsored post, based on typical engagement-tier benchmarks. Not personalized to your niche or engagement rate yet.</div>
+        <div id="rc-source-note" style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px"></div>
         <div style="margin-top:8px">
           <select id="rc-currency" onchange="updateRateCalc(document.getElementById('rc-followers').value)" style="font-size:10.5px;color:var(--color-text-tertiary);border:1px solid var(--color-border-tertiary,#E5E7EB);border-radius:4px;padding:2px 6px;background:transparent">
             <option value="GBP">£ GBP</option>
@@ -1127,10 +1138,57 @@ async function saveAudienceDemographics(){
   setTimeout(() => { msgEl.textContent = ''; }, 2500);
 }
 
-const RATE_CURRENCIES = {
-  GBP: { symbol: '£', min: 0.005, max: 0.01 },
-  USD: { symbol: '$', min: 0.0065, max: 0.013 } // ~1.3x GBP multiplier, approximates GBP→USD conversion
+// 2026 sponsored-post rate benchmarks (USD, per single post), banded by
+// follower tier. Instagram is the sourced baseline; TikTok and YouTube
+// apply a platform multiplier on top. Niche multipliers are a second,
+// independent adjustment.
+//
+// Source: InfluenceFlow's "Sponsored Post Rates 2026" guide for the
+// tiered $ ranges and platform gap ("YouTube creators typically charge
+// 2-3x more than Instagram... TikTok rates are 20-30% lower"), cross-
+// checked against ClipReach's 2026 CPE benchmarks (niche multipliers --
+// beauty/lifestyle sit at the low end of spend due to high creator
+// supply; finance/health/B2B sit at the high end) and IQFluence's 2026
+// engagement data (fashion/beauty engagement near the overall average,
+// not a premium category). These are a starting anchor for negotiation,
+// not a quote -- actual rates still move with engagement rate,
+// exclusivity, and content type (video commands 30-50% more than a
+// static post per the same source).
+//
+// Deliberately banded, not a smooth curve: the source data itself is
+// tiered ($/post jumps between nano/micro/mid/macro), so interpolating
+// a fake continuous line between bands would imply more precision than
+// the underlying benchmarks actually support.
+const RATE_TIERS_USD = [
+  [0,        10000,    100,   500],
+  [10000,    100000,   500,   5000],
+  [100000,   1000000,  5000,  25000],
+  [1000000,  Infinity, 25000, 60000], // mega-tier deals are individually negotiated well beyond this; treat as a floor, not a ceiling
+];
+const PLATFORM_RATE_MULT = { instagram: 1, tiktok: 0.75, youtube: 2.5 };
+const NICHE_RATE_MULT = {
+  finance: 1.4, health: 1.35, sustainability: 1.3, tech: 1.25,
+  beauty: 0.9, fashion: 0.95, lifestyle: 0.9, fitness: 1.0,
 };
+
+function rateTierFor(followers) {
+  return RATE_TIERS_USD.find(([min, max]) => followers >= min && followers < max) || RATE_TIERS_USD[RATE_TIERS_USD.length - 1];
+}
+
+function rateForFollowers(followers, platform, niche) {
+  const [, , rMin, rMax] = rateTierFor(followers);
+  const platMult = PLATFORM_RATE_MULT[platform] || 1;
+  const nicheMult = NICHE_RATE_MULT[(niche || '').toLowerCase()] || 1;
+  return {
+    min: Math.round(rMin * platMult * nicheMult / 5) * 5,
+    max: Math.round(rMax * platMult * nicheMult / 5) * 5,
+  };
+}
+
+// USD -> GBP at a rough, static 0.77 (Kitscore's home-market display
+// currency); not live FX, same approximation the old flat-multiplier
+// version used.
+const USD_TO_GBP = 0.77;
 
 function detectCurrency() {
   try {
@@ -1142,19 +1200,54 @@ function detectCurrency() {
   }
 }
 
-function updateRateCalc(followers){
+// Connected platforms with a real follower_count, sorted highest first --
+// this is what pre-fills the calculator and drives the platform picker.
+// Falls back to an empty array (manual/self-estimate mode) if nothing's
+// connected yet.
+function rateCalcSources() {
+  return (dash.platformConnections || [])
+    .filter(p => p.follower_count != null && p.follower_count > 0)
+    .sort((a, b) => b.follower_count - a.follower_count);
+}
+
+function updateRateCalc(followers) {
   followers = Number(followers);
   document.getElementById('rc-followers-val').textContent = followers.toLocaleString();
   const code = document.getElementById('rc-currency').value;
-  const { symbol, min: minMult, max: maxMult } = RATE_CURRENCIES[code];
-  const min = Math.round(followers * minMult / 5) * 5;
-  const max = Math.round(followers * maxMult / 5) * 5;
+  const platformSel = document.getElementById('rc-platform');
+  const platform = platformSel ? platformSel.value : 'instagram';
+  const { min: rMin, max: rMax } = rateForFollowers(followers, platform, creator.niche);
+  const symbol = code === 'GBP' ? '£' : '$';
+  const conv = code === 'GBP' ? USD_TO_GBP : 1;
+  const min = Math.round(rMin * conv / 5) * 5;
+  const max = Math.round(rMax * conv / 5) * 5;
   document.getElementById('rc-range').textContent = `${symbol}${min.toLocaleString()}–${symbol}${max.toLocaleString()}`;
+}
+
+function onRateCalcPlatformChange() {
+  const sources = rateCalcSources();
+  const sel = document.getElementById('rc-platform');
+  const match = sources.find(s => s.platform === sel.value);
+  const slider = document.getElementById('rc-followers');
+  if (match) { slider.value = match.follower_count; }
+  updateRateCalc(slider.value);
 }
 
 function initRateCalc() {
   document.getElementById('rc-currency').value = detectCurrency();
-  updateRateCalc(document.getElementById('rc-followers').value);
+  const sources = rateCalcSources();
+  const slider = document.getElementById('rc-followers');
+  const note = document.getElementById('rc-source-note');
+  if (sources.length) {
+    slider.value = sources[0].follower_count;
+    if (note) {
+      const niche = creator.niche ? ` · ${escapeHtml(creator.niche)} niche` : '';
+      note.innerHTML = `Personalized from your verified ${escapeHtml(sources[0].platform)} followers${niche}. ${sources.length > 1 ? 'Switch platform above.' : ''}`;
+    }
+  } else if (note) {
+    note.innerHTML = `Connect a platform (Inputs tab) for a personalized range — this is a general estimate${creator.niche ? ` for the ${escapeHtml(creator.niche)} niche` : ''} until then.`;
+  }
+  updateRateCalc(slider.value);
 }
 
 async function signOut(){
@@ -1175,8 +1268,7 @@ if (window.location.search.includes('tiktok_connected') || window.location.searc
   activeTab = 'evidence';
 }
 
-load().then(() => { showYoutubeStatusFromQuery(); showTiktokStatusFromQuery(); });
-initRateCalc();
+load().then(() => { showYoutubeStatusFromQuery(); showTiktokStatusFromQuery(); initRateCalc(); });
 </script>
 <script>
 if ('serviceWorker' in navigator) {
