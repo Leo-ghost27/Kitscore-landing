@@ -93,13 +93,14 @@ async function load() {
     } else if (checkoutState === 'cancelled') {
       document.getElementById('banner').innerHTML = `<div class="banner pending">Checkout cancelled — no charge was made.</div>`;
     }
-  const [{ data: creator }, { data: profileRow }, { data: components }, { data: campaigns }, { data: evalRow }, { data: membership }] = await Promise.all([
+  const [{ data: creator }, { data: profileRow }, { data: components }, { data: campaigns }, { data: evalRow }, { data: membership }, { data: sponsorRow }] = await Promise.all([
     sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, reliability_score, repeat_sponsor_rate').eq('id', creatorId).single(),
     sb.from('profiles').select('display_name').eq('id', creatorId).single(),
     sb.from('score_components').select('*').eq('creator_id', creatorId),
     sb.from('campaigns').select('status').eq('creator_id', creatorId).eq('status', 'verified'),
     sb.from('evaluations').select('*').eq('creator_id', creatorId).eq('sponsor_id', profile.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
     sb.from('team_members').select('team_id, role').eq('sponsor_id', profile.id),
+    sb.from('sponsors').select('plan, evals_used_this_period').eq('id', profile.id).maybeSingle(),
   ]);
   // A sponsor can belong to up to 2 teams. maybeSingle() would throw once
   // that's possible, so this resolves the same "active team" the switcher
@@ -109,6 +110,23 @@ async function load() {
   const activeMembership = memberships.find(m => m.team_id === activeTeamId) || memberships[0] || null;
   isTeamOwner = activeMembership?.role === 'owner';
   myTeamId = activeMembership?.team_id || null;
+
+  // Starter sponsors get their first 25 unlocks/period free, then $12 each
+  // (see lib/handlers/billing-checkout.js). Compute what this specific
+  // click will actually cost so the button doesn't just say a flat "$29"
+  // for every sponsor regardless of plan/usage.
+  let unlockLabel = 'Unlock full evaluation — $29';
+  let unlockLabelShort = 'Unlock full report — $29';
+  if (sponsorRow?.plan === 'starter') {
+    const used = sponsorRow.evals_used_this_period || 0;
+    if (used < 25) {
+      unlockLabel = `Unlock full evaluation — free (${used + 1}/25 this period)`;
+      unlockLabelShort = `Unlock full report — free (${used + 1}/25 this period)`;
+    } else {
+      unlockLabel = 'Unlock full evaluation — $12';
+      unlockLabelShort = 'Unlock full report — $12';
+    }
+  }
   let creatorNotes = [];
   if (myTeamId) {
     const { data: notesData } = await sb.from('team_notes')
@@ -161,7 +179,7 @@ async function load() {
           <li><i class="ti ti-check" style="color:#1C7C3F"></i>Recommendation (Approve / Caution / Avoid)</li>
           <li><i class="ti ti-check" style="color:#1C7C3F"></i>Downloadable PDF Decision Memo</li>
         </ul>
-        <button class="cta" onclick="generateAndUnlock()"><i class="ti ti-lock-open"></i>Unlock full evaluation — $29</button>
+        <button class="cta" onclick="generateAndUnlock()"><i class="ti ti-lock-open"></i>${unlockLabel}</button>
       </div>`;
     return;
   }
@@ -197,9 +215,9 @@ async function load() {
         </div>
       </div>
       <div class="paywall-box">
-        <h3>Unlock the full evaluation — $29</h3>
-        <p>One-time payment. Includes recommendation, risk assessment, audience fit, evidence summary, and PDF download.</p>
-        <button class="cta" onclick="unlock()"><i class="ti ti-lock-open"></i>Unlock full report — $29</button>
+        <h3>${unlockLabel.replace('Unlock full evaluation', 'Unlock the full evaluation')}</h3>
+        <p>${sponsorRow?.plan === 'starter' ? 'Included in your Starter plan allowance, or $12 once you\'ve used all 25 for this period.' : 'One-time payment.'} Includes recommendation, risk assessment, audience fit, evidence summary, and PDF download.</p>
+        <button class="cta" onclick="unlock()"><i class="ti ti-lock-open"></i>${unlockLabelShort}</button>
       </div>`;
     return;
   }
