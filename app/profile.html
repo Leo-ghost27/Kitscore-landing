@@ -60,7 +60,7 @@ async function load() {
   renderSidebar('creator', 'profile');
 
   const [{ data: c }, { data: email }] = await Promise.all([
-    sb.from('creators').select('niche, location, founding_cohort').eq('id', profile.id).single(),
+    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan').eq('id', profile.id).single(),
     sb.rpc('fn_get_my_business_email'),
   ]);
   creator = { ...c, business_email: email };
@@ -75,10 +75,32 @@ async function load() {
     <div class="field"><label>Niche</label><input id="niche" value="${escapeHtml(creator.niche || '')}"></div>
     <div class="field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}"></div>
     <div class="field"><label>Business email</label><input id="businessEmail" value="${escapeHtml(creator.business_email || '')}"></div>
+    <div class="field">
+      <label>Bio <span style="color:var(--color-text-tertiary);font-weight:400">— shown on your EveKit media kit, not your trust link</span></label>
+      <textarea id="bio" maxlength="280" rows="3" placeholder="A couple sentences a brand can read in five seconds — what you make, who watches, and why you're a fit." style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px;font-family:inherit;resize:vertical">${escapeHtml(creator.bio || '')}</textarea>
+      <div id="bioCount" style="font-size:10.5px;color:var(--color-text-tertiary);text-align:right;margin-top:2px">${(creator.bio||'').length}/280</div>
+    </div>
     <button class="cta" id="saveBtn" onclick="save()">Save changes</button>
     <div id="msg"></div>
+
+    <div style="margin-top:28px;padding-top:20px;border-top:0.5px solid var(--color-border-tertiary)">
+      <label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Custom link <span style="color:var(--color-text-tertiary)">— used for both your EveKit and trust link</span></label>
+      ${creator.plan === 'pro' ? `
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:12px;color:var(--color-text-tertiary)">kitscore.co/app/p.html?slug=</span>
+          <input id="customSlug" value="${escapeHtml(creator.slug || '')}" style="flex:1;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:12.5px;font-family:var(--font-mono,monospace)">
+          <button class="cta" style="padding:8px 14px" onclick="saveSlug()">Save</button>
+        </div>
+        <div id="slugMsg" style="font-size:11px;margin-top:6px"></div>
+      ` : `
+        <div style="font-size:12px;color:var(--color-text-tertiary)">Your link: <span style="font-family:var(--font-mono,monospace)">${escapeHtml(creator.slug || '')}</span> — <a href="pricing-creator.html" style="color:#2563EB">upgrade to Pro to customize it</a></div>
+      `}
+    </div>
   `;
 
+  document.getElementById('bio').addEventListener('input', (e) => {
+    document.getElementById('bioCount').textContent = `${e.target.value.length}/280`;
+  });
   ['displayName', 'niche', 'location', 'businessEmail'].forEach(id => {
     document.getElementById(id).addEventListener('input', renderStrengthPanel);
   });
@@ -116,10 +138,11 @@ async function save() {
   const niche = document.getElementById('niche').value.trim();
   const location = document.getElementById('location').value.trim();
   const businessEmail = document.getElementById('businessEmail').value.trim();
+  const bio = document.getElementById('bio').value.trim();
 
   const [{ error: pErr }, { error: cErr }] = await Promise.all([
     sb.from('profiles').update({ display_name: displayName }).eq('id', profile.id),
-    sb.from('creators').update({ niche, location, business_email: businessEmail }).eq('id', profile.id),
+    sb.from('creators').update({ niche, location, business_email: businessEmail, bio }).eq('id', profile.id),
   ]);
 
   const msg = document.getElementById('msg');
@@ -129,6 +152,25 @@ async function save() {
     msg.innerHTML = `<div class="msg ok">Saved.</div>`;
   }
   btn.disabled = false;
+}
+
+async function saveSlug() {
+  const input = document.getElementById('customSlug');
+  const msg = document.getElementById('slugMsg');
+  const val = input.value.trim();
+  msg.innerHTML = '';
+  const { data, error } = await sb.rpc('fn_set_evekit_slug', { p_slug: val });
+  if (error) {
+    msg.innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  if (!data || !data.ok) {
+    msg.innerHTML = `<div class="msg error">${escapeHtml(data?.error || 'Could not save that link.')}</div>`;
+    return;
+  }
+  creator.slug = data.slug;
+  input.value = data.slug;
+  msg.innerHTML = `<div class="msg ok">Saved — your EveKit and trust link now use this URL.</div>`;
 }
 
 load();

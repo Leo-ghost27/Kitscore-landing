@@ -331,7 +331,7 @@ async function load() {
   document.getElementById('whoami').textContent = `${profile.display_name} · ${profile.email||''}`;
 
   const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns },{ data:businessEmail },{ data:audience },{ data:history },{ data:platformConnections }] = await Promise.all([
-    sb.from('creators').select('id,niche,location,trust_score,confidence,badge_tier,plan,reliability_score,repeat_sponsor_rate,would_hire_again_pct,founding_cohort,slug').eq('id', profile.id).single(),
+    sb.from('creators').select('id,niche,location,trust_score,confidence,badge_tier,plan,reliability_score,repeat_sponsor_rate,would_hire_again_pct,founding_cohort,slug,bio,evekit_view_count,evekit_last_viewed_at').eq('id', profile.id).single(),
     sb.from('score_components').select('*').eq('creator_id', profile.id).order('weight', {ascending:false}),
     sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at',{ascending:false}),
     sb.from('brand_safety_answers').select('*').eq('creator_id', profile.id),
@@ -686,13 +686,28 @@ function renderScoreTab() {
 
 function renderProfileTab() {
   return `
-    <!-- ── Shareable trust profile ── -->
+    <!-- ── EveKit — the pitch-ready media kit ── -->
+    <div class="card" style="background:linear-gradient(135deg,#F5F3FF,#F9F8FF);border-color:#DCD6FA">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:13.5px;font-weight:600;color:var(--ink,#0F1B2E)">EveKit — your media kit</div>
+          <div id="evekit-link-text" style="font-family:var(--font-mono,monospace);font-size:11px;color:#5B4FCF;margin-top:3px;word-break:break-all">kitscore.co/app/evekit.html?slug=${creator.slug||''}</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Bio, rate card, platform stats, and verified highlights in one page — the asset you send to a brand cold. Free for every creator, PDF included.</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <a href="evekit.html" style="text-decoration:none"><button class="confirm-btn" style="background:#5B4FCF;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer">Open EveKit</button></a>
+          <button class="confirm-btn" style="background:#fff;color:#5B4FCF;border:1px solid #DCD6FA;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer" onclick="copyEveKitLinkFromProfile()">Copy link</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── p.html — the minimal verification link ── -->
     <div class="card" style="background:#F5F8FF;border-color:#D5E2FC">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
         <div>
-          <div style="font-size:13.5px;font-weight:600;color:var(--ink,#0F1B2E)">Your shareable trust profile</div>
+          <div style="font-size:13.5px;font-weight:600;color:var(--ink,#0F1B2E)">Your trust link</div>
           <div id="profile-link-text" style="font-family:var(--font-mono,monospace);font-size:11px;color:#2563EB;margin-top:3px;word-break:break-all">kitscore.co/app/p.html?slug=${creator.slug||''}</div>
-          <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Free for every creator — share it anywhere, on or off Kitscore.</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Not a pitch — a quick, always-current verification a sponsor can check you against once you're already in talks. Free forever.</div>
         </div>
         <button class="confirm-btn" style="background:#2563EB;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer" onclick="copyProfileLink()">Copy link</button>
       </div>
@@ -728,6 +743,16 @@ function renderProfileTab() {
     </div>
 
   `;
+}
+
+function copyEveKitLinkFromProfile() {
+  const url = `https://kitscore.co/app/evekit.html?slug=${creator.slug || ''}`;
+  navigator.clipboard.writeText(url).then(() => {
+    const el = document.getElementById('evekit-link-text');
+    const original = el.textContent;
+    el.textContent = 'Copied!';
+    setTimeout(() => { el.textContent = original; }, 1500);
+  });
 }
 
 function renderEvidenceTab() {
@@ -857,23 +882,20 @@ function renderToolsTab() {
     </div>
 
 
-    <!-- ── Proof Packet ── -->
-    <div class="card" style="border:1.5px solid ${creator.plan==='pro'?'#2563EB':'#E5E7EB'};background:${creator.plan==='pro'?'#F0F6FF':'var(--color-background-secondary)'}">
+    <!-- ── EveKit ── -->
+    <div class="card" style="border:1.5px solid #DCD6FA;background:linear-gradient(135deg,#F5F3FF,#F9F8FF)">
       <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:36px;height:36px;background:${creator.plan==='pro'?'#2563EB':'#9CA3AF'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <div style="width:36px;height:36px;background:#5B4FCF;display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
         <div style="flex:1">
-          <div style="font-size:13px;font-weight:600;color:#0F172A">${creator.plan==='pro'?'Download your Proof Packet':'Proof Packet PDF'}</div>
-          <div style="font-size:11px;color:#4B5563;margin-top:2px">${creator.plan==='pro'
-            ? 'Full PDF — share with sponsors. Includes trust score, verified campaigns, evidence and score breakdown.'
-            : 'A Pro feature. Your shareable trust profile link is still free — upgrade for the downloadable PDF and complete score history.'
-          }</div>
+          <div style="font-size:13px;font-weight:600;color:#0F172A">EveKit — your media kit</div>
+          <div style="font-size:11px;color:#4B5563;margin-top:2px">Bio, rate card, platform stats, and verified highlights on one page — free for everyone, with a free PDF export. Preview and share it from your Profile tab.</div>
+          ${creator.plan==='pro'
+            ? `<div style="font-size:10.5px;color:#6B6B67;margin-top:6px">${creator.evekit_view_count||0} view${creator.evekit_view_count===1?'':'s'} so far${creator.evekit_last_viewed_at?' · last viewed '+new Date(creator.evekit_last_viewed_at).toLocaleDateString():''}</div>`
+            : `<div style="font-size:10.5px;color:#6B6B67;margin-top:6px">See who's opened it: <a href="pricing-creator.html" style="color:#5B4FCF">Pro perk →</a></div>`}
         </div>
-        ${creator.plan==='pro'
-          ? `<button id="proofBtn" onclick="downloadProofPacket()" style="background:#2563EB;color:#fff;border:none;padding:8px 16px;font-size:12px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;white-space:nowrap">Download PDF</button>`
-          : `<a href="pricing-creator.html" style="text-decoration:none"><button style="background:#2563EB;color:#fff;border:none;padding:8px 16px;font-size:12px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;white-space:nowrap">Upgrade to Pro →</button></a>`
-        }
+        <a href="evekit.html" style="text-decoration:none"><button style="background:#5B4FCF;color:#fff;border:none;padding:8px 16px;font-size:12px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;white-space:nowrap">Open EveKit</button></a>
       </div>
     </div>
 
@@ -900,40 +922,6 @@ function renderToolsTab() {
       </div>
     </div>
   `;
-}
-
-async function downloadProofPacket() {
-  const btn = document.getElementById('proofBtn');
-  if (!btn) return;
-  btn.disabled = true;
-  btn.textContent = 'Generating…';
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    const res = await fetch('/api/documents?type=creator-proof', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token}`,
-      },
-    });
-    if (!res.ok) {
-      const j = await res.json().catch(() => ({}));
-      alert('Could not generate proof packet: ' + (j.error || 'Unknown error'));
-      return;
-    }
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'kitscore-proof-packet.pdf';
-    a.click();
-    URL.revokeObjectURL(url);
-  } catch(err) {
-    alert('Error generating proof packet: ' + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Download PDF';
-  }
 }
 
 async function connectYoutube(){

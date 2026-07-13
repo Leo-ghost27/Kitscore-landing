@@ -4,7 +4,7 @@
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kitscore profile</title>
+<title>Kitscore verification</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/app/shared.css?v=2">
@@ -96,7 +96,7 @@ async function init() {
       <a href="/#pricing-sponsors" style="display:block;margin-top:10px;font-size:12px;color:var(--color-text-secondary);text-decoration:none">Evaluating a creator? See how Kitscore works for sponsors →</a>
     </div>
     <div id="endorseWrap"></div>
-    <div class="footer-note">Verified with mutually confirmed campaign evidence, not follower count. · kitscore.co</div>
+    <div class="footer-note">A quick verification check, not a pitch. Looking for the full media kit? <a href="evekit.html?slug=${encodeURIComponent(slug)}" style="color:#2563EB">See ${escapeHtml(profile.display_name)}'s EveKit →</a></div>
   `;
 
   loadEndorsements(slug);
