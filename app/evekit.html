@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EveKit — Kitscore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F4F3EE;color:#1A1A18;font-size:14px}
+  .topbar{background:#0F0F0E;color:#fff;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;font-size:12px}
+  .topbar .brand{font-weight:700;letter-spacing:-0.01em}
+  .topbar .brand span{color:#9B8FFD}
+  .topbar-actions{display:flex;gap:8px;align-items:center}
+  .tb-btn{background:#5B4FCF;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+  .tb-btn:hover{background:#4A3FB8}
+  .tb-btn.ghost{background:transparent;border:1px solid #3D3D3A;color:#D4D4D2}
+  .tb-btn.ghost:hover{border-color:#5B4FCF;color:#fff}
+  .tb-btn:disabled{opacity:.6;cursor:default}
+  .wrap{max-width:800px;margin:0 auto;padding:28px 20px 80px}
+  .loading,.notfound{text-align:center;padding:80px 20px;color:#6B6B67;font-size:13px}
+
+  .cover{background:#0F0F0E;border-radius:16px;padding:44px 40px;margin-bottom:20px;position:relative;overflow:hidden}
+  .cover::before{content:'';position:absolute;top:-120px;left:-80px;width:400px;height:400px;background:radial-gradient(circle, rgba(91,79,207,.35) 0%, transparent 70%);pointer-events:none}
+  .cover-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B4FCF;margin-bottom:16px}
+  .cover-name{font-family:'Fraunces',serif;font-size:34px;font-weight:600;color:#fff;margin-bottom:4px}
+  .cover-sub{font-size:14px;color:#6B6B67;margin-bottom:20px}
+  .cover-bio{font-size:14px;color:#C7C7C2;line-height:1.6;max-width:600px;margin-bottom:26px}
+  .cover-bio.empty{color:#5A5A56;font-style:italic}
+  .cover-score-row{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+  .score-ring{position:relative;width:92px;height:92px;flex-shrink:0}
+  .score-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .score-ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(0deg)}
+  .score-ring .num span{font-size:24px;font-weight:700;color:#fff;line-height:1}
+  .score-ring .num small{font-size:8.5px;color:#6B6B67;margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
+  .cover-stats{display:flex;gap:26px;flex-wrap:wrap}
+  .cover-stat .v{font-size:19px;font-weight:700;color:#fff}
+  .cover-stat .l{font-size:10.5px;color:#6B6B67;margin-top:1px}
+  .cover-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(91,79,207,.2);border:1px solid rgba(91,79,207,.4);color:#9B8FFD;font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:14px;margin-right:6px}
+  .cover-founding{display:inline-flex;align-items:center;gap:6px;background:rgba(240,180,41,.15);border:1px solid rgba(240,180,41,.4);color:#F0B429;font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  .cover-footer{display:flex;align-items:center;justify-content:space-between;margin-top:32px;padding-top:18px;border-top:1px solid #2A2A28}
+  .cover-footer span{font-size:11px;color:#3D3D3A}
+  .cover-footer .kit-brand{font-size:12.5px;font-weight:600;color:#5B4FCF}
+
+  .card{background:#fff;border-radius:12px;padding:26px;margin-bottom:16px;border:1px solid #E5E4DF}
+  .card-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9E9E99;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #F0EFE9;display:flex;align-items:center;justify-content:space-between}
+  .card-title span{font-size:11px;font-weight:500;letter-spacing:0;text-transform:none}
+
+  .plat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+  .plat-item{background:#F9F8F5;border:1px solid #E5E4DF;border-radius:10px;padding:14px}
+  .plat-name{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#9E9E99;margin-bottom:6px}
+  .plat-followers{font-size:20px;font-weight:700;color:#1A1A18}
+  .plat-handle{font-size:11.5px;color:#6B6B67;margin-top:2px}
+  .plat-verified{display:inline-block;margin-top:8px;font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:10px}
+  .plat-verified.oauth{background:#EBF5DE;color:#2D6A0F}
+  .plat-verified.public_lookup{background:#F0EFE9;color:#6B6B67}
+  .no-platforms{font-size:12.5px;color:#9E9E99}
+
+  .rate-box{text-align:center;padding:8px 0}
+  .rate-range{font-family:'Fraunces',serif;font-size:32px;font-weight:600;color:#5B4FCF;margin-bottom:6px}
+  .rate-note{font-size:11.5px;color:#9E9E99}
+  .rate-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:16px;flex-wrap:wrap}
+  .rate-controls select{font-size:11.5px;padding:5px 8px;border:1px solid #E5E4DF;border-radius:6px;background:#fff;font-family:inherit}
+  .rate-disclaimer{font-size:10.5px;color:#B0B0AA;text-align:center;margin-top:12px;line-height:1.5}
+
+  .campaign-row{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid #F0EFE9}
+  .campaign-row:last-child{border-bottom:none}
+  .cr-name{font-size:13px;font-weight:500;color:#1A1A18;margin-bottom:3px}
+  .cr-meta{font-size:12px;color:#6B6B67}
+  .cr-verified{font-size:11px;font-weight:600;color:#2D6A0F}
+  .no-campaigns{font-size:12.5px;color:#9E9E99;padding:8px 0}
+
+  .contact-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .contact-email{font-family:'IBM Plex Mono',monospace;font-size:13px;color:#1A1A18}
+  .contact-cta{background:#5B4FCF;color:#fff;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12.5px;font-weight:600;white-space:nowrap}
+  .no-contact{font-size:12.5px;color:#9E9E99}
+
+  .owner-banner{background:#EEF2FF;border:1px solid #C7D2FE;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:12.5px;color:#3730A3;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .owner-banner code{background:#fff;padding:2px 6px;border-radius:4px;font-family:'IBM Plex Mono',monospace}
+  .cta-band{text-align:center;padding:24px 0 0}
+  .cta-band a{color:#5B4FCF;text-decoration:none;font-size:12.5px;font-weight:600}
+  .footer-note{text-align:center;font-size:11px;color:#9E9E99;margin-top:18px}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="/" class="brand" style="text-decoration:none;color:#fff">Kit<span>score</span></a>
+    <div class="topbar-actions" id="topbarActions"></div>
+  </div>
+  <div class="wrap">
+    <div id="ownerBanner"></div>
+    <div id="content" class="loading">Loading EveKit…</div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/app/supabase-client.js?v=2"></script>
+<script>
+// ── Rate card logic (same bands as dashboard.html's calculator — kept in
+// sync intentionally; see dashboard.html RATE_TIERS_USD for the source of
+// truth and the reasoning comment behind the banding). ──────────────────
+const RATE_TIERS_USD = [
+  [0,        10000,    100,   500],
+  [10000,    100000,   500,   5000],
+  [100000,   1000000,  5000,  25000],
+  [1000000,  Infinity, 25000, 60000],
+];
+const PLATFORM_RATE_MULT = { instagram: 1, tiktok: 0.75, youtube: 2.5 };
+const NICHE_RATE_MULT = {
+  finance: 1.4, health: 1.35, sustainability: 1.3, tech: 1.25,
+  beauty: 0.9, fashion: 0.95, lifestyle: 0.9, fitness: 1.0,
+};
+const USD_TO_GBP = 0.77;
+
+function rateTierFor(followers) {
+  return RATE_TIERS_USD.find(([min, max]) => followers >= min && followers < max) || RATE_TIERS_USD[RATE_TIERS_USD.length - 1];
+}
+function rateForFollowers(followers, platform, niche) {
+  const [, , rMin, rMax] = rateTierFor(followers);
+  const platMult = PLATFORM_RATE_MULT[platform] || 1;
+  const nicheMult = NICHE_RATE_MULT[(niche || '').toLowerCase()] || 1;
+  return { min: Math.round(rMin * platMult * nicheMult / 5) * 5, max: Math.round(rMax * platMult * nicheMult / 5) * 5 };
+}
+function detectCurrency() {
+  try {
+    const locale = navigator.language || (navigator.languages && navigator.languages[0]) || 'en-GB';
+    const region = new Intl.Locale(locale).maximize().region;
+    return region === 'US' ? 'USD' : 'GBP';
+  } catch (e) { return /-us$/i.test(navigator.language || '') ? 'USD' : 'GBP'; }
+}
+
+let KIT = null; // normalized data for the currently-rendered kit
+
+function ringSvg(score) {
+  const r = 40, circ = 2*Math.PI*r;
+  const pct = Math.min(score||0, 100)/100;
+  const offset = circ*(1-pct);
+  const color = score >= 70 ? '#4ADE80' : score >= 40 ? '#F0B429' : '#EF4444';
+  return `
+    <div class="score-ring">
+      <svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="${r}" fill="none" stroke="#2A2A28" stroke-width="8"/>
+        <circle cx="50" cy="50" r="${r}" fill="none" stroke="${color}" stroke-width="8"
+          stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round"/>
+      </svg>
+      <div class="num"><span>${score}</span><small>trust score</small></div>
+    </div>`;
+}
+
+const BADGE_LABEL = { none:'New creator', bronze:'Bronze', silver:'Silver', gold:'Gold', platinum:'Platinum' };
+
+function renderKit(kit, opts) {
+  opts = opts || {};
+  KIT = kit;
+  const platforms = kit.platforms || [];
+  const campaigns = kit.campaigns || [];
+  const topPlatform = platforms[0];
+
+  document.getElementById('content').innerHTML = `
+    <div class="cover">
+      <div class="cover-label">EveKit · Kitscore Media Kit</div>
+      <div class="cover-name">${escapeHtml(kit.displayName)}</div>
+      <div class="cover-sub">${[kit.niche, kit.location].filter(Boolean).map(escapeHtml).join(' · ') || 'Creator'}</div>
+      <div>
+        <span class="cover-badge">${escapeHtml(BADGE_LABEL[kit.badgeTier] || 'New creator')} tier</span>
+        ${kit.foundingCohort ? `<span class="cover-founding">★ Founding Creator</span>` : ''}
+      </div>
+      <div class="cover-bio${kit.bio ? '' : ' empty'}">${kit.bio ? escapeHtml(kit.bio) : (opts.isOwner ? 'No bio yet — add one in your Profile so brands know who you are at a glance.' : '')}</div>
+      <div class="cover-score-row">
+        ${ringSvg(Math.round(Number(kit.trustScore)||0))}
+        <div class="cover-stats">
+          <div class="cover-stat"><div class="v">${kit.verifiedCount}</div><div class="l">verified campaigns</div></div>
+          <div class="cover-stat"><div class="v">${Math.round(Number(kit.confidence)||0)}%</div><div class="l">confidence</div></div>
+          ${kit.reliabilityScore != null ? `<div class="cover-stat"><div class="v">${Math.round(Number(kit.reliabilityScore))}</div><div class="l">reliability</div></div>` : ''}
+          ${kit.wouldHireAgainPct != null ? `<div class="cover-stat"><div class="v">${Math.round(Number(kit.wouldHireAgainPct))}%</div><div class="l">would hire again</div></div>` : ''}
+        </div>
+      </div>
+      <div class="cover-footer">
+        <span>Generated ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})} · always reflects live Kitscore data</span>
+        <span class="kit-brand">Kitscore.co</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Platforms &amp; audience</div>
+      ${platforms.length ? `<div class="plat-grid">${platforms.map(p => `
+        <div class="plat-item">
+          <div class="plat-name">${escapeHtml(p.platform)}</div>
+          <div class="plat-followers">${Number(p.follower_count).toLocaleString()}</div>
+          <div class="plat-handle">${p.platform_handle ? '@'+escapeHtml(p.platform_handle) : 'followers'}</div>
+          <span class="plat-verified ${p.verification_method}">${p.verification_method === 'oauth' ? 'Verified' : 'Linked'}</span>
+        </div>`).join('')}</div>` : `<div class="no-platforms">No platforms connected yet.${opts.isOwner ? ' Connect one from your dashboard to show real follower counts here.' : ''}</div>`}
+      ${(kit.topCountry || kit.ageRange || kit.genderSplit) ? `
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #F0EFE9">
+        ${kit.topCountry ? `<div><div style="font-size:10.5px;color:#9E9E99;text-transform:uppercase;letter-spacing:.04em">Top audience</div><div style="font-size:13px;color:#1A1A18;margin-top:2px">${escapeHtml(kit.topCountry)}${kit.topCountryPct ? ` (${kit.topCountryPct}%)` : ''}</div></div>` : ''}
+        ${kit.ageRange ? `<div><div style="font-size:10.5px;color:#9E9E99;text-transform:uppercase;letter-spacing:.04em">Age range</div><div style="font-size:13px;color:#1A1A18;margin-top:2px">${escapeHtml(kit.ageRange)}</div></div>` : ''}
+        ${kit.genderSplit ? `<div><div style="font-size:10.5px;color:#9E9E99;text-transform:uppercase;letter-spacing:.04em">Gender split</div><div style="font-size:13px;color:#1A1A18;margin-top:2px">${escapeHtml(kit.genderSplit)}</div></div>` : ''}
+        <span style="font-size:9.5px;color:#B0B0AA;align-self:flex-end">self-reported</span>
+      </div>` : ''}
+    </div>
+
+    <div class="card">
+      <div class="card-title">What to charge <span>estimated rate card</span></div>
+      <div class="rate-box">
+        <div class="rate-range" id="ek-rate-range">—</div>
+        <div class="rate-note" id="ek-rate-note"></div>
+      </div>
+      <div class="rate-controls">
+        ${platforms.length ? `<select id="ek-platform" onchange="updateEveKitRate()">
+          ${platforms.map(p => `<option value="${escapeHtml(p.platform)}" data-followers="${p.follower_count}">${escapeHtml(p.platform.charAt(0).toUpperCase()+p.platform.slice(1))} — ${Number(p.follower_count).toLocaleString()}</option>`).join('')}
+        </select>` : `<select id="ek-platform" onchange="updateEveKitRate()"><option value="instagram" data-followers="18000">Instagram — est. 18,000</option></select>`}
+        <select id="ek-currency" onchange="updateEveKitRate()">
+          <option value="GBP">£ GBP</option>
+          <option value="USD">$ USD</option>
+        </select>
+      </div>
+      <div class="rate-disclaimer">Estimated from public sponsorship-rate benchmarks by follower tier, platform, and niche — not a quote. Use it as a starting point for negotiation, not a guarantee.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Verified campaigns <span>${campaigns.length ? `${campaigns.length} shown` : ''}</span></div>
+      ${campaigns.length ? campaigns.map(c => `
+        <div class="campaign-row">
+          <div>
+            <div class="cr-name">${escapeHtml(c.name || 'Campaign')}</div>
+            ${c.objective ? `<div class="cr-meta">${escapeHtml(c.objective)}</div>` : ''}
+          </div>
+          <div class="cr-verified">✓ Verified</div>
+        </div>`).join('') : `<div class="no-campaigns">No mutually confirmed campaigns yet. ${opts.isOwner ? 'Log one from Campaigns once a brand confirms it.' : ''}</div>`}
+    </div>
+
+    <div class="card">
+      <div class="card-title">Contact</div>
+      <div class="contact-row">
+        ${kit.businessEmail
+          ? `<span class="contact-email">${escapeHtml(kit.businessEmail)}</span><a class="contact-cta" href="mailto:${encodeURIComponent(kit.businessEmail)}?subject=${encodeURIComponent('Partnership inquiry — '+kit.displayName)}">Email ${escapeHtml((kit.displayName||'').split(' ')[0]||'me')}</a>`
+          : `<span class="no-contact">${opts.isOwner ? 'Add a business email in your Profile so brands can reach you from this page.' : 'No contact email listed.'}</span>`}
+      </div>
+    </div>
+
+    ${opts.isOwner ? '' : `
+    <div class="cta-band">
+      <a href="/for-creators.html">Get your own free EveKit from Kitscore →</a>
+    </div>`}
+    <div class="footer-note">EveKit is a pitch document built from your verified Kitscore data. For a quick trust check instead, see the <a href="p.html?slug=${encodeURIComponent(opts.slug||'')}" style="color:#5B4FCF">verification link</a>.</div>
+  `;
+
+  document.getElementById('ek-currency').value = detectCurrency();
+  updateEveKitRate();
+}
+
+function updateEveKitRate() {
+  const platSel = document.getElementById('ek-platform');
+  const curSel = document.getElementById('ek-currency');
+  if (!platSel || !curSel || !KIT) return;
+  const opt = platSel.options[platSel.selectedIndex];
+  const followers = Number(opt.dataset.followers) || 18000;
+  const platform = opt.value;
+  const { min, max } = rateForFollowers(followers, platform, KIT.niche);
+  const code = curSel.value;
+  const symbol = code === 'GBP' ? '£' : '$';
+  const conv = code === 'GBP' ? USD_TO_GBP : 1;
+  const dMin = Math.round(min * conv / 5) * 5;
+  const dMax = Math.round(max * conv / 5) * 5;
+  document.getElementById('ek-rate-range').textContent = `${symbol}${dMin.toLocaleString()}–${symbol}${dMax.toLocaleString()} per post`;
+  document.getElementById('ek-rate-note').textContent = `Based on ${followers.toLocaleString()} ${platform} followers${KIT.niche ? ` · ${KIT.niche} niche` : ''}`;
+}
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+// ── Owner (authenticated, dashboard) mode ───────────────────────────────
+async function loadOwnerKit(profile) {
+  const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }, { data: audience }] = await Promise.all([
+    sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,profile_views').eq('id', profile.id).single(),
+    sb.from('campaigns').select('name,objective,creator_confirmed,sponsor_confirmed,created_at').eq('creator_id', profile.id).order('created_at',{ascending:false}),
+    sb.rpc('fn_creator_platform_summary', { p_creator_id: profile.id }),
+    sb.rpc('fn_get_my_business_email'),
+    sb.from('audience_demographics').select('top_country,top_country_pct,age_range,gender_split').eq('creator_id', profile.id).maybeSingle(),
+  ]);
+
+  const verified = (campaigns||[]).filter(x=>x.creator_confirmed&&x.sponsor_confirmed);
+  const platforms = (platformConnections||[]).filter(p=>p.follower_count!=null&&p.follower_count>0).sort((a,b)=>b.follower_count-a.follower_count);
+
+  const kit = {
+    displayName: profile.display_name, bio: c.bio, niche: c.niche, location: c.location,
+    businessEmail, trustScore: c.trust_score, confidence: c.confidence, badgeTier: c.badge_tier,
+    foundingCohort: c.founding_cohort, verifiedCount: verified.length, reliabilityScore: c.reliability_score,
+    wouldHireAgainPct: c.would_hire_again_pct, repeatSponsorRate: c.repeat_sponsor_rate,
+    topCountry: audience?.top_country, topCountryPct: audience?.top_country_pct,
+    ageRange: audience?.age_range, genderSplit: audience?.gender_split,
+    platforms, campaigns: verified,
+  };
+
+  const link = `https://kitscore.co/app/evekit.html?slug=${c.slug || ''}`;
+  document.getElementById('ownerBanner').innerHTML = `
+    <div class="owner-banner">
+      <span>This is your EveKit — <code id="ekLinkText">${escapeHtml(link)}</code></span>
+      <div style="display:flex;gap:8px">
+        <button class="tb-btn ghost" style="background:#fff;border:1px solid #C7D2FE;color:#3730A3" onclick="copyEveKitLink('${escapeHtml(link)}')">Copy link</button>
+      </div>
+    </div>
+    ${c.plan === 'pro' ? `<div style="font-size:11.5px;color:#6B6B67;margin:-10px 0 16px">${c.profile_views || 0} view${c.profile_views===1?'':'s'} so far</div>`
+      : `<div style="font-size:11.5px;color:#6B6B67;margin:-10px 0 16px">Want to know how many brands have opened this? <a href="pricing-creator.html" style="color:#2563EB">View analytics is a Pro perk →</a></div>`}
+  `;
+
+  document.getElementById('topbarActions').innerHTML = `
+    <button class="tb-btn ghost" onclick="window.location.href='dashboard.html'">← Dashboard</button>
+    <button class="tb-btn" id="dlBtn" onclick="downloadEveKitPdf()">Download PDF</button>
+  `;
+
+  renderKit(kit, { isOwner: true, slug: c.slug });
+}
+
+function copyEveKitLink(link) {
+  navigator.clipboard.writeText(link).then(() => {
+    const el = document.getElementById('ekLinkText');
+    const original = el.textContent;
+    el.textContent = 'Copied!';
+    setTimeout(() => { el.textContent = original; }, 1500);
+  });
+}
+
+async function downloadEveKitPdf() {
+  const btn = document.getElementById('dlBtn');
+  if (!btn) return;
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = 'Generating…';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/documents?type=evekit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      alert('Could not generate EveKit PDF: ' + (j.error || 'Unknown error'));
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'kitscore-evekit.pdf'; a.click();
+    URL.revokeObjectURL(url);
+  } catch(err) {
+    alert('Error generating EveKit PDF: ' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = original;
+  }
+}
+
+// ── Public (slug) mode ───────────────────────────────────────────────────
+async function loadPublicKit(slug) {
+  const { data, error } = await sb.rpc('fn_get_evekit_profile', { p_slug: slug });
+  const row = data && data[0];
+  if (error || !row) {
+    document.getElementById('content').innerHTML = `<div class="notfound">This EveKit doesn't exist or isn't public.</div>`;
+    return;
+  }
+  document.getElementById('topbarActions').innerHTML = `<a href="/for-creators.html" class="tb-btn">Get your own free EveKit</a>`;
+  const kit = {
+    displayName: row.display_name, bio: row.bio, niche: row.niche, location: row.location,
+    businessEmail: row.business_email, trustScore: row.trust_score, confidence: row.confidence,
+    badgeTier: row.badge_tier, foundingCohort: row.founding_cohort, verifiedCount: Number(row.verified_campaign_count)||0,
+    reliabilityScore: row.reliability_score,
+    topCountry: row.top_country, topCountryPct: row.top_country_pct,
+    ageRange: row.age_range, genderSplit: row.gender_split,
+    platforms: row.platforms || [], campaigns: row.campaigns || [],
+  };
+  renderKit(kit, { isOwner: false, slug });
+
+  // Only count views from visitors without an active session, so the
+  // creator's own logins/previews never inflate their own view count.
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    sb.rpc('fn_increment_evekit_view', { p_slug: slug }).catch(() => {});
+  }
+}
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get('slug');
+  if (slug) { await loadPublicKit(slug); return; }
+
+  // No slug in the URL: this is the owner opening their own EveKit from
+  // the dashboard. Require a signed-in creator session.
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { window.location.href = 'auth.html'; return; }
+  const { data: profile, error } = await sb.rpc('fn_get_my_profile');
+  if (error || !profile || profile.role !== 'creator') { window.location.href = 'auth.html'; return; }
+  await loadOwnerKit(profile);
+}
+
+init();
+</script>
+</body>
+</html>
