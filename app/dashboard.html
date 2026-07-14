@@ -171,6 +171,57 @@
     .g3{grid-template-columns:1fr 1fr}
     body{padding:12px}
   }
+  /* Rate calculator slider -- flat unstyled range inputs look rudimentary
+     by default, so this gives it a filled blue track (via the
+     --rc-fill custom property, set in JS on every input) plus a
+     matching blue thumb, cross-browser. */
+  input[type="range"].rc-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(to right, #2563EB 0%, #2563EB var(--rc-fill, 43%), #E5E7EB var(--rc-fill, 43%), #E5E7EB 100%);
+    outline: none;
+    cursor: pointer;
+    margin: 4px 0;
+  }
+  input[type="range"].rc-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #2563EB;
+    border: 3px solid #fff;
+    box-shadow: 0 1px 4px rgba(37,99,235,0.45), 0 0 0 1px rgba(37,99,235,0.15);
+    cursor: pointer;
+    margin-top: 0;
+    transition: transform 0.1s;
+  }
+  input[type="range"].rc-slider::-webkit-slider-thumb:hover,
+  input[type="range"].rc-slider::-webkit-slider-thumb:active {
+    transform: scale(1.15);
+  }
+  input[type="range"].rc-slider::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    background: #E5E7EB;
+  }
+  input[type="range"].rc-slider::-moz-range-progress {
+    height: 6px;
+    border-radius: 999px;
+    background: #2563EB;
+  }
+  input[type="range"].rc-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #2563EB;
+    border: 3px solid #fff;
+    box-shadow: 0 1px 4px rgba(37,99,235,0.45);
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -893,7 +944,7 @@ function renderToolsTab() {
         <label style="font-size:11px;color:var(--color-text-secondary)">Followers</label>
         <span id="rc-followers-val" style="font-family:var(--font-mono,monospace);font-size:13px;font-weight:600;color:var(--ink,#0F1B2E)">18,000</span>
       </div>
-      <input id="rc-followers" type="range" min="0" max="1000" step="1" value="432" style="width:100%" oninput="updateRateCalc(sliderToFollowers(this.value))">
+      <input id="rc-followers" class="rc-slider" type="range" min="0" max="1000" step="1" value="432" style="width:100%" oninput="updateRateCalc(sliderToFollowers(this.value)); updateRcFill(this)">
       <div style="text-align:center;margin-top:14px">
         <div id="rc-range" style="font-size:22px;font-weight:700;color:var(--blue,#2563EB)">£90–£180</div>
         <div id="rc-source-note" style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px"></div>
@@ -1262,6 +1313,11 @@ const NICHE_RATE_MULT = {
   beauty: 0.9, fashion: 0.95, lifestyle: 0.9, fitness: 1.0,
 };
 
+function updateRcFill(slider) {
+  const pct = (Number(slider.value) - Number(slider.min)) / (Number(slider.max) - Number(slider.min)) * 100;
+  slider.style.setProperty('--rc-fill', pct + '%');
+}
+
 function rateTierFor(followers) {
   return RATE_TIERS_USD.find(([min, max]) => followers >= min && followers < max) || RATE_TIERS_USD[RATE_TIERS_USD.length - 1];
 }
@@ -1337,6 +1393,7 @@ function onRateCalcPlatformChange() {
   const slider = document.getElementById('rc-followers');
   if (match) {
     slider.value = followersToSlider(match.follower_count);
+    updateRcFill(slider);
     updateRateCalc(match.follower_count);
   } else {
     updateRateCalc(sliderToFollowers(slider.value));
@@ -1350,6 +1407,7 @@ function initRateCalc() {
   const note = document.getElementById('rc-source-note');
   if (sources.length) {
     slider.value = followersToSlider(sources[0].follower_count);
+    updateRcFill(slider);
     if (note) {
       const niche = creator.niche ? ` · ${escapeHtml(creator.niche)} niche` : '';
       note.innerHTML = `Personalized from your verified ${escapeHtml(sources[0].platform)} followers${niche}. ${sources.length > 1 ? 'Switch platform above.' : ''}`;
