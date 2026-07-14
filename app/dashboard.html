@@ -224,7 +224,9 @@ const QUESTIONS = [
   {key:'profanity',   label:'Profanity frequency?',                     opts:['None','Occasional','Frequent']},
 ];
 
-let profile, creator, audienceData = {};
+let profile, creator, audienceData = {countries:[], genders:{}, ages:{}};
+const AUD_GENDER_LABELS = [['female','Female'],['male','Male'],['other','Other']];
+const AUD_AGE_BRACKETS = ['13-17','18-24','25-34','35-44','45-54','55-64','65+'];
 let dash = {}; // holds all data computed in load(), read by tab renderers
 let activeTab = 'overview';
 
@@ -337,7 +339,7 @@ async function load() {
     sb.from('brand_safety_answers').select('*').eq('creator_id', profile.id),
     sb.from('campaigns').select('*').eq('creator_id', profile.id).order('created_at',{ascending:false}),
     sb.rpc('fn_get_my_business_email'),
-    sb.from('audience_demographics').select('*').eq('creator_id', profile.id).maybeSingle(),
+    sb.from('audience_demographics').select('dimension,label,pct').eq('creator_id', profile.id),
     sb.from('trust_score_history').select('trust_score,recorded_at').eq('creator_id', profile.id).order('recorded_at',{ascending:true}),
     // Token-free summary (handle, follower count, verification_method) --
     // never returns access_token/refresh_token, see
@@ -345,7 +347,12 @@ async function load() {
     sb.rpc('fn_creator_platform_summary', { p_creator_id: profile.id }),
   ]);
   creator = { ...c, business_email: businessEmail };
-  audienceData = audience || {};
+  const audRows = audience || [];
+  audienceData = {
+    countries: audRows.filter(r=>r.dimension==='country').map(r=>({label:r.label, pct:r.pct})),
+    genders: Object.fromEntries(audRows.filter(r=>r.dimension==='gender').map(r=>[r.label, r.pct])),
+    ages: Object.fromEntries(audRows.filter(r=>r.dimension==='age').map(r=>[r.label, r.pct])),
+  };
 
   const answerMap={};
   (answers||[]).forEach(a=>answerMap[a.question_key]=a.answer);
@@ -411,6 +418,7 @@ function switchTab(key) {
   document.querySelectorAll('.dash-tab').forEach(el => {
     el.classList.toggle('active', el.dataset.tabKey === key);
   });
+  if (key === 'profile') renderAudienceCountryRows();
 }
 
 // In-app replacement for the old email evidence-freshness reminder (removed
@@ -718,26 +726,43 @@ function renderProfileTab() {
     <div class="card" id="audience-demographics">
       <div class="sec">Audience demographics <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— self-reported, shown to sponsors as such</span></div>
       <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:14px;line-height:1.6">This isn't verified against platform analytics, so it's always labelled self-reported wherever it appears. Still useful — sponsors targeting a specific market can see if your audience is likely a fit before paying for a full evaluation.</div>
-      <div class="field-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-        <div>
-          <label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">Top country</label>
-          <input id="audTopCountry" value="${escapeHtml(audienceData.top_country||'')}" placeholder="e.g. United Kingdom" style="width:100%;padding:7px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
-        </div>
-        <div>
-          <label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">% of audience there</label>
-          <input id="audTopCountryPct" type="number" min="0" max="100" value="${audienceData.top_country_pct??''}" placeholder="e.g. 70" style="width:100%;padding:7px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
+
+      <div style="margin-bottom:18px">
+        <label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:6px">Top countries <span id="audCountryTotal" style="font-weight:600"></span></label>
+        <div id="audCountryRows"></div>
+        <button type="button" class="btn btn-sm" onclick="addAudienceCountryRow()">+ Add country</button>
+      </div>
+
+      <div style="margin-bottom:18px">
+        <label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:6px">Gender split <span id="audGenderTotal" style="font-weight:600"></span></label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          ${AUD_GENDER_LABELS.map(([key,label])=>`
+            <div>
+              <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">${label}</label>
+              <div style="position:relative">
+                <input class="audGenderInput" data-gender="${key}" type="number" min="0" max="100" value="${audienceData.genders[key]??''}" placeholder="0" oninput="updateAudienceTotals()" style="width:100%;padding:7px 24px 7px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
+                <span style="position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--color-text-tertiary)">%</span>
+              </div>
+            </div>
+          `).join('')}
         </div>
       </div>
-      <div class="field-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-        <div>
-          <label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">Dominant age range</label>
-          <input id="audAgeRange" value="${escapeHtml(audienceData.age_range||'')}" placeholder="e.g. 25-34" style="width:100%;padding:7px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
-        </div>
-        <div>
-          <label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">Gender split</label>
-          <input id="audGenderSplit" value="${escapeHtml(audienceData.gender_split||'')}" placeholder="e.g. 60% female / 40% male" style="width:100%;padding:7px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
+
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:6px">Age breakdown <span id="audAgeTotal" style="font-weight:600"></span></label>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          ${AUD_AGE_BRACKETS.map(b=>`
+            <div>
+              <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">${b}</label>
+              <div style="position:relative">
+                <input class="audAgeInput" data-age="${b}" type="number" min="0" max="100" value="${audienceData.ages[b]??''}" placeholder="0" oninput="updateAudienceTotals()" style="width:100%;padding:7px 22px 7px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
+                <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--color-text-tertiary)">%</span>
+              </div>
+            </div>
+          `).join('')}
         </div>
       </div>
+
       <button class="btn-primary" style="font-size:12px;padding:8px 18px" onclick="saveAudienceDemographics()">Save</button>
       <span id="audSaveMsg" style="font-size:11px;margin-left:10px"></span>
     </div>
@@ -1109,18 +1134,96 @@ async function answerQuestion(key,answer){
   await load();
 }
 
+// ── Audience demographics: repeatable country rows ──────────────────────
+function renderAudienceCountryRows() {
+  const container = document.getElementById('audCountryRows');
+  if (!container) return; // profile tab not currently mounted
+  const rows = audienceData.countries.length ? audienceData.countries : [{label:'',pct:''}];
+  container.innerHTML = rows.map((r,i)=>`
+    <div class="audCountryRow" style="display:grid;grid-template-columns:1fr 90px 28px;gap:8px;margin-bottom:8px;align-items:center">
+      <input class="audCountryLabel" value="${escapeHtml(r.label||'')}" placeholder="e.g. United Kingdom" oninput="updateAudienceTotals()" style="width:100%;padding:7px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
+      <div style="position:relative">
+        <input class="audCountryPct" type="number" min="0" max="100" value="${r.pct??''}" placeholder="0" oninput="updateAudienceTotals()" style="width:100%;padding:7px 22px 7px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
+        <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--color-text-tertiary)">%</span>
+      </div>
+      <button type="button" onclick="removeAudienceCountryRow(${i})" title="Remove country" style="border:none;background:none;color:var(--color-text-tertiary);cursor:pointer;font-size:16px;line-height:1">×</button>
+    </div>
+  `).join('');
+  updateAudienceTotals();
+}
+
+function readAudienceCountryRows() {
+  return Array.from(document.querySelectorAll('#audCountryRows .audCountryRow')).map(row => ({
+    label: row.querySelector('.audCountryLabel').value.trim(),
+    pct: row.querySelector('.audCountryPct').value,
+  }));
+}
+
+function addAudienceCountryRow() {
+  audienceData.countries = readAudienceCountryRows();
+  audienceData.countries.push({label:'', pct:''});
+  renderAudienceCountryRows();
+}
+
+function removeAudienceCountryRow(i) {
+  audienceData.countries = readAudienceCountryRows();
+  audienceData.countries.splice(i, 1);
+  renderAudienceCountryRows();
+}
+
+// Running totals per dimension -- flagged red if over 100%, but saving
+// isn't blocked on an exact 100% since partial self-reported data (e.g.
+// "I only know my top 2 countries") is still useful to show sponsors.
+function updateAudienceTotals() {
+  const sum = vals => vals.reduce((s,v) => s + (parseFloat(v) || 0), 0);
+  const setTotal = (id, total) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = total ? `(${total}%)` : '';
+    el.style.color = total > 100 ? '#B42318' : 'var(--color-text-tertiary)';
+  };
+  setTotal('audCountryTotal', sum(readAudienceCountryRows().map(r => r.pct)));
+  setTotal('audGenderTotal', sum(Array.from(document.querySelectorAll('.audGenderInput')).map(i => i.value)));
+  setTotal('audAgeTotal', sum(Array.from(document.querySelectorAll('.audAgeInput')).map(i => i.value)));
+}
+
 async function saveAudienceDemographics(){
-  const top_country = document.getElementById('audTopCountry').value.trim() || null;
-  const pctRaw = document.getElementById('audTopCountryPct').value;
-  const top_country_pct = pctRaw === '' ? null : Math.max(0, Math.min(100, parseInt(pctRaw, 10)));
-  const age_range = document.getElementById('audAgeRange').value.trim() || null;
-  const gender_split = document.getElementById('audGenderSplit').value.trim() || null;
-
   const msgEl = document.getElementById('audSaveMsg');
-  const { error } = await sb.from('audience_demographics')
-    .upsert({ creator_id: profile.id, top_country, top_country_pct, age_range, gender_split, updated_at: new Date().toISOString() }, { onConflict: 'creator_id' });
+  const clampPct = v => Math.max(0, Math.min(100, parseInt(v, 10)));
 
-  if (error) { msgEl.style.color = '#B42318'; msgEl.textContent = 'Could not save: ' + error.message; return; }
+  const countries = readAudienceCountryRows()
+    .filter(r => r.label && r.pct !== '')
+    .map(r => ({ dimension:'country', label:r.label, pct:clampPct(r.pct) }));
+
+  const genders = Array.from(document.querySelectorAll('.audGenderInput'))
+    .filter(i => i.value !== '')
+    .map(i => ({ dimension:'gender', label:i.dataset.gender, pct:clampPct(i.value) }));
+
+  const ages = Array.from(document.querySelectorAll('.audAgeInput'))
+    .filter(i => i.value !== '')
+    .map(i => ({ dimension:'age', label:i.dataset.age, pct:clampPct(i.value) }));
+
+  const rows = [...countries, ...genders, ...ages]
+    .map(r => ({ ...r, creator_id: profile.id, updated_at: new Date().toISOString() }));
+
+  // Table has no natural "clear everything" upsert shape (rows come and
+  // go as creators add/remove countries), so replace the full set:
+  // delete everything for this creator, then insert what's currently in
+  // the form. Both steps are covered by the creator's own RLS policies.
+  const { error: delError } = await sb.from('audience_demographics').delete().eq('creator_id', profile.id);
+  if (delError) { msgEl.style.color = '#B42318'; msgEl.textContent = 'Could not save: ' + delError.message; return; }
+
+  if (rows.length) {
+    const { error: insError } = await sb.from('audience_demographics').insert(rows);
+    if (insError) { msgEl.style.color = '#B42318'; msgEl.textContent = 'Could not save: ' + insError.message; return; }
+  }
+
+  audienceData = {
+    countries: countries.map(c => ({ label:c.label, pct:c.pct })),
+    genders: Object.fromEntries(genders.map(g => [g.label, g.pct])),
+    ages: Object.fromEntries(ages.map(a => [a.label, a.pct])),
+  };
+  renderAudienceCountryRows();
   msgEl.style.color = '#1C7C3F';
   msgEl.textContent = 'Saved';
   setTimeout(() => { msgEl.textContent = ''; }, 2500);
