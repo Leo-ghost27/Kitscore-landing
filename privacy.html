@@ -44,7 +44,7 @@
 </nav>
 
 <h1>Privacy Policy</h1>
-<p class="meta">Last updated: June 30, 2026</p>
+<p class="meta">Last updated: July 14, 2026</p>
 
 <div class="notice">
 This is a working draft prepared to match Kitscore's current product (accounts, evidence uploads, evaluations, Stripe billing, and mutual campaign confirmation). It is not legal advice. Have a lawyer review it for GDPR, UK GDPR, and CCPA compliance before relying on it at scale, particularly around evidence retention and cross-border data transfer if you have EU/UK users.
@@ -59,6 +59,7 @@ This is a working draft prepared to match Kitscore's current product (accounts, 
 <tr><td>Account data</td><td>Name/company name, email, password (hashed), account role (creator or sponsor)</td><td>Everyone with an account</td></tr>
 <tr><td>Profile data</td><td>Niche, location, business email, supported platforms</td><td>Creators</td></tr>
 <tr><td>Evidence you submit</td><td>Screenshots, analytics exports, campaign documentation, brand safety questionnaire answers</td><td>Creators</td></tr>
+<tr><td>Platform connection data</td><td>When you connect a YouTube or TikTok account, we receive your channel/account ID, display name or handle, and public statistics (subscriber/follower count, view count, video count). For YouTube, this is read via the <code>youtube.readonly</code> scope, limited to the channel belonging to the Google account you sign in with — we cannot see any other Google data, and we never request access to upload, edit, or delete anything on your channel.</td><td>Creators who connect a platform account</td></tr>
 <tr><td>Campaign &amp; evaluation data</td><td>Campaign briefs, mutual confirmations, sponsor ratings/endorsements, evaluation requests and outputs</td><td>Creators &amp; sponsors</td></tr>
 <tr><td>Billing data</td><td>Payment processed by Stripe — we receive confirmation of payment and a Stripe customer reference, not your full card number</td><td>Anyone making a paid purchase</td></tr>
 <tr><td>Usage data</td><td>Pages visited, session activity, basic device/browser info, via essential cookies and standard server logs</td><td>All visitors</td></tr>
@@ -67,6 +68,7 @@ This is a working draft prepared to match Kitscore's current product (accounts, 
 <h2>3. How we use it</h2>
 <ul>
 <li>To create and run your account, and to generate Trust Scores, Reliability Scores, and evaluation reports.</li>
+<li>To verify that you own the YouTube or TikTok account you claim, and to pull public channel statistics that feed into your Trust Score and Reliability Score.</li>
 <li>To process payments and manage subscriptions via Stripe.</li>
 <li>To verify evidence and facilitate mutual campaign confirmation between creators and sponsors.</li>
 <li>To detect fraud, fake evidence, or abuse of the scoring system.</li>
@@ -79,37 +81,51 @@ This is a working draft prepared to match Kitscore's current product (accounts, 
 <p>If you're a creator, parts of your profile are designed to be visible to sponsors by nature of the product — this includes your Trust Score, Reliability Score, badge tier, niche, location, and (for verified campaigns) the fact that a campaign was mutually confirmed. Evidence files themselves are not made public; they back the score but aren't displayed raw. Self-reported, evidence-submitted, and live-verified data are labeled separately so sponsors can see the source.</p>
 <p>If you're a sponsor, submitting endorsement feedback on a completed campaign (ratings, would-hire-again status, and any notes you write) may appear publicly on that creator's profile, visible to anyone browsing Kitscore — not only to the creator. By default this feedback is attributed to "Verified sponsor," not your company name. Your company name is shown alongside your feedback only if you explicitly opt in at the time you submit it.</p>
 
-<h2>5. Who we share data with</h2>
+<h2>5. Google and YouTube data specifically</h2>
+<p>If you connect your YouTube account, Kitscore's use of the resulting Google user data is limited as follows:</p>
+<ul>
+<li><strong>What we access:</strong> read-only access to the channel belonging to the Google account you authenticate with (channel ID, title, handle, subscriber count, view count, video count), via the <code>youtube.readonly</code> OAuth scope. We do not request write, upload, or delete access to your YouTube channel.</li>
+<li><strong>What it's used for:</strong> confirming you own the channel you claim, and computing the Trust Score and Reliability Score metrics shown on your profile. It is not used for any other purpose.</li>
+<li><strong>AI/ML training:</strong> Google user data obtained through this connection is not used to develop, improve, or train any AI or machine learning models, and is not transferred to any third-party service for that purpose.</li>
+<li><strong>Sharing:</strong> Google user data obtained this way is not sold, and is not shared with advertisers or data brokers. It is stored with our infrastructure provider (Supabase, see below) solely to operate the Service.</li>
+<li><strong>Retention:</strong> we retain the access/refresh tokens and channel statistics for as long as the connection remains active on your account, or until you ask us to remove it.</li>
+<li><strong>Revoking access:</strong> you can revoke Kitscore's access to your Google account at any time from your <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google Account permissions page</a>, and you can ask us to delete the connection and associated data from Kitscore by emailing <a href="mailto:hello@kitscore.co">hello@kitscore.co</a>.</li>
+</ul>
+<p>Kitscore's use of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+
+<h2>6. Who we share data with</h2>
 <table>
 <tr><th>Provider</th><th>Purpose</th></tr>
 <tr><td>Supabase</td><td>Database, authentication, and file storage for accounts, evidence, and evaluation data</td></tr>
 <tr><td>Stripe</td><td>Payment processing for evaluations and subscriptions</td></tr>
+<tr><td>YouTube Data API (Google)</td><td>Source of channel statistics when you connect a YouTube account — see Section 5. This is a data source we read from, not a party we share your Kitscore data with.</td></tr>
+<tr><td>TikTok API</td><td>Source of account statistics when you connect a TikTok account. This is a data source we read from, not a party we share your Kitscore data with.</td></tr>
 </table>
 <p>Each processes data on our behalf under its own data processing terms. We don't share your information with any other third party except where required by law, to investigate fraud, or to protect the rights and safety of our users.</p>
 
-<h2>6. Cookies</h2>
+<h2>7. Cookies</h2>
 <p>We use essential cookies/local storage required to keep you signed in and to operate the Service securely. We do not currently use third-party advertising or tracking cookies. If that changes, we'll update this policy and add a cookie notice.</p>
 
-<h2>7. How long we keep data</h2>
+<h2>8. How long we keep data</h2>
 <ul>
 <li><strong>Account &amp; profile data:</strong> kept while your account is active, and for a reasonable period after closure for legal, tax, and fraud-prevention purposes.</li>
 <li><strong>Evidence &amp; evaluation records:</strong> kept to preserve the integrity of historical scores and Verified Campaign records, even if a profile is later deactivated, unless deletion is legally required.</li>
 <li><strong>Billing records:</strong> kept as required for tax and accounting purposes.</li>
 </ul>
 
-<h2>8. Your choices</h2>
+<h2>9. Your choices</h2>
 <p>You can ask us to access, correct, or delete the data we hold about you by emailing <a href="mailto:hello@kitscore.co">hello@kitscore.co</a>. Note that deleting evidence tied to a mutually confirmed campaign may affect the accuracy of your historical score, and we may be required to retain certain billing records regardless of a deletion request. If you're in the EU, UK, or California, you have specific rights under GDPR, UK GDPR, or the CCPA that we'll honor on request.</p>
 
-<h2>9. Children's privacy</h2>
+<h2>10. Children's privacy</h2>
 <p>Kitscore is intended for creators and sponsors who are 18 or older, and is not directed at children. We don't knowingly collect data from anyone under 18.</p>
 
-<h2>10. Security</h2>
+<h2>11. Security</h2>
 <p>We use reasonable technical and organizational measures to protect your data, including access controls on our database (row-level security) and encrypted payment processing via Stripe. No system is 100% secure, and we can't guarantee absolute security.</p>
 
-<h2>11. Changes to this policy</h2>
+<h2>12. Changes to this policy</h2>
 <p>If we materially change how we collect or use your data, we'll update the date at the top of this page and, where appropriate, notify you directly.</p>
 
-<h2>12. Contact</h2>
+<h2>13. Contact</h2>
 <p>General &amp; privacy requests: <a href="mailto:hello@kitscore.co">hello@kitscore.co</a><br>
 Billing-related data: <a href="mailto:billing@kitscore.co">billing@kitscore.co</a></p>
 
