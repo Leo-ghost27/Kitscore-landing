@@ -97,6 +97,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/app/supabase-client.js?v=2"></script>
 <script>
+const AUD_GENDER_LABEL = { female: 'Female', male: 'Male', other: 'Other' };
 // ── Rate card logic (same bands as dashboard.html's calculator — kept in
 // sync intentionally; see dashboard.html RATE_TIERS_USD for the source of
 // truth and the reasoning comment behind the banding). ──────────────────
@@ -191,11 +192,11 @@ function renderKit(kit, opts) {
           <div class="plat-handle">${p.platform_handle ? '@'+escapeHtml(p.platform_handle) : 'followers'}</div>
           <span class="plat-verified ${p.verification_method}">${p.verification_method === 'oauth' ? 'Verified' : 'Linked'}</span>
         </div>`).join('')}</div>` : `<div class="no-platforms">No platforms connected yet.${opts.isOwner ? ' Connect one from your dashboard to show real follower counts here.' : ''}</div>`}
-      ${(kit.topCountry || kit.ageRange || kit.genderSplit) ? `
+      ${(kit.audienceCountries?.length || kit.audienceAges?.length || kit.audienceGenders?.length) ? `
       <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #F0EFE9">
-        ${kit.topCountry ? `<div><div style="font-size:10.5px;color:#9E9E99;text-transform:uppercase;letter-spacing:.04em">Top audience</div><div style="font-size:13px;color:#1A1A18;margin-top:2px">${escapeHtml(kit.topCountry)}${kit.topCountryPct ? ` (${kit.topCountryPct}%)` : ''}</div></div>` : ''}
-        ${kit.ageRange ? `<div><div style="font-size:10.5px;color:#9E9E99;text-transform:uppercase;letter-spacing:.04em">Age range</div><div style="font-size:13px;color:#1A1A18;margin-top:2px">${escapeHtml(kit.ageRange)}</div></div>` : ''}
-        ${kit.genderSplit ? `<div><div style="font-size:10.5px;color:#9E9E99;text-transform:uppercase;letter-spacing:.04em">Gender split</div><div style="font-size:13px;color:#1A1A18;margin-top:2px">${escapeHtml(kit.genderSplit)}</div></div>` : ''}
+        ${kit.audienceCountries?.length ? `<div><div style="font-size:10.5px;color:#9E9E99;text-transform:uppercase;letter-spacing:.04em">Top audience</div><div style="font-size:13px;color:#1A1A18;margin-top:2px">${escapeHtml(kit.audienceCountries.map(c => `${c.label} (${c.pct}%)`).join(', '))}</div></div>` : ''}
+        ${kit.audienceAges?.length ? `<div><div style="font-size:10.5px;color:#9E9E99;text-transform:uppercase;letter-spacing:.04em">Age breakdown</div><div style="font-size:13px;color:#1A1A18;margin-top:2px">${escapeHtml(kit.audienceAges.map(a => `${a.label} (${a.pct}%)`).join(', '))}</div></div>` : ''}
+        ${kit.audienceGenders?.length ? `<div><div style="font-size:10.5px;color:#9E9E99;text-transform:uppercase;letter-spacing:.04em">Gender split</div><div style="font-size:13px;color:#1A1A18;margin-top:2px">${escapeHtml(kit.audienceGenders.map(g => `${AUD_GENDER_LABEL[g.label] || g.label} (${g.pct}%)`).join(', '))}</div></div>` : ''}
         <span style="font-size:9.5px;color:#B0B0AA;align-self:flex-end">self-reported</span>
       </div>` : ''}
     </div>
@@ -279,19 +280,19 @@ async function loadOwnerKit(profile) {
     sb.from('campaigns').select('name,objective,creator_confirmed,sponsor_confirmed,created_at').eq('creator_id', profile.id).order('created_at',{ascending:false}),
     sb.rpc('fn_creator_platform_summary', { p_creator_id: profile.id }),
     sb.rpc('fn_get_my_business_email'),
-    sb.from('audience_demographics').select('top_country,top_country_pct,age_range,gender_split').eq('creator_id', profile.id).maybeSingle(),
+    sb.from('audience_demographics').select('dimension,label,pct').eq('creator_id', profile.id),
   ]);
 
   const verified = (campaigns||[]).filter(x=>x.creator_confirmed&&x.sponsor_confirmed);
   const platforms = (platformConnections||[]).filter(p=>p.follower_count!=null&&p.follower_count>0).sort((a,b)=>b.follower_count-a.follower_count);
+  const audByDim = (dim) => (audience||[]).filter(r=>r.dimension===dim).sort((a,b)=>b.pct-a.pct).map(r=>({label:r.label,pct:r.pct}));
 
   const kit = {
     displayName: profile.display_name, bio: c.bio, niche: c.niche, location: c.location,
     businessEmail, trustScore: c.trust_score, confidence: c.confidence, badgeTier: c.badge_tier,
     foundingCohort: c.founding_cohort, verifiedCount: verified.length, reliabilityScore: c.reliability_score,
     wouldHireAgainPct: c.would_hire_again_pct, repeatSponsorRate: c.repeat_sponsor_rate,
-    topCountry: audience?.top_country, topCountryPct: audience?.top_country_pct,
-    ageRange: audience?.age_range, genderSplit: audience?.gender_split,
+    audienceCountries: audByDim('country'), audienceAges: audByDim('age'), audienceGenders: audByDim('gender'),
     platforms, campaigns: verified,
   };
 
@@ -367,8 +368,8 @@ async function loadPublicKit(slug) {
     businessEmail: row.business_email, trustScore: row.trust_score, confidence: row.confidence,
     badgeTier: row.badge_tier, foundingCohort: row.founding_cohort, verifiedCount: Number(row.verified_campaign_count)||0,
     reliabilityScore: row.reliability_score,
-    topCountry: row.top_country, topCountryPct: row.top_country_pct,
-    ageRange: row.age_range, genderSplit: row.gender_split,
+    audienceCountries: row.audience_countries || [], audienceAges: row.audience_ages || [],
+    audienceGenders: row.audience_genders || [],
     platforms: row.platforms || [], campaigns: row.campaigns || [],
   };
   renderKit(kit, { isOwner: false, slug });
