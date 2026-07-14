@@ -295,7 +295,7 @@ async function loadOwnerKit(profile) {
     platforms, campaigns: verified,
   };
 
-  const link = `https://kitscore.co/app/evekit.html?slug=${c.slug || ''}`;
+  const link = `https://kitscore.co/ek/${c.slug || ''}`;
   document.getElementById('ownerBanner').innerHTML = `
     <div class="owner-banner">
       <span>This is your EveKit — <code id="ekLinkText">${escapeHtml(link)}</code></span>

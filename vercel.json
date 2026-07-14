@@ -9,6 +9,7 @@
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
     { "source": "/p/:slug*", "destination": "/app/p.html?slug=:slug*" },
+    { "source": "/ek/:slug*", "destination": "/app/evekit.html?slug=:slug*" },
     { "source": "/api/tiktok-oauth", "destination": "/api/oauth?provider=tiktok" },
     { "source": "/api/youtube-oauth-callback", "destination": "/api/oauth?provider=youtube" }
   ],
