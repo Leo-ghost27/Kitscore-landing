@@ -893,12 +893,12 @@ function renderToolsTab() {
         <label style="font-size:11px;color:var(--color-text-secondary)">Followers</label>
         <span id="rc-followers-val" style="font-family:var(--font-mono,monospace);font-size:13px;font-weight:600;color:var(--ink,#0F1B2E)">18,000</span>
       </div>
-      <input id="rc-followers" type="range" min="500" max="2000000" step="500" value="18000" style="width:100%" oninput="updateRateCalc(this.value)">
+      <input id="rc-followers" type="range" min="0" max="1000" step="1" value="432" style="width:100%" oninput="updateRateCalc(sliderToFollowers(this.value))">
       <div style="text-align:center;margin-top:14px">
         <div id="rc-range" style="font-size:22px;font-weight:700;color:var(--blue,#2563EB)">£90–£180</div>
         <div id="rc-source-note" style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px"></div>
         <div style="margin-top:8px">
-          <select id="rc-currency" onchange="updateRateCalc(document.getElementById('rc-followers').value)" style="font-size:10.5px;color:var(--color-text-tertiary);border:1px solid var(--color-border-tertiary,#E5E7EB);border-radius:4px;padding:2px 6px;background:transparent">
+          <select id="rc-currency" onchange="updateRateCalc(sliderToFollowers(document.getElementById('rc-followers').value))" style="font-size:10.5px;color:var(--color-text-tertiary);border:1px solid var(--color-border-tertiary,#E5E7EB);border-radius:4px;padding:2px 6px;background:transparent">
             <option value="GBP">£ GBP</option>
             <option value="USD">$ USD</option>
           </select>
@@ -1291,6 +1291,21 @@ function detectCurrency() {
   }
 }
 
+// The follower slider spans 500 to 2,000,000 -- a >4000x range, which
+// renders unusably on a linear scale (a typical 18K-follower creator's
+// thumb would sit almost exactly at the left edge on a 0-2,000,000 bar,
+// making the slider look empty/broken). Standard fix for sliders spanning
+// multiple orders of magnitude: the slider's own value is a 0-1000
+// logarithmic position, converted to/from real follower counts here.
+const RC_LOG_MIN = Math.log10(500);
+const RC_LOG_MAX = Math.log10(2000000);
+function sliderToFollowers(v) {
+  return Math.round(Math.pow(10, RC_LOG_MIN + (Number(v) / 1000) * (RC_LOG_MAX - RC_LOG_MIN)));
+}
+function followersToSlider(f) {
+  return Math.round(1000 * (Math.log10(Math.max(Number(f), 500)) - RC_LOG_MIN) / (RC_LOG_MAX - RC_LOG_MIN));
+}
+
 // Connected platforms with a real follower_count, sorted highest first --
 // this is what pre-fills the calculator and drives the platform picker.
 // Falls back to an empty array (manual/self-estimate mode) if nothing's
@@ -1320,8 +1335,12 @@ function onRateCalcPlatformChange() {
   const sel = document.getElementById('rc-platform');
   const match = sources.find(s => s.platform === sel.value);
   const slider = document.getElementById('rc-followers');
-  if (match) { slider.value = match.follower_count; }
-  updateRateCalc(slider.value);
+  if (match) {
+    slider.value = followersToSlider(match.follower_count);
+    updateRateCalc(match.follower_count);
+  } else {
+    updateRateCalc(sliderToFollowers(slider.value));
+  }
 }
 
 function initRateCalc() {
@@ -1330,15 +1349,18 @@ function initRateCalc() {
   const slider = document.getElementById('rc-followers');
   const note = document.getElementById('rc-source-note');
   if (sources.length) {
-    slider.value = sources[0].follower_count;
+    slider.value = followersToSlider(sources[0].follower_count);
     if (note) {
       const niche = creator.niche ? ` · ${escapeHtml(creator.niche)} niche` : '';
       note.innerHTML = `Personalized from your verified ${escapeHtml(sources[0].platform)} followers${niche}. ${sources.length > 1 ? 'Switch platform above.' : ''}`;
     }
-  } else if (note) {
-    note.innerHTML = `Connect a platform (Inputs tab) for a personalized range — this is a general estimate${creator.niche ? ` for the ${escapeHtml(creator.niche)} niche` : ''} until then.`;
+    updateRateCalc(sources[0].follower_count);
+  } else {
+    if (note) {
+      note.innerHTML = `Connect a platform (Inputs tab) for a personalized range — this is a general estimate${creator.niche ? ` for the ${escapeHtml(creator.niche)} niche` : ''} until then.`;
+    }
+    updateRateCalc(sliderToFollowers(slider.value));
   }
-  updateRateCalc(slider.value);
 }
 
 async function signOut(){
