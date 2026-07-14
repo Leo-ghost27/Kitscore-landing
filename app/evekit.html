@@ -191,6 +191,13 @@ function renderKit(kit, opts) {
           <div class="plat-handle">${p.platform_handle ? '@'+escapeHtml(p.platform_handle) : 'followers'}</div>
           <span class="plat-verified ${p.verification_method}">${p.verification_method === 'oauth' ? 'Verified' : 'Linked'}</span>
         </div>`).join('')}</div>` : `<div class="no-platforms">No platforms connected yet.${opts.isOwner ? ' Connect one from your dashboard to show real follower counts here.' : ''}</div>`}
+      ${(kit.topCountry || kit.ageRange || kit.genderSplit) ? `
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #F0EFE9">
+        ${kit.topCountry ? `<div><div style="font-size:10.5px;color:#9E9E99;text-transform:uppercase;letter-spacing:.04em">Top audience</div><div style="font-size:13px;color:#1A1A18;margin-top:2px">${escapeHtml(kit.topCountry)}${kit.topCountryPct ? ` (${kit.topCountryPct}%)` : ''}</div></div>` : ''}
+        ${kit.ageRange ? `<div><div style="font-size:10.5px;color:#9E9E99;text-transform:uppercase;letter-spacing:.04em">Age range</div><div style="font-size:13px;color:#1A1A18;margin-top:2px">${escapeHtml(kit.ageRange)}</div></div>` : ''}
+        ${kit.genderSplit ? `<div><div style="font-size:10.5px;color:#9E9E99;text-transform:uppercase;letter-spacing:.04em">Gender split</div><div style="font-size:13px;color:#1A1A18;margin-top:2px">${escapeHtml(kit.genderSplit)}</div></div>` : ''}
+        <span style="font-size:9.5px;color:#B0B0AA;align-self:flex-end">self-reported</span>
+      </div>` : ''}
     </div>
 
     <div class="card">
@@ -267,11 +274,12 @@ function escapeHtml(s) {
 
 // ── Owner (authenticated, dashboard) mode ───────────────────────────────
 async function loadOwnerKit(profile) {
-  const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }] = await Promise.all([
-    sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,evekit_view_count,evekit_last_viewed_at').eq('id', profile.id).single(),
+  const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }, { data: audience }] = await Promise.all([
+    sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,profile_views').eq('id', profile.id).single(),
     sb.from('campaigns').select('name,objective,creator_confirmed,sponsor_confirmed,created_at').eq('creator_id', profile.id).order('created_at',{ascending:false}),
     sb.rpc('fn_creator_platform_summary', { p_creator_id: profile.id }),
     sb.rpc('fn_get_my_business_email'),
+    sb.from('audience_demographics').select('top_country,top_country_pct,age_range,gender_split').eq('creator_id', profile.id).maybeSingle(),
   ]);
 
   const verified = (campaigns||[]).filter(x=>x.creator_confirmed&&x.sponsor_confirmed);
@@ -282,6 +290,8 @@ async function loadOwnerKit(profile) {
     businessEmail, trustScore: c.trust_score, confidence: c.confidence, badgeTier: c.badge_tier,
     foundingCohort: c.founding_cohort, verifiedCount: verified.length, reliabilityScore: c.reliability_score,
     wouldHireAgainPct: c.would_hire_again_pct, repeatSponsorRate: c.repeat_sponsor_rate,
+    topCountry: audience?.top_country, topCountryPct: audience?.top_country_pct,
+    ageRange: audience?.age_range, genderSplit: audience?.gender_split,
     platforms, campaigns: verified,
   };
 
@@ -293,7 +303,7 @@ async function loadOwnerKit(profile) {
         <button class="tb-btn ghost" style="background:#fff;border:1px solid #C7D2FE;color:#3730A3" onclick="copyEveKitLink('${escapeHtml(link)}')">Copy link</button>
       </div>
     </div>
-    ${c.plan === 'pro' ? `<div style="font-size:11.5px;color:#6B6B67;margin:-10px 0 16px">${c.evekit_view_count || 0} view${c.evekit_view_count===1?'':'s'} so far${c.evekit_last_viewed_at ? ' · last viewed '+new Date(c.evekit_last_viewed_at).toLocaleDateString():''}</div>`
+    ${c.plan === 'pro' ? `<div style="font-size:11.5px;color:#6B6B67;margin:-10px 0 16px">${c.profile_views || 0} view${c.profile_views===1?'':'s'} so far</div>`
       : `<div style="font-size:11.5px;color:#6B6B67;margin:-10px 0 16px">Want to know how many brands have opened this? <a href="pricing-creator.html" style="color:#2563EB">View analytics is a Pro perk →</a></div>`}
   `;
 
@@ -345,7 +355,7 @@ async function downloadEveKitPdf() {
 
 // ── Public (slug) mode ───────────────────────────────────────────────────
 async function loadPublicKit(slug) {
-  const { data, error } = await sb.rpc('fn_get_public_evekit', { p_slug: slug });
+  const { data, error } = await sb.rpc('fn_get_evekit_profile', { p_slug: slug });
   const row = data && data[0];
   if (error || !row) {
     document.getElementById('content').innerHTML = `<div class="notfound">This EveKit doesn't exist or isn't public.</div>`;
@@ -356,8 +366,10 @@ async function loadPublicKit(slug) {
     displayName: row.display_name, bio: row.bio, niche: row.niche, location: row.location,
     businessEmail: row.business_email, trustScore: row.trust_score, confidence: row.confidence,
     badgeTier: row.badge_tier, foundingCohort: row.founding_cohort, verifiedCount: Number(row.verified_campaign_count)||0,
-    reliabilityScore: row.reliability_score, wouldHireAgainPct: row.would_hire_again_pct,
-    repeatSponsorRate: row.repeat_sponsor_rate, platforms: row.platforms || [], campaigns: row.campaigns || [],
+    reliabilityScore: row.reliability_score,
+    topCountry: row.top_country, topCountryPct: row.top_country_pct,
+    ageRange: row.age_range, genderSplit: row.gender_split,
+    platforms: row.platforms || [], campaigns: row.campaigns || [],
   };
   renderKit(kit, { isOwner: false, slug });
 

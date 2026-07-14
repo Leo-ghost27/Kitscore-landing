@@ -1,126 +1,92 @@
--- EveKit: the free, pitch-ready media kit creators send to brands cold.
--- Distinct from p.html (the minimal, always-current verification link).
--- See docs/session-handoff-2026-07-13-evekit.md for the full design writeup.
+-- EveKit reconciliation migration.
 --
--- This migration:
---   1. Adds a short creator-written `bio` field (used on EveKit only, not p.html).
---   2. Adds aggregate view-count tracking for EveKit links (Pro perk: see it).
---   3. Adds fn_get_public_evekit() -- the public, unauthenticated read powering
---      the shareable ?slug= link, analogous to fn_get_public_profile() but
---      with the extra pitch-relevant fields a trust-check link deliberately
---      leaves out (bio, contact email, platform follower counts, rate card
---      inputs, campaign highlights with objectives).
---   4. Adds fn_increment_evekit_view() -- called once per anonymous page load
---      from evekit.html, not from the owner's own authenticated preview.
---   5. Adds fn_set_evekit_slug() -- lets Pro creators claim a custom vanity
---      slug (e.g. kitscore.co/app/p.html?slug=jordan-fitness instead of the
---      random default). Free creators keep their auto-generated slug.
+-- Context: fn_get_evekit_profile(), fn_increment_evekit_view(), and
+-- creators.bio / creators.profile_views were already applied directly to
+-- production (not through a tracked migration file) before this session
+-- started. This migration does NOT recreate any of that -- it only adds
+-- what's genuinely missing:
+--   1. Extends fn_get_evekit_profile() to also return verified campaign
+--      highlights (name + objective), not just a count. Requires DROP +
+--      CREATE since the return signature is changing (Postgres won't let
+--      CREATE OR REPLACE add a column to an existing RETURNS TABLE).
+--      Everything else about the function is unchanged byte-for-byte.
+--   2. Adds fn_set_evekit_slug() -- Pro-only custom vanity URL. Genuinely
+--      new, nothing to conflict with.
+--   3. A defensive length check on creators.bio (NOT VALID, so it only
+--      applies going forward and won't choke on existing rows).
+--
+-- Explicitly NOT touched: fn_increment_evekit_view (already correct, already
+-- writes to profile_views), creators.bio, creators.profile_views.
 
--- ── 1. Bio ───────────────────────────────────────────────────────────────
--- Self-written, not scored. Capped at 280 chars in the app UI (enforced
--- client-side in profile.html; also capped here as a defensive backstop).
-ALTER TABLE public.creators ADD COLUMN IF NOT EXISTS bio text;
-ALTER TABLE public.creators ADD CONSTRAINT creators_bio_length CHECK (char_length(bio) <= 280) NOT VALID;
+-- ── 1. fn_get_evekit_profile: add verified campaign highlights ──────────
+DROP FUNCTION IF EXISTS public.fn_get_evekit_profile(text);
 
--- ── 2. View tracking (aggregate only -- no visitor identity is collected) ──
-ALTER TABLE public.creators ADD COLUMN IF NOT EXISTS evekit_view_count integer NOT NULL DEFAULT 0;
-ALTER TABLE public.creators ADD COLUMN IF NOT EXISTS evekit_last_viewed_at timestamptz;
-
--- ── 3. fn_get_public_evekit ─────────────────────────────────────────────
--- No access_token/refresh_token, no sponsor-side campaign fields (dispute
--- reasons, internal ratings) -- same "public means public" discipline as
--- fn_get_public_profile/fn_get_public_endorsements. business_email IS
--- included deliberately: EveKit exists so a brand can act on it, and a
--- creator only gets a slug (and therefore an EveKit link) by choosing to
--- share it.
-CREATE OR REPLACE FUNCTION public.fn_get_public_evekit(p_slug text)
+CREATE FUNCTION public.fn_get_evekit_profile(p_slug text)
 RETURNS TABLE(
   display_name text,
-  bio text,
   niche text,
   location text,
+  bio text,
   business_email text,
   trust_score numeric,
   confidence numeric,
   badge_tier text,
   founding_cohort boolean,
-  verified_campaign_count bigint,
   reliability_score numeric,
-  would_hire_again_pct numeric,
-  repeat_sponsor_rate numeric,
+  verified_campaign_count bigint,
+  profile_views integer,
+  top_country text,
+  top_country_pct smallint,
+  age_range text,
+  gender_split text,
   platforms jsonb,
   campaigns jsonb
 )
 LANGUAGE sql
 STABLE SECURITY DEFINER
 SET search_path TO 'public'
-AS $$
-  WITH creator_row AS (
-    SELECT c.id, c.niche, c.location, c.business_email, c.trust_score, c.confidence,
-           c.badge_tier, c.founding_cohort, c.reliability_score, c.would_hire_again_pct,
-           c.repeat_sponsor_rate, c.bio, p.display_name
-    FROM public.creators c
-    JOIN public.profiles p ON p.id = c.id
-    WHERE c.slug = p_slug AND c.is_test = false
-  ),
-  verified AS (
-    SELECT cam.name, cam.objective, cam.created_at
-    FROM public.campaigns cam, creator_row cr
-    WHERE cam.creator_id = cr.id AND cam.creator_confirmed AND cam.sponsor_confirmed
-    ORDER BY cam.created_at DESC
-    LIMIT 6
-  ),
-  platform_rows AS (
-    SELECT pc.platform, pc.platform_handle, pc.verification_method, pc.follower_count
-    FROM public.platform_connections pc, creator_row cr
-    WHERE pc.creator_id = cr.id AND pc.follower_count IS NOT NULL
-    ORDER BY pc.follower_count DESC
-  )
+AS $function$
   SELECT
-    cr.display_name,
-    cr.bio,
-    cr.niche,
-    cr.location,
-    cr.business_email,
-    cr.trust_score,
-    cr.confidence,
-    cr.badge_tier,
-    cr.founding_cohort,
-    (SELECT count(*) FROM verified),
-    cr.reliability_score,
-    cr.would_hire_again_pct,
-    cr.repeat_sponsor_rate,
-    COALESCE((SELECT jsonb_agg(to_jsonb(platform_rows)) FROM platform_rows), '[]'::jsonb),
-    COALESCE((SELECT jsonb_agg(to_jsonb(verified)) FROM verified), '[]'::jsonb)
-  FROM creator_row cr;
-$$;
+    p.display_name, c.niche, c.location, c.bio, c.business_email,
+    c.trust_score, c.confidence::numeric, c.badge_tier, c.founding_cohort,
+    c.reliability_score,
+    (SELECT count(*) FROM campaigns cam WHERE cam.creator_id = c.id AND cam.creator_confirmed AND cam.sponsor_confirmed),
+    c.profile_views,
+    ad.top_country, ad.top_country_pct, ad.age_range, ad.gender_split,
+    COALESCE(
+      (SELECT jsonb_agg(jsonb_build_object(
+         'platform', pc.platform,
+         'platform_handle', pc.platform_handle,
+         'follower_count', pc.follower_count,
+         'video_count', pc.video_count,
+         'verification_method', pc.verification_method
+       ) ORDER BY pc.follower_count DESC NULLS LAST)
+       FROM platform_connections pc WHERE pc.creator_id = c.id AND pc.follower_count IS NOT NULL),
+      '[]'::jsonb
+    ),
+    COALESCE(
+      (SELECT jsonb_agg(jsonb_build_object(
+         'name', cam.name,
+         'objective', cam.objective,
+         'completed_at', cam.completed_at
+       ) ORDER BY cam.created_at DESC)
+       FROM (
+         SELECT * FROM campaigns cam2
+         WHERE cam2.creator_id = c.id AND cam2.creator_confirmed AND cam2.sponsor_confirmed
+         ORDER BY cam2.created_at DESC
+         LIMIT 6
+       ) cam),
+      '[]'::jsonb
+    )
+  FROM creators c
+  JOIN profiles p ON p.id = c.id
+  LEFT JOIN audience_demographics ad ON ad.creator_id = c.id
+  WHERE c.slug = p_slug AND c.is_test = false;
+$function$;
 
-GRANT EXECUTE ON FUNCTION public.fn_get_public_evekit(text) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.fn_get_evekit_profile(text) TO anon, authenticated;
 
--- ── 4. fn_increment_evekit_view ─────────────────────────────────────────
--- Deliberately coarse: a running count + last-viewed timestamp, nothing
--- that identifies who looked. evekit.html calls this once per anonymous
--- page load (skipped when the visitor has an active session, so a
--- creator's own preview of their own kit doesn't inflate the count).
-CREATE OR REPLACE FUNCTION public.fn_increment_evekit_view(p_slug text)
-RETURNS void
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-  UPDATE public.creators
-  SET evekit_view_count = evekit_view_count + 1,
-      evekit_last_viewed_at = now()
-  WHERE slug = p_slug AND is_test = false;
-$$;
-
-GRANT EXECUTE ON FUNCTION public.fn_increment_evekit_view(text) TO anon, authenticated;
-
--- ── 5. fn_set_evekit_slug ────────────────────────────────────────────────
--- Pro-only vanity URL. Free creators keep whatever slug they were assigned
--- at signup. Validates format (lowercase letters/numbers/hyphens, 3-40
--- chars) and uniqueness; returns a jsonb {ok, error} result rather than
--- raising, so the UI can show a clean inline message.
+-- ── 2. fn_set_evekit_slug: Pro-only custom vanity URL ────────────────────
 CREATE OR REPLACE FUNCTION public.fn_set_evekit_slug(p_slug text)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -155,3 +121,7 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.fn_set_evekit_slug(text) TO authenticated;
+
+-- ── 3. Defensive bio length check (NOT VALID: future rows only) ─────────
+ALTER TABLE public.creators
+  ADD CONSTRAINT creators_bio_length CHECK (char_length(bio) <= 280) NOT VALID;
