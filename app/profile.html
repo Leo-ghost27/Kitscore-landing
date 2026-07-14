@@ -33,6 +33,18 @@
   .side-panel-note svg{flex-shrink:0;margin-top:1px}
   .side-panel-note p{font-size:11.5px;color:var(--color-text-secondary);line-height:1.55;margin:0}
   @media(max-width:700px){ .profile-layout{grid-template-columns:1fr} }
+  .avatar-wrap{position:relative;width:64px;height:64px;flex-shrink:0}
+  .avatar-img{width:64px;height:64px;border-radius:50%;object-fit:cover;display:block;border:0.5px solid var(--color-border-tertiary)}
+  .avatar-placeholder{width:64px;height:64px;border-radius:50%;background:#2563EB;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .avatar-edit-btn{position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:#1A1A18;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff;font-size:11px}
+  .avatar-edit-btn input{display:none}
+  .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+  .gallery-slot{aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative;background:#F9F8F5;border:1px dashed var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .gallery-slot img{width:100%;height:100%;object-fit:cover;display:block}
+  .gallery-slot .add{font-size:22px;color:var(--color-text-tertiary)}
+  .gallery-slot .remove{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer}
+  .gallery-slot input{display:none}
+  .upload-hint{font-size:10.5px;color:var(--color-text-tertiary);margin-top:6px}
 </style>
 </head>
 <body>
@@ -60,7 +72,7 @@ async function load() {
   renderSidebar('creator', 'profile');
 
   const [{ data: c }, { data: email }] = await Promise.all([
-    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan').eq('id', profile.id).single(),
+    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images').eq('id', profile.id).single(),
     sb.rpc('fn_get_my_business_email'),
   ]);
   creator = { ...c, business_email: email };
@@ -68,9 +80,18 @@ async function load() {
   const initial = (profile.display_name || '?').trim().charAt(0).toUpperCase();
   document.getElementById('formWrap').innerHTML = `
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
-      <div style="width:48px;height:48px;background:#2563EB;color:#fff;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${escapeHtml(initial)}</div>
+      <div class="avatar-wrap">
+        ${creator.avatar_url
+          ? `<img class="avatar-img" id="avatarImg" src="${escapeHtml(creator.avatar_url)}">`
+          : `<div class="avatar-placeholder" id="avatarImg">${escapeHtml(initial)}</div>`}
+        <label class="avatar-edit-btn" title="Change photo">
+          <i class="ti ti-camera"></i>
+          <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp" onchange="uploadAvatar(event)">
+        </label>
+      </div>
       ${creator.founding_cohort ? `<div style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#8A5B0A;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);border:0.5px solid #E8CE8F;padding:4px 10px 4px 6px;border-radius:20px" title="One of Kitscore's first 100 creators"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg>Founding Creator</div>` : ''}
     </div>
+    <div id="avatarMsg"></div>
     <div class="field"><label>Display name</label><input id="displayName" value="${escapeHtml(profile.display_name || '')}"></div>
     <div class="field"><label>Niche</label><input id="niche" value="${escapeHtml(creator.niche || '')}"></div>
     <div class="field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}"></div>
@@ -80,6 +101,12 @@ async function load() {
       <textarea id="bio" maxlength="280" rows="3" placeholder="A couple sentences a brand can read in five seconds — what you make, who watches, and why you're a fit." style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px;font-family:inherit;resize:vertical">${escapeHtml(creator.bio || '')}</textarea>
       <div id="bioCount" style="font-size:10.5px;color:var(--color-text-tertiary);text-align:right;margin-top:2px">${(creator.bio||'').length}/280</div>
     </div>
+    <div class="field">
+      <label>Gallery <span style="color:var(--color-text-tertiary);font-weight:400">— optional, up to 4 photos shown on your EveKit</span></label>
+      <div class="gallery-grid" id="galleryGrid"></div>
+      <div class="upload-hint">JPG, PNG, or WebP · 5MB max per photo</div>
+    </div>
+
     <button class="cta" id="saveBtn" onclick="save()">Save changes</button>
     <div id="msg"></div>
 
@@ -105,6 +132,110 @@ async function load() {
     document.getElementById(id).addEventListener('input', renderStrengthPanel);
   });
   renderStrengthPanel();
+  renderGallery();
+}
+
+const MAX_GALLERY = 4;
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+function renderGallery() {
+  const grid = document.getElementById('galleryGrid');
+  if (!grid) return;
+  const images = creator.gallery_images || [];
+  let html = images.map((url, i) => `
+    <div class="gallery-slot">
+      <img src="${escapeHtml(url)}">
+      <div class="remove" onclick="removeGalleryImage(${i})" title="Remove">✕</div>
+    </div>`).join('');
+  if (images.length < MAX_GALLERY) {
+    html += `
+      <label class="gallery-slot">
+        <span class="add">+</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp" onchange="uploadGalleryImage(event)">
+      </label>`;
+  }
+  grid.innerHTML = html;
+}
+
+function extFor(file) {
+  return (file.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+}
+
+async function uploadAvatar(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const msg = document.getElementById('avatarMsg');
+  msg.innerHTML = '';
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    msg.innerHTML = `<div class="msg error">Please upload a JPG, PNG, or WebP image.</div>`;
+    return;
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    msg.innerHTML = `<div class="msg error">That photo is over 5MB — try a smaller file.</div>`;
+    return;
+  }
+  const path = `${profile.id}/avatar-${Date.now()}.${extFor(file)}`;
+  const { error: upErr } = await sb.storage.from('creator-media').upload(path, file, { upsert: true });
+  if (upErr) {
+    msg.innerHTML = `<div class="msg error">Upload failed: ${escapeHtml(upErr.message)}</div>`;
+    return;
+  }
+  const { data: pub } = sb.storage.from('creator-media').getPublicUrl(path);
+  const { error: dbErr } = await sb.from('creators').update({ avatar_url: pub.publicUrl }).eq('id', profile.id);
+  if (dbErr) {
+    msg.innerHTML = `<div class="msg error">Saved the photo but couldn't update your profile: ${escapeHtml(dbErr.message)}</div>`;
+    return;
+  }
+  creator.avatar_url = pub.publicUrl;
+  const imgEl = document.getElementById('avatarImg');
+  imgEl.outerHTML = `<img class="avatar-img" id="avatarImg" src="${escapeHtml(pub.publicUrl)}">`;
+  msg.innerHTML = `<div class="msg ok">Photo updated.</div>`;
+}
+
+async function uploadGalleryImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const msg = document.getElementById('msg');
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    msg.innerHTML = `<div class="msg error">Please upload a JPG, PNG, or WebP image.</div>`;
+    return;
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    msg.innerHTML = `<div class="msg error">That photo is over 5MB — try a smaller file.</div>`;
+    return;
+  }
+  const images = creator.gallery_images || [];
+  if (images.length >= MAX_GALLERY) return;
+  const path = `${profile.id}/gallery-${Date.now()}.${extFor(file)}`;
+  const { error: upErr } = await sb.storage.from('creator-media').upload(path, file, { upsert: true });
+  if (upErr) {
+    msg.innerHTML = `<div class="msg error">Upload failed: ${escapeHtml(upErr.message)}</div>`;
+    return;
+  }
+  const { data: pub } = sb.storage.from('creator-media').getPublicUrl(path);
+  const updated = [...images, pub.publicUrl];
+  const { error: dbErr } = await sb.from('creators').update({ gallery_images: updated }).eq('id', profile.id);
+  if (dbErr) {
+    msg.innerHTML = `<div class="msg error">Saved the photo but couldn't update your gallery: ${escapeHtml(dbErr.message)}</div>`;
+    return;
+  }
+  creator.gallery_images = updated;
+  renderGallery();
+  msg.innerHTML = `<div class="msg ok">Photo added.</div>`;
+}
+
+async function removeGalleryImage(index) {
+  const images = [...(creator.gallery_images || [])];
+  images.splice(index, 1);
+  const { error } = await sb.from('creators').update({ gallery_images: images }).eq('id', profile.id);
+  const msg = document.getElementById('msg');
+  if (error) {
+    msg.innerHTML = `<div class="msg error">Could not remove photo: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  creator.gallery_images = images;
+  renderGallery();
 }
 
 function renderStrengthPanel() {

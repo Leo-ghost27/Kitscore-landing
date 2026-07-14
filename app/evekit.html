@@ -25,7 +25,12 @@
   .cover{background:#0F0F0E;border-radius:16px;padding:44px 40px;margin-bottom:20px;position:relative;overflow:hidden}
   .cover::before{content:'';position:absolute;top:-120px;left:-80px;width:400px;height:400px;background:radial-gradient(circle, rgba(91,79,207,.35) 0%, transparent 70%);pointer-events:none}
   .cover-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B4FCF;margin-bottom:16px}
+  .cover-head{display:flex;align-items:center;gap:16px}
+  .cover-avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(255,255,255,.15)}
+  .cover-avatar-placeholder{width:64px;height:64px;border-radius:50%;flex-shrink:0;background:#5B4FCF;color:#fff;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center}
   .cover-name{font-family:'Fraunces',serif;font-size:34px;font-weight:600;color:#fff;margin-bottom:4px}
+  .gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+  .gallery-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid #E5E4DF}
   .cover-sub{font-size:14px;color:#6B6B67;margin-bottom:20px}
   .cover-bio{font-size:14px;color:#C7C7C2;line-height:1.6;max-width:600px;margin-bottom:26px}
   .cover-bio.empty{color:#5A5A56;font-style:italic}
@@ -161,8 +166,15 @@ function renderKit(kit, opts) {
   document.getElementById('content').innerHTML = `
     <div class="cover">
       <div class="cover-label">EveKit · Kitscore Media Kit</div>
-      <div class="cover-name">${escapeHtml(kit.displayName)}</div>
-      <div class="cover-sub">${[kit.niche, kit.location].filter(Boolean).map(escapeHtml).join(' · ') || 'Creator'}</div>
+      <div class="cover-head">
+        ${kit.avatarUrl
+          ? `<img class="cover-avatar" src="${escapeHtml(kit.avatarUrl)}">`
+          : `<div class="cover-avatar-placeholder">${escapeHtml((kit.displayName||'?').trim().charAt(0).toUpperCase())}</div>`}
+        <div>
+          <div class="cover-name">${escapeHtml(kit.displayName)}</div>
+          <div class="cover-sub">${[kit.niche, kit.location].filter(Boolean).map(escapeHtml).join(' · ') || 'Creator'}</div>
+        </div>
+      </div>
       <div>
         <span class="cover-badge">${escapeHtml(BADGE_LABEL[kit.badgeTier] || 'New creator')} tier</span>
         ${kit.foundingCohort ? `<span class="cover-founding">★ Founding Creator</span>` : ''}
@@ -200,6 +212,12 @@ function renderKit(kit, opts) {
         <span style="font-size:9.5px;color:#B0B0AA;align-self:flex-end">self-reported</span>
       </div>` : ''}
     </div>
+
+    ${kit.galleryImages && kit.galleryImages.length ? `
+    <div class="card">
+      <div class="card-title">Gallery</div>
+      <div class="gallery-grid">${kit.galleryImages.map(url => `<img src="${escapeHtml(url)}">`).join('')}</div>
+    </div>` : ''}
 
     <div class="card">
       <div class="card-title">What to charge <span>estimated rate card</span></div>
@@ -276,7 +294,7 @@ function escapeHtml(s) {
 // ── Owner (authenticated, dashboard) mode ───────────────────────────────
 async function loadOwnerKit(profile) {
   const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }, { data: audience }] = await Promise.all([
-    sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,profile_views').eq('id', profile.id).single(),
+    sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,profile_views,avatar_url,gallery_images').eq('id', profile.id).single(),
     sb.from('campaigns').select('name,objective,creator_confirmed,sponsor_confirmed,created_at').eq('creator_id', profile.id).order('created_at',{ascending:false}),
     sb.rpc('fn_creator_platform_summary', { p_creator_id: profile.id }),
     sb.rpc('fn_get_my_business_email'),
@@ -293,7 +311,7 @@ async function loadOwnerKit(profile) {
     foundingCohort: c.founding_cohort, verifiedCount: verified.length, reliabilityScore: c.reliability_score,
     wouldHireAgainPct: c.would_hire_again_pct, repeatSponsorRate: c.repeat_sponsor_rate,
     audienceCountries: audByDim('country'), audienceAges: audByDim('age'), audienceGenders: audByDim('gender'),
-    platforms, campaigns: verified,
+    platforms, campaigns: verified, avatarUrl: c.avatar_url, galleryImages: c.gallery_images || [],
   };
 
   const link = `https://kitscore.co/ek/${c.slug || ''}`;
@@ -371,6 +389,7 @@ async function loadPublicKit(slug) {
     audienceCountries: row.audience_countries || [], audienceAges: row.audience_ages || [],
     audienceGenders: row.audience_genders || [],
     platforms: row.platforms || [], campaigns: row.campaigns || [],
+    avatarUrl: row.avatar_url, galleryImages: row.gallery_images || [],
   };
   renderKit(kit, { isOwner: false, slug });
 
