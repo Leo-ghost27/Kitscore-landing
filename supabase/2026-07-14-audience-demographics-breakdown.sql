@@ -148,3 +148,14 @@ AS $function$
 $function$;
 
 GRANT EXECUTE ON FUNCTION public.fn_get_evekit_profile(text) TO anon, authenticated;
+
+-- Found missing in production 2026-07-14 (creators got "permission denied
+-- for table audience_demographics" trying to save from the new multi-row
+-- UI): this migration recreates the table with new columns but never
+-- re-grants table-level access to `authenticated`, only EXECUTE on the RPC
+-- above. RLS policies (audience_demographics_insert_own etc.) already scope
+-- rows correctly, so a broad table grant here is safe and is the standard
+-- pattern used by every other creator-writable table in this schema.
+-- Applied directly to prod already; adding here so a fresh run of this
+-- migration doesn't reproduce the same bug.
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.audience_demographics TO authenticated;
