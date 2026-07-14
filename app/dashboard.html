@@ -239,7 +239,7 @@ const CREATOR_TABS = [
 function scoreColor(v){ return v>=80?'#1D9E75': v>=60?'#2563EB':'#E58C1A'; }
 
 function copyProfileLink() {
-  const url = `https://kitscore.co/app/p.html?slug=${creator.slug || ''}`;
+  const url = `https://kitscore.co/p/${creator.slug || ''}`;
   navigator.clipboard.writeText(url).then(() => {
     const el = document.getElementById('profile-link-text');
     const original = el.textContent;
@@ -706,7 +706,7 @@ function renderProfileTab() {
       <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
         <div>
           <div style="font-size:13.5px;font-weight:600;color:var(--ink,#0F1B2E)">Your trust link</div>
-          <div id="profile-link-text" style="font-family:var(--font-mono,monospace);font-size:11px;color:#2563EB;margin-top:3px;word-break:break-all">kitscore.co/app/p.html?slug=${creator.slug||''}</div>
+          <div id="profile-link-text" style="font-family:var(--font-mono,monospace);font-size:11px;color:#2563EB;margin-top:3px;word-break:break-all">kitscore.co/p/${creator.slug||''}</div>
           <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Not a pitch — a quick, always-current verification a sponsor can check you against once you're already in talks. Free forever.</div>
         </div>
         <button class="confirm-btn" style="background:#2563EB;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer" onclick="copyProfileLink()">Copy link</button>

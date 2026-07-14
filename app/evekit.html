@@ -243,7 +243,7 @@ function renderKit(kit, opts) {
     <div class="cta-band">
       <a href="/for-creators.html">Get your own free EveKit from Kitscore →</a>
     </div>`}
-    <div class="footer-note">EveKit is a pitch document built from your verified Kitscore data. For a quick trust check instead, see the <a href="p.html?slug=${encodeURIComponent(opts.slug||'')}" style="color:#5B4FCF">verification link</a>.</div>
+    <div class="footer-note">EveKit is a pitch document built from your verified Kitscore data. For a quick trust check instead, see the <a href="/p/${encodeURIComponent(opts.slug||'')}" style="color:#5B4FCF">verification link</a>.</div>
   `;
 
   document.getElementById('ek-currency').value = detectCurrency();
