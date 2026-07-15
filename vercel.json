@@ -9,9 +9,12 @@
   "rewrites": [
     { "source": "/", "destination": "/index" },
     { "source": "/p/:slug*", "destination": "/app/p?slug=:slug*" },
-    { "source": "/ek/:slug*", "destination": "/app/evekit?slug=:slug*" },
+    { "source": "/media-kit/:slug*", "destination": "/app/evekit?slug=:slug*" },
     { "source": "/api/tiktok-oauth", "destination": "/api/oauth?provider=tiktok" },
     { "source": "/api/youtube-oauth-callback", "destination": "/api/oauth?provider=youtube" }
+  ],
+  "redirects": [
+    { "source": "/ek/:slug*", "destination": "/media-kit/:slug*", "permanent": true }
   ],
   "crons": [
     { "path": "/api/cron-evidence-nudges", "schedule": "0 9 * * 1" }
