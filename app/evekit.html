@@ -58,6 +58,7 @@
   .plat-name{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#9E9E99;margin-bottom:6px}
   .plat-followers{font-size:20px;font-weight:700;color:#1A1A18}
   .plat-handle{font-size:11.5px;color:#6B6B67;margin-top:2px}
+  .plat-stats{font-size:10.5px;color:#9E9E99;margin-top:6px;display:flex;gap:10px;flex-wrap:wrap}
   .plat-verified{display:inline-block;margin-top:8px;font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:10px}
   .plat-verified.oauth{background:#EBF5DE;color:#2D6A0F}
   .plat-verified.public_lookup{background:#F0EFE9;color:#6B6B67}
@@ -210,13 +211,21 @@ function renderKit(kit, opts) {
 
     <div class="card">
       <div class="card-title">Platforms &amp; audience</div>
-      ${platforms.length ? `<div class="plat-grid">${platforms.map(p => `
+      ${platforms.length ? `<div class="plat-grid">${platforms.map(p => {
+        const followerLabel = p.platform === 'youtube' ? 'subscribers' : 'followers';
+        const stats = [
+          p.video_count != null ? `${Number(p.video_count).toLocaleString()} videos` : null,
+          p.view_count != null ? `${Number(p.view_count).toLocaleString()} views` : null,
+        ].filter(Boolean);
+        return `
         <div class="plat-item">
           <div class="plat-name">${escapeHtml(p.platform)}</div>
           <div class="plat-followers">${Number(p.follower_count).toLocaleString()}</div>
-          <div class="plat-handle">${p.platform_handle ? '@'+escapeHtml(p.platform_handle) : 'followers'}</div>
+          <div class="plat-handle">${p.platform_handle ? '@'+escapeHtml(p.platform_handle) : followerLabel}</div>
+          ${stats.length ? `<div class="plat-stats">${stats.map(escapeHtml).join(' · ')}</div>` : ''}
           <span class="plat-verified ${p.verification_method}">${p.verification_method === 'oauth' ? 'Verified' : 'Linked'}</span>
-        </div>`).join('')}</div>` : `<div class="no-platforms">No platforms connected yet.${opts.isOwner ? ' Connect one from your dashboard to show real follower counts here.' : ''}</div>`}
+        </div>`;
+      }).join('')}</div>` : `<div class="no-platforms">No platforms connected yet.${opts.isOwner ? ' Connect one from your dashboard to show real follower counts here.' : ''}</div>`}
       ${(kit.audienceCountries?.length || kit.audienceAges?.length || kit.audienceGenders?.length) ? `
       <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid #F0EFE9">
         ${kit.audienceCountries?.length ? `<div><div style="font-size:10.5px;color:#9E9E99;text-transform:uppercase;letter-spacing:.04em">Top audience</div><div style="font-size:13px;color:#1A1A18;margin-top:2px">${escapeHtml(kit.audienceCountries.map(c => `${c.label} (${c.pct}%)`).join(', '))}</div></div>` : ''}
