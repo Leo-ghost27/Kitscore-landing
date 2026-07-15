@@ -15,6 +15,17 @@
   .field{margin-bottom:12px}
   .field label{display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
   .field input{width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
+  .psec{margin:26px 0 14px;padding-top:18px;border-top:1px solid var(--color-border-tertiary)}
+  .psec:first-of-type{margin-top:22px;padding-top:0;border-top:none}
+  .psec-title{font-size:13px;font-weight:600;color:var(--color-text-primary)}
+  .psec-sub{font-size:11px;color:var(--color-text-tertiary);margin-top:2px;line-height:1.5}
+  .prow2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.prow2{grid-template-columns:1fr}}
+  .padd summary{cursor:pointer;font-size:12.5px;font-weight:600;color:#2563EB;list-style:none;padding:6px 0;user-select:none}
+  .padd summary::-webkit-details-marker{display:none}
+  .padd summary::before{content:'+ ';font-weight:700}
+  .padd[open] summary::before{content:'– '}
+  .padd[open] summary{margin-bottom:8px}
   .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:0;font-size:12px;font-weight:500;cursor:pointer}
   .cta:disabled{opacity:.6}
   .msg{font-size:11px;margin-top:10px;padding:8px;border-radius:0}
@@ -96,94 +107,117 @@ async function load() {
       ${creator.founding_cohort ? `<div style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#8A5B0A;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);border:0.5px solid #E8CE8F;padding:4px 10px 4px 6px;border-radius:20px" title="One of Kitscore's first 100 creators"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg>Founding Creator</div>` : ''}
     </div>
     <div id="avatarMsg"></div>
-    <div class="field"><label>Display name</label><input id="displayName" value="${escapeHtml(profile.display_name || '')}"></div>
-    <div class="field"><label>Niche</label><input id="niche" value="${escapeHtml(creator.niche || '')}"></div>
-    <div class="field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}"></div>
-    <div class="field"><label>Business email</label><input id="businessEmail" value="${escapeHtml(creator.business_email || '')}"></div>
+    <div class="psec">
+      <div class="psec-title">Account</div>
+      <div class="psec-sub">Your identity on Kitscore — feeds both your trust link and your Verified Media Kit.</div>
+    </div>
+    <div class="prow2">
+      <div class="field"><label>Display name</label><input id="displayName" value="${escapeHtml(profile.display_name || '')}"></div>
+      <div class="field"><label>Niche</label><input id="niche" value="${escapeHtml(creator.niche || '')}"></div>
+    </div>
+    <div class="prow2">
+      <div class="field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}"></div>
+      <div class="field"><label>Business email</label><input id="businessEmail" value="${escapeHtml(creator.business_email || '')}"></div>
+    </div>
+
+    <div class="psec">
+      <div class="psec-title">Your Verified Media Kit</div>
+      <div class="psec-sub">Everything below appears on the Verified Media Kit you send to sponsors — bio, photos, brand history, and more.</div>
+    </div>
     <div class="field">
       <label>Bio <span style="color:var(--color-text-tertiary);font-weight:400">— shown on your Verified Media Kit, not your trust link</span></label>
       <textarea id="bio" maxlength="280" rows="3" placeholder="A couple sentences a brand can read in five seconds — what you make, who watches, and why you're a fit." style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px;font-family:inherit;resize:vertical">${escapeHtml(creator.bio || '')}</textarea>
       <div id="bioCount" style="font-size:10.5px;color:var(--color-text-tertiary);text-align:right;margin-top:2px">${(creator.bio||'').length}/280</div>
     </div>
     <div class="field">
-      <label>Gallery <span style="color:var(--color-text-tertiary);font-weight:400">— optional, up to 4 photos shown on your Verified Media Kit</span></label>
+      <label>Gallery <span style="color:var(--color-text-tertiary);font-weight:400">— optional, up to 4 photos</span></label>
       <div class="gallery-grid" id="galleryGrid"></div>
       <div class="upload-hint">JPG, PNG, or WebP · 5MB max per photo</div>
     </div>
 
     <div class="field">
-      <label>Past collaborations <span style="color:var(--color-text-tertiary);font-weight:400">— brands you've worked with, self-reported and shown as such (separate from Verified campaigns, which only covers deals run through Kitscore)</span></label>
+      <label>Past collaborations <span style="color:var(--color-text-tertiary);font-weight:400">— brands you've worked with, self-reported (separate from Verified campaigns, which only covers deals run through Kitscore)</span></label>
       <div id="collabList"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)">
-        <div>
-          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Brand name</label>
-          <input id="collabBrandName" placeholder="e.g. Red Bull" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+      <details class="padd">
+        <summary>Add a collaboration</summary>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+          <div>
+            <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Brand name</label>
+            <input id="collabBrandName" placeholder="e.g. Red Bull" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+          </div>
+          <div>
+            <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Link (optional)</label>
+            <input id="collabLink" placeholder="https://..." style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+          </div>
         </div>
-        <div>
-          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Link (optional)</label>
-          <input id="collabLink" placeholder="https://..." style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+        <div style="margin-top:8px">
+          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Logo (optional)</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="file" id="collabLogoInput" accept="image/jpeg,image/png,image/webp" style="font-size:11.5px;flex:1">
+            <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;white-space:nowrap" onclick="addCollaboration()">+ Add</button>
+          </div>
         </div>
-      </div>
-      <div style="margin-top:8px">
-        <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Logo (optional)</label>
-        <div style="display:flex;align-items:center;gap:10px">
-          <input type="file" id="collabLogoInput" accept="image/jpeg,image/png,image/webp" style="font-size:11.5px;flex:1">
-          <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;white-space:nowrap" onclick="addCollaboration()">+ Add</button>
-        </div>
-      </div>
-      <div class="upload-hint">Leave the logo blank and we'll show your brand name instead. JPG, PNG, or WebP · 5MB max.</div>
-      <div id="collabMsg" style="font-size:11px;margin-top:6px"></div>
+        <div class="upload-hint">Leave the logo blank and we'll show your brand name instead. JPG, PNG, or WebP · 5MB max.</div>
+        <div id="collabMsg" style="font-size:11px;margin-top:6px"></div>
+      </details>
     </div>
 
     <div class="field">
       <label>Press mentions <span style="color:var(--color-text-tertiary);font-weight:400">— coverage of you or your work, self-reported</span></label>
       <div id="pressList"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)">
-        <div>
-          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Title</label>
-          <input id="pressTitle" placeholder="e.g. Why This Creator Is Gaming's Next Big Thing" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+      <details class="padd">
+        <summary>Add a press mention</summary>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+          <div>
+            <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Title</label>
+            <input id="pressTitle" placeholder="e.g. Why This Creator Is Gaming's Next Big Thing" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+          </div>
+          <div>
+            <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Outlet (optional)</label>
+            <input id="pressOutlet" placeholder="e.g. IGN" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+          </div>
         </div>
-        <div>
-          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Outlet (optional)</label>
-          <input id="pressOutlet" placeholder="e.g. IGN" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          <div>
+            <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Link (optional)</label>
+            <input id="pressUrl" placeholder="https://..." style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+          </div>
+          <div>
+            <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Date (optional)</label>
+            <input id="pressDate" type="date" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+          </div>
         </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-        <div>
-          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Link (optional)</label>
-          <input id="pressUrl" placeholder="https://..." style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
-        </div>
-        <div>
-          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Date (optional)</label>
-          <input id="pressDate" type="date" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
-        </div>
-      </div>
-      <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;margin-top:8px" onclick="addPressMention()">+ Add</button>
-      <div id="pressMsg" style="font-size:11px;margin-top:6px"></div>
+        <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;margin-top:8px" onclick="addPressMention()">+ Add</button>
+        <div id="pressMsg" style="font-size:11px;margin-top:6px"></div>
+      </details>
     </div>
 
-    <div class="field">
-      <label>Available for <span style="color:var(--color-text-tertiary);font-weight:400">— the kinds of work you're open to</span></label>
-      <div id="availableForTags"></div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <input id="availableForInput" placeholder="e.g. Sponsored posts, event appearances, product collabs" style="flex:1;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px" onkeydown="if(event.key==='Enter'){event.preventDefault();addAvailableFor();}">
-        <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;white-space:nowrap" onclick="addAvailableFor()">+ Add</button>
+    <div class="prow2">
+      <div class="field">
+        <label>Available for <span style="color:var(--color-text-tertiary);font-weight:400">— kinds of work you're open to</span></label>
+        <div id="availableForTags"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="availableForInput" placeholder="e.g. Sponsored posts" style="flex:1;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px" onkeydown="if(event.key==='Enter'){event.preventDefault();addAvailableFor();}">
+          <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;white-space:nowrap" onclick="addAvailableFor()">+ Add</button>
+        </div>
       </div>
-    </div>
-
-    <div class="field">
-      <label>Causes I support <span style="color:var(--color-text-tertiary);font-weight:400">— optional, helps ESG-conscious sponsors see if you're a fit</span></label>
-      <div id="causesTags"></div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <input id="causesInput" placeholder="e.g. Mental health awareness, environmental causes" style="flex:1;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px" onkeydown="if(event.key==='Enter'){event.preventDefault();addCause();}">
-        <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;white-space:nowrap" onclick="addCause()">+ Add</button>
+      <div class="field">
+        <label>Causes I support <span style="color:var(--color-text-tertiary);font-weight:400">— optional, helps ESG-conscious sponsors</span></label>
+        <div id="causesTags"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="causesInput" placeholder="e.g. Mental health awareness" style="flex:1;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px" onkeydown="if(event.key==='Enter'){event.preventDefault();addCause();}">
+          <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;white-space:nowrap" onclick="addCause()">+ Add</button>
+        </div>
       </div>
     </div>
 
     <button class="cta" id="saveBtn" onclick="save()">Save changes</button>
     <div id="msg"></div>
 
-    <div style="margin-top:28px;padding-top:20px;border-top:0.5px solid var(--color-border-tertiary)">
+    <div class="psec">
+      <div class="psec-title">Link settings</div>
+    </div>
+    <div>
       <label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Custom link <span style="color:var(--color-text-tertiary)">— used for both your Verified Media Kit and trust link</span></label>
       ${creator.plan === 'pro' ? `
         <div style="display:flex;gap:8px;align-items:center">
