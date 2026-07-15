@@ -407,7 +407,7 @@ async function loadOwnerKit(profile) {
     collaborations: collabs || [], pressMentions: press || [], availableFor: c.available_for || [], causes: c.causes || [], theme: c.theme,
   };
 
-  const link = `https://kitscore.co/ek/${c.slug || ''}`;
+  const link = `https://kitscore.co/media-kit/${c.slug || ''}`;
   document.getElementById('ownerBanner').innerHTML = `
     <div class="owner-banner">
       <span>This is your Verified Media Kit — <code id="ekLinkText">${escapeHtml(link)}</code></span>
