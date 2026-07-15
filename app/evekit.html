@@ -195,6 +195,19 @@ function renderKit(kit, opts) {
       </div>
     </div>
 
+    ${kit.collaborations?.length ? `
+    <div class="card">
+      <div class="card-title">Brands I've worked with <span style="font-size:9.5px;color:#B0B0AA;text-transform:none;font-weight:400;letter-spacing:0">— self-reported, not verified</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
+        ${kit.collaborations.map(c => {
+          const tile = c.logo_url
+            ? `<img src="${escapeHtml(c.logo_url)}" alt="${escapeHtml(c.brand_name)}" title="${escapeHtml(c.brand_name)}" style="height:36px;max-width:120px;object-fit:contain">`
+            : `<span style="font-size:13px;font-weight:600;color:#1A1A18;border:1px solid #E5E4DF;border-radius:6px;padding:7px 12px">${escapeHtml(c.brand_name)}</span>`;
+          return c.link ? `<a href="${escapeHtml(c.link)}" target="_blank" rel="noopener">${tile}</a>` : tile;
+        }).join('')}
+      </div>
+    </div>` : ''}
+
     <div class="card">
       <div class="card-title">Platforms &amp; audience</div>
       ${platforms.length ? `<div class="plat-grid">${platforms.map(p => `
@@ -293,12 +306,13 @@ function escapeHtml(s) {
 
 // ── Owner (authenticated, dashboard) mode ───────────────────────────────
 async function loadOwnerKit(profile) {
-  const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }, { data: audience }] = await Promise.all([
+  const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }, { data: audience }, { data: collabs }] = await Promise.all([
     sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,profile_views,avatar_url,gallery_images').eq('id', profile.id).single(),
     sb.from('campaigns').select('name,objective,creator_confirmed,sponsor_confirmed,created_at').eq('creator_id', profile.id).order('created_at',{ascending:false}),
     sb.rpc('fn_creator_platform_summary', { p_creator_id: profile.id }),
     sb.rpc('fn_get_my_business_email'),
     sb.from('audience_demographics').select('dimension,label,pct').eq('creator_id', profile.id),
+    sb.from('creator_collaborations').select('brand_name,logo_url,link').eq('creator_id', profile.id).order('display_order').order('created_at'),
   ]);
 
   const verified = (campaigns||[]).filter(x=>x.creator_confirmed&&x.sponsor_confirmed);
@@ -312,6 +326,7 @@ async function loadOwnerKit(profile) {
     wouldHireAgainPct: c.would_hire_again_pct, repeatSponsorRate: c.repeat_sponsor_rate,
     audienceCountries: audByDim('country'), audienceAges: audByDim('age'), audienceGenders: audByDim('gender'),
     platforms, campaigns: verified, avatarUrl: c.avatar_url, galleryImages: c.gallery_images || [],
+    collaborations: collabs || [],
   };
 
   const link = `https://kitscore.co/ek/${c.slug || ''}`;
@@ -390,6 +405,7 @@ async function loadPublicKit(slug) {
     audienceGenders: row.audience_genders || [],
     platforms: row.platforms || [], campaigns: row.campaigns || [],
     avatarUrl: row.avatar_url, galleryImages: row.gallery_images || [],
+    collaborations: row.collaborations || [],
   };
   renderKit(kit, { isOwner: false, slug });
 
