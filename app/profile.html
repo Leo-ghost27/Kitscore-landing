@@ -64,20 +64,22 @@
 <script src="icons.js?v=1"></script>
 <script src="nav.js?v=2"></script>
 <script>
-let profile, creator, collaborations = [];
+let profile, creator, collaborations = [], pressMentions = [];
 
 async function load() {
   profile = await requireRole('creator');
   if (!profile) return;
   renderSidebar('creator', 'profile');
 
-  const [{ data: c }, { data: email }, { data: collabs }] = await Promise.all([
-    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images').eq('id', profile.id).single(),
+  const [{ data: c }, { data: email }, { data: collabs }, { data: press }] = await Promise.all([
+    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images, available_for, causes').eq('id', profile.id).single(),
     sb.rpc('fn_get_my_business_email'),
     sb.from('creator_collaborations').select('id, brand_name, logo_url, link').eq('creator_id', profile.id).order('display_order').order('created_at'),
+    sb.from('creator_press_mentions').select('id, title, outlet_name, url, mention_date').eq('creator_id', profile.id).order('display_order').order('created_at'),
   ]);
   creator = { ...c, business_email: email };
   collaborations = collabs || [];
+  pressMentions = press || [];
 
   const initial = (profile.display_name || '?').trim().charAt(0).toUpperCase();
   document.getElementById('formWrap').innerHTML = `
@@ -133,6 +135,51 @@ async function load() {
       <div id="collabMsg" style="font-size:11px;margin-top:6px"></div>
     </div>
 
+    <div class="field">
+      <label>Press mentions <span style="color:var(--color-text-tertiary);font-weight:400">— coverage of you or your work, self-reported</span></label>
+      <div id="pressList"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)">
+        <div>
+          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Title</label>
+          <input id="pressTitle" placeholder="e.g. Why This Creator Is Gaming's Next Big Thing" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+        </div>
+        <div>
+          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Outlet (optional)</label>
+          <input id="pressOutlet" placeholder="e.g. IGN" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <div>
+          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Link (optional)</label>
+          <input id="pressUrl" placeholder="https://..." style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+        </div>
+        <div>
+          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Date (optional)</label>
+          <input id="pressDate" type="date" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+        </div>
+      </div>
+      <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;margin-top:8px" onclick="addPressMention()">+ Add</button>
+      <div id="pressMsg" style="font-size:11px;margin-top:6px"></div>
+    </div>
+
+    <div class="field">
+      <label>Available for <span style="color:var(--color-text-tertiary);font-weight:400">— the kinds of work you're open to</span></label>
+      <div id="availableForTags"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="availableForInput" placeholder="e.g. Sponsored posts, event appearances, product collabs" style="flex:1;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px" onkeydown="if(event.key==='Enter'){event.preventDefault();addAvailableFor();}">
+        <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;white-space:nowrap" onclick="addAvailableFor()">+ Add</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Causes I support <span style="color:var(--color-text-tertiary);font-weight:400">— optional, helps ESG-conscious sponsors see if you're a fit</span></label>
+      <div id="causesTags"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="causesInput" placeholder="e.g. Mental health awareness, environmental causes" style="flex:1;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px" onkeydown="if(event.key==='Enter'){event.preventDefault();addCause();}">
+        <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;white-space:nowrap" onclick="addCause()">+ Add</button>
+      </div>
+    </div>
+
     <button class="cta" id="saveBtn" onclick="save()">Save changes</button>
     <div id="msg"></div>
 
@@ -160,6 +207,9 @@ async function load() {
   renderStrengthPanel();
   renderGallery();
   renderCollaborations();
+  renderPressMentions();
+  renderAvailableFor();
+  renderCauses();
 }
 
 const MAX_GALLERY = 4;
@@ -343,6 +393,126 @@ async function removeCollaboration(id) {
   }
   collaborations = collaborations.filter(c => c.id !== id);
   renderCollaborations();
+}
+
+// ── Press mentions (self-reported coverage) ───────────────────────────────
+function renderPressMentions() {
+  const list = document.getElementById('pressList');
+  if (!list) return;
+  if (!pressMentions.length) {
+    list.innerHTML = `<div style="font-size:12px;color:var(--color-text-tertiary)">No press mentions added yet.</div>`;
+    return;
+  }
+  list.innerHTML = pressMentions.map(p => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:8px 10px;margin-bottom:6px">
+      <div style="min-width:0">
+        <div style="font-size:12.5px;color:var(--color-text-primary);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(p.title)}</div>
+        <div style="font-size:11px;color:var(--color-text-tertiary)">${[p.outlet_name, p.mention_date].filter(Boolean).map(escapeHtml).join(' · ')}</div>
+      </div>
+      <span onclick="removePressMention('${p.id}')" title="Remove" style="cursor:pointer;color:var(--color-text-tertiary);font-size:14px;line-height:1;flex-shrink:0">✕</span>
+    </div>`).join('');
+}
+
+async function addPressMention() {
+  const msg = document.getElementById('pressMsg');
+  msg.innerHTML = '';
+  const title = document.getElementById('pressTitle').value.trim();
+  const outlet_name = document.getElementById('pressOutlet').value.trim() || null;
+  const url = document.getElementById('pressUrl').value.trim() || null;
+  const mention_date = document.getElementById('pressDate').value || null;
+
+  if (!title) {
+    msg.innerHTML = `<div class="msg error">Title is required.</div>`;
+    return;
+  }
+
+  const { data, error } = await sb.from('creator_press_mentions')
+    .insert({ creator_id: profile.id, title, outlet_name, url, mention_date, display_order: pressMentions.length })
+    .select('id, title, outlet_name, url, mention_date')
+    .single();
+  if (error) {
+    msg.innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+
+  pressMentions.push(data);
+  document.getElementById('pressTitle').value = '';
+  document.getElementById('pressOutlet').value = '';
+  document.getElementById('pressUrl').value = '';
+  document.getElementById('pressDate').value = '';
+  renderPressMentions();
+  msg.innerHTML = `<div class="msg ok">Added.</div>`;
+}
+
+async function removePressMention(id) {
+  const { error } = await sb.from('creator_press_mentions').delete().eq('id', id);
+  const msg = document.getElementById('pressMsg');
+  if (error) {
+    msg.innerHTML = `<div class="msg error">Could not remove: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  pressMentions = pressMentions.filter(p => p.id !== id);
+  renderPressMentions();
+}
+
+// ── Available for / Causes (self-reported tag lists on creators) ─────────
+function renderTagList(containerId, values, removeFn) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!values.length) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--color-text-tertiary)">None added yet.</div>`;
+    return;
+  }
+  el.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:8px">${values.map((v, i) => `
+    <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;background:var(--color-bg-secondary,#F2F1EC);border-radius:20px;padding:5px 10px 5px 12px">
+      ${escapeHtml(v)}
+      <span onclick="${removeFn}(${i})" title="Remove" style="cursor:pointer;color:var(--color-text-tertiary);font-size:13px;line-height:1">✕</span>
+    </span>`).join('')}</div>`;
+}
+
+function renderAvailableFor() { renderTagList('availableForTags', creator.available_for || [], 'removeAvailableFor'); }
+function renderCauses() { renderTagList('causesTags', creator.causes || [], 'removeCauses'); }
+
+async function addAvailableFor() {
+  const input = document.getElementById('availableForInput');
+  const val = input.value.trim();
+  if (!val) return;
+  const updated = [...(creator.available_for || []), val];
+  const { error } = await sb.from('creators').update({ available_for: updated }).eq('id', profile.id);
+  if (error) { document.getElementById('msg').innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`; return; }
+  creator.available_for = updated;
+  input.value = '';
+  renderAvailableFor();
+}
+
+async function removeAvailableFor(index) {
+  const updated = [...(creator.available_for || [])];
+  updated.splice(index, 1);
+  const { error } = await sb.from('creators').update({ available_for: updated }).eq('id', profile.id);
+  if (error) { document.getElementById('msg').innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`; return; }
+  creator.available_for = updated;
+  renderAvailableFor();
+}
+
+async function addCause() {
+  const input = document.getElementById('causesInput');
+  const val = input.value.trim();
+  if (!val) return;
+  const updated = [...(creator.causes || []), val];
+  const { error } = await sb.from('creators').update({ causes: updated }).eq('id', profile.id);
+  if (error) { document.getElementById('msg').innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`; return; }
+  creator.causes = updated;
+  input.value = '';
+  renderCauses();
+}
+
+async function removeCauses(index) {
+  const updated = [...(creator.causes || [])];
+  updated.splice(index, 1);
+  const { error } = await sb.from('creators').update({ causes: updated }).eq('id', profile.id);
+  if (error) { document.getElementById('msg').innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`; return; }
+  creator.causes = updated;
+  renderCauses();
 }
 
 function renderStrengthPanel() {
