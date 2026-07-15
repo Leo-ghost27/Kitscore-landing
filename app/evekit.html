@@ -232,6 +232,29 @@ function renderKit(kit, opts) {
       <div class="gallery-grid">${kit.galleryImages.map(url => `<img src="${escapeHtml(url)}">`).join('')}</div>
     </div>` : ''}
 
+    ${kit.pressMentions?.length ? `
+    <div class="card">
+      <div class="card-title">Press mentions <span style="font-size:9.5px;color:#B0B0AA;text-transform:none;font-weight:400;letter-spacing:0">— self-reported</span></div>
+      <div>${kit.pressMentions.map(p => {
+        const inner = `<div style="font-size:13px;color:#1A1A18;font-weight:500">${escapeHtml(p.title)}</div><div style="font-size:11.5px;color:#9E9E99;margin-top:2px">${[p.outlet_name, p.mention_date].filter(Boolean).map(escapeHtml).join(' · ')}</div>`;
+        return `<div style="padding:10px 0;border-top:1px solid #F0EFE9">${p.url ? `<a href="${escapeHtml(p.url)}" target="_blank" rel="noopener" style="text-decoration:none">${inner}</a>` : inner}</div>`;
+      }).join('')}</div>
+    </div>` : ''}
+
+    ${(kit.availableFor?.length || kit.causes?.length) ? `
+    <div class="card">
+      ${kit.availableFor?.length ? `
+      <div style="${kit.causes?.length ? 'margin-bottom:14px' : ''}">
+        <div class="card-title" style="margin-bottom:8px">Available for</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">${kit.availableFor.map(v => `<span style="font-size:12px;background:#F5F4EF;border-radius:20px;padding:5px 12px">${escapeHtml(v)}</span>`).join('')}</div>
+      </div>` : ''}
+      ${kit.causes?.length ? `
+      <div>
+        <div class="card-title" style="margin-bottom:8px">Causes I support</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">${kit.causes.map(v => `<span style="font-size:12px;background:#F5F4EF;border-radius:20px;padding:5px 12px">${escapeHtml(v)}</span>`).join('')}</div>
+      </div>` : ''}
+    </div>` : ''}
+
     <div class="card">
       <div class="card-title">What to charge <span>estimated rate card</span></div>
       <div class="rate-box">
@@ -306,13 +329,14 @@ function escapeHtml(s) {
 
 // ── Owner (authenticated, dashboard) mode ───────────────────────────────
 async function loadOwnerKit(profile) {
-  const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }, { data: audience }, { data: collabs }] = await Promise.all([
-    sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,profile_views,avatar_url,gallery_images').eq('id', profile.id).single(),
+  const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }, { data: audience }, { data: collabs }, { data: press }] = await Promise.all([
+    sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,profile_views,avatar_url,gallery_images,available_for,causes').eq('id', profile.id).single(),
     sb.from('campaigns').select('name,objective,creator_confirmed,sponsor_confirmed,created_at').eq('creator_id', profile.id).order('created_at',{ascending:false}),
     sb.rpc('fn_creator_platform_summary', { p_creator_id: profile.id }),
     sb.rpc('fn_get_my_business_email'),
     sb.from('audience_demographics').select('dimension,label,pct').eq('creator_id', profile.id),
     sb.from('creator_collaborations').select('brand_name,logo_url,link').eq('creator_id', profile.id).order('display_order').order('created_at'),
+    sb.from('creator_press_mentions').select('title,outlet_name,url,mention_date').eq('creator_id', profile.id).order('display_order').order('created_at'),
   ]);
 
   const verified = (campaigns||[]).filter(x=>x.creator_confirmed&&x.sponsor_confirmed);
@@ -326,7 +350,7 @@ async function loadOwnerKit(profile) {
     wouldHireAgainPct: c.would_hire_again_pct, repeatSponsorRate: c.repeat_sponsor_rate,
     audienceCountries: audByDim('country'), audienceAges: audByDim('age'), audienceGenders: audByDim('gender'),
     platforms, campaigns: verified, avatarUrl: c.avatar_url, galleryImages: c.gallery_images || [],
-    collaborations: collabs || [],
+    collaborations: collabs || [], pressMentions: press || [], availableFor: c.available_for || [], causes: c.causes || [],
   };
 
   const link = `https://kitscore.co/ek/${c.slug || ''}`;
@@ -405,7 +429,8 @@ async function loadPublicKit(slug) {
     audienceGenders: row.audience_genders || [],
     platforms: row.platforms || [], campaigns: row.campaigns || [],
     avatarUrl: row.avatar_url, galleryImages: row.gallery_images || [],
-    collaborations: row.collaborations || [],
+    collaborations: row.collaborations || [], pressMentions: row.press_mentions || [],
+    availableFor: row.available_for || [], causes: row.causes || [],
   };
   renderKit(kit, { isOwner: false, slug });
 
