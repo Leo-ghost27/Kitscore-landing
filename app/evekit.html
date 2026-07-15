@@ -457,7 +457,7 @@ async function downloadEveKitPdf() {
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'kitscore-evekit.pdf'; a.click();
+    a.href = url; a.download = 'kitscore-verified-media-kit.pdf'; a.click();
     URL.revokeObjectURL(url);
   } catch(err) {
     alert('Error generating Verified Media Kit PDF: ' + err.message);
