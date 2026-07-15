@@ -64,7 +64,7 @@
   .sp-step p{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
   .sp-step b{color:var(--ink)}
   .endorse-summary{padding:14px 22px 18px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink-soft);line-height:1.6}
-  .hw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-top:12px}
+  .hw-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);margin-top:12px}
   .hw-step{background:#fff;padding:16px}
   .hw-num{font-family:var(--font-mono);font-size:10.5px;color:var(--blue);font-weight:600;margin-bottom:8px;letter-spacing:.03em}
   .hw-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:5px}
@@ -365,9 +365,9 @@ async function loadCreatorCampaigns() {
         ${c.status === 'disputed'
           ? `<button class="resolve-btn" onclick="withdrawDispute('${c.id}')">Withdraw dispute</button>`
           : c.creator_confirmed
-            ? `<span class="waiting">${c.sponsor_confirmed ? 'Confirmed' : 'Waiting on sponsor'}</span>`
-            : `<button class="confirm-btn" onclick="confirmCampaign('${c.id}')">Confirm</button>
-               <button class="dispute-btn" onclick="toggleDispute('${c.id}')">Dispute</button>`}
+            ? `<span class="waiting" title="You've confirmed. This needs the sponsor's confirmation too before it counts toward your trust score.">${c.sponsor_confirmed ? 'Confirmed' : 'Waiting on sponsor'}</span>`
+            : `<button class="confirm-btn" title="Confirms this happened as logged. It still needs the sponsor's confirmation too before it counts toward your score." onclick="confirmCampaign('${c.id}')">Confirm</button>
+               <button class="dispute-btn" title="Say this is wrong or didn't happen. It won't count toward your score until resolved, and the sponsor will see your reason." onclick="toggleDispute('${c.id}')">Dispute</button>`}
       </div>
     </div>
     ${c.status === 'disputed' && c.dispute_reason
@@ -428,6 +428,11 @@ function renderHowItWorks() {
         <div class="hw-num">03 / SCORE UPDATES</div>
         <div class="hw-title">Your trust score updates</div>
         <div class="hw-text">Mutually confirmed campaigns are the strongest signal in your Kitscore.</div>
+      </div>
+      <div class="hw-step">
+        <div class="hw-num">04 / IF SOMETHING'S WRONG</div>
+        <div class="hw-title">You can dispute it</div>
+        <div class="hw-text">If a sponsor logs a campaign you don't recognize or don't agree with, dispute it instead of confirming — it won't count toward your score until resolved, and the dispute is visible to both sides, not silently rejected.</div>
       </div>
     </div>
   `;

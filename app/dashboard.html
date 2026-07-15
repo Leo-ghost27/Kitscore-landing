@@ -414,10 +414,10 @@ async function load() {
 
   // Onboarding steps
   const steps=[
-    {label:'Complete your profile (niche + location)', done:!!(creator.niche&&creator.location)},
-    {label:'Complete brand safety questionnaire',       done:(answers||[]).length>=QUESTIONS.length},
-    {label:'Upload evidence',                           done:(evidence||[]).length>=1},
-    {label:'Verify first campaign',                     done:verifiedCount>=1},
+    {label:'Complete your profile (niche + location)', done:!!(creator.niche&&creator.location), why:'Sponsors filter by niche and location first — an empty profile won\'t show up in searches.'},
+    {label:'Complete brand safety questionnaire',       done:(answers||[]).length>=QUESTIONS.length, why:'This feeds directly into your score and lets sponsors skip a manual vetting call.'},
+    {label:'Upload evidence',                           done:(evidence||[]).length>=1, why:'Screenshots and deliverables from past campaigns back up what you claim — unverified claims score lower.'},
+    {label:'Verify first campaign',                     done:verifiedCount>=1, why:'A campaign only counts once both you and the sponsor confirm it — this is the strongest signal in your score.'},
   ];
   const doneCount=steps.filter(s=>s.done).length;
   const pct=Math.round((doneCount/steps.length)*100);
@@ -600,7 +600,8 @@ function renderOverviewTab() {
           <div class="step-dot dot-${state}">${state==='done'?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':''}</div>
           <span class="step-label">${s.label}</span>
           ${state==='current'?'<span class="step-next">Next step ↗</span>':''}
-        </div>`;
+        </div>
+        ${state==='current'&&s.why?`<div style="font-size:11px;color:var(--color-text-tertiary);margin:-4px 0 6px 30px">${s.why}</div>`:''}`;
       }).join('')}
       <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:8px">${pct}% complete · finish all steps to maximise your trust score</div>
     </div>`:''}
@@ -684,7 +685,10 @@ function renderScoreTab() {
 
     <!-- ── Score breakdown ── -->
     <div class="card" id="score-breakdown">
-      <div class="sec">Score breakdown <svg class="info-ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Each component is weighted. Live verified data scores highest."><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div>
+      <div class="sec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>Score breakdown <svg class="info-ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Each component is weighted. Live verified data scores highest."><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
+        <a href="/methodology.html" target="_blank" style="font-weight:400;text-transform:none;font-size:11px;color:#2563EB;text-decoration:none">How this is calculated →</a>
+      </div>
       ${hasScore?ALL_COMPONENTS.map(ac=>{
         const comp=compMap[ac.key];
         const val=comp?comp.value:null;
