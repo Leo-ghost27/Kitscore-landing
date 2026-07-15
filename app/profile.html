@@ -135,6 +135,7 @@ async function load() {
     </div>
 
     <div class="ptab-panel" data-tab="mediakit">
+      <div class="psec-title">Your Verified Media Kit</div>
       <div class="psec-sub">Everything below appears on the Verified Media Kit you send to sponsors — bio, photos, brand history, and more.</div>
     <div class="field">
       <label>Bio <span style="color:var(--color-text-tertiary);font-weight:400">— shown on your Verified Media Kit, not your trust link</span></label>
@@ -569,6 +570,13 @@ async function removeCauses(index) {
 function switchProfileTab(tab) {
   document.querySelectorAll('.ptab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.ptab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === tab));
+  // persistentSave's "Save changes" button saves Account/Media Kit fields
+  // only (see save()) -- it has no effect on the Link tab's slug, which
+  // has its own dedicated saveSlug() button right below it. Showing both
+  // on that tab reads as two competing save actions, so hide the generic
+  // one there specifically.
+  const persistentSave = document.getElementById('persistentSave');
+  if (persistentSave) persistentSave.style.display = tab === 'link' ? 'none' : '';
 }
 
 function renderStrengthPanel() {
