@@ -101,12 +101,12 @@ async function load() {
     <div class="field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}"></div>
     <div class="field"><label>Business email</label><input id="businessEmail" value="${escapeHtml(creator.business_email || '')}"></div>
     <div class="field">
-      <label>Bio <span style="color:var(--color-text-tertiary);font-weight:400">— shown on your EveKit media kit, not your trust link</span></label>
+      <label>Bio <span style="color:var(--color-text-tertiary);font-weight:400">— shown on your Verified Media Kit, not your trust link</span></label>
       <textarea id="bio" maxlength="280" rows="3" placeholder="A couple sentences a brand can read in five seconds — what you make, who watches, and why you're a fit." style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px;font-family:inherit;resize:vertical">${escapeHtml(creator.bio || '')}</textarea>
       <div id="bioCount" style="font-size:10.5px;color:var(--color-text-tertiary);text-align:right;margin-top:2px">${(creator.bio||'').length}/280</div>
     </div>
     <div class="field">
-      <label>Gallery <span style="color:var(--color-text-tertiary);font-weight:400">— optional, up to 4 photos shown on your EveKit</span></label>
+      <label>Gallery <span style="color:var(--color-text-tertiary);font-weight:400">— optional, up to 4 photos shown on your Verified Media Kit</span></label>
       <div class="gallery-grid" id="galleryGrid"></div>
       <div class="upload-hint">JPG, PNG, or WebP · 5MB max per photo</div>
     </div>
@@ -184,7 +184,7 @@ async function load() {
     <div id="msg"></div>
 
     <div style="margin-top:28px;padding-top:20px;border-top:0.5px solid var(--color-border-tertiary)">
-      <label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Custom link <span style="color:var(--color-text-tertiary)">— used for both your EveKit and trust link</span></label>
+      <label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Custom link <span style="color:var(--color-text-tertiary)">— used for both your Verified Media Kit and trust link</span></label>
       ${creator.plan === 'pro' ? `
         <div style="display:flex;gap:8px;align-items:center">
           <span style="font-size:12px;color:var(--color-text-tertiary)">kitscore.co/p/</span>
@@ -578,7 +578,7 @@ async function saveSlug() {
   }
   creator.slug = data.slug;
   input.value = data.slug;
-  msg.innerHTML = `<div class="msg ok">Saved — your EveKit and trust link now use this URL.</div>`;
+  msg.innerHTML = `<div class="msg ok">Saved — your Verified Media Kit and trust link now use this URL.</div>`;
 }
 
 load();
