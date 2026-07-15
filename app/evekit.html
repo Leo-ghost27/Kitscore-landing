@@ -394,7 +394,7 @@ async function loadOwnerKit(profile) {
   ]);
 
   const verified = (campaigns||[]).filter(x=>x.creator_confirmed&&x.sponsor_confirmed);
-  const platforms = (platformConnections||[]).filter(p=>p.follower_count!=null&&p.follower_count>0).sort((a,b)=>b.follower_count-a.follower_count);
+  const platforms = (platformConnections||[]).filter(p=>p.follower_count!=null).sort((a,b)=>b.follower_count-a.follower_count);
   const audByDim = (dim) => (audience||[]).filter(r=>r.dimension===dim).sort((a,b)=>b.pct-a.pct).map(r=>({label:r.label,pct:r.pct}));
 
   const kit = {
