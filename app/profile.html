@@ -56,6 +56,11 @@
   .gallery-slot .remove{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer}
   .gallery-slot input{display:none}
   .upload-hint{font-size:10.5px;color:var(--color-text-tertiary);margin-top:6px}
+  .ptabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--color-border-tertiary)}
+  .ptab-btn{background:none;border:none;padding:10px 4px;margin-right:20px;font-size:12.5px;font-weight:500;color:var(--color-text-tertiary);cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
+  .ptab-btn.active{color:#2563EB;border-bottom-color:#2563EB;font-weight:600}
+  .ptab-panel{display:none}
+  .ptab-panel.active{display:block}
 </style>
 </head>
 <body>
@@ -107,7 +112,15 @@ async function load() {
       ${creator.founding_cohort ? `<div style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#8A5B0A;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);border:0.5px solid #E8CE8F;padding:4px 10px 4px 6px;border-radius:20px" title="One of Kitscore's first 100 creators"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg>Founding Creator</div>` : ''}
     </div>
     <div id="avatarMsg"></div>
-    <div class="psec">
+
+    <div class="ptabs">
+      <button class="ptab-btn active" data-tab="account" onclick="switchProfileTab('account')">Account</button>
+      <button class="ptab-btn" data-tab="mediakit" onclick="switchProfileTab('mediakit')">Verified Media Kit</button>
+      <button class="ptab-btn" data-tab="link" onclick="switchProfileTab('link')">Link &amp; sharing</button>
+    </div>
+
+    <div class="ptab-panel active" data-tab="account">
+    <div class="psec" style="margin-top:0;padding-top:0;border-top:none">
       <div class="psec-title">Account</div>
       <div class="psec-sub">Your identity on Kitscore — feeds both your trust link and your Verified Media Kit.</div>
     </div>
@@ -119,11 +132,10 @@ async function load() {
       <div class="field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}"></div>
       <div class="field"><label>Business email</label><input id="businessEmail" value="${escapeHtml(creator.business_email || '')}"></div>
     </div>
-
-    <div class="psec">
-      <div class="psec-title">Your Verified Media Kit</div>
-      <div class="psec-sub">Everything below appears on the Verified Media Kit you send to sponsors — bio, photos, brand history, and more.</div>
     </div>
+
+    <div class="ptab-panel" data-tab="mediakit">
+      <div class="psec-sub">Everything below appears on the Verified Media Kit you send to sponsors — bio, photos, brand history, and more.</div>
     <div class="field">
       <label>Bio <span style="color:var(--color-text-tertiary);font-weight:400">— shown on your Verified Media Kit, not your trust link</span></label>
       <textarea id="bio" maxlength="280" rows="3" placeholder="A couple sentences a brand can read in five seconds — what you make, who watches, and why you're a fit." style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px;font-family:inherit;resize:vertical">${escapeHtml(creator.bio || '')}</textarea>
@@ -210,10 +222,14 @@ async function load() {
         </div>
       </div>
     </div>
+    </div>
 
-    <button class="cta" id="saveBtn" onclick="save()">Save changes</button>
-    <div id="msg"></div>
+    <div id="persistentSave" style="margin-top:20px;padding-top:18px;border-top:1px solid var(--color-border-tertiary)">
+      <button class="cta" id="saveBtn" onclick="save()">Save changes</button>
+      <div id="msg"></div>
+    </div>
 
+    <div class="ptab-panel" data-tab="link">
     <div class="psec">
       <div class="psec-title">Link settings</div>
     </div>
@@ -229,6 +245,7 @@ async function load() {
       ` : `
         <div style="font-size:12px;color:var(--color-text-tertiary)">Your link: <span style="font-family:var(--font-mono,monospace)">${escapeHtml(creator.slug || '')}</span> — <a href="pricing-creator.html" style="color:#2563EB">upgrade to Pro to customize it</a></div>
       `}
+    </div>
     </div>
   `;
 
@@ -547,6 +564,11 @@ async function removeCauses(index) {
   if (error) { document.getElementById('msg').innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`; return; }
   creator.causes = updated;
   renderCauses();
+}
+
+function switchProfileTab(tab) {
+  document.querySelectorAll('.ptab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.ptab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === tab));
 }
 
 function renderStrengthPanel() {
