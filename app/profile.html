@@ -64,18 +64,20 @@
 <script src="icons.js?v=1"></script>
 <script src="nav.js?v=2"></script>
 <script>
-let profile, creator;
+let profile, creator, collaborations = [];
 
 async function load() {
   profile = await requireRole('creator');
   if (!profile) return;
   renderSidebar('creator', 'profile');
 
-  const [{ data: c }, { data: email }] = await Promise.all([
+  const [{ data: c }, { data: email }, { data: collabs }] = await Promise.all([
     sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images').eq('id', profile.id).single(),
     sb.rpc('fn_get_my_business_email'),
+    sb.from('creator_collaborations').select('id, brand_name, logo_url, link').eq('creator_id', profile.id).order('display_order').order('created_at'),
   ]);
   creator = { ...c, business_email: email };
+  collaborations = collabs || [];
 
   const initial = (profile.display_name || '?').trim().charAt(0).toUpperCase();
   document.getElementById('formWrap').innerHTML = `
@@ -107,6 +109,30 @@ async function load() {
       <div class="upload-hint">JPG, PNG, or WebP · 5MB max per photo</div>
     </div>
 
+    <div class="field">
+      <label>Past collaborations <span style="color:var(--color-text-tertiary);font-weight:400">— brands you've worked with, self-reported and shown as such (separate from Verified campaigns, which only covers deals run through Kitscore)</span></label>
+      <div id="collabList"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)">
+        <div>
+          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Brand name</label>
+          <input id="collabBrandName" placeholder="e.g. Red Bull" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+        </div>
+        <div>
+          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Link (optional)</label>
+          <input id="collabLink" placeholder="https://..." style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Logo (optional)</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="file" id="collabLogoInput" accept="image/jpeg,image/png,image/webp" style="font-size:11.5px;flex:1">
+          <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;white-space:nowrap" onclick="addCollaboration()">+ Add</button>
+        </div>
+      </div>
+      <div class="upload-hint">Leave the logo blank and we'll show your brand name instead. JPG, PNG, or WebP · 5MB max.</div>
+      <div id="collabMsg" style="font-size:11px;margin-top:6px"></div>
+    </div>
+
     <button class="cta" id="saveBtn" onclick="save()">Save changes</button>
     <div id="msg"></div>
 
@@ -133,6 +159,7 @@ async function load() {
   });
   renderStrengthPanel();
   renderGallery();
+  renderCollaborations();
 }
 
 const MAX_GALLERY = 4;
@@ -236,6 +263,86 @@ async function removeGalleryImage(index) {
   }
   creator.gallery_images = images;
   renderGallery();
+}
+
+// ── Past collaborations (self-reported brand history, pre-Kitscore) ──────
+function renderCollaborations() {
+  const list = document.getElementById('collabList');
+  if (!list) return;
+  if (!collaborations.length) {
+    list.innerHTML = `<div style="font-size:12px;color:var(--color-text-tertiary)">No collaborations added yet.</div>`;
+    return;
+  }
+  list.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:10px">${collaborations.map(c => `
+    <div style="display:flex;align-items:center;gap:8px;border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:6px 10px 6px 6px">
+      ${c.logo_url
+        ? `<img src="${escapeHtml(c.logo_url)}" style="width:28px;height:28px;object-fit:contain;border-radius:4px">`
+        : `<div style="width:28px;height:28px;border-radius:4px;background:var(--color-bg-secondary,#F2F1EC);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--color-text-secondary)">${escapeHtml((c.brand_name||'?').trim().charAt(0).toUpperCase())}</div>`}
+      <span style="font-size:12.5px;color:var(--color-text-primary)">${escapeHtml(c.brand_name)}</span>
+      <span onclick="removeCollaboration('${c.id}')" title="Remove" style="cursor:pointer;color:var(--color-text-tertiary);font-size:14px;line-height:1;margin-left:2px">✕</span>
+    </div>`).join('')}</div>`;
+}
+
+async function addCollaboration() {
+  const msg = document.getElementById('collabMsg');
+  msg.innerHTML = '';
+  const brandName = document.getElementById('collabBrandName').value.trim();
+  const link = document.getElementById('collabLink').value.trim();
+  const fileInput = document.getElementById('collabLogoInput');
+  const file = fileInput.files[0];
+
+  if (!brandName) {
+    msg.innerHTML = `<div class="msg error">Brand name is required.</div>`;
+    return;
+  }
+  if (file) {
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      msg.innerHTML = `<div class="msg error">Please upload a JPG, PNG, or WebP logo.</div>`;
+      return;
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      msg.innerHTML = `<div class="msg error">That logo is over 5MB — try a smaller file.</div>`;
+      return;
+    }
+  }
+
+  let logoUrl = null;
+  if (file) {
+    const path = `${profile.id}/logo-${Date.now()}.${extFor(file)}`;
+    const { error: upErr } = await sb.storage.from('creator-media').upload(path, file, { upsert: true });
+    if (upErr) {
+      msg.innerHTML = `<div class="msg error">Logo upload failed: ${escapeHtml(upErr.message)}</div>`;
+      return;
+    }
+    logoUrl = sb.storage.from('creator-media').getPublicUrl(path).data.publicUrl;
+  }
+
+  const { data, error } = await sb.from('creator_collaborations')
+    .insert({ creator_id: profile.id, brand_name: brandName, logo_url: logoUrl, link: link || null, display_order: collaborations.length })
+    .select('id, brand_name, logo_url, link')
+    .single();
+  if (error) {
+    msg.innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+
+  collaborations.push(data);
+  document.getElementById('collabBrandName').value = '';
+  document.getElementById('collabLink').value = '';
+  fileInput.value = '';
+  renderCollaborations();
+  msg.innerHTML = `<div class="msg ok">Added.</div>`;
+}
+
+async function removeCollaboration(id) {
+  const { error } = await sb.from('creator_collaborations').delete().eq('id', id);
+  const msg = document.getElementById('collabMsg');
+  if (error) {
+    msg.innerHTML = `<div class="msg error">Could not remove: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  collaborations = collaborations.filter(c => c.id !== id);
+  renderCollaborations();
 }
 
 function renderStrengthPanel() {
