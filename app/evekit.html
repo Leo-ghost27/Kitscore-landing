@@ -53,13 +53,13 @@
   .card-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9E9E99;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #F0EFE9;display:flex;align-items:center;justify-content:space-between}
   .card-title span{font-size:11px;font-weight:500;letter-spacing:0;text-transform:none}
 
-  .plat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-  .plat-item{background:#F9F8F5;border:1px solid #E5E4DF;border-radius:10px;padding:14px}
-  .plat-name{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#9E9E99;margin-bottom:6px}
+  .plat-grid{display:flex;flex-wrap:wrap;gap:12px}
+  .plat-item{position:relative;flex:0 1 230px;min-width:180px;background:#F9F8F5;border:1px solid #E5E4DF;border-radius:10px;padding:14px}
+  .plat-name{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#9E9E99;margin-bottom:6px;padding-right:56px}
   .plat-followers{font-size:20px;font-weight:700;color:#1A1A18}
   .plat-handle{font-size:11.5px;color:#6B6B67;margin-top:2px}
   .plat-stats{font-size:10.5px;color:#9E9E99;margin-top:6px;display:flex;gap:10px;flex-wrap:wrap}
-  .plat-verified{display:inline-block;margin-top:8px;font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:10px}
+  .plat-verified{position:absolute;top:14px;right:14px;font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:10px}
   .plat-verified.oauth{background:#EBF5DE;color:#2D6A0F}
   .plat-verified.public_lookup{background:#F0EFE9;color:#6B6B67}
   .no-platforms{font-size:12.5px;color:#9E9E99}
@@ -221,7 +221,7 @@ function renderKit(kit, opts) {
         <div class="plat-item">
           <div class="plat-name">${escapeHtml(p.platform)}</div>
           <div class="plat-followers">${Number(p.follower_count).toLocaleString()}</div>
-          <div class="plat-handle">${p.platform_handle ? '@'+escapeHtml(p.platform_handle) : followerLabel}</div>
+          <div class="plat-handle">${p.platform_handle ? '@'+escapeHtml(p.platform_handle.replace(/^@+/, '')) : followerLabel}</div>
           ${stats.length ? `<div class="plat-stats">${stats.map(escapeHtml).join(' · ')}</div>` : ''}
           <span class="plat-verified ${p.verification_method}">${p.verification_method === 'oauth' ? 'Verified' : 'Linked'}</span>
         </div>`;
