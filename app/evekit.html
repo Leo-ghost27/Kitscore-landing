@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
 <style>
+  :root{--ek-accent:#5B4FCF;--ek-accent-light:#9B8FFD;--ek-accent-dark:#4A3FB8;--ek-accent-rgb:91,79,207;--ek-glow:#1A1230}
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F4F3EE;color:#1A1A18;font-size:14px}
   .topbar{background:#0F0F0E;color:#fff;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;font-size:12px}
@@ -23,11 +24,11 @@
   .loading,.notfound{text-align:center;padding:80px 20px;color:#6B6B67;font-size:13px}
 
   .cover{background:#0F0F0E;border-radius:16px;padding:44px 40px;margin-bottom:20px;position:relative;overflow:hidden}
-  .cover::before{content:'';position:absolute;top:-120px;left:-80px;width:400px;height:400px;background:radial-gradient(circle, rgba(91,79,207,.35) 0%, transparent 70%);pointer-events:none}
-  .cover-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#5B4FCF;margin-bottom:16px}
+  .cover::before{content:'';position:absolute;top:-120px;left:-80px;width:400px;height:400px;background:radial-gradient(circle, rgba(var(--ek-accent-rgb),.35) 0%, transparent 70%);pointer-events:none}
+  .cover-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ek-accent-light);margin-bottom:16px}
   .cover-head{display:flex;align-items:center;gap:16px}
   .cover-avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(255,255,255,.15)}
-  .cover-avatar-placeholder{width:64px;height:64px;border-radius:50%;flex-shrink:0;background:#5B4FCF;color:#fff;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .cover-avatar-placeholder{width:64px;height:64px;border-radius:50%;flex-shrink:0;background:var(--ek-accent);color:#fff;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center}
   .cover-name{font-family:'Fraunces',serif;font-size:34px;font-weight:600;color:#fff;margin-bottom:4px}
   .gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
   .gallery-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid #E5E4DF}
@@ -43,11 +44,11 @@
   .cover-stats{display:flex;gap:26px;flex-wrap:wrap}
   .cover-stat .v{font-size:19px;font-weight:700;color:#fff}
   .cover-stat .l{font-size:10.5px;color:#6B6B67;margin-top:1px}
-  .cover-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(91,79,207,.2);border:1px solid rgba(91,79,207,.4);color:#9B8FFD;font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:14px;margin-right:6px}
+  .cover-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(var(--ek-accent-rgb),.2);border:1px solid rgba(var(--ek-accent-rgb),.4);color:var(--ek-accent-light);font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:14px;margin-right:6px}
   .cover-founding{display:inline-flex;align-items:center;gap:6px;background:rgba(240,180,41,.15);border:1px solid rgba(240,180,41,.4);color:#F0B429;font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:14px}
   .cover-footer{display:flex;align-items:center;justify-content:space-between;margin-top:32px;padding-top:18px;border-top:1px solid #2A2A28}
   .cover-footer span{font-size:11px;color:#3D3D3A}
-  .cover-footer .kit-brand{font-size:12.5px;font-weight:600;color:#5B4FCF}
+  .cover-footer .kit-brand{font-size:12.5px;font-weight:600;color:var(--ek-accent-light)}
 
   .card{background:#fff;border-radius:12px;padding:26px;margin-bottom:16px;border:1px solid #E5E4DF}
   .card-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#9E9E99;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #F0EFE9;display:flex;align-items:center;justify-content:space-between}
@@ -65,7 +66,7 @@
   .no-platforms{font-size:12.5px;color:#9E9E99}
 
   .rate-box{text-align:center;padding:8px 0}
-  .rate-range{font-family:'Fraunces',serif;font-size:32px;font-weight:600;color:#5B4FCF;margin-bottom:6px}
+  .rate-range{font-family:'Fraunces',serif;font-size:32px;font-weight:600;color:var(--ek-accent);margin-bottom:6px}
   .rate-note{font-size:11.5px;color:#9E9E99}
   .rate-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:16px;flex-wrap:wrap}
   .rate-controls select{font-size:11.5px;padding:5px 8px;border:1px solid #E5E4DF;border-radius:6px;background:#fff;font-family:inherit}
@@ -80,13 +81,13 @@
 
   .contact-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .contact-email{font-family:'IBM Plex Mono',monospace;font-size:13px;color:#1A1A18}
-  .contact-cta{background:#5B4FCF;color:#fff;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12.5px;font-weight:600;white-space:nowrap}
+  .contact-cta{background:var(--ek-accent);color:#fff;text-decoration:none;padding:9px 18px;border-radius:6px;font-size:12.5px;font-weight:600;white-space:nowrap}
   .no-contact{font-size:12.5px;color:#9E9E99}
 
   .owner-banner{background:#EEF2FF;border:1px solid #C7D2FE;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:12.5px;color:#3730A3;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .owner-banner code{background:#fff;padding:2px 6px;border-radius:4px;font-family:'IBM Plex Mono',monospace}
   .cta-band{text-align:center;padding:24px 0 0}
-  .cta-band a{color:#5B4FCF;text-decoration:none;font-size:12.5px;font-weight:600}
+  .cta-band a{color:var(--ek-accent);text-decoration:none;font-size:12.5px;font-weight:600}
   .footer-note{text-align:center;font-size:11px;color:#9E9E99;margin-top:18px}
 </style>
 </head>
@@ -104,6 +105,49 @@
 <script src="/app/supabase-client.js?v=2"></script>
 <script>
 const AUD_GENDER_LABEL = { female: 'Female', male: 'Male', other: 'Other' };
+
+// ── EveKit color themes ────────────────────────────────────────────────
+// Creator picks one before sending their kit link to a sponsor. Applied
+// consistently to the live page (CSS custom properties, swapped instantly
+// on click) and the PDF export (see lib/handlers/document-evekit.js'
+// matching THEME_COLORS) -- a mismatched live page vs. PDF would look
+// like a bug, not a feature.
+const EK_THEMES = {
+  indigo:   { label: 'Indigo',   accent: '#5B4FCF', light: '#9B8FFD', dark: '#4A3FB8', rgb: '91,79,207',   glow: '#1A1230' },
+  ocean:    { label: 'Ocean',    accent: '#2172B8', light: '#7EC8E8', dark: '#195C93', rgb: '33,114,184',  glow: '#0F1F30' },
+  emerald:  { label: 'Emerald',  accent: '#1D9A6C', light: '#7EE3B8', dark: '#167A54', rgb: '29,154,108',  glow: '#0F2A20' },
+  rose:     { label: 'Rose',     accent: '#C33D74', light: '#F2A8C4', dark: '#9E2F5C', rgb: '195,61,116',  glow: '#2A1420' },
+  charcoal: { label: 'Charcoal', accent: '#4A4A46', light: '#A8A8A2', dark: '#35342F', rgb: '74,74,70',    glow: '#161615' },
+  amber:    { label: 'Amber',    accent: '#C17A1E', light: '#F3C476', dark: '#9C6116', rgb: '193,122,30',  glow: '#2A1D0D' },
+};
+
+function setEkTheme(key) {
+  const t = EK_THEMES[key] || EK_THEMES.indigo;
+  const s = document.documentElement.style;
+  s.setProperty('--ek-accent', t.accent);
+  s.setProperty('--ek-accent-light', t.light);
+  s.setProperty('--ek-accent-dark', t.dark);
+  s.setProperty('--ek-accent-rgb', t.rgb);
+  s.setProperty('--ek-glow', t.glow);
+}
+
+function themePickerHtml(currentTheme) {
+  return `<div title="EveKit color theme" style="display:flex;align-items:center;gap:6px;margin-right:2px">
+    ${Object.entries(EK_THEMES).map(([key, t]) => `
+      <button onclick="selectEkTheme('${key}')" title="${t.label}"
+        style="width:20px;height:20px;border-radius:50%;background:${t.accent};cursor:pointer;padding:0;box-sizing:border-box;border:2px solid ${key===currentTheme ? '#fff' : 'transparent'};outline:${key===currentTheme ? '1px solid '+t.accent : 'none'}"></button>
+    `).join('')}
+  </div>`;
+}
+
+async function selectEkTheme(key) {
+  setEkTheme(key); // instant preview, no separate save button
+  const container = document.getElementById('topbarActions');
+  const swatchesHost = container && container.querySelector('div[title="EveKit color theme"]');
+  if (swatchesHost) swatchesHost.outerHTML = themePickerHtml(key);
+  await sb.from('creators').update({ theme: key }).eq('id', profile.id);
+}
+
 // ── Rate card logic (same bands as dashboard.html's calculator — kept in
 // sync intentionally; see dashboard.html RATE_TIERS_USD for the source of
 // truth and the reasoning comment behind the banding). ──────────────────
@@ -158,6 +202,7 @@ function ringSvg(score) {
 const BADGE_LABEL = { none:'New creator', bronze:'Bronze', silver:'Silver', gold:'Gold', platinum:'Platinum' };
 
 function renderKit(kit, opts) {
+  setEkTheme(kit.theme);
   opts = opts || {};
   KIT = kit;
   const platforms = kit.platforms || [];
@@ -339,7 +384,7 @@ function escapeHtml(s) {
 // ── Owner (authenticated, dashboard) mode ───────────────────────────────
 async function loadOwnerKit(profile) {
   const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }, { data: audience }, { data: collabs }, { data: press }] = await Promise.all([
-    sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,profile_views,avatar_url,gallery_images,available_for,causes').eq('id', profile.id).single(),
+    sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,profile_views,avatar_url,gallery_images,available_for,causes,theme').eq('id', profile.id).single(),
     sb.from('campaigns').select('name,objective,creator_confirmed,sponsor_confirmed,created_at').eq('creator_id', profile.id).order('created_at',{ascending:false}),
     sb.rpc('fn_creator_platform_summary', { p_creator_id: profile.id }),
     sb.rpc('fn_get_my_business_email'),
@@ -359,7 +404,7 @@ async function loadOwnerKit(profile) {
     wouldHireAgainPct: c.would_hire_again_pct, repeatSponsorRate: c.repeat_sponsor_rate,
     audienceCountries: audByDim('country'), audienceAges: audByDim('age'), audienceGenders: audByDim('gender'),
     platforms, campaigns: verified, avatarUrl: c.avatar_url, galleryImages: c.gallery_images || [],
-    collaborations: collabs || [], pressMentions: press || [], availableFor: c.available_for || [], causes: c.causes || [],
+    collaborations: collabs || [], pressMentions: press || [], availableFor: c.available_for || [], causes: c.causes || [], theme: c.theme,
   };
 
   const link = `https://kitscore.co/ek/${c.slug || ''}`;
@@ -376,6 +421,7 @@ async function loadOwnerKit(profile) {
 
   document.getElementById('topbarActions').innerHTML = `
     <button class="tb-btn ghost" onclick="window.location.href='dashboard.html'">← Dashboard</button>
+    ${themePickerHtml(kit.theme)}
     <button class="tb-btn" id="dlBtn" onclick="downloadEveKitPdf()">Download PDF</button>
   `;
 
@@ -439,7 +485,7 @@ async function loadPublicKit(slug) {
     platforms: row.platforms || [], campaigns: row.campaigns || [],
     avatarUrl: row.avatar_url, galleryImages: row.gallery_images || [],
     collaborations: row.collaborations || [], pressMentions: row.press_mentions || [],
-    availableFor: row.available_for || [], causes: row.causes || [],
+    availableFor: row.available_for || [], causes: row.causes || [], theme: row.theme,
   };
   renderKit(kit, { isOwner: false, slug });
 
