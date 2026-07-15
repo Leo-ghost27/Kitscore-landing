@@ -4,7 +4,7 @@
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EveKit — Kitscore</title>
+<title>Verified Media Kit — Kitscore</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
 <style>
@@ -98,7 +98,7 @@
   </div>
   <div class="wrap">
     <div id="ownerBanner"></div>
-    <div id="content" class="loading">Loading EveKit…</div>
+    <div id="content" class="loading">Loading Verified Media Kit…</div>
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -132,7 +132,7 @@ function setEkTheme(key) {
 }
 
 function themePickerHtml(currentTheme) {
-  return `<div title="EveKit color theme" style="display:flex;align-items:center;gap:6px;margin-right:2px">
+  return `<div title="Verified Media Kit color theme" style="display:flex;align-items:center;gap:6px;margin-right:2px">
     ${Object.entries(EK_THEMES).map(([key, t]) => `
       <button onclick="selectEkTheme('${key}')" title="${t.label}"
         style="width:20px;height:20px;border-radius:50%;background:${t.accent};cursor:pointer;padding:0;box-sizing:border-box;border:2px solid ${key===currentTheme ? '#fff' : 'transparent'};outline:${key===currentTheme ? '1px solid '+t.accent : 'none'}"></button>
@@ -143,7 +143,7 @@ function themePickerHtml(currentTheme) {
 async function selectEkTheme(key) {
   setEkTheme(key); // instant preview, no separate save button
   const container = document.getElementById('topbarActions');
-  const swatchesHost = container && container.querySelector('div[title="EveKit color theme"]');
+  const swatchesHost = container && container.querySelector('div[title="Verified Media Kit color theme"]');
   if (swatchesHost) swatchesHost.outerHTML = themePickerHtml(key);
   await sb.from('creators').update({ theme: key }).eq('id', profile.id);
 }
@@ -211,7 +211,7 @@ function renderKit(kit, opts) {
 
   document.getElementById('content').innerHTML = `
     <div class="cover">
-      <div class="cover-label">EveKit · Kitscore Media Kit</div>
+      <div class="cover-label">Verified Media Kit · Kitscore</div>
       <div class="cover-head">
         ${kit.avatarUrl
           ? `<img class="cover-avatar" src="${escapeHtml(kit.avatarUrl)}">`
@@ -350,9 +350,9 @@ function renderKit(kit, opts) {
 
     ${opts.isOwner ? '' : `
     <div class="cta-band">
-      <a href="/for-creators.html">Get your own free EveKit from Kitscore →</a>
+      <a href="/for-creators.html">Get your own free Verified Media Kit from Kitscore →</a>
     </div>`}
-    <div class="footer-note">EveKit is a pitch document built from your verified Kitscore data. For a quick trust check instead, see the <a href="/p/${encodeURIComponent(opts.slug||'')}" style="color:#5B4FCF">verification link</a>.</div>
+    <div class="footer-note">Your Verified Media Kit is a pitch document built from your verified Kitscore data. For a quick trust check instead, see the <a href="/p/${encodeURIComponent(opts.slug||'')}" style="color:#5B4FCF">verification link</a>.</div>
   `;
 
   document.getElementById('ek-currency').value = detectCurrency();
@@ -410,7 +410,7 @@ async function loadOwnerKit(profile) {
   const link = `https://kitscore.co/ek/${c.slug || ''}`;
   document.getElementById('ownerBanner').innerHTML = `
     <div class="owner-banner">
-      <span>This is your EveKit — <code id="ekLinkText">${escapeHtml(link)}</code></span>
+      <span>This is your Verified Media Kit — <code id="ekLinkText">${escapeHtml(link)}</code></span>
       <div style="display:flex;gap:8px">
         <button class="tb-btn ghost" style="background:#fff;border:1px solid #C7D2FE;color:#3730A3" onclick="copyEveKitLink('${escapeHtml(link)}')">Copy link</button>
       </div>
@@ -451,7 +451,7 @@ async function downloadEveKitPdf() {
     });
     if (!res.ok) {
       const j = await res.json().catch(() => ({}));
-      alert('Could not generate EveKit PDF: ' + (j.error || 'Unknown error'));
+      alert('Could not generate Verified Media Kit PDF: ' + (j.error || 'Unknown error'));
       return;
     }
     const blob = await res.blob();
@@ -460,7 +460,7 @@ async function downloadEveKitPdf() {
     a.href = url; a.download = 'kitscore-evekit.pdf'; a.click();
     URL.revokeObjectURL(url);
   } catch(err) {
-    alert('Error generating EveKit PDF: ' + err.message);
+    alert('Error generating Verified Media Kit PDF: ' + err.message);
   } finally {
     btn.disabled = false; btn.textContent = original;
   }
@@ -471,10 +471,10 @@ async function loadPublicKit(slug) {
   const { data, error } = await sb.rpc('fn_get_evekit_profile', { p_slug: slug });
   const row = data && data[0];
   if (error || !row) {
-    document.getElementById('content').innerHTML = `<div class="notfound">This EveKit doesn't exist or isn't public.</div>`;
+    document.getElementById('content').innerHTML = `<div class="notfound">This Verified Media Kit doesn't exist or isn't public.</div>`;
     return;
   }
-  document.getElementById('topbarActions').innerHTML = `<a href="/for-creators.html" class="tb-btn">Get your own free EveKit</a>`;
+  document.getElementById('topbarActions').innerHTML = `<a href="/for-creators.html" class="tb-btn">Get your own free Verified Media Kit</a>`;
   const kit = {
     displayName: row.display_name, bio: row.bio, niche: row.niche, location: row.location,
     businessEmail: row.business_email, trustScore: row.trust_score, confidence: row.confidence,
