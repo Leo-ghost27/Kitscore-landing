@@ -976,24 +976,6 @@ function renderToolsTab() {
     </div>
 
 
-    <!-- ── Verified Media Kit ── -->
-    <div class="card" style="border:1.5px solid #DCD6FA;background:linear-gradient(135deg,#F5F3FF,#F9F8FF)">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:36px;height:36px;background:#5B4FCF;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        </div>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:600;color:#0F172A">Your Verified Media Kit</div>
-          <div style="font-size:11px;color:#4B5563;margin-top:2px">Bio, rate card, platform stats, and verified highlights on one page — free for everyone, with a free PDF export. Preview and share it from your Profile tab.</div>
-          ${creator.plan==='pro'
-            ? `<div style="font-size:10.5px;color:#6B6B67;margin-top:6px">${creator.profile_views||0} view${creator.profile_views===1?'':'s'} so far</div>`
-            : `<div style="font-size:10.5px;color:#6B6B67;margin-top:6px">Free for everyone. Pro adds a view counter: <a href="pricing-creator.html" style="color:#5B4FCF">see who's opened it →</a></div>`}
-        </div>
-        <a href="evekit.html" style="text-decoration:none"><button style="background:#5B4FCF;color:#fff;border:none;padding:8px 16px;font-size:12px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;white-space:nowrap">Open Media Kit</button></a>
-      </div>
-    </div>
-
-
     <!-- ── Tips to raise your score ── -->
     <div class="card" style="margin-bottom:0">
       <div class="sec">Tips to raise your score</div>

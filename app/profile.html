@@ -88,7 +88,7 @@ async function load() {
   renderSidebar('creator', 'profile');
 
   const [{ data: c }, { data: email }, { data: collabs }, { data: press }] = await Promise.all([
-    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images, available_for, causes').eq('id', profile.id).single(),
+    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images, available_for, causes, profile_views').eq('id', profile.id).single(),
     sb.rpc('fn_get_my_business_email'),
     sb.from('creator_collaborations').select('id, brand_name, logo_url, link').eq('creator_id', profile.id).order('display_order').order('created_at'),
     sb.from('creator_press_mentions').select('id, title, outlet_name, url, mention_date').eq('creator_id', profile.id).order('display_order').order('created_at'),
@@ -246,6 +246,9 @@ async function load() {
       ` : `
         <div style="font-size:12px;color:var(--color-text-tertiary)">Your link: <span style="font-family:var(--font-mono,monospace)">${escapeHtml(creator.slug || '')}</span> — <a href="pricing-creator.html" style="color:#2563EB">upgrade to Pro to customize it</a></div>
       `}
+      ${creator.plan === 'pro'
+        ? `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:8px">${creator.profile_views||0} view${creator.profile_views===1?'':'s'} so far</div>`
+        : `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:8px">Free for everyone. Pro adds a view counter: <a href="pricing-creator.html" style="color:#2563EB">see who's opened it →</a></div>`}
     </div>
     </div>
   `;
