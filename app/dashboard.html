@@ -770,6 +770,9 @@ function renderProfileTab() {
           <div style="font-size:13.5px;font-weight:600;color:var(--ink,#0F1B2E)">Your Verified Media Kit</div>
           <div id="evekit-link-text" style="font-family:var(--font-mono,monospace);font-size:11px;color:#5B4FCF;margin-top:3px;word-break:break-all">kitscore.co/media-kit/${creator.slug||''}</div>
           <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Bio, rate card, platform stats, and verified highlights in one page — the asset you send to a brand cold. Free for every creator, PDF included.</div>
+          ${creator.plan==='pro'
+            ? `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">${creator.profile_views||0} view${creator.profile_views===1?'':'s'} so far</div>`
+            : `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Free for everyone. Pro adds a view counter: <a href="pricing-creator.html" style="color:#5B4FCF">see who's opened it →</a></div>`}
         </div>
         <div style="display:flex;gap:8px;flex-shrink:0">
           <a href="evekit.html" style="text-decoration:none"><button class="confirm-btn" style="background:#5B4FCF;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer">Open Media Kit</button></a>
