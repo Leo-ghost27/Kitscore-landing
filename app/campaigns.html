@@ -350,11 +350,27 @@ async function resubmitCampaign(id) {
 
 // ── Creator: confirm a campaign ─────────────────────────────────────────────
 async function loadCreatorCampaigns() {
-  const { data: campaigns, error } = await sb.from('campaigns')
-    .select('*, sponsors(company_name)').eq('creator_id', profile.id).order('created_at', { ascending: false });
+  const [{ data: campaigns, error }, { data: invites, error: invErr }] = await Promise.all([
+    sb.from('campaigns').select('*, sponsors(company_name)').eq('creator_id', profile.id).order('created_at', { ascending: false }),
+    sb.from('campaign_confirmation_invites').select('*').eq('creator_id', profile.id).eq('status', 'pending').order('created_at', { ascending: false }),
+  ]);
   if (error) { document.getElementById('list').innerHTML = 'Could not load: ' + escapeHtml(error.message); return; }
+  if (invErr) console.error('Could not load pending invites:', invErr.message);
 
-  document.getElementById('list').innerHTML = (campaigns && campaigns.length) ? campaigns.map(c => `
+  const inviteRows = (invites || []).map(inv => `
+    <div class="row-item">
+      <div>
+        <div style="font-weight:500">${escapeHtml(inv.description || 'Campaign invite')}</div>
+        <div style="color:var(--color-text-secondary);font-size:11px">${escapeHtml(inv.sponsor_name || inv.sponsor_email)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="status-tag st-pending">pending</span>
+        <span class="waiting" title="You invited this sponsor to confirm on ${new Date(inv.created_at).toLocaleDateString()}. It becomes a real, verified campaign once they click the link and confirm — nothing else to do on your end.">Waiting on sponsor to confirm</span>
+      </div>
+    </div>
+  `).join('');
+
+  const campaignRows = (campaigns || []).map(c => `
     <div class="row-item">
       <div>
         <div style="font-weight:500">${escapeHtml(c.name)}</div>
@@ -382,24 +398,35 @@ async function loadCreatorCampaigns() {
       </div>
       <div id="dispute-msg-${c.id}"></div>
     </div>
-  `).join('') : `
+  `).join('');
+
+  const hasAny = (campaigns && campaigns.length) || (invites && invites.length);
+
+  const inviteToggle = `
+    <div style="text-align:${hasAny ? 'left' : 'center'};margin:${hasAny ? '16px 0' : '0'}">
+      <button class="confirm-btn" onclick="toggleInviteSponsorForm()">+ Invite a past sponsor to confirm</button>
+      <div id="invite-sponsor-form" style="display:none;max-width:340px;margin:16px ${hasAny ? '0' : 'auto'} 0;text-align:left">
+        <div class="field"><label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Sponsor email</label>
+          <input id="inv-email" type="email" placeholder="sponsor@brand.com" style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:13px"></div>
+        <div class="field"><label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Sponsor / company name <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+          <input id="inv-name" placeholder="e.g. Acme Co" style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:13px"></div>
+        <div class="field"><label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">What was the campaign? <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+          <input id="inv-desc" placeholder="e.g. Summer 2026 product launch" style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:13px"></div>
+        <button class="cta" id="invite-sponsor-btn" onclick="sendSponsorInvite()">Send confirmation invite</button>
+        <div id="invite-sponsor-msg"></div>
+      </div>
+    </div>`;
+
+  document.getElementById('list').innerHTML = hasAny
+    ? inviteRows + campaignRows + inviteToggle
+    : `
     <div style="text-align:center;padding:40px 20px">
       <div style="width:48px;height:48px;border-radius:0;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
         ${svgIcon('briefcase', {size:22, stroke:'var(--blue)'})}
       </div>
       <div style="font-size:14px;font-weight:600;color:var(--color-text-primary);margin-bottom:6px">No campaigns yet</div>
       <div style="font-size:12.5px;color:var(--color-text-secondary);max-width:320px;margin:0 auto;line-height:1.6">When a sponsor logs a campaign with you, it'll show up here for you to confirm — that mutual confirmation is what builds your trust score.</div>
-      <button class="confirm-btn" style="margin-top:16px" onclick="toggleInviteSponsorForm()">Invite a past sponsor to confirm</button>
-      <div id="invite-sponsor-form" style="display:none;max-width:340px;margin:16px auto 0;text-align:left">
-        <div class="field"><label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Sponsor email</label>
-          <input id="inv-email" type="email" placeholder="sponsor@brand.com" style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:13px"></div>
-        <div class="field" style="margin-top:8px"><label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Their name / company (optional)</label>
-          <input id="inv-name" type="text" placeholder="Acme Co." style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:13px"></div>
-        <div class="field" style="margin-top:8px"><label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">What was the campaign? (optional)</label>
-          <textarea id="inv-desc" placeholder="e.g. Instagram Reel for their spring launch, March 2026" style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:13px;min-height:60px"></textarea></div>
-        <button class="confirm-btn" style="width:100%;margin-top:10px" onclick="sendSponsorInvite()" id="invite-sponsor-btn">Send confirmation invite</button>
-        <div id="invite-sponsor-msg"></div>
-      </div>
+      ${inviteToggle}
     </div>`;
 
   renderHowItWorks();
