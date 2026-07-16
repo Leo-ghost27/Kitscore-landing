@@ -11,3 +11,24 @@ That specific theory doesn't hold up: there's no evidence anywhere (git history,
 ## The practice going forward
 
 Any future database change — a new function, trigger, RLS policy, or grant — should be added as a new dated file in this folder (`YYYY-MM-DD-short-description.sql`), committed in the same push as any related application code. This is the only way to keep git and the database schema from silently diverging again.
+
+## Before recreating any function, check the baseline first
+
+On 2026-07-15, two parallel sessions each ran a `DROP FUNCTION` +
+`CREATE FUNCTION` on `fn_get_evekit_profile` within hours of each
+other. Each session had a correct-at-the-time picture of the function,
+but neither checked what the *other* had just changed — so the second
+session's version silently reverted a column (`view_count`) the first
+had just added. It was caught by luck, on a manual audit, not by any
+process.
+
+**If you are about to `DROP`/`CREATE` (or otherwise fully rewrite) an
+existing function, trigger, or policy: check its current definition in
+`schema-baseline-*.sql` (the most recent dated file in this folder) or
+directly against live Postgres (`pg_get_functiondef`) first — not just
+what you remember writing, and not just what's live *right now* from a
+query, since another session may have a change in flight that hasn't
+been reflected anywhere you'd see it. Diff your intended change against
+that, not against a spec or memory of an earlier version.** This is
+the single highest-leverage check to prevent silent regressions when
+more than one session may be touching the schema.
