@@ -74,34 +74,40 @@ async function init() {
 }
 
 function renderInviteCard() {
+  const isCreatorConfirms = invite.invite_type === 'creator_confirms';
+  const askerName = isCreatorConfirms ? (invite.sponsor_company_name || 'A Kitscore sponsor') : invite.creator_display_name;
+  const confirmingEmail = isCreatorConfirms ? invite.creator_email : invite.sponsor_email;
+  const accountNoun = isCreatorConfirms ? 'creator' : 'sponsor';
+
   document.getElementById('card').innerHTML = `
-    <h1>${escapeHtml(invite.creator_display_name)} wants you to confirm a sponsorship</h1>
-    <p>Confirming takes a few seconds, creates your free Kitscore sponsor account, and lets you browse verified creators too. No password needed.</p>
+    <h1>${escapeHtml(askerName)} wants you to confirm a sponsorship</h1>
+    <p>Confirming takes a few seconds, creates your free Kitscore ${accountNoun} account, and ${isCreatorConfirms ? 'starts your verified trust score with this campaign already counted' : 'lets you browse verified creators too'}. No password needed.</p>
     ${(invite.description || invite.budget_range) ? `
     <div class="detail-box">
       ${invite.description ? `<div class="label">What they described</div><div class="value">${escapeHtml(invite.description)}</div>` : ''}
       ${invite.budget_range ? `<div class="label">Budget range</div><div class="value">${escapeHtml(invite.budget_range)}</div>` : ''}
     </div>` : ''}
-    <div class="email-line">Confirming as <b>${escapeHtml(invite.sponsor_email)}</b></div>
+    <div class="email-line">Confirming as <b>${escapeHtml(confirmingEmail)}</b></div>
     <button class="submit" id="submitBtn" onclick="sendMagicLink()">Confirm this sponsorship</button>
     <div id="msg"></div>
-    <p class="fineprint">We'll email a one-click confirmation link to ${escapeHtml(invite.sponsor_email)} — no password to set.</p>
+    <p class="fineprint">We'll email a one-click confirmation link to ${escapeHtml(confirmingEmail)} — no password to set.</p>
   `;
 }
 
 async function sendMagicLink() {
+  const isCreatorConfirms = invite.invite_type === 'creator_confirms';
+  const confirmingEmail = isCreatorConfirms ? invite.creator_email : invite.sponsor_email;
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   btn.textContent = 'Sending…';
 
   const { error } = await sb.auth.signInWithOtp({
-    email: invite.sponsor_email,
+    email: confirmingEmail,
     options: {
       emailRedirectTo: window.location.href,
-      data: {
-        role: 'sponsor',
-        display_name: invite.sponsor_name || invite.sponsor_email.split('@')[0],
-      },
+      data: isCreatorConfirms
+        ? { role: 'creator', display_name: invite.creator_name || invite.creator_email.split('@')[0] }
+        : { role: 'sponsor', display_name: invite.sponsor_name || invite.sponsor_email.split('@')[0] },
     },
   });
 
@@ -109,7 +115,7 @@ async function sendMagicLink() {
 
   document.getElementById('card').innerHTML = `
     <h1>Check your email</h1>
-    <p>We sent a confirmation link to <b>${escapeHtml(invite.sponsor_email)}</b>. Click it to confirm the sponsorship — no password needed.</p>
+    <p>We sent a confirmation link to <b>${escapeHtml(confirmingEmail)}</b>. Click it to confirm the sponsorship — no password needed.</p>
   `;
 }
 
@@ -119,17 +125,25 @@ async function tryConfirm() {
   const { data: { user } } = await sb.auth.getUser();
   if (user) await ensureProfile(user); // belt-and-suspenders in case the DB trigger hasn't landed yet
 
-  const { data: campaignId, error } = await sb.rpc('fn_confirm_campaign_invite', { p_token: token });
+  const isCreatorConfirms = invite.invite_type === 'creator_confirms';
+  const { data: campaignId, error } = await sb.rpc(
+    isCreatorConfirms ? 'fn_confirm_creator_campaign_invite' : 'fn_confirm_campaign_invite',
+    { p_token: token }
+  );
   if (error) { showError(error.message || 'Could not confirm this sponsorship.'); return; }
 
   showConfirmed();
 }
 
 function showConfirmed() {
+  const isCreatorConfirms = invite.invite_type === 'creator_confirms';
+  const askerName = isCreatorConfirms ? (invite.sponsor_company_name || 'this sponsor') : invite.creator_display_name;
   document.getElementById('card').innerHTML = `
     <h1>You're confirmed 🎉</h1>
-    <p>Thanks for confirming — this strengthens ${escapeHtml(invite.creator_display_name)}'s Kitscore, and you're now set up as a Kitscore sponsor too.</p>
-    <a href="directory.html" style="display:block;text-align:center;padding:11px;background:#2563EB;color:#fff;text-decoration:none;border-radius:var(--border-radius-sm);font-size:13.5px;font-weight:600">Browse verified creators →</a>
+    <p>Thanks for confirming — ${isCreatorConfirms ? `this campaign is now verified on your Kitscore, and you're set up as a Kitscore creator` : `this strengthens ${escapeHtml(askerName)}'s Kitscore, and you're now set up as a Kitscore sponsor too`}.</p>
+    ${isCreatorConfirms
+      ? `<a href="dashboard.html" style="display:block;text-align:center;padding:11px;background:#2563EB;color:#fff;text-decoration:none;border-radius:var(--border-radius-sm);font-size:13.5px;font-weight:600">Go to your dashboard →</a>`
+      : `<a href="directory.html" style="display:block;text-align:center;padding:11px;background:#2563EB;color:#fff;text-decoration:none;border-radius:var(--border-radius-sm);font-size:13.5px;font-weight:600">Browse verified creators →</a>`}
   `;
 }
 

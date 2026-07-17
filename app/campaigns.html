@@ -135,6 +135,16 @@ async function renderSponsorForm() {
           <option value="">Select a creator…</option>
           ${options.map(o => `<option value="${escapeHtml(o.id)}" ${o.id === preselect ? 'selected' : ''}>${escapeHtml(o.name)}</option>`).join('')}
         </select>
+        <button type="button" onclick="toggleInviteCreatorForm()" style="background:none;border:none;color:#2563EB;font-size:11.5px;cursor:pointer;padding:6px 0 0;text-align:left">Creator not listed? Invite them by email</button>
+      </div>
+      <div id="invite-creator-form" style="display:none;background:var(--color-background-secondary);border-radius:8px;padding:14px;margin:-4px 0 14px">
+        <div style="font-size:11.5px;color:var(--color-text-secondary);margin-bottom:10px">We'll email them a one-click link to confirm this campaign — it creates their free Kitscore creator account too, with this campaign already verified.</div>
+        <div class="field"><label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Creator email</label>
+          <input id="inv-creator-email" type="email" placeholder="creator@example.com" style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:13px"></div>
+        <div class="field"><label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Creator name <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+          <input id="inv-creator-name" placeholder="e.g. Jamie Lee" style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:13px"></div>
+        <button class="cta" id="invite-creator-btn" onclick="sendCreatorInvite()">Send confirmation invite</button>
+        <div id="invite-creator-msg"></div>
       </div>
       <div class="field"><label>Campaign name</label>
         <input id="campaignName" placeholder="e.g. Summer 2026 Product Launch">
@@ -149,6 +159,43 @@ async function renderSponsorForm() {
       <div id="formMsg"></div>
     </div>
   `;
+}
+
+function toggleInviteCreatorForm() {
+  const el = document.getElementById('invite-creator-form');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function sendCreatorInvite() {
+  const email = document.getElementById('inv-creator-email').value.trim();
+  const name = document.getElementById('inv-creator-name').value.trim();
+  const description = document.getElementById('objective').value.trim();
+  const budgetRange = document.getElementById('budgetRange').value.trim();
+  const msgEl = document.getElementById('invite-creator-msg');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    msgEl.innerHTML = '<div class="msg error">Enter a valid email address.</div>';
+    return;
+  }
+
+  const btn = document.getElementById('invite-creator-btn');
+  btn.disabled = true;
+  msgEl.innerHTML = '';
+
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch('/api/sponsor-actions?action=invite-creator', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+    body: JSON.stringify({ creatorEmail: email, creatorName: name, description, budgetRange }),
+  });
+  const j = await res.json();
+  btn.disabled = false;
+
+  if (!res.ok) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(j.error || 'Could not send invite.')}</div>`; return; }
+
+  msgEl.innerHTML = `<div class="msg ok">Invite sent to ${escapeHtml(email)}. It'll show up below as pending until they confirm.</div>`;
+  document.getElementById('inv-creator-email').value = '';
+  document.getElementById('inv-creator-name').value = '';
+  loadSponsorCampaigns();
 }
 
 async function logCampaign() {
@@ -182,11 +229,29 @@ async function logCampaign() {
 }
 
 async function loadSponsorCampaigns() {
-  const { data: campaigns, error } = await sb.from('campaigns')
-    .select('*, creators(profiles(display_name))').eq('sponsor_id', profile.id).order('created_at', { ascending: false });
+  const [{ data: campaigns, error }, { data: invites, error: invErr }] = await Promise.all([
+    sb.from('campaigns').select('*, creators(profiles(display_name))').eq('sponsor_id', profile.id).order('created_at', { ascending: false }),
+    sb.from('campaign_confirmation_invites').select('*').eq('sponsor_id', profile.id).eq('status', 'pending').order('created_at', { ascending: false }),
+  ]);
   if (error) { document.getElementById('list').innerHTML = 'Could not load: ' + escapeHtml(error.message); return; }
+  if (invErr) console.error('Could not load pending invites:', invErr.message);
 
-  document.getElementById('list').innerHTML = (campaigns && campaigns.length) ? campaigns.map(c => `
+  const inviteRows = (invites || []).map(inv => `
+    <div class="row-item">
+      <div>
+        <div style="font-weight:500">${escapeHtml(inv.description || 'Campaign invite')}</div>
+        <div style="color:var(--color-text-secondary);font-size:11px">${escapeHtml(inv.creator_name || inv.creator_email)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="status-tag st-pending">pending</span>
+        <span class="waiting" title="You invited this creator to confirm on ${new Date(inv.created_at).toLocaleDateString()}. It becomes a real, verified campaign once they click the link and confirm.">Waiting on creator to confirm</span>
+      </div>
+    </div>
+  `).join('');
+
+  const hasAny = (campaigns && campaigns.length) || (invites && invites.length);
+
+  document.getElementById('list').innerHTML = (campaigns && campaigns.length) ? inviteRows + campaigns.map(c => `
     <div class="row-item">
       <div>
         <div style="font-weight:500">${escapeHtml(c.name)}</div>
@@ -252,14 +317,14 @@ async function loadSponsorCampaigns() {
       </div>
       <div id="endorse-msg-${c.id}"></div>
     </div>` : ''}
-  `).join('') : `
+  `).join('') : (hasAny ? inviteRows : `
     <div style="text-align:center;padding:56px 40px">
       <div style="width:52px;height:52px;background:var(--blue-soft);margin:0 auto 18px;display:flex;align-items:center;justify-content:center">
         ${svgIcon('briefcase', {size:24, stroke:'var(--blue)'})}
       </div>
       <div style="font-size:15.5px;font-weight:600;color:var(--ink);margin-bottom:8px">No campaigns logged yet</div>
       <div style="font-size:13.5px;color:var(--ink-soft);max-width:400px;margin:0 auto;line-height:1.6">Use the form above to log your first one with a creator.</div>
-    </div>`;
+    </div>`);
 }
 
 // ── Endorsements (sponsor rates the creator on a verified campaign) ────────
