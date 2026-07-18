@@ -25,6 +25,7 @@ const ICON_PATHS = {
   'heart-filled': '<path d="M19.5 12.6l-7.5 7.5-7.5-7.5a5 5 0 0 1 7.5-6.6 5 5 0 0 1 7.5 6.6z" fill="currentColor" stroke="none"/>',
   flag: '<path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/>',
   'lock-open': '<rect x="5" y="11" width="14" height="9" rx="1"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>',
+  link: '<path d="M9 15l6-6"/><path d="M11 6l.4-.4a4 4 0 0 1 5.7 5.7l-2 2"/><path d="M13 18l-.4.4a4 4 0 0 1-5.7-5.7l2-2"/>',
 };
 
 function svgIcon(name, opts) {
