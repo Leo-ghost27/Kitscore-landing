@@ -871,9 +871,12 @@ function renderEvidenceTab() {
             ${yt.follower_count!=null?`${Number(yt.follower_count).toLocaleString()} subscribers · `:''}${yt.video_count!=null?`${Number(yt.video_count).toLocaleString()} videos · `:''}${yt.verification_method==='oauth'?'Verified':'Linked'} ${yt.last_synced_at?'· synced '+new Date(yt.last_synced_at).toLocaleDateString():''}
           </div>
         </div>
-        ${yt.verification_method==='oauth'
-          ? `<span style="font-size:10px;font-weight:600;color:#16A34A;background:#F0FDF4;padding:3px 8px;border-radius:10px;white-space:nowrap">Verified</span>`
-          : `<span style="font-size:10px;font-weight:600;color:#2563EB;background:#F0F6FF;padding:3px 8px;border-radius:10px;white-space:nowrap">Linked</span>`}
+        <div style="display:flex;align-items:center;gap:8px">
+          ${yt.verification_method==='oauth'
+            ? `<span style="font-size:10px;font-weight:600;color:#16A34A;background:#F0FDF4;padding:3px 8px;border-radius:10px;white-space:nowrap">Verified</span>`
+            : `<span style="font-size:10px;font-weight:600;color:#2563EB;background:#F0F6FF;padding:3px 8px;border-radius:10px;white-space:nowrap">Linked</span>`}
+          <button onclick="disconnectPlatform('youtube')" id="ytDisconnectBtn" style="font-size:10.5px;color:var(--color-text-tertiary);background:none;border:none;text-decoration:underline;cursor:pointer;padding:0;white-space:nowrap">Disconnect</button>
+        </div>
       </div>` : ''}
       <div style="display:flex;gap:8px">
         <input id="ytHandleInput" placeholder="YouTube @handle (e.g. mrbeast)" value="${escapeHtml(yt?.platform_handle||'')}" style="flex:1;padding:8px 10px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:6px">
@@ -901,7 +904,10 @@ function renderEvidenceTab() {
             ${tt.follower_count!=null?`${Number(tt.follower_count).toLocaleString()} followers · `:''}${tt.video_count!=null?`${Number(tt.video_count).toLocaleString()} videos · `:''}Verified ${tt.last_synced_at?'· synced '+new Date(tt.last_synced_at).toLocaleDateString():''}
           </div>
         </div>
-        <span style="font-size:10px;font-weight:600;color:#16A34A;background:#F0FDF4;padding:3px 8px;border-radius:10px;white-space:nowrap">Verified</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:10px;font-weight:600;color:#16A34A;background:#F0FDF4;padding:3px 8px;border-radius:10px;white-space:nowrap">Verified</span>
+          <button onclick="disconnectPlatform('tiktok')" id="ttDisconnectBtn" style="font-size:10.5px;color:var(--color-text-tertiary);background:none;border:none;text-decoration:underline;cursor:pointer;padding:0;white-space:nowrap">Disconnect</button>
+        </div>
       </div>` : ''}
       <button class="btn-primary" style="font-size:12px;padding:8px 16px;white-space:nowrap" onclick="connectTiktok()" id="ttConnectBtn">${tt?'Reconnect':'Connect with TikTok'}</button>
       <span id="ttConnectMsg" style="font-size:11px;display:block;margin-top:8px"></span>
@@ -1001,6 +1007,23 @@ function renderToolsTab() {
       </div>
     </div>
   `;
+}
+
+async function disconnectPlatform(platform){
+  const label = platform === 'youtube' ? 'YouTube' : 'TikTok';
+  if (!confirm(`Disconnect ${label}? This removes your ownership-verified connection and its stored access token. You can reconnect any time.`)) return;
+
+  const btn = document.getElementById(platform === 'youtube' ? 'ytDisconnectBtn' : 'ttDisconnectBtn');
+  const msgEl = document.getElementById(platform === 'youtube' ? 'ytConnectMsg' : 'ttConnectMsg');
+  if (btn) { btn.disabled = true; btn.textContent = 'Disconnecting…'; }
+
+  const { error } = await sb.rpc('fn_disconnect_platform', { p_platform: platform });
+  if (error) {
+    if (msgEl) { msgEl.textContent = error.message || `Could not disconnect ${label}.`; msgEl.style.color = '#DC2626'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Disconnect'; }
+    return;
+  }
+  location.reload();
 }
 
 async function connectYoutube(){
