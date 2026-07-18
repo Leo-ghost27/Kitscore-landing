@@ -1,0 +1,24 @@
+-- 2026-07-16-grant-brand-safety-scans-select.sql
+--
+-- Found via end-to-end testing of the new admin review board (not a
+-- user report): brand_safety_scans had the correct RLS policy
+-- (brand_safety_scans_admin_only, fn_is_admin()) but NO base table-level
+-- GRANT to the authenticated role at all. Postgres checks GRANT before
+-- RLS is ever evaluated, so a real admin querying this table via the
+-- Supabase client hit a hard permission-denied error before RLS could
+-- even run -- the exact "missing SELECT grant" pattern that's caused
+-- incidents before on this project.
+--
+-- Writes don't need this fix -- they go through the SECURITY DEFINER
+-- fn_admin_apply_brand_safety_scan RPC, which runs with the function
+-- owner's privileges regardless of the calling role's grants. Only the
+-- admin board's plain sb.from('brand_safety_scans').select() listing
+-- query needed this.
+--
+-- Verified fixed end-to-end with a throwaway admin+creator+scan,
+-- impersonating a real authenticated admin session (not just disabling
+-- RLS to check): list -> approve -> penalty correctly blended and
+-- applied (75, matching the LEAST() math) -> reject on a second scan
+-- correctly left the score untouched. All test data cleaned up after.
+
+GRANT SELECT ON public.brand_safety_scans TO authenticated;

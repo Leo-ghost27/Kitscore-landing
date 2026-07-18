@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brand Safety Review — Kitscore Admin</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .filters{display:flex;gap:8px;margin-bottom:14px}
+  .filters button{font-size:11px;padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:20px;background:none;cursor:pointer;color:var(--color-text-secondary)}
+  .filters button.active{background:#2563EB;color:#fff;border-color:#2563EB}
+  .row-item{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+  .row-item:last-child{border-bottom:none}
+  .row-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .row-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .row-main .fname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+  .row-meta{color:var(--color-text-tertiary);font-size:11px}
+  .row-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .status-tag{font-size:10px;padding:3px 8px;border-radius:10px;text-transform:capitalize;white-space:nowrap}
+  .st-clean{background:#E9F7EE;color:#1C7C3F}
+  .st-pending_review{background:#FEF6E7;color:#92600A}
+  .st-approved{background:#FDECEC;color:#B42318}
+  .st-rejected{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .cat-chip{font-size:10px;padding:2px 7px;border-radius:8px;background:#FDECEC;color:#B42318;margin-right:4px;display:inline-block}
+  .rationale{background:var(--color-background-secondary);border-radius:6px;padding:8px 10px;font-size:11.5px;color:var(--color-text-secondary)}
+  .btn-approve{font-size:11px;padding:6px 12px;border:none;border-radius:var(--border-radius-sm);background:#B42318;color:#fff;cursor:pointer}
+  .btn-reject{font-size:11px;padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);background:#fff;cursor:pointer}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
+  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  .empty{font-size:12px;color:var(--color-text-secondary);padding:20px 0;text-align:center}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Brand Safety Review</div>
+    <div class="card" style="background:var(--color-background-secondary);border:none">
+      <div style="font-size:11.5px;color:var(--color-text-secondary)">Clean scans auto-apply and need no action here. Flagged scans hold in <strong>Pending review</strong> and never touch a creator's live score until you approve or reject them — see the pattern note in <code>2026-07-13-brand-safety-scan.sql</code>.</div>
+    </div>
+    <div class="card">
+      <div class="sec">Filter</div>
+      <div class="filters" id="filters">
+        <button data-status="pending_review" class="active">Pending review</button>
+        <button data-status="all">All</button>
+        <button data-status="clean">Clean</button>
+        <button data-status="approved">Approved</button>
+        <button data-status="rejected">Rejected</button>
+      </div>
+      <div id="list" class="loading">Loading…</div>
+      <div id="msg"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="nav.js?v=2"></script>
+<script>
+let profile;
+let items = [];
+let activeFilter = 'pending_review';
+
+async function load() {
+  profile = await requireRole('admin');
+  if (!profile) return;
+  renderSidebar('admin', 'admin-brand-safety');
+
+  // Pre-select a specific scan if arriving from the email alert link
+  const preselect = new URLSearchParams(window.location.search).get('scan');
+  if (preselect) activeFilter = 'all';
+
+  const { data, error } = await sb.from('brand_safety_scans')
+    .select('*, creators(id, profiles(display_name, email))')
+    .order('scanned_at', { ascending: false });
+  if (error) { document.getElementById('list').textContent = 'Could not load: ' + error.message; return; }
+
+  items = data || [];
+  document.querySelectorAll('#filters button').forEach(b => b.classList.toggle('active', b.dataset.status === activeFilter));
+  render(preselect);
+}
+
+function render(highlightId) {
+  const filtered = activeFilter === 'all' ? items : items.filter(s => s.status === activeFilter);
+  const list = document.getElementById('list');
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty">Nothing in this view.</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(s => {
+    const creatorName = s.creators?.profiles?.display_name || 'Unknown creator';
+    const isPending = s.status === 'pending_review';
+    return `
+    <div class="row-item" ${s.id === highlightId ? 'style="background:#FFFBEB;margin:0 -14px;padding:12px 14px"' : ''}>
+      <div class="row-top">
+        <div class="row-main">
+          <span class="fname">${escapeHtml(creatorName)}</span>
+          <span class="row-meta">${escapeHtml(s.platform || '')} · ${s.video_count_scanned} videos scanned · ${new Date(s.scanned_at).toLocaleDateString()} · ${escapeHtml(s.model || '')}</span>
+        </div>
+        <div class="row-actions">
+          <span class="status-tag st-${s.status}">${s.status.replace('_',' ')}</span>
+          ${isPending ? `
+            <button class="btn-reject" onclick="decide('${s.id}','rejected')">Reject (false positive)</button>
+            <button class="btn-approve" onclick="decide('${s.id}','approved')">Approve (apply penalty)</button>
+          ` : ''}
+        </div>
+      </div>
+      ${s.categories && s.categories.length ? `<div>${s.categories.map(c => `<span class="cat-chip">${escapeHtml(c)}</span>`).join('')}</div>` : ''}
+      ${s.rationale ? `<div class="rationale">${escapeHtml(s.rationale)}</div>` : ''}
+    </div>
+  `;
+  }).join('');
+}
+
+async function decide(scanId, decision) {
+  if (decision === 'approved' && !confirm('This will apply a real penalty to the creator\'s live brand_safety score. Continue?')) return;
+
+  const { error } = await sb.rpc('fn_admin_apply_brand_safety_scan', { p_scan_id: scanId, p_decision: decision });
+  if (error) { showMsg('Could not update: ' + error.message, 'error'); return; }
+
+  const item = items.find(s => s.id === scanId);
+  if (item) item.status = decision;
+  render();
+  showMsg(decision === 'approved' ? 'Approved — score updated.' : 'Rejected — no score change.', 'ok');
+}
+
+function showMsg(text, type) {
+  const el = document.getElementById('msg');
+  el.innerHTML = `<div class="msg ${type}">${text}</div>`;
+  setTimeout(() => { el.innerHTML = ''; }, 3000);
+}
+
+document.getElementById('filters').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-status]');
+  if (!btn) return;
+  activeFilter = btn.dataset.status;
+  document.querySelectorAll('#filters button').forEach(b => b.classList.toggle('active', b === btn));
+  render();
+});
+
+load();
+</script>
+</body>
+</html>
