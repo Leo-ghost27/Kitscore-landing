@@ -18,7 +18,8 @@
     { "source": "/ek/:slug*", "destination": "/media-kit/:slug*", "permanent": true }
   ],
   "crons": [
-    { "path": "/api/cron-evidence-nudges", "schedule": "0 9 * * 1" }
+    { "path": "/api/cron?job=evidence-nudges", "schedule": "0 9 * * 1" },
+    { "path": "/api/cron?job=twitch-validate", "schedule": "0 4 * * *" }
   ],
   "headers": [
     {
