@@ -4,7 +4,7 @@
 // one function -- both were small, both were Stripe-only, and Vercel's
 // Hobby plan caps us at 12 serverless functions. See docs/session-handoff
 // for the July 2026 API-route consolidation that introduced this pattern
-// (also used by /api/team.js, /api/creator-actions.js, /api/documents.js).
+// (also used by /api/team.js, /api/campaign-actions.js, /api/documents.js).
 //
 // Body/behavior for each action is unchanged from the original routes --
 // only the URL changed (from a dedicated path to ?action=on this one).
