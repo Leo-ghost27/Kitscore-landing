@@ -342,6 +342,29 @@ function copyProfileLink() {
   });
 }
 
+function copyBadgeLink() {
+  const el = document.getElementById('badge-link-text');
+  const msg = document.getElementById('badge-copy-msg');
+  navigator.clipboard.writeText(el.value).then(() => {
+    msg.style.color = '#16A34A';
+    msg.textContent = 'Link copied — paste it as a new button on your bio-link page.';
+    setTimeout(() => { msg.textContent = ''; }, 3000);
+  });
+}
+
+function copyBadgeEmbed() {
+  const el = document.getElementById('badge-embed-text');
+  const msg = document.getElementById('badge-copy-msg');
+  // The input displays HTML-escaped for readability; copy the real,
+  // unescaped markup so it works when pasted.
+  const raw = `<a href="https://kitscore.co/p/${creator.slug || ''}"><img src="https://kitscore.co/badge/${creator.slug || ''}.svg" alt="Verified by Kitscore"></a>`;
+  navigator.clipboard.writeText(raw).then(() => {
+    msg.style.color = '#16A34A';
+    msg.textContent = 'Embed code copied.';
+    setTimeout(() => { msg.textContent = ''; }, 3000);
+  });
+}
+
 // Sample trend used only for the free-tier locked preview -- never real data.
 const SAMPLE_HISTORY_PREVIEW = [40, 44, 43, 51, 58, 55, 63, 68, 71, 74];
 
@@ -846,6 +869,26 @@ function renderProfileTab() {
         </div>
         <button class="confirm-btn" style="background:#2563EB;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer" onclick="copyProfileLink()">Copy link</button>
       </div>
+    </div>
+
+    <!-- ── Embeddable trust badge ── -->
+    <div class="card" style="background:#FAFAF8">
+      <div style="font-size:13.5px;font-weight:600;color:var(--ink,#0F1B2E);margin-bottom:4px">Verified badge</div>
+      <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:12px">Drop this into your Beacons, Linktree, or any bio-link page as its own button — works anywhere that accepts a link, no custom code needed. Always shows your live score.</div>
+      <div style="margin-bottom:12px">
+        <img src="https://kitscore.co/badge/${creator.slug||''}.svg" alt="Verified by Kitscore badge preview" style="display:block">
+      </div>
+      <label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Badge link — use as a link-in-bio button</label>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input id="badge-link-text" readonly value="https://kitscore.co/p/${creator.slug||''}" style="flex:1;font-family:var(--font-mono,monospace);font-size:11px;color:#5B4FCF;padding:8px 10px;border:1px solid var(--color-border-tertiary);border-radius:6px;background:#fff">
+        <button class="confirm-btn" style="background:#fff;color:#5B4FCF;border:1px solid #DCD6FA;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap" onclick="copyBadgeLink()">Copy link</button>
+      </div>
+      <label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Embed code — for a personal site, README, or anywhere that accepts HTML</label>
+      <div style="display:flex;gap:8px">
+        <input id="badge-embed-text" readonly value='&lt;a href="https://kitscore.co/p/${creator.slug||''}"&gt;&lt;img src="https://kitscore.co/badge/${creator.slug||''}.svg" alt="Verified by Kitscore"&gt;&lt;/a&gt;' style="flex:1;font-family:var(--font-mono,monospace);font-size:10.5px;color:var(--color-text-secondary);padding:8px 10px;border:1px solid var(--color-border-tertiary);border-radius:6px;background:#fff">
+        <button class="confirm-btn" style="background:#fff;color:#5B4FCF;border:1px solid #DCD6FA;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap" onclick="copyBadgeEmbed()">Copy code</button>
+      </div>
+      <div id="badge-copy-msg" style="font-size:11px;margin-top:8px"></div>
     </div>
 
 
