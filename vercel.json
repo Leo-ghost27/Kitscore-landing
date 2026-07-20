@@ -20,7 +20,9 @@
   ],
   "crons": [
     { "path": "/api/cron?job=evidence-nudges", "schedule": "0 9 * * 1" },
-    { "path": "/api/cron?job=twitch-validate", "schedule": "0 4 * * *" }
+    { "path": "/api/cron?job=twitch-validate", "schedule": "0 4 * * *" },
+    { "path": "/api/cron?job=youtube-resync", "schedule": "0 5 * * *" },
+    { "path": "/api/cron?job=tiktok-resync", "schedule": "0 6 * * *" }
   ],
   "headers": [
     {
