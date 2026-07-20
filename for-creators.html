@@ -64,7 +64,7 @@
   .counter-num { text-align: left; font-size: 12.5px; color: var(--text); font-weight: 600; margin-top: 8px; }
 
   /* ── Flip card ───────────────────────────────────────────────────────── */
-  .hero-visual { perspective: 1600px; display: flex; justify-content: center; }
+  .hero-visual { perspective: 1600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .flip-card { position: relative; width: 100%; max-width: 320px; height: 400px; cursor: pointer; transform-style: preserve-3d; }
   .flip-card-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transform: rotateX(0) rotateY(0); }
   .flip-card-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: var(--shadow-md); display: flex; flex-direction: column; padding: 30px 26px; }
