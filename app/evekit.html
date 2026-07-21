@@ -236,7 +236,7 @@ function renderKit(kit, opts) {
         </div>
       </div>
       <div class="cover-footer">
-        <span>Generated ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})} · always reflects live Kitscore data</span>
+        <span>Generated ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})} · always reflects live Kitscore data${kit.verifiedSince ? ` · Verified since ${new Date(kit.verifiedSince).toLocaleDateString('en-US',{year:'numeric',month:'long'})}` : ''}</span>
         <span class="kit-brand">Kitscore.co</span>
       </div>
     </div>
@@ -396,6 +396,14 @@ async function loadOwnerKit(profile) {
   const verified = (campaigns||[]).filter(x=>x.creator_confirmed&&x.sponsor_confirmed);
   const platforms = (platformConnections||[]).filter(p=>p.follower_count!=null).sort((a,b)=>b.follower_count-a.follower_count);
   const audByDim = (dim) => (audience||[]).filter(r=>r.dimension===dim).sort((a,b)=>b.pct-a.pct).map(r=>({label:r.label,pct:r.pct}));
+  // Earliest connected_at among currently-connected OAuth platforms --
+  // mirrors fn_get_evekit_profile's verified_since exactly, computed
+  // client-side here since owner-mode already has this data from
+  // fn_creator_platform_summary and doesn't need a second query.
+  const oauthConnectedDates = (platformConnections||[])
+    .filter(p=>p.verification_method==='oauth' && p.connected_at)
+    .map(p=>p.connected_at);
+  const verifiedSince = oauthConnectedDates.length ? oauthConnectedDates.sort()[0] : null;
 
   const kit = {
     displayName: profile.display_name, bio: c.bio, niche: c.niche, location: c.location,
@@ -405,6 +413,7 @@ async function loadOwnerKit(profile) {
     audienceCountries: audByDim('country'), audienceAges: audByDim('age'), audienceGenders: audByDim('gender'),
     platforms, campaigns: verified, avatarUrl: c.avatar_url, galleryImages: c.gallery_images || [],
     collaborations: collabs || [], pressMentions: press || [], availableFor: c.available_for || [], causes: c.causes || [], theme: c.theme,
+    verifiedSince,
   };
 
   const link = `https://kitscore.co/media-kit/${c.slug || ''}`;
@@ -486,6 +495,7 @@ async function loadPublicKit(slug) {
     avatarUrl: row.avatar_url, galleryImages: row.gallery_images || [],
     collaborations: row.collaborations || [], pressMentions: row.press_mentions || [],
     availableFor: row.available_for || [], causes: row.causes || [], theme: row.theme,
+    verifiedSince: row.verified_since,
   };
   renderKit(kit, { isOwner: false, slug });
 
