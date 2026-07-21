@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Privacy Policy · Kitscore</title>
-<meta name="description" content="How Kitscore collects, uses, and protects data for creators and sponsors using the platform.">
+<meta name="description" content="How Kitscore collects, uses, and protects data for creators and sponsors using the platform, including connected YouTube, TikTok, Instagram, and Twitch accounts.">
 <style>
   body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; max-width: 760px; margin: 0 auto; padding: 60px 24px 100px; color: #1a1a2e; line-height: 1.65; }
   h1 { font-size: 2rem; margin-bottom: 4px; }
@@ -44,10 +44,10 @@
 </nav>
 
 <h1>Privacy Policy</h1>
-<p class="meta">Last updated: July 14, 2026</p>
+<p class="meta">Last updated: July 21, 2026</p>
 
 <div class="notice">
-This is a working draft prepared to match Kitscore's current product (accounts, evidence uploads, evaluations, Stripe billing, and mutual campaign confirmation). It is not legal advice. Have a lawyer review it for GDPR, UK GDPR, and CCPA compliance before relying on it at scale, particularly around evidence retention and cross-border data transfer if you have EU/UK users.
+This is a working draft prepared to match Kitscore's current product (accounts, evidence uploads, evaluations, Stripe billing, connected YouTube/TikTok/Instagram/Twitch accounts, and mutual campaign confirmation). It is not legal advice. Have a lawyer review it for GDPR, UK GDPR, and CCPA compliance before relying on it at scale, particularly around evidence retention, cross-border data transfer if you have EU/UK users, and Meta's Platform Terms for the Instagram integration.
 </div>
 
 <h2>1. Who we are</h2>
@@ -59,7 +59,7 @@ This is a working draft prepared to match Kitscore's current product (accounts, 
 <tr><td>Account data</td><td>Name/company name, email, password (hashed), account role (creator or sponsor)</td><td>Everyone with an account</td></tr>
 <tr><td>Profile data</td><td>Niche, location, business email, supported platforms</td><td>Creators</td></tr>
 <tr><td>Evidence you submit</td><td>Screenshots, analytics exports, campaign documentation, brand safety questionnaire answers</td><td>Creators</td></tr>
-<tr><td>Platform connection data</td><td>When you connect a YouTube or TikTok account, we receive your channel/account ID, display name or handle, and public statistics (subscriber/follower count, view count, video count). For YouTube, this is read via the <code>youtube.readonly</code> scope, limited to the channel belonging to the Google account you sign in with — we cannot see any other Google data, and we never request access to upload, edit, or delete anything on your channel.</td><td>Creators who connect a platform account</td></tr>
+<tr><td>Platform connection data</td><td>When you connect a YouTube, TikTok, Instagram, or Twitch account, we receive your channel/account ID, display name or handle, and public statistics (follower/subscriber count, view count, video/post count, as available from that platform). For YouTube, this is read via the <code>youtube.readonly</code> scope, limited to the channel belonging to the Google account you sign in with. For Instagram, this is read via Meta's Instagram Graph API using read-only scopes tied to the Instagram professional account you authorize. For Twitch, this is read via the Twitch API using read-only scopes tied to the Twitch account you authorize. In every case we never request access to post, upload, edit, or delete anything on your connected account.</td><td>Creators who connect a platform account</td></tr>
 <tr><td>Campaign &amp; evaluation data</td><td>Campaign briefs, mutual confirmations, sponsor ratings/endorsements, evaluation requests and outputs</td><td>Creators &amp; sponsors</td></tr>
 <tr><td>Billing data</td><td>Payment processed by Stripe — we receive confirmation of payment and a Stripe customer reference, not your full card number</td><td>Anyone making a paid purchase</td></tr>
 <tr><td>Usage data</td><td>Pages visited, session activity, basic device/browser info, via essential cookies and standard server logs</td><td>All visitors</td></tr>
@@ -68,7 +68,7 @@ This is a working draft prepared to match Kitscore's current product (accounts, 
 <h2>3. How we use it</h2>
 <ul>
 <li>To create and run your account, and to generate Trust Scores, Reliability Scores, and evaluation reports.</li>
-<li>To verify that you own the YouTube or TikTok account you claim, and to pull public channel statistics that feed into your Trust Score and Reliability Score.</li>
+<li>To verify that you own the YouTube, TikTok, Instagram, or Twitch account you claim, and to pull public channel/account statistics that feed into your Trust Score and Reliability Score.</li>
 <li>To process payments and manage subscriptions via Stripe.</li>
 <li>To verify evidence and facilitate mutual campaign confirmation between creators and sponsors.</li>
 <li>To detect fraud, fake evidence, or abuse of the scoring system.</li>
@@ -93,41 +93,68 @@ This is a working draft prepared to match Kitscore's current product (accounts, 
 </ul>
 <p>Kitscore's use of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
 
-<h2>6. Who we share data with</h2>
+<h2>6. Meta (Instagram) data specifically</h2>
+<p>If you connect your Instagram account, Kitscore's use of the resulting Meta/Instagram data is limited as follows:</p>
+<ul>
+<li><strong>What we access:</strong> read-only access to the Instagram professional (Business or Creator) account you authorize via Meta Login and the Instagram Graph API — your Instagram user ID, username, account type, and public statistics (follower count, media count, and basic engagement metrics where the API makes them available). We do not request permission to post, message, or edit anything on your behalf.</li>
+<li><strong>What it's used for:</strong> confirming you own the Instagram account you claim, and computing the Trust Score and Reliability Score metrics shown on your profile. It is not used for any other purpose.</li>
+<li><strong>AI/ML training:</strong> data obtained through this connection is not used to develop, improve, or train any AI or machine learning models, and is not transferred to any third-party service for that purpose.</li>
+<li><strong>Sharing:</strong> data obtained this way is not sold, and is not shared with advertisers or data brokers. It is stored with our infrastructure provider (Supabase, see below) solely to operate the Service.</li>
+<li><strong>Retention:</strong> we retain the access token and account statistics for as long as the connection remains active on your account, or until you ask us to remove it.</li>
+<li><strong>Revoking access &amp; deletion:</strong> you can revoke Kitscore's access at any time from your Instagram or Facebook account settings (Apps and Websites), and you can request deletion of the Instagram data we hold using the process on our <a href="/data-deletion.html">Data Deletion Instructions</a> page.</li>
+</ul>
+<p>Kitscore's use of information received from Meta APIs adheres to the <a href="https://developers.facebook.com/terms/" target="_blank" rel="noopener">Meta Platform Terms</a> and <a href="https://developers.facebook.com/devpolicy/" target="_blank" rel="noopener">Developer Policies</a>.</p>
+
+<h2>7. Twitch data specifically</h2>
+<p>If you connect your Twitch account, Kitscore's use of the resulting Twitch data is limited as follows:</p>
+<ul>
+<li><strong>What we access:</strong> read-only access to the Twitch account you authorize via Twitch OAuth — your Twitch user ID, display name, and public statistics (follower count, channel/account creation date, and stream/VOD metadata where the API makes it available). We do not request permission to stream, moderate, or post on your behalf.</li>
+<li><strong>What it's used for:</strong> confirming you own the Twitch account you claim, and computing the Trust Score and Reliability Score metrics shown on your profile. It is not used for any other purpose.</li>
+<li><strong>AI/ML training:</strong> data obtained through this connection is not used to develop, improve, or train any AI or machine learning models, and is not transferred to any third-party service for that purpose.</li>
+<li><strong>Sharing:</strong> data obtained this way is not sold, and is not shared with advertisers or data brokers. It is stored with our infrastructure provider (Supabase, see below) solely to operate the Service.</li>
+<li><strong>Retention:</strong> we retain the access token and account statistics for as long as the connection remains active on your account, or until you ask us to remove it.</li>
+<li><strong>Revoking access &amp; deletion:</strong> you can revoke Kitscore's access at any time from your <a href="https://www.twitch.tv/settings/connections" target="_blank" rel="noopener">Twitch connected accounts settings</a>, and you can request deletion of the Twitch data we hold using the process on our <a href="/data-deletion.html">Data Deletion Instructions</a> page.</li>
+</ul>
+<p>Kitscore's use of information received from the Twitch API adheres to the <a href="https://www.twitch.tv/p/legal/developer-agreement/" target="_blank" rel="noopener">Twitch Developer Agreement</a> and <a href="https://www.twitch.tv/p/legal/developer-agreement/services-agreement/" target="_blank" rel="noopener">Twitch Developer Services Agreement</a>.</p>
+
+<h2>8. Who we share data with</h2>
 <table>
 <tr><th>Provider</th><th>Purpose</th></tr>
 <tr><td>Supabase</td><td>Database, authentication, and file storage for accounts, evidence, and evaluation data</td></tr>
 <tr><td>Stripe</td><td>Payment processing for evaluations and subscriptions</td></tr>
 <tr><td>YouTube Data API (Google)</td><td>Source of channel statistics when you connect a YouTube account — see Section 5. This is a data source we read from, not a party we share your Kitscore data with.</td></tr>
 <tr><td>TikTok API</td><td>Source of account statistics when you connect a TikTok account. This is a data source we read from, not a party we share your Kitscore data with.</td></tr>
+<tr><td>Instagram Graph API (Meta)</td><td>Source of account statistics when you connect an Instagram account — see Section 6. This is a data source we read from, not a party we share your Kitscore data with.</td></tr>
+<tr><td>Twitch API</td><td>Source of account statistics when you connect a Twitch account — see Section 7. This is a data source we read from, not a party we share your Kitscore data with.</td></tr>
 </table>
 <p>Each processes data on our behalf under its own data processing terms. We don't share your information with any other third party except where required by law, to investigate fraud, or to protect the rights and safety of our users.</p>
 
-<h2>7. Cookies</h2>
+<h2>9. Cookies</h2>
 <p>We use essential cookies/local storage required to keep you signed in and to operate the Service securely. We do not currently use third-party advertising or tracking cookies. If that changes, we'll update this policy and add a cookie notice.</p>
 
-<h2>8. How long we keep data</h2>
+<h2>10. How long we keep data</h2>
 <ul>
 <li><strong>Account &amp; profile data:</strong> kept while your account is active, and for a reasonable period after closure for legal, tax, and fraud-prevention purposes.</li>
 <li><strong>Evidence &amp; evaluation records:</strong> kept to preserve the integrity of historical scores and Verified Campaign records, even if a profile is later deactivated, unless deletion is legally required.</li>
 <li><strong>Billing records:</strong> kept as required for tax and accounting purposes.</li>
 </ul>
 
-<h2>9. Your choices</h2>
-<p>You can ask us to access, correct, or delete the data we hold about you by emailing <a href="mailto:hello@kitscore.co">hello@kitscore.co</a>. Note that deleting evidence tied to a mutually confirmed campaign may affect the accuracy of your historical score, and we may be required to retain certain billing records regardless of a deletion request. If you're in the EU, UK, or California, you have specific rights under GDPR, UK GDPR, or the CCPA that we'll honor on request.</p>
+<h2>11. Your choices</h2>
+<p>You can ask us to access, correct, or delete the data we hold about you by emailing <a href="mailto:hello@kitscore.co">hello@kitscore.co</a>, or, for connected-platform data specifically, using our <a href="/data-deletion.html">Data Deletion Instructions</a>. Note that deleting evidence tied to a mutually confirmed campaign may affect the accuracy of your historical score, and we may be required to retain certain billing records regardless of a deletion request. If you're in the EU, UK, or California, you have specific rights under GDPR, UK GDPR, or the CCPA that we'll honor on request.</p>
 
-<h2>10. Children's privacy</h2>
+<h2>12. Children's privacy</h2>
 <p>Kitscore is intended for creators and sponsors who are 18 or older, and is not directed at children. We don't knowingly collect data from anyone under 18.</p>
 
-<h2>11. Security</h2>
+<h2>13. Security</h2>
 <p>We use reasonable technical and organizational measures to protect your data, including access controls on our database (row-level security) and encrypted payment processing via Stripe. No system is 100% secure, and we can't guarantee absolute security.</p>
 
-<h2>12. Changes to this policy</h2>
+<h2>14. Changes to this policy</h2>
 <p>If we materially change how we collect or use your data, we'll update the date at the top of this page and, where appropriate, notify you directly.</p>
 
-<h2>13. Contact</h2>
+<h2>15. Contact</h2>
 <p>General &amp; privacy requests: <a href="mailto:hello@kitscore.co">hello@kitscore.co</a><br>
-Billing-related data: <a href="mailto:billing@kitscore.co">billing@kitscore.co</a></p>
+Billing-related data: <a href="mailto:billing@kitscore.co">billing@kitscore.co</a><br>
+Platform data deletion requests: see our <a href="/data-deletion.html">Data Deletion Instructions</a></p>
 
 <footer style="margin-top:60px;border-top:0.5px solid #222;padding:28px 2rem;background:#111318;color:#9CA3AF;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:0.85rem">
   <span>Kitscore.co · GHG Consulting LLC · © 2026</span>
@@ -137,6 +164,7 @@ Billing-related data: <a href="mailto:billing@kitscore.co">billing@kitscore.co</
     <span style="width:1px;height:12px;background:#333"></span>
     <a href="https://www.kitscore.co/privacy.html" style="color:#9CA3AF;text-decoration:none">Privacy</a>
     <a href="https://www.kitscore.co/terms.html" style="color:#9CA3AF;text-decoration:none">Terms</a>
+    <a href="https://www.kitscore.co/data-deletion.html" style="color:#9CA3AF;text-decoration:none">Data Deletion</a>
   </div>
 </footer>
 
