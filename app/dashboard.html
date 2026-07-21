@@ -955,6 +955,7 @@ function renderEvidenceTab() {
   const yt = (platformConnections||[]).find(p=>p.platform==='youtube');
   const tt = (platformConnections||[]).find(p=>p.platform==='tiktok');
   const tw = (platformConnections||[]).find(p=>p.platform==='twitch');
+  const ig = (platformConnections||[]).find(p=>p.platform==='instagram');
   return `
     <!-- ── Connect platforms ── -->
     <div class="card">
@@ -1047,6 +1048,34 @@ function renderEvidenceTab() {
     </div>
 
     <div id="twitchStatusBanner"></div>
+
+    <!-- ── Connect Instagram (OAuth — ownership-verified) ── -->
+    <div class="card">
+      <div class="sec" style="display:flex;align-items:center;gap:8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E4405F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="#E4405F" stroke="none"/></svg>
+        Connect Instagram
+      </div>
+      <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:14px;line-height:1.6">
+        Sign in with Instagram to prove you own the account. Ownership-verified, same as TikTok and Twitch above — it's labelled "Verified" and counts as verified evidence toward your Confidence score. Requires a Business or Creator account.
+      </div>
+      ${ig ? `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:var(--color-background-secondary);border-radius:8px;margin-bottom:10px">
+        <div>
+          <div style="font-size:12.5px;font-weight:600">${escapeHtml(ig.platform_handle||'Instagram account')}</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary)">
+            ${ig.follower_count!=null?`${Number(ig.follower_count).toLocaleString()} followers · `:''}Verified ${ig.last_synced_at?'· synced '+new Date(ig.last_synced_at).toLocaleDateString():''}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:10px;font-weight:600;color:#16A34A;background:#F0FDF4;padding:3px 8px;border-radius:10px;white-space:nowrap">Verified</span>
+          <button onclick="disconnectPlatform('instagram')" id="igDisconnectBtn" style="font-size:10.5px;color:var(--color-text-tertiary);background:none;border:none;text-decoration:underline;cursor:pointer;padding:0;white-space:nowrap">Disconnect</button>
+        </div>
+      </div>` : ''}
+      <button class="btn-primary" style="font-size:12px;padding:8px 16px;white-space:nowrap" onclick="connectInstagram()" id="igConnectBtn">${ig?'Reconnect':'Connect with Instagram'}</button>
+      <span id="igConnectMsg" style="font-size:11px;display:block;margin-top:8px"></span>
+    </div>
+
+    <div id="instagramStatusBanner"></div>
 
 
     <!-- ── Evidence ── -->
@@ -1148,6 +1177,7 @@ async function disconnectPlatform(platform){
     youtube: { label: 'YouTube', btnId: 'ytDisconnectBtn', msgId: 'ytConnectMsg' },
     tiktok:  { label: 'TikTok',  btnId: 'ttDisconnectBtn', msgId: 'ttConnectMsg' },
     twitch:  { label: 'Twitch',  btnId: 'twDisconnectBtn', msgId: 'twConnectMsg' },
+    instagram: { label: 'Instagram', btnId: 'igDisconnectBtn', msgId: 'igConnectMsg' },
   }[platform] || { label: platform, btnId: null, msgId: null };
 
   if (!confirm(`Disconnect ${meta.label}? This removes your ownership-verified connection and its stored access token. You can reconnect any time.`)) return;
@@ -1318,6 +1348,75 @@ async function connectTwitch(){
     btn.disabled = false;
     btn.textContent = originalLabel;
   }
+}
+
+async function connectInstagram(){
+  const btn = document.getElementById('igConnectBtn');
+  const msgEl = document.getElementById('igConnectMsg');
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Redirecting…';
+  msgEl.textContent = '';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/instagram-oauth?action=start', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`,
+      },
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || !j.authorizeUrl) {
+      msgEl.textContent = j.error || 'Could not start Instagram connection.';
+      msgEl.style.color = '#DC2626';
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      return;
+    }
+    // Full-page navigation to Instagram's consent screen -- it redirects
+    // back to /api/instagram-oauth?action=callback, which then redirects
+    // here with ?instagram_connected=1 or ?instagram_error=..., handled
+    // by showInstagramStatusFromQuery() on load below.
+    window.location.href = j.authorizeUrl;
+  } catch (err) {
+    msgEl.textContent = 'Error: ' + err.message;
+    msgEl.style.color = '#DC2626';
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+}
+
+// Reads ?instagram_connected=1 / ?instagram_error=... left by the OAuth
+// callback redirect, shows a one-time banner, then strips the params from
+// the URL so a page refresh doesn't re-show it. Same shape as
+// showTwitchStatusFromQuery() below.
+function showInstagramStatusFromQuery(){
+  const params = new URLSearchParams(window.location.search);
+  const connected = params.get('instagram_connected');
+  const error = params.get('instagram_error');
+  if (!connected && !error) return;
+
+  const banner = document.getElementById('instagramStatusBanner');
+  if (banner) {
+    const messages = {
+      missing_params: 'Instagram connection was cancelled or incomplete.',
+      invalid_state: 'That Instagram connection link expired or was already used — please try connecting again.',
+      platform_cap: 'Free plan is limited to one OAuth-verified platform. Upgrade to Pro for unlimited platforms.',
+      save_failed: 'Instagram connected, but saving it failed — please try again.',
+    };
+    const text = connected
+      ? 'Instagram account connected and verified.'
+      : (messages[error] || `Instagram connection failed: ${error}`);
+    const color = connected ? '#16A34A' : '#DC2626';
+    banner.innerHTML = `<div style="font-size:12px;color:${color};padding:10px 12px;background:${connected?'#F0FDF4':'#FEF2F2'};border-radius:8px;margin-bottom:14px">${escapeHtml(text)}</div>`;
+  }
+
+  params.delete('instagram_connected');
+  params.delete('instagram_error');
+  const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+  window.history.replaceState({}, '', newUrl);
 }
 
 // Reads ?twitch_connected=1 / ?twitch_error=... left by the OAuth
@@ -1678,7 +1777,7 @@ if (window.location.search.includes('twitch_connected') || window.location.searc
   activeTab = 'evidence';
 }
 
-load().then(() => { showYoutubeStatusFromQuery(); showTiktokStatusFromQuery(); showTwitchStatusFromQuery(); initRateCalc(); });
+load().then(() => { showYoutubeStatusFromQuery(); showTiktokStatusFromQuery(); showTwitchStatusFromQuery(); showInstagramStatusFromQuery(); initRateCalc(); });
 </script>
 <script>
 if ('serviceWorker' in navigator) {

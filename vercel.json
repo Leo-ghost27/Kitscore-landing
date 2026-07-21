@@ -13,7 +13,8 @@
     { "source": "/media-kit/:slug*", "destination": "/app/evekit?slug=:slug*" },
     { "source": "/api/tiktok-oauth", "destination": "/api/oauth?provider=tiktok" },
     { "source": "/api/youtube-oauth-callback", "destination": "/api/oauth?provider=youtube" },
-    { "source": "/api/twitch-oauth", "destination": "/api/oauth?provider=twitch" }
+    { "source": "/api/twitch-oauth", "destination": "/api/oauth?provider=twitch" },
+    { "source": "/api/instagram-oauth", "destination": "/api/oauth?provider=instagram" }
   ],
   "redirects": [
     { "source": "/ek/:slug*", "destination": "/media-kit/:slug*", "permanent": true }

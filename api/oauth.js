@@ -1,19 +1,20 @@
-// GET/POST /api/tiktok-oauth, /api/youtube-oauth-callback, and
-// /api/twitch-oauth all land here -- see the three rewrites in
-// vercel.json. This merges what would otherwise be separate serverless
-// functions per provider into one, staying under Vercel's Hobby plan
-// function-count cap.
+// GET/POST /api/tiktok-oauth, /api/youtube-oauth-callback,
+// /api/twitch-oauth, and /api/instagram-oauth all land here -- see the
+// four rewrites in vercel.json. This merges what would otherwise be
+// separate serverless functions per provider into one, staying under
+// Vercel's Hobby plan function-count cap.
 //
 // Critically, this does NOT change any provider's registered
 // redirect_uri. TikTok's Redirect URI field rejects any URI containing
-// query parameters, and Google's/Twitch's must match exactly what's
-// registered in their respective developer consoles -- so all external
-// URLs stay exactly as-is (https://kitscore.co/api/tiktok-oauth,
+// query parameters, and Google's/Twitch's/Meta's must match exactly
+// what's registered in their respective developer consoles -- so all
+// external URLs stay exactly as-is (https://kitscore.co/api/tiktok-oauth,
 // https://kitscore.co/api/youtube-oauth-callback,
-// https://kitscore.co/api/twitch-oauth -- no query string as far as any
-// provider is concerned). The rewrite in vercel.json appends
-// ?provider=tiktok|youtube|twitch server-side, invisible to the
-// external request -- Vercel resolves it to this one function file
+// https://kitscore.co/api/twitch-oauth,
+// https://kitscore.co/api/instagram-oauth -- no query string as far as
+// any provider is concerned). The rewrite in vercel.json appends
+// ?provider=tiktok|youtube|twitch|instagram server-side, invisible to
+// the external request -- Vercel resolves it to this one function file
 // before the provider's redirect is ever seen by application code.
 //
 // Within each provider, dispatch is still by HTTP method, same
@@ -34,6 +35,8 @@ const youtubeStart = require('../lib/handlers/youtube-oauth-start');
 const youtubeCallback = require('../lib/handlers/youtube-oauth-callback');
 const twitchStart = require('../lib/handlers/twitch-oauth-start');
 const twitchCallback = require('../lib/handlers/twitch-oauth-callback');
+const instagramStart = require('../lib/handlers/instagram-oauth-start');
+const instagramCallback = require('../lib/handlers/instagram-oauth-callback');
 
 module.exports = async (req, res) => {
   const provider = req.query?.provider;
@@ -49,6 +52,9 @@ module.exports = async (req, res) => {
   } else if (provider === 'twitch') {
     if (req.method === 'POST' || action === 'start') return twitchStart(req, res);
     if (req.method === 'GET' && isCallbackRequest) return twitchCallback(req, res);
+  } else if (provider === 'instagram') {
+    if (req.method === 'POST' || action === 'start') return instagramStart(req, res);
+    if (req.method === 'GET' && isCallbackRequest) return instagramCallback(req, res);
   } else {
     // Reachable directly at /api/oauth with no provider -- shouldn't
     // happen via the app, only via the tiktok-oauth/youtube-oauth-callback
