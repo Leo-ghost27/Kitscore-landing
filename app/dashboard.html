@@ -544,6 +544,7 @@ function switchTab(key) {
 // depend on the weekly cron having run recently. Shown once at the top of
 // the dashboard each time the creator logs in / lands here.
 function staleEvidenceBannerHtml() {
+  if (creator.plan !== 'pro') return ''; // Pro-exclusive perk per pricing-creator.html -- was previously shown to all plans regardless of what's advertised.
   const items = dash.evidence || [];
   const now = Date.now();
   const dayMs = 1000 * 60 * 60 * 24;
