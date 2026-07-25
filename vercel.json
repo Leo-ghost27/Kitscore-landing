@@ -14,7 +14,8 @@
     { "source": "/api/tiktok-oauth", "destination": "/api/oauth?provider=tiktok" },
     { "source": "/api/youtube-oauth-callback", "destination": "/api/oauth?provider=youtube" },
     { "source": "/api/twitch-oauth", "destination": "/api/oauth?provider=twitch" },
-    { "source": "/api/instagram-oauth", "destination": "/api/oauth?provider=instagram" }
+    { "source": "/api/instagram-oauth", "destination": "/api/oauth?provider=instagram" },
+    { "source": "/api/discord-oauth", "destination": "/api/oauth?provider=discord" }
   ],
   "redirects": [
     { "source": "/ek/:slug*", "destination": "/media-kit/:slug*", "permanent": true }
