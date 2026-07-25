@@ -962,6 +962,7 @@ function renderEvidenceTab() {
   const tt = (platformConnections||[]).find(p=>p.platform==='tiktok');
   const tw = (platformConnections||[]).find(p=>p.platform==='twitch');
   const ig = (platformConnections||[]).find(p=>p.platform==='instagram');
+  const dc = (platformConnections||[]).find(p=>p.platform==='discord');
   return `
     <!-- ── Connect platforms ── -->
     <div class="card">
@@ -1082,6 +1083,34 @@ function renderEvidenceTab() {
     </div>
 
     <div id="instagramStatusBanner"></div>
+
+    <!-- ── Connect Discord (OAuth — ownership-verified) ── -->
+    <div class="card">
+      <div class="sec" style="display:flex;align-items:center;gap:8px">
+        <svg width="18" height="14" viewBox="0 0 28 20" style="flex-shrink:0"><path d="M23.7 1.7A23 23 0 0 0 17.9 0a15.7 15.7 0 0 0-.7 1.5 21.3 21.3 0 0 0-6.4 0A15.7 15.7 0 0 0 10.1 0 23 23 0 0 0 4.3 1.7 23.6 23.6 0 0 0 .1 16.9a23.2 23.2 0 0 0 7 3.5 17 17 0 0 0 1.5-2.4 15 15 0 0 1-2.4-1.1c.2-.1.4-.3.6-.4a16.5 16.5 0 0 0 14.2 0c.2.1.4.3.6.4a15 15 0 0 1-2.4 1.1 17 17 0 0 0 1.5 2.4 23.1 23.1 0 0 0 7-3.5A23.5 23.5 0 0 0 23.7 1.7ZM9.3 13.6c-1.2 0-2.2-1.2-2.2-2.6s1-2.6 2.2-2.6 2.3 1.2 2.2 2.6c0 1.4-1 2.6-2.2 2.6Zm9.4 0c-1.2 0-2.2-1.2-2.2-2.6s1-2.6 2.2-2.6 2.2 1.2 2.2 2.6c0 1.4-1 2.6-2.2 2.6Z" fill="#5865F2"/></svg>
+        Connect Discord
+      </div>
+      <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:14px;line-height:1.6">
+        Sign in with Discord to prove you own a server. Unlike the platforms above, this doesn't verify engagement — it confirms server ownership and reads the approximate member count as a reach signal, feeding your Confidence score as verified evidence.
+      </div>
+      ${dc ? `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:var(--color-background-secondary);border-radius:8px;margin-bottom:10px">
+        <div>
+          <div style="font-size:12.5px;font-weight:600">${escapeHtml(dc.platform_handle||'Discord server')}</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary)">
+            ${dc.follower_count!=null?`${Number(dc.follower_count).toLocaleString()} members · `:''}Verified ${dc.last_synced_at?'· synced '+new Date(dc.last_synced_at).toLocaleDateString():''}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:10px;font-weight:600;color:#16A34A;background:#F0FDF4;padding:3px 8px;border-radius:10px;white-space:nowrap">Verified</span>
+          <button onclick="disconnectPlatform('discord')" id="dcDisconnectBtn" style="font-size:10.5px;color:var(--color-text-tertiary);background:none;border:none;text-decoration:underline;cursor:pointer;padding:0;white-space:nowrap">Disconnect</button>
+        </div>
+      </div>` : ''}
+      <button class="btn-primary" style="font-size:12px;padding:8px 16px;white-space:nowrap" onclick="connectDiscord()" id="dcConnectBtn">${dc?'Reconnect':'Connect with Discord'}</button>
+      <span id="dcConnectMsg" style="font-size:11px;display:block;margin-top:8px"></span>
+    </div>
+
+    <div id="discordStatusBanner"></div>
 
 
     <!-- ── Evidence ── -->
@@ -1246,7 +1275,7 @@ function renderAuthenticityTab() {
     `;
   }
 
-  const PLATFORM_LABELS = { youtube: 'YouTube', tiktok: 'TikTok', instagram: 'Instagram', twitch: 'Twitch' };
+  const PLATFORM_LABELS = { youtube: 'YouTube', tiktok: 'TikTok', instagram: 'Instagram', twitch: 'Twitch', discord: 'Discord' };
   const platformRows = connectedPlatforms.map(platform => {
     const comp = compMap['engagement_quality_' + platform];
     const label = PLATFORM_LABELS[platform] || (platform.charAt(0).toUpperCase() + platform.slice(1));
@@ -1291,7 +1320,7 @@ function renderFollowerGrowthCard() {
   (followerHistory || []).forEach(row => {
     (byPlatform[row.platform] = byPlatform[row.platform] || []).push(row);
   });
-  const PLATFORM_LABELS = { youtube: 'YouTube', tiktok: 'TikTok', instagram: 'Instagram', twitch: 'Twitch' };
+  const PLATFORM_LABELS = { youtube: 'YouTube', tiktok: 'TikTok', instagram: 'Instagram', twitch: 'Twitch', discord: 'Discord' };
   const platforms = Object.keys(byPlatform);
 
   if (!platforms.length) {
@@ -1400,6 +1429,7 @@ async function disconnectPlatform(platform){
     tiktok:  { label: 'TikTok',  btnId: 'ttDisconnectBtn', msgId: 'ttConnectMsg' },
     twitch:  { label: 'Twitch',  btnId: 'twDisconnectBtn', msgId: 'twConnectMsg' },
     instagram: { label: 'Instagram', btnId: 'igDisconnectBtn', msgId: 'igConnectMsg' },
+    discord: { label: 'Discord', btnId: 'dcDisconnectBtn', msgId: 'dcConnectMsg' },
   }[platform] || { label: platform, btnId: null, msgId: null };
 
   if (!confirm(`Disconnect ${meta.label}? This removes your ownership-verified connection and its stored access token. You can reconnect any time.`)) return;
@@ -1610,6 +1640,44 @@ async function connectInstagram(){
   }
 }
 
+async function connectDiscord(){
+  const btn = document.getElementById('dcConnectBtn');
+  const msgEl = document.getElementById('dcConnectMsg');
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Redirecting…';
+  msgEl.textContent = '';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/discord-oauth?action=start', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`,
+      },
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || !j.authorizeUrl) {
+      msgEl.textContent = j.error || 'Could not start Discord connection.';
+      msgEl.style.color = '#DC2626';
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      return;
+    }
+    // Full-page navigation to Discord's consent screen -- it redirects
+    // back to /api/discord-oauth?action=callback, which then redirects
+    // here with ?discord_connected=1 or ?discord_error=..., handled by
+    // showDiscordStatusFromQuery() on load below.
+    window.location.href = j.authorizeUrl;
+  } catch (err) {
+    msgEl.textContent = 'Error: ' + err.message;
+    msgEl.style.color = '#DC2626';
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+}
+
 // Reads ?instagram_connected=1 / ?instagram_error=... left by the OAuth
 // callback redirect, shows a one-time banner, then strips the params from
 // the URL so a page refresh doesn't re-show it. Same shape as
@@ -1637,6 +1705,41 @@ function showInstagramStatusFromQuery(){
 
   params.delete('instagram_connected');
   params.delete('instagram_error');
+  const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+  window.history.replaceState({}, '', newUrl);
+}
+
+// Reads ?discord_connected=1 / ?discord_error=... left by the OAuth
+// callback redirect, shows a one-time banner, then strips the params
+// from the URL so a page refresh doesn't re-show it. Same shape as
+// showInstagramStatusFromQuery() above, plus a no_owned_server code
+// specific to Discord -- returned by the callback when the creator
+// authorized an account that doesn't own any server (see
+// lib/handlers/discord-oauth-callback.js).
+function showDiscordStatusFromQuery(){
+  const params = new URLSearchParams(window.location.search);
+  const connected = params.get('discord_connected');
+  const error = params.get('discord_error');
+  if (!connected && !error) return;
+
+  const banner = document.getElementById('discordStatusBanner');
+  if (banner) {
+    const messages = {
+      missing_params: 'Discord connection was cancelled or incomplete.',
+      invalid_state: 'That Discord connection link expired or was already used — please try connecting again.',
+      platform_cap: 'Free plan is limited to one OAuth-verified platform. Upgrade to Pro for unlimited platforms.',
+      save_failed: 'Discord connected, but saving it failed — please try again.',
+      no_owned_server: "We couldn't find a server you own on that Discord account — connect the account that owns the server you want to link.",
+    };
+    const text = connected
+      ? 'Discord server connected and verified.'
+      : (messages[error] || `Discord connection failed: ${error}`);
+    const color = connected ? '#16A34A' : '#DC2626';
+    banner.innerHTML = `<div style="font-size:12px;color:${color};padding:10px 12px;background:${connected?'#F0FDF4':'#FEF2F2'};border-radius:8px;margin-bottom:14px">${escapeHtml(text)}</div>`;
+  }
+
+  params.delete('discord_connected');
+  params.delete('discord_error');
   const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
   window.history.replaceState({}, '', newUrl);
 }
@@ -1999,7 +2102,12 @@ if (window.location.search.includes('twitch_connected') || window.location.searc
   activeTab = 'evidence';
 }
 
-load().then(() => { showYoutubeStatusFromQuery(); showTiktokStatusFromQuery(); showTwitchStatusFromQuery(); showInstagramStatusFromQuery(); initRateCalc(); });
+// Same as above, for Discord.
+if (window.location.search.includes('discord_connected') || window.location.search.includes('discord_error')) {
+  activeTab = 'evidence';
+}
+
+load().then(() => { showYoutubeStatusFromQuery(); showTiktokStatusFromQuery(); showTwitchStatusFromQuery(); showInstagramStatusFromQuery(); showDiscordStatusFromQuery(); initRateCalc(); });
 </script>
 <script>
 if ('serviceWorker' in navigator) {
