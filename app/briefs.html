@@ -53,6 +53,12 @@
   .app-row:first-child{border-top:none;padding-top:0}
   .apply-panel{padding:14px 22px 18px;border-top:1px solid var(--line);background:#FAFBFD}
   .toggle-link{background:none;border:none;color:#2563EB;font-size:12.5px;cursor:pointer;padding:0;font-weight:600}
+  .hw-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);margin-top:20px}
+  .hw-step{background:#fff;padding:16px}
+  .hw-num{font-family:var(--font-mono);font-size:10.5px;color:var(--blue);font-weight:600;margin-bottom:8px;letter-spacing:.03em}
+  .hw-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:5px}
+  .hw-text{font-size:11.5px;color:var(--ink-soft);line-height:1.5}
+  @media(max-width:560px){ .hw-grid{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -63,6 +69,28 @@
     <div class="psub" id="psub">Open sponsorship opportunities — apply directly instead of waiting to be found.</div>
     <div id="formArea"></div>
     <div class="card" id="list"><div class="loading">Loading…</div></div>
+    <div class="hw-grid">
+      <div class="hw-step">
+        <div class="hw-num">01 / POST OR BROWSE</div>
+        <div class="hw-title">Sponsors post, creators browse</div>
+        <div class="hw-text">A sponsor posts an open brief — budget, niche, deliverables, deadline. Any creator can see and apply to it, not just ones already in a sponsor's network.</div>
+      </div>
+      <div class="hw-step">
+        <div class="hw-num">02 / PITCH</div>
+        <div class="hw-title">Creators apply with a pitch</div>
+        <div class="hw-text">Applying means writing a short pitch and, optionally, proposing your own rate. You can withdraw an application anytime before it's decided.</div>
+      </div>
+      <div class="hw-step">
+        <div class="hw-num">03 / DECIDE</div>
+        <div class="hw-title">Sponsor shortlists, accepts, or rejects</div>
+        <div class="hw-text">Sponsors review every applicant against the brief and move each one forward, shortlist it for later, or pass.</div>
+      </div>
+      <div class="hw-step">
+        <div class="hw-num">04 / CONTRACT</div>
+        <div class="hw-title">Acceptance flows straight into a contract</div>
+        <div class="hw-text">Once a sponsor accepts an application, a "Draft contract" link appears — it opens Contracts pre-filled with that creator, so the deal stays traceable to where it started.</div>
+      </div>
+    </div>
   </div>
 </div>
 
