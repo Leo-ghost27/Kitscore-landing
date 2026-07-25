@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briefs — Kitscore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  body{background:var(--canvas)}
+  .app-main{max-width:1180px;padding:40px 48px 80px}
+  .ptitle{font-size:24px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
+  .psub{font-size:14px;color:var(--ink-soft);margin-bottom:20px}
+  .card{background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,21,31,.03);border-radius:0;padding:0;overflow:hidden;margin-bottom:20px}
+  .form-card{padding:26px 28px}
+  .sec{font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:7px}
+  .field input,.field select,.field textarea{width:100%;padding:11px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:14px;background:#fff;color:var(--ink);font-family:inherit}
+  .field textarea{resize:vertical;min-height:70px}
+  .field-row{display:flex;gap:12px}
+  .field-row .field{flex:1}
+  .checkbox-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:4px}
+  .checkbox-row label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;color:var(--ink);margin-bottom:0}
+  .cta{padding:10px 18px;background:var(--blue);color:#fff;border:none;border-radius:0;font-size:13.5px;font-weight:600;cursor:pointer}
+  .cta:disabled{opacity:.6;cursor:default}
+  .cta-outline{padding:8px 14px;background:transparent;color:var(--blue);border:1px solid var(--blue);border-radius:0;font-size:12.5px;font-weight:600;cursor:pointer}
+  .cta-outline:disabled{opacity:.6;cursor:default}
+  .row-item{padding:18px 22px;border-bottom:1px solid var(--line)}
+  .row-item:last-child{border-bottom:none}
+  .brief-title{font-size:14.5px;font-weight:600;color:var(--ink);margin-bottom:4px}
+  .brief-meta{font-size:12px;color:var(--ink-soft);margin-bottom:10px}
+  .brief-desc{font-size:13px;color:var(--ink);line-height:1.5;margin-bottom:10px}
+  .brief-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+  .brief-tag{font-size:11px;font-weight:600;padding:3px 8px;background:var(--color-background-secondary,#F3F4F6);color:var(--ink-soft);text-transform:capitalize}
+  .status-tag{font-size:11.5px;font-weight:600;padding:4px 10px;text-transform:capitalize}
+  .st-open{background:var(--green-soft);color:#137C52}
+  .st-closed{background:#F3F4F6;color:var(--ink-soft)}
+  .st-filled{background:var(--gold-soft);color:#8C6C3B}
+  .st-pending{background:var(--gold-soft);color:#8C6C3B}
+  .st-accepted{background:var(--green-soft);color:#137C52}
+  .st-rejected{background:#FDECEC;color:#B42318}
+  .st-withdrawn{background:#F3F4F6;color:var(--ink-soft)}
+  .st-shortlisted{background:#E8EEFD;color:#2563EB}
+  .msg{font-size:12.5px;margin-top:8px;padding:10px 12px;border-radius:0}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:var(--green-soft);color:#137C52}
+  .loading{font-size:13px;color:var(--ink-soft);padding:20px}
+  .empty{font-size:13px;color:var(--ink-soft);padding:24px 22px}
+  .app-row{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 0;border-top:1px solid var(--line)}
+  .app-row:first-child{border-top:none;padding-top:0}
+  .apply-panel{padding:14px 22px 18px;border-top:1px solid var(--line);background:#FAFBFD}
+  .toggle-link{background:none;border:none;color:#2563EB;font-size:12.5px;cursor:pointer;padding:0;font-weight:600}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Briefs</div>
+    <div class="psub" id="psub">Open sponsorship opportunities — apply directly instead of waiting to be found.</div>
+    <div id="formArea"></div>
+    <div class="card" id="list"><div class="loading">Loading…</div></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="icons.js?v=1"></script>
+<script src="nav.js?v=2"></script>
+<script>
+let profile;
+
+async function load() {
+  profile = await getCurrentProfile();
+  if (!profile) { window.location.href = 'auth.html'; return; }
+  renderSidebar(profile.role, 'briefs');
+
+  if (profile.role === 'sponsor') {
+    document.getElementById('psub').textContent = 'Post an open brief for creators to discover and apply to, and review who applies.';
+    await renderSponsorForm();
+    await loadSponsorBriefs();
+  } else if (profile.role === 'creator') {
+    document.getElementById('formArea').innerHTML = '';
+    await loadOpenBriefs();
+  } else {
+    document.getElementById('list').innerHTML = '<div class="empty">Briefs are available to creator and sponsor accounts.</div>';
+  }
+}
+
+// ── Sponsor: post a brief ──────────────────────────────────────────────────
+async function renderSponsorForm() {
+  document.getElementById('formArea').innerHTML = `
+    <div class="card form-card">
+      <div class="sec">Post a new brief</div>
+      <div class="field"><label>Title</label>
+        <input id="briefTitle" placeholder="e.g. Summer skincare launch — Instagram Reels">
+      </div>
+      <div class="field"><label>Description</label>
+        <textarea id="briefDescription" placeholder="What you're looking for, the campaign goal, and any must-haves."></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Niche <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+          <input id="briefNiche" placeholder="e.g. beauty, fitness, finance">
+        </div>
+        <div class="field"><label>Budget range <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+          <input id="briefBudget" placeholder="e.g. $500–$1,500">
+        </div>
+      </div>
+      <div class="field"><label>Platforms</label>
+        <div class="checkbox-row">
+          ${['youtube','tiktok','instagram','twitch'].map(p => `<label><input type="checkbox" class="brief-platform-cb" value="${p}"> ${p.charAt(0).toUpperCase()+p.slice(1)}</label>`).join('')}
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Minimum followers <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+          <input id="briefMinFollowers" type="number" min="0" placeholder="e.g. 5000">
+        </div>
+        <div class="field"><label>Applications close <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+          <input id="briefDeadline" type="date">
+        </div>
+      </div>
+      <div class="field"><label>Deliverables <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+        <input id="briefDeliverables" placeholder="e.g. 1 Reel + 2 Stories">
+      </div>
+      <button class="cta" id="postBriefBtn" onclick="postBrief()">Post brief</button>
+      <div id="briefFormMsg"></div>
+    </div>
+  `;
+}
+
+async function postBrief() {
+  const title = document.getElementById('briefTitle').value.trim();
+  const description = document.getElementById('briefDescription').value.trim();
+  const msgEl = document.getElementById('briefFormMsg');
+  if (!title) { msgEl.innerHTML = '<div class="msg error">Give the brief a title.</div>'; return; }
+  if (!description) { msgEl.innerHTML = '<div class="msg error">Add a description so creators know what you\'re after.</div>'; return; }
+
+  const platforms = Array.from(document.querySelectorAll('.brief-platform-cb:checked')).map(cb => cb.value);
+  const niche = document.getElementById('briefNiche').value.trim();
+  const budgetRange = document.getElementById('briefBudget').value.trim();
+  const minFollowers = document.getElementById('briefMinFollowers').value;
+  const deadline = document.getElementById('briefDeadline').value;
+  const deliverables = document.getElementById('briefDeliverables').value.trim();
+
+  const btn = document.getElementById('postBriefBtn');
+  btn.disabled = true;
+
+  const { error } = await sb.from('campaign_briefs').insert({
+    sponsor_id: profile.id, title, description,
+    niche: niche || null, platforms,
+    budget_range: budgetRange || null,
+    deliverables: deliverables || null,
+    min_followers: minFollowers ? Number(minFollowers) : null,
+    application_deadline: deadline ? new Date(deadline).toISOString() : null,
+  });
+
+  if (error) { msgEl.innerHTML = `<div class="msg error">Could not post brief: ${escapeHtml(error.message)}</div>`; btn.disabled = false; return; }
+
+  msgEl.innerHTML = '<div class="msg ok">Brief posted — creators can see and apply to it now.</div>';
+  await renderSponsorForm();
+  await loadSponsorBriefs();
+}
+
+async function loadSponsorBriefs() {
+  const listEl = document.getElementById('list');
+  const { data: briefs, error } = await sb.from('campaign_briefs')
+    .select('*').eq('sponsor_id', profile.id).order('created_at', { ascending: false });
+
+  if (error) { listEl.innerHTML = `<div class="empty">Could not load your briefs.</div>`; return; }
+  if (!briefs || !briefs.length) { listEl.innerHTML = '<div class="empty">You haven\'t posted any briefs yet.</div>'; return; }
+
+  const { data: apps } = await sb.from('brief_applications')
+    .select('*, creators!inner(id, slug, profiles!inner(display_name))')
+    .in('brief_id', briefs.map(b => b.id))
+    .order('created_at', { ascending: false });
+
+  const appsByBrief = {};
+  (apps || []).forEach(a => { (appsByBrief[a.brief_id] = appsByBrief[a.brief_id] || []).push(a); });
+
+  listEl.innerHTML = briefs.map(b => {
+    const briefApps = appsByBrief[b.id] || [];
+    return `
+    <div class="row-item">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <div class="brief-title">${escapeHtml(b.title)}</div>
+          <div class="brief-meta">${briefApps.length} application${briefApps.length===1?'':'s'} · Posted ${new Date(b.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="status-tag st-${b.status}">${b.status}</span>
+          ${b.status==='open' ? `<button class="cta-outline" onclick="closeBrief('${b.id}')">Close</button>` : ''}
+        </div>
+      </div>
+      <div class="brief-desc">${escapeHtml(b.description)}</div>
+      ${b.platforms && b.platforms.length ? `<div class="brief-tags">${b.platforms.map(p=>`<span class="brief-tag">${escapeHtml(p)}</span>`).join('')}</div>` : ''}
+      ${briefApps.length ? `<div style="margin-top:8px">${briefApps.map(a => `
+        <div class="app-row">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--ink)">${escapeHtml(a.creators.profiles.display_name)}</div>
+            ${a.pitch_message ? `<div style="font-size:12.5px;color:var(--ink-soft);margin-top:2px;max-width:520px">${escapeHtml(a.pitch_message)}</div>` : ''}
+            ${a.proposed_rate ? `<div style="font-size:11.5px;color:var(--ink-soft);margin-top:2px">Proposed: ${escapeHtml(a.proposed_rate)}</div>` : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <span class="status-tag st-${a.status}">${a.status}</span>
+            ${a.status==='pending' ? `
+              <button class="cta-outline" onclick="updateApplication('${a.id}','shortlisted')">Shortlist</button>
+              <button class="cta-outline" onclick="updateApplication('${a.id}','accepted')">Accept</button>
+              <button class="cta-outline" onclick="updateApplication('${a.id}','rejected')">Reject</button>
+            ` : a.status==='shortlisted' ? `
+              <button class="cta-outline" onclick="updateApplication('${a.id}','accepted')">Accept</button>
+              <button class="cta-outline" onclick="updateApplication('${a.id}','rejected')">Reject</button>
+            ` : a.status==='accepted' ? `
+              <a class="cta-outline" style="text-decoration:none;display:inline-block" href="contracts.html?creator=${a.creator_id}&brief_application=${a.id}">Draft contract</a>
+            ` : ''}
+          </div>
+        </div>`).join('')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function closeBrief(briefId) {
+  if (!confirm('Close this brief? It will stop accepting new applications.')) return;
+  const { error } = await sb.from('campaign_briefs').update({ status: 'closed' }).eq('id', briefId);
+  if (error) { alert('Could not close brief: ' + error.message); return; }
+  loadSponsorBriefs();
+}
+
+async function updateApplication(appId, status) {
+  const { error } = await sb.from('brief_applications').update({ status }).eq('id', appId);
+  if (error) { alert('Could not update application: ' + error.message); return; }
+  loadSponsorBriefs();
+}
+
+// ── Creator: browse and apply ──────────────────────────────────────────────
+async function loadOpenBriefs() {
+  const listEl = document.getElementById('list');
+  const [{ data: briefs, error }, { data: myApps }] = await Promise.all([
+    sb.from('campaign_briefs').select('*, sponsors!inner(company_name)').eq('status', 'open').order('created_at', { ascending: false }),
+    sb.from('brief_applications').select('*').eq('creator_id', profile.id),
+  ]);
+
+  if (error) { listEl.innerHTML = '<div class="empty">Could not load open briefs.</div>'; return; }
+  if (!briefs || !briefs.length) { listEl.innerHTML = '<div class="empty">No open briefs right now — check back soon.</div>'; return; }
+
+  const appByBrief = {};
+  (myApps || []).forEach(a => { appByBrief[a.brief_id] = a; });
+
+  listEl.innerHTML = briefs.map(b => {
+    const myApp = appByBrief[b.id];
+    const deadlineStr = b.application_deadline ? new Date(b.application_deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : null;
+    return `
+    <div class="row-item">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <div class="brief-title">${escapeHtml(b.title)}</div>
+          <div class="brief-meta">${escapeHtml(b.sponsors.company_name)}${b.budget_range ? ' · ' + escapeHtml(b.budget_range) : ''}${deadlineStr ? ' · Apply by ' + deadlineStr : ''}</div>
+        </div>
+        ${myApp ? `<span class="status-tag st-${myApp.status}">${myApp.status==='pending'?'Applied':myApp.status}</span>` : ''}
+      </div>
+      <div class="brief-desc">${escapeHtml(b.description)}</div>
+      ${b.platforms && b.platforms.length ? `<div class="brief-tags">${b.platforms.map(p=>`<span class="brief-tag">${escapeHtml(p)}</span>`).join('')}</div>` : ''}
+      ${b.deliverables ? `<div style="font-size:12px;color:var(--ink-soft);margin-bottom:4px"><b>Deliverables:</b> ${escapeHtml(b.deliverables)}</div>` : ''}
+      ${b.min_followers ? `<div style="font-size:12px;color:var(--ink-soft)"><b>Minimum followers:</b> ${Number(b.min_followers).toLocaleString()}</div>` : ''}
+      ${!myApp ? `<button class="toggle-link" style="margin-top:8px" onclick="toggleApplyForm('${b.id}')">Apply to this brief</button>` : myApp.status==='pending' ? `<button class="toggle-link" style="margin-top:8px;color:#B42318" onclick="withdrawApplication('${myApp.id}','${b.id}')">Withdraw application</button>` : ''}
+    </div>
+    <div class="apply-panel" id="apply-panel-${b.id}" style="display:none">
+      <div class="field"><label>Your pitch</label>
+        <textarea id="pitch-${b.id}" placeholder="Why you're a fit for this brief"></textarea>
+      </div>
+      <div class="field"><label>Proposed rate <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+        <input id="rate-${b.id}" placeholder="e.g. $400 flat">
+      </div>
+      <button class="cta" onclick="applyToBrief('${b.id}')">Submit application</button>
+      <div id="apply-msg-${b.id}"></div>
+    </div>`;
+  }).join('');
+}
+
+function toggleApplyForm(briefId) {
+  const el = document.getElementById('apply-panel-' + briefId);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function applyToBrief(briefId) {
+  const pitch = document.getElementById('pitch-' + briefId).value.trim();
+  const rate = document.getElementById('rate-' + briefId).value.trim();
+  const msgEl = document.getElementById('apply-msg-' + briefId);
+
+  const { error } = await sb.from('brief_applications').insert({
+    brief_id: briefId, creator_id: profile.id,
+    pitch_message: pitch || null, proposed_rate: rate || null,
+  });
+
+  if (error) { msgEl.innerHTML = `<div class="msg error">Could not apply: ${escapeHtml(error.message)}</div>`; return; }
+  msgEl.innerHTML = '<div class="msg ok">Application submitted.</div>';
+  loadOpenBriefs();
+}
+
+async function withdrawApplication(appId, briefId) {
+  if (!confirm('Withdraw your application to this brief?')) return;
+  const { error } = await sb.from('brief_applications').update({ status: 'withdrawn' }).eq('id', appId);
+  if (error) { alert('Could not withdraw: ' + error.message); return; }
+  loadOpenBriefs();
+}
+
+load();
+</script>
+</body>
+</html>

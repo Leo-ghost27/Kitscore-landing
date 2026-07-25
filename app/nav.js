@@ -18,6 +18,8 @@ const NAV_ICONS = {
   'shield-check': '<path d="M12 2.5l7.5 3.5v5.4c0 4.6-3.2 7.5-7.5 9.1-4.3-1.6-7.5-4.5-7.5-9.1V6z"/><path d="M8.7 12l2.4 2.4 4.2-4.6"/>',
   users: '<circle cx="8.5" cy="8" r="3.2"/><circle cx="16.5" cy="8.5" r="2.6"/><path d="M2.3 20c0-3.4 2.8-6 6.2-6s6.2 2.6 6.2 6"/><path d="M14.8 14.2c3 .3 5.2 2.7 5.2 5.8"/>',
   logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+  briefs: '<path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/>',
+  contracts: '<path d="M9 3h6l4 4v14H5V3z"/><path d="M9 3v4H5"/><path d="M8 13l2 2 4-4"/>',
 };
 
 function navIcon(name) {
@@ -29,6 +31,8 @@ const NAV = {
   creator: [
     { key: 'dashboard', href: 'dashboard.html', icon: 'dashboard', label: 'Dashboard' },
     { key: 'campaigns', href: 'campaigns.html', icon: 'campaigns', label: 'Campaigns' },
+    { key: 'briefs', href: 'briefs.html', icon: 'briefs', label: 'Briefs' },
+    { key: 'contracts', href: 'contracts.html', icon: 'contracts', label: 'Contracts' },
     { key: 'evidence', href: 'evidence.html', icon: 'evidence', label: 'Evidence' },
     { key: 'profile', href: 'profile.html', icon: 'profile', label: 'Profile' },
     { key: 'pricing-creator', href: 'pricing-creator.html', icon: 'upgrade', label: 'Upgrade' },
@@ -36,6 +40,8 @@ const NAV = {
   sponsor: [
     { key: 'directory', href: 'directory.html', icon: 'directory', label: 'Directory' },
     { key: 'campaigns', href: 'campaigns.html', icon: 'campaigns', label: 'Campaigns' },
+    { key: 'briefs', href: 'briefs.html', icon: 'briefs', label: 'Briefs' },
+    { key: 'contracts', href: 'contracts.html', icon: 'contracts', label: 'Contracts' },
     { key: 'watchlist', href: 'watchlist.html', icon: 'watchlist', label: 'Watchlist' },
     { key: 'history', href: 'history.html', icon: 'history', label: 'History' },
     { key: 'compare', href: 'compare.html', icon: 'compare', label: 'Compare' },

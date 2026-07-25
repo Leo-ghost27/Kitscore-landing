@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contracts — Kitscore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  body{background:var(--canvas)}
+  .app-main{max-width:1180px;padding:40px 48px 80px}
+  .ptitle{font-size:24px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
+  .psub{font-size:14px;color:var(--ink-soft);margin-bottom:20px}
+  .card{background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,21,31,.03);border-radius:0;padding:0;overflow:hidden;margin-bottom:20px}
+  .form-card{padding:26px 28px}
+  .sec{font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:7px}
+  .field input,.field select,.field textarea{width:100%;padding:11px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:14px;background:#fff;color:var(--ink);font-family:inherit}
+  .field textarea{resize:vertical;min-height:70px}
+  .field-row{display:flex;gap:12px}
+  .field-row .field{flex:1}
+  .checkbox-field{display:flex;align-items:center;gap:8px;margin-bottom:18px;font-size:13px;color:var(--ink)}
+  .cta{padding:10px 18px;background:var(--blue);color:#fff;border:none;border-radius:0;font-size:13.5px;font-weight:600;cursor:pointer}
+  .cta:disabled{opacity:.6;cursor:default}
+  .cta-outline{padding:8px 14px;background:transparent;color:var(--blue);border:1px solid var(--blue);border-radius:0;font-size:12.5px;font-weight:600;cursor:pointer}
+  .cta-outline:disabled{opacity:.6;cursor:default}
+  .row-item{padding:18px 22px;border-bottom:1px solid var(--line)}
+  .row-item:last-child{border-bottom:none}
+  .contract-title{font-size:14.5px;font-weight:600;color:var(--ink);margin-bottom:4px}
+  .contract-meta{font-size:12px;color:var(--ink-soft);margin-bottom:10px}
+  .contract-terms{font-size:13px;color:var(--ink);line-height:1.6;margin-bottom:10px}
+  .contract-terms b{color:var(--ink-soft);font-weight:600}
+  .status-tag{font-size:11.5px;font-weight:600;padding:4px 10px;text-transform:capitalize;white-space:nowrap}
+  .st-draft{background:#F3F4F6;color:var(--ink-soft)}
+  .st-sent{background:#E8EEFD;color:#2563EB}
+  .st-signed_by_creator,.st-signed_by_sponsor{background:var(--gold-soft);color:#8C6C3B}
+  .st-fully_signed{background:var(--green-soft);color:#137C52}
+  .st-void{background:#FDECEC;color:#B42318}
+  .msg{font-size:12.5px;margin-top:8px;padding:10px 12px;border-radius:0}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:var(--green-soft);color:#137C52}
+  .loading{font-size:13px;color:var(--ink-soft);padding:20px}
+  .empty{font-size:13px;color:var(--ink-soft);padding:24px 22px}
+  .sig-row{display:flex;gap:8px;align-items:center;margin-top:10px}
+  .sig-note{font-size:11px;color:var(--ink-soft);margin-top:6px;line-height:1.5}
+  .signed-line{font-size:12px;color:#137C52;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Contracts</div>
+    <div class="psub" id="psub">Deliverables, compensation, and usage rights — agreed and signed in one place.</div>
+    <div id="formArea"></div>
+    <div class="card" id="list"><div class="loading">Loading…</div></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="icons.js?v=1"></script>
+<script src="nav.js?v=2"></script>
+<script>
+let profile;
+
+async function load() {
+  profile = await getCurrentProfile();
+  if (!profile) { window.location.href = 'auth.html'; return; }
+  renderSidebar(profile.role, 'contracts');
+
+  if (profile.role === 'sponsor') {
+    document.getElementById('psub').textContent = 'Draft a contract for a creator, then both of you sign it here.';
+    await renderSponsorForm();
+  } else {
+    document.getElementById('formArea').innerHTML = '';
+  }
+  await loadContracts();
+}
+
+// ── Sponsor: draft a contract ──────────────────────────────────────────────
+async function renderSponsorForm() {
+  const { data: creators, error } = await sb.from('creators')
+    .select('id, profiles!inner(display_name)').order('id');
+  const options = error ? [] : (creators || [])
+    .map(c => ({ id: c.id, name: c.profiles.display_name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const params = new URLSearchParams(window.location.search);
+  const preselectCreator = params.get('creator') || '';
+  const briefApplicationId = params.get('brief_application') || '';
+  const campaignId = params.get('campaign') || '';
+
+  document.getElementById('formArea').innerHTML = `
+    <div class="card form-card">
+      <div class="sec">Draft a new contract</div>
+      <div class="field"><label>Creator</label>
+        <select id="ctrCreatorSel">
+          <option value="">Select a creator…</option>
+          ${options.map(o => `<option value="${escapeHtml(o.id)}" ${o.id === preselectCreator ? 'selected' : ''}>${escapeHtml(o.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Contract title</label>
+        <input id="ctrTitle" placeholder="e.g. Summer skincare launch agreement">
+      </div>
+      <div class="field"><label>Deliverables</label>
+        <textarea id="ctrDeliverables" placeholder="e.g. 1 dedicated YouTube video (8–12 min), 2 Instagram Stories linking to product page"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Compensation</label>
+          <input id="ctrCompensation" placeholder="e.g. $2,000 flat fee, net-30 after delivery">
+        </div>
+        <div class="field"><label>Usage rights <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+          <input id="ctrUsageRights" placeholder="e.g. 90 days paid social usage">
+        </div>
+      </div>
+      <div class="field"><label>Exclusivity terms <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+        <input id="ctrExclusivity" placeholder="e.g. No competing skincare brand for 30 days">
+      </div>
+      <div class="checkbox-field">
+        <input type="checkbox" id="ctrFtc" checked>
+        <label for="ctrFtc" style="margin:0;font-weight:400">Requires FTC / ad-disclosure compliance</label>
+      </div>
+      <div class="field"><label>Additional terms <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+        <textarea id="ctrAdditional" placeholder="Anything else both sides should agree to."></textarea>
+      </div>
+      <button class="cta" id="draftBtn" onclick="draftContract('${escapeHtml(briefApplicationId)}','${escapeHtml(campaignId)}')">Save as draft</button>
+      <div id="ctrFormMsg"></div>
+    </div>
+  `;
+}
+
+async function draftContract(briefApplicationId, campaignId) {
+  const creatorId = document.getElementById('ctrCreatorSel').value;
+  const title = document.getElementById('ctrTitle').value.trim();
+  const deliverables = document.getElementById('ctrDeliverables').value.trim();
+  const compensation = document.getElementById('ctrCompensation').value.trim();
+  const msgEl = document.getElementById('ctrFormMsg');
+
+  if (!creatorId) { msgEl.innerHTML = '<div class="msg error">Choose a creator.</div>'; return; }
+  if (!title) { msgEl.innerHTML = '<div class="msg error">Give the contract a title.</div>'; return; }
+  if (!deliverables) { msgEl.innerHTML = '<div class="msg error">Describe the deliverables.</div>'; return; }
+  if (!compensation) { msgEl.innerHTML = '<div class="msg error">Add the compensation terms.</div>'; return; }
+
+  const usageRights = document.getElementById('ctrUsageRights').value.trim();
+  const exclusivity = document.getElementById('ctrExclusivity').value.trim();
+  const ftcRequired = document.getElementById('ctrFtc').checked;
+  const additional = document.getElementById('ctrAdditional').value.trim();
+
+  const btn = document.getElementById('draftBtn');
+  btn.disabled = true;
+
+  const { error } = await sb.from('contracts').insert({
+    sponsor_id: profile.id, creator_id: creatorId, created_by: profile.id,
+    title, deliverables, compensation,
+    usage_rights: usageRights || null,
+    exclusivity_terms: exclusivity || null,
+    ftc_disclosure_required: ftcRequired,
+    additional_terms: additional || null,
+    brief_application_id: briefApplicationId || null,
+    campaign_id: campaignId || null,
+  });
+
+  if (error) { msgEl.innerHTML = `<div class="msg error">Could not save contract: ${escapeHtml(error.message)}</div>`; btn.disabled = false; return; }
+
+  msgEl.innerHTML = '<div class="msg ok">Contract saved as a draft. Send it when you\'re ready — terms lock once sent.</div>';
+  await renderSponsorForm();
+  await loadContracts();
+}
+
+// ── Shared: list + sign ─────────────────────────────────────────────────────
+async function loadContracts() {
+  const listEl = document.getElementById('list');
+  const col = profile.role === 'sponsor' ? 'sponsor_id' : 'creator_id';
+  const { data: contracts, error } = await sb.from('contracts')
+    .select('*, sponsors!inner(company_name), creators!inner(id, profiles!inner(display_name))')
+    .eq(col, profile.id)
+    .order('created_at', { ascending: false });
+
+  if (error) { listEl.innerHTML = '<div class="empty">Could not load contracts.</div>'; return; }
+  if (!contracts || !contracts.length) {
+    listEl.innerHTML = profile.role === 'sponsor'
+      ? '<div class="empty">No contracts yet — draft one above.</div>'
+      : '<div class="empty">No contracts yet. A sponsor will draft one once you\'ve agreed on a deal.</div>';
+    return;
+  }
+
+  listEl.innerHTML = contracts.map(c => {
+    const counterparty = profile.role === 'sponsor' ? c.creators.profiles.display_name : c.sponsors.company_name;
+    const canSignAsSponsor = profile.role === 'sponsor' && !c.sponsor_signed_at && c.status !== 'draft' && c.status !== 'void';
+    const canSignAsCreator = profile.role === 'creator' && !c.creator_signed_at && c.status !== 'draft' && c.status !== 'void';
+    const canSend = profile.role === 'sponsor' && c.status === 'draft';
+    const canVoid = profile.role === 'sponsor' && c.status !== 'fully_signed' && c.status !== 'void';
+
+    return `
+    <div class="row-item">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <div class="contract-title">${escapeHtml(c.title)}</div>
+          <div class="contract-meta">${profile.role === 'sponsor' ? 'With' : 'From'} ${escapeHtml(counterparty)} · ${new Date(c.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
+        </div>
+        <span class="status-tag st-${c.status}">${c.status.replace(/_/g,' ')}</span>
+      </div>
+      <div class="contract-terms">
+        <div><b>Deliverables:</b> ${escapeHtml(c.deliverables)}</div>
+        <div><b>Compensation:</b> ${escapeHtml(c.compensation)}</div>
+        ${c.usage_rights ? `<div><b>Usage rights:</b> ${escapeHtml(c.usage_rights)}</div>` : ''}
+        ${c.exclusivity_terms ? `<div><b>Exclusivity:</b> ${escapeHtml(c.exclusivity_terms)}</div>` : ''}
+        ${c.additional_terms ? `<div><b>Additional terms:</b> ${escapeHtml(c.additional_terms)}</div>` : ''}
+        <div><b>FTC / ad disclosure:</b> ${c.ftc_disclosure_required ? 'Required' : 'Not required'}</div>
+      </div>
+      ${c.sponsor_signed_at ? `<div class="signed-line">✓ Signed by sponsor (${escapeHtml(c.sponsor_signature_name||'')}) — ${new Date(c.sponsor_signed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
+      ${c.creator_signed_at ? `<div class="signed-line">✓ Signed by creator (${escapeHtml(c.creator_signature_name||'')}) — ${new Date(c.creator_signed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        ${canSend ? `<button class="cta-outline" onclick="sendContract('${c.id}')">Send to creator</button>` : ''}
+        ${canSignAsSponsor ? `<button class="cta-outline" onclick="toggleSignPanel('${c.id}')">Sign as sponsor</button>` : ''}
+        ${canSignAsCreator ? `<button class="cta-outline" onclick="toggleSignPanel('${c.id}')">Sign as creator</button>` : ''}
+        ${canVoid ? `<button class="cta-outline" style="color:#B42318;border-color:#B42318" onclick="voidContract('${c.id}')">Void</button>` : ''}
+      </div>
+      <div id="sign-panel-${c.id}" style="display:none;margin-top:10px">
+        <div class="field" style="margin-bottom:8px"><label>Type your full legal name to sign</label>
+          <input id="sig-name-${c.id}" placeholder="Full legal name">
+        </div>
+        <div class="sig-note">Typing your name here and submitting counts as your electronic signature on these terms, timestamped at submission.</div>
+        <div class="sig-row">
+          <button class="cta" onclick="submitSignature('${c.id}')">Sign contract</button>
+        </div>
+        <div id="sign-msg-${c.id}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSignPanel(contractId) {
+  const el = document.getElementById('sign-panel-' + contractId);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitSignature(contractId) {
+  const name = document.getElementById('sig-name-' + contractId).value.trim();
+  const msgEl = document.getElementById('sign-msg-' + contractId);
+  if (!name) { msgEl.innerHTML = '<div class="msg error">Type your full legal name to sign.</div>'; return; }
+
+  const update = profile.role === 'sponsor'
+    ? { sponsor_signed_at: new Date().toISOString(), sponsor_signature_name: name }
+    : { creator_signed_at: new Date().toISOString(), creator_signature_name: name };
+
+  const { error } = await sb.from('contracts').update(update).eq('id', contractId);
+  if (error) { msgEl.innerHTML = `<div class="msg error">Could not sign: ${escapeHtml(error.message)}</div>`; return; }
+
+  msgEl.innerHTML = '<div class="msg ok">Signed.</div>';
+  loadContracts();
+}
+
+async function sendContract(contractId) {
+  const { error } = await sb.from('contracts').update({ status: 'sent' }).eq('id', contractId);
+  if (error) { alert('Could not send contract: ' + error.message); return; }
+  loadContracts();
+}
+
+async function voidContract(contractId) {
+  if (!confirm('Void this contract? This cannot be undone — draft a new one if terms need to change.')) return;
+  const { error } = await sb.from('contracts').update({ status: 'void' }).eq('id', contractId);
+  if (error) { alert('Could not void contract: ' + error.message); return; }
+  loadContracts();
+}
+
+load();
+</script>
+</body>
+</html>
