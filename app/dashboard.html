@@ -1115,8 +1115,78 @@ function renderEvidenceTab() {
   `;
 }
 
+function authenticityTier(value) {
+  if (value >= 85) return { label: 'Strong', color: '#1D9E75' };
+  if (value >= 68) return { label: 'Healthy', color: '#1D9E75' };
+  if (value >= 55) return { label: 'Typical', color: '#2563EB' };
+  if (value >= 40) return { label: 'Below typical', color: '#E58C1A' };
+  return { label: 'Low', color: '#DC2626' };
+}
+
+function renderAuthenticityTab() {
+  const { compMap, platformConnections } = dash;
+  const overall = compMap['audience_authenticity'];
+  // Union of two sources: platforms with a live OAuth connection, and any
+  // platform with an engagement_quality_<platform> component already
+  // computed from submitted evidence -- these don't require a
+  // platform_connections row at all, so relying on platformConnections
+  // alone misses evidence-only creators entirely.
+  const fromConnections = (platformConnections || []).map(p => p.platform).filter(Boolean);
+  const fromComponents = Object.keys(compMap)
+    .filter(k => k.startsWith('engagement_quality_'))
+    .map(k => k.replace('engagement_quality_', ''));
+  const connectedPlatforms = [...new Set([...fromConnections, ...fromComponents])];
+
+  let overallHtml;
+  if (!overall) {
+    overallHtml = `<div style="font-size:12.5px;color:var(--color-text-tertiary)">Connect a platform or upload audience evidence to generate this.</div>`;
+  } else {
+    const tier = authenticityTier(overall.value);
+    const isFlagged = overall.status === 'flagged';
+    const note = isFlagged
+      ? `One of your connected platforms shows an engagement pattern outside the typical range for its follower count. This isn't a confirmed problem — a single underperforming post or video can cause it — but it's worth a look, since a sponsor's own check may notice the same thing.`
+      : connectedPlatforms.length
+        ? `Nothing unusual detected across your connected platform${connectedPlatforms.length > 1 ? 's' : ''}.`
+        : `Based on submitted evidence — connecting a platform via OAuth gives a stronger, live-verified signal instead.`;
+    overallHtml = `
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px">
+        <span style="font-size:28px;font-weight:700;color:${tier.color}">${Math.round(overall.value)}</span>
+        <span style="font-size:13px;font-weight:600;color:${tier.color}">${tier.label}</span>
+      </div>
+      <div style="font-size:12.5px;color:var(--color-text-tertiary);line-height:1.5">${note}</div>
+    `;
+  }
+
+  const PLATFORM_LABELS = { youtube: 'YouTube', tiktok: 'TikTok', instagram: 'Instagram', twitch: 'Twitch' };
+  const platformRows = connectedPlatforms.map(platform => {
+    const comp = compMap['engagement_quality_' + platform];
+    const label = PLATFORM_LABELS[platform] || (platform.charAt(0).toUpperCase() + platform.slice(1));
+    if (!comp) {
+      return `<div class="fact-row" style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--color-border-tertiary)">
+        <span style="font-size:12.5px;color:var(--color-text-secondary)">${label}</span>
+        <span style="font-size:12px;color:var(--color-text-tertiary)">Not enough data yet</span>
+      </div>`;
+    }
+    const tier = authenticityTier(comp.value);
+    return `<div class="fact-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--color-border-tertiary)">
+      <span style="font-size:12.5px;color:var(--color-text-secondary)">${label}</span>
+      <span style="font-size:12px;font-weight:600;color:${tier.color}">${tier.label}</span>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="card">
+      <div class="sec">Audience authenticity <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— why your score is what it is, per platform</span></div>
+      ${overallHtml}
+      ${platformRows ? `<div style="margin-top:14px">${platformRows}</div>` : ''}
+    </div>
+  `;
+}
+
 function renderToolsTab() {
   return `
+    ${renderAuthenticityTab()}
+
     <!-- ── Rate calculator ── -->
     <div class="card">
       <div class="sec">What should I charge? <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— free tool, not part of your score</span></div>
