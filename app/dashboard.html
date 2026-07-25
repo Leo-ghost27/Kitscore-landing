@@ -1146,17 +1146,27 @@ const ENGAGEMENT_BANDS = {
 };
 const ENGAGEMENT_TIER_LABELS = ['Strong', 'Healthy', 'Typical', 'Below typical', 'Low'];
 
+// Below this many followers, a ratio's denominator is too small to be
+// meaningful -- a single extra view or like swings the percentage
+// wildly (e.g. 2 followers + 23 videos + 1364 views computes to a
+// nonsensical 2965%, even though the math itself is correct). Same
+// "not enough data yet" treatment as a genuinely missing field, since
+// a technically-real number that's this noisy isn't actually more
+// informative than having none.
+const MIN_FOLLOWERS_FOR_BENCHMARK = 50;
+
 function computeEngagementRatio(platform, p) {
+  if (!p.follower_count || p.follower_count < MIN_FOLLOWERS_FOR_BENCHMARK) return null;
   if (platform === 'youtube') {
-    if (!p.follower_count || !p.video_count || p.view_count == null) return null;
+    if (!p.video_count || p.view_count == null) return null;
     return (p.view_count / p.video_count) / p.follower_count;
   }
   if (platform === 'tiktok') {
-    if (!p.follower_count || p.like_count == null) return null;
+    if (p.like_count == null) return null;
     return (p.like_count / p.follower_count) * 100;
   }
   if (platform === 'twitch') {
-    if (!p.follower_count || p.subscriber_count == null) return null;
+    if (p.subscriber_count == null) return null;
     return (p.subscriber_count / p.follower_count) * 100;
   }
   return null;
