@@ -447,7 +447,7 @@ async function load() {
   renderSidebar('creator', 'dashboard');
   document.getElementById('whoami').textContent = `${profile.display_name} · ${profile.email||''}`;
 
-  const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns },{ data:businessEmail },{ data:audience },{ data:history },{ data:platformConnections }] = await Promise.all([
+  const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns },{ data:businessEmail },{ data:audience },{ data:history },{ data:platformConnections },{ data:followerHistory }] = await Promise.all([
     sb.from('creators').select('id,niche,location,trust_score,confidence,badge_tier,plan,reliability_score,repeat_sponsor_rate,would_hire_again_pct,founding_cohort,slug,bio,profile_views').eq('id', profile.id).single(),
     sb.from('score_components').select('*').eq('creator_id', profile.id).order('weight', {ascending:false}),
     sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at',{ascending:false}),
@@ -456,10 +456,15 @@ async function load() {
     sb.rpc('fn_get_my_business_email'),
     sb.from('audience_demographics').select('dimension,label,pct').eq('creator_id', profile.id),
     sb.from('trust_score_history').select('trust_score,recorded_at').eq('creator_id', profile.id).order('recorded_at',{ascending:true}),
-    // Token-free summary (handle, follower count, verification_method) --
-    // never returns access_token/refresh_token, see
-    // fn_creator_platform_summary in supabase/2026-07-09-platform-connections.sql.
+    // Token-free summary (handle, follower/like/subscriber/view counts,
+    // verification_method) -- never returns access_token/refresh_token,
+    // see fn_creator_platform_summary in
+    // supabase/2026-07-23-extend-platform-summary-rpc.sql.
     sb.rpc('fn_creator_platform_summary', { p_creator_id: profile.id }),
+    // Raw follower-count snapshots over time, per platform -- distinct
+    // from trust_score_history (which tracks the composite score, not
+    // raw follower counts). See supabase/2026-07-23b-follower-history.sql.
+    sb.rpc('fn_creator_follower_history', { p_creator_id: profile.id }),
   ]);
   creator = { ...c, business_email: businessEmail };
   const audRows = audience || [];
@@ -516,7 +521,7 @@ async function load() {
 
   dash = { components, evidence, answers, answerMap, campaigns, history, verifiedCount, hasScore,
     score, conf, steps, doneCount, pct, currentStepIdx, nextMs, msPct, compMap, improvements,
-    usedPlatforms, unlimitedPlatforms, platformConnections: platformConnections || [] };
+    usedPlatforms, unlimitedPlatforms, platformConnections: platformConnections || [], followerHistory: followerHistory || [] };
 
   renderDashboardShell();
 
@@ -1115,6 +1120,80 @@ function renderEvidenceTab() {
   `;
 }
 
+// Exact tier thresholds mirrored from the live scoring functions
+// (fn_recalc_engagement_quality_{youtube,tiktok,twitch} in Supabase) --
+// each bands array is [strongMin, healthyMin, typicalMin, belowTypicalMin],
+// same numbers used to actually compute the score. If those functions
+// change, this needs to change with them or the two will drift apart --
+// exactly the kind of mismatch this feature exists to avoid.
+const ENGAGEMENT_BANDS = {
+  youtube: [
+    { max: 10000,    bands: [1.5, 0.8, 0.3, 0.1] },
+    { max: 100000,   bands: [0.5, 0.25, 0.10, 0.04] },
+    { max: 500000,   bands: [0.30, 0.15, 0.06, 0.025] },
+    { max: 2000000,  bands: [0.15, 0.08, 0.03, 0.01] },
+    { max: Infinity, bands: [0.05, 0.02, 0.008, 0.003] },
+  ],
+  tiktok: [
+    { max: 10000,    bands: [8, 4, 2, 0.8] },
+    { max: 100000,   bands: [6, 3, 1.5, 0.6] },
+    { max: 500000,   bands: [3.5, 2, 1, 0.4] },
+    { max: Infinity, bands: [1.5, 0.8, 0.4, 0.15] },
+  ],
+  twitch: [
+    { max: Infinity, bands: [5, 3, 1.5, 0.5] },
+  ],
+};
+const ENGAGEMENT_TIER_LABELS = ['Strong', 'Healthy', 'Typical', 'Below typical', 'Low'];
+
+function computeEngagementRatio(platform, p) {
+  if (platform === 'youtube') {
+    if (!p.follower_count || !p.video_count || p.view_count == null) return null;
+    return (p.view_count / p.video_count) / p.follower_count;
+  }
+  if (platform === 'tiktok') {
+    if (!p.follower_count || p.like_count == null) return null;
+    return (p.like_count / p.follower_count) * 100;
+  }
+  if (platform === 'twitch') {
+    if (!p.follower_count || p.subscriber_count == null) return null;
+    return (p.subscriber_count / p.follower_count) * 100;
+  }
+  return null;
+}
+
+function benchmarkFor(platform, p) {
+  const bandSet = ENGAGEMENT_BANDS[platform];
+  if (!bandSet) return null;
+  const ratio = computeEngagementRatio(platform, p);
+  if (ratio == null) return null;
+  const group = bandSet.find(t => p.follower_count < t.max) || bandSet[bandSet.length - 1];
+  const bands = group.bands;
+  let tierIndex = 4;
+  for (let i = 0; i < bands.length; i++) { if (ratio >= bands[i]) { tierIndex = i; break; } }
+  return {
+    ratio,
+    tierLabel: ENGAGEMENT_TIER_LABELS[tierIndex],
+    typicalMin: bands[2],
+    typicalMax: bands[1],
+    displayMultiplier: platform === 'youtube' ? 100 : 1, // YouTube's ratio isn't pre-multiplied in SQL
+  };
+}
+
+function formatPct(n) {
+  return (Math.round(n * 10) / 10).toString().replace(/\.0$/, '');
+}
+
+function benchmarkLineHtml(platform, p) {
+  const b = benchmarkFor(platform, p);
+  if (!b) return '';
+  const yourPct = formatPct(b.ratio * b.displayMultiplier);
+  const rangeLo = formatPct(b.typicalMin * b.displayMultiplier);
+  const rangeHi = formatPct(b.typicalMax * b.displayMultiplier);
+  const metric = platform === 'youtube' ? 'avg views per video, as % of subscribers' : platform === 'twitch' ? 'subscriber conversion' : 'like rate';
+  return `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px">Your ${metric}: <strong style="color:var(--color-text-secondary)">${yourPct}%</strong> · typical range for your size: ${rangeLo}%–${rangeHi}%</div>`;
+}
+
 function authenticityTier(value) {
   if (value >= 85) return { label: 'Strong', color: '#1D9E75' };
   if (value >= 68) return { label: 'Healthy', color: '#1D9E75' };
@@ -1161,16 +1240,23 @@ function renderAuthenticityTab() {
   const platformRows = connectedPlatforms.map(platform => {
     const comp = compMap['engagement_quality_' + platform];
     const label = PLATFORM_LABELS[platform] || (platform.charAt(0).toUpperCase() + platform.slice(1));
+    const rawRow = (platformConnections || []).find(p => p.platform === platform);
+    const benchmarkHtml = rawRow ? benchmarkLineHtml(platform, rawRow) : '';
     if (!comp) {
-      return `<div class="fact-row" style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--color-border-tertiary)">
-        <span style="font-size:12.5px;color:var(--color-text-secondary)">${label}</span>
-        <span style="font-size:12px;color:var(--color-text-tertiary)">Not enough data yet</span>
+      return `<div class="fact-row" style="padding:10px 0;border-top:1px solid var(--color-border-tertiary)">
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:12.5px;color:var(--color-text-secondary)">${label}</span>
+          <span style="font-size:12px;color:var(--color-text-tertiary)">Not enough data yet</span>
+        </div>
       </div>`;
     }
     const tier = authenticityTier(comp.value);
-    return `<div class="fact-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--color-border-tertiary)">
-      <span style="font-size:12.5px;color:var(--color-text-secondary)">${label}</span>
-      <span style="font-size:12px;font-weight:600;color:${tier.color}">${tier.label}</span>
+    return `<div class="fact-row" style="padding:10px 0;border-top:1px solid var(--color-border-tertiary)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12.5px;color:var(--color-text-secondary)">${label}</span>
+        <span style="font-size:12px;font-weight:600;color:${tier.color}">${tier.label}</span>
+      </div>
+      ${benchmarkHtml}
     </div>`;
   }).join('');
 
@@ -1183,9 +1269,64 @@ function renderAuthenticityTab() {
   `;
 }
 
+// Raw follower count over time, per platform -- distinct from
+// renderScoreHistory, which charts the composite trust score, not
+// follower counts. A steady, gradual line here reads as organic growth;
+// a vertical jump is the kind of thing purchased followers look like.
+// Reuses the same hand-rolled SVG sparkline as renderScoreHistorySvg for
+// visual consistency rather than a second charting approach.
+function renderFollowerGrowthCard() {
+  const { followerHistory, platformConnections } = dash;
+  const byPlatform = {};
+  (followerHistory || []).forEach(row => {
+    (byPlatform[row.platform] = byPlatform[row.platform] || []).push(row);
+  });
+  const PLATFORM_LABELS = { youtube: 'YouTube', tiktok: 'TikTok', instagram: 'Instagram', twitch: 'Twitch' };
+  const platforms = Object.keys(byPlatform);
+
+  if (!platforms.length) {
+    return `<div class="card">
+      <div class="sec">Follower growth</div>
+      <div style="font-size:12.5px;color:var(--color-text-tertiary)">Connect a platform to start tracking growth over time.</div>
+    </div>`;
+  }
+
+  const sections = platforms.map(platform => {
+    const rows = byPlatform[platform];
+    const label = PLATFORM_LABELS[platform] || platform;
+    if (rows.length < 2) {
+      return `<div style="padding:10px 0;border-top:1px solid var(--color-border-tertiary)">
+        <div style="font-size:12.5px;color:var(--color-text-secondary);font-weight:600;margin-bottom:4px">${label}</div>
+        <div style="font-size:11.5px;color:var(--color-text-tertiary)">Tracking started ${new Date(rows[0].recorded_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})} — check back after your next sync to see the trend.</div>
+      </div>`;
+    }
+    const counts = rows.map(r => Number(r.follower_count));
+    const first = new Date(rows[0].recorded_at).toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+    const last = new Date(rows[rows.length-1].recorded_at).toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+    const change = counts[counts.length-1] - counts[0];
+    const changeStr = (change >= 0 ? '+' : '') + change.toLocaleString();
+    return `<div style="padding:10px 0;border-top:1px solid var(--color-border-tertiary)">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+        <span style="font-size:12.5px;color:var(--color-text-secondary);font-weight:600">${label}</span>
+        <span style="font-size:11.5px;color:${change>=0?'#1D9E75':'#DC2626'}">${changeStr} followers</span>
+      </div>
+      ${renderScoreHistorySvg(counts, false)}
+      <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--color-text-tertiary);margin-top:2px">
+        <span>${first}</span><span>${last}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="card">
+    <div class="sec">Follower growth <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— steady growth reads as organic; sudden jumps are a red flag sponsors look for</span></div>
+    ${sections}
+  </div>`;
+}
+
 function renderToolsTab() {
   return `
     ${renderAuthenticityTab()}
+    ${renderFollowerGrowthCard()}
 
     <!-- ── Rate calculator ── -->
     <div class="card">
