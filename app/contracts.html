@@ -145,6 +145,9 @@ async function renderSponsorForm() {
           <input id="ctrUsageRights" placeholder="e.g. 90 days paid social usage">
         </div>
       </div>
+      <div class="field"><label>Fund through Kitscore escrow <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+        <input id="ctrEscrowAmount" type="number" min="0" step="0.01" placeholder="Amount in USD, e.g. 2000 — leave blank to handle payment outside Kitscore">
+      </div>
       <div class="field"><label>Exclusivity terms <span style="color:var(--color-text-tertiary)">(optional)</span></label>
         <input id="ctrExclusivity" placeholder="e.g. No competing skincare brand for 30 days">
       </div>
@@ -174,6 +177,7 @@ async function draftContract(briefApplicationId, campaignId) {
   if (!compensation) { msgEl.innerHTML = '<div class="msg error">Add the compensation terms.</div>'; return; }
 
   const usageRights = document.getElementById('ctrUsageRights').value.trim();
+  const escrowAmountUsd = document.getElementById('ctrEscrowAmount').value;
   const exclusivity = document.getElementById('ctrExclusivity').value.trim();
   const ftcRequired = document.getElementById('ctrFtc').checked;
   const additional = document.getElementById('ctrAdditional').value.trim();
@@ -185,6 +189,7 @@ async function draftContract(briefApplicationId, campaignId) {
     sponsor_id: profile.id, creator_id: creatorId, created_by: profile.id,
     title, deliverables, compensation,
     usage_rights: usageRights || null,
+    escrow_amount_cents: escrowAmountUsd ? Math.round(Number(escrowAmountUsd) * 100) : null,
     exclusivity_terms: exclusivity || null,
     ftc_disclosure_required: ftcRequired,
     additional_terms: additional || null,
@@ -204,7 +209,7 @@ async function loadContracts() {
   const listEl = document.getElementById('list');
   const col = profile.role === 'sponsor' ? 'sponsor_id' : 'creator_id';
   const { data: contracts, error } = await sb.from('contracts')
-    .select('*, sponsors!inner(company_name), creators!inner(id, profiles!inner(display_name))')
+    .select('*, sponsors!inner(company_name), creators!inner(id, stripe_connect_payouts_enabled, profiles!inner(display_name))')
     .eq(col, profile.id)
     .order('created_at', { ascending: false });
 
@@ -223,6 +228,22 @@ async function loadContracts() {
     const canSend = profile.role === 'sponsor' && c.status === 'draft';
     const canVoid = profile.role === 'sponsor' && c.status !== 'fully_signed' && c.status !== 'void';
 
+    const hasEscrow = c.escrow_amount_cents != null;
+    const escrowDollars = hasEscrow ? (c.escrow_amount_cents / 100).toFixed(2) : null;
+    const canFund = profile.role === 'sponsor' && hasEscrow && c.status === 'fully_signed' && c.escrow_status === 'not_funded';
+    const creatorNotReady = canFund && !c.creators.stripe_connect_payouts_enabled;
+    const canSubmitDeliverable = profile.role === 'creator' && c.escrow_status === 'held' && !c.deliverable_submitted_at;
+    const canReleaseOrRefund = profile.role === 'sponsor' && c.escrow_status === 'held';
+
+    const escrowLabel = {
+      not_funded: hasEscrow ? `Escrow: $${escrowDollars} not yet funded` : null,
+      processing: `Escrow: $${escrowDollars} processing`,
+      held: `Escrow: $${escrowDollars} held`,
+      released: `Escrow: $${escrowDollars} released to creator`,
+      refunded: `Escrow: $${escrowDollars} refunded to sponsor`,
+      failed: `Escrow: payment failed`,
+    }[c.escrow_status];
+
     return `
     <div class="row-item">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
@@ -239,14 +260,28 @@ async function loadContracts() {
         ${c.exclusivity_terms ? `<div><b>Exclusivity:</b> ${escapeHtml(c.exclusivity_terms)}</div>` : ''}
         ${c.additional_terms ? `<div><b>Additional terms:</b> ${escapeHtml(c.additional_terms)}</div>` : ''}
         <div><b>FTC / ad disclosure:</b> ${c.ftc_disclosure_required ? 'Required' : 'Not required'}</div>
+        ${escrowLabel ? `<div><b>Escrow:</b> ${escapeHtml(escrowLabel.replace('Escrow: ',''))}</div>` : ''}
       </div>
+      ${creatorNotReady ? `<div class="msg error">This creator hasn't finished setting up their payout account yet — funding is disabled until they do.</div>` : ''}
+      ${c.deliverable_submitted_at ? `<div class="signed-line">✓ Deliverable submitted ${new Date(c.deliverable_submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}${c.deliverable_notes ? ' — ' + escapeHtml(c.deliverable_notes) : ''}</div>` : ''}
       ${c.sponsor_signed_at ? `<div class="signed-line">✓ Signed by sponsor (${escapeHtml(c.sponsor_signature_name||'')}) — ${new Date(c.sponsor_signed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
       ${c.creator_signed_at ? `<div class="signed-line">✓ Signed by creator (${escapeHtml(c.creator_signature_name||'')}) — ${new Date(c.creator_signed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
         ${canSend ? `<button class="cta-outline" onclick="sendContract('${c.id}')">Send to creator</button>` : ''}
         ${canSignAsSponsor ? `<button class="cta-outline" onclick="toggleSignPanel('${c.id}')">Sign as sponsor</button>` : ''}
         ${canSignAsCreator ? `<button class="cta-outline" onclick="toggleSignPanel('${c.id}')">Sign as creator</button>` : ''}
+        ${canFund && !creatorNotReady ? `<button class="cta" onclick="fundEscrow('${c.id}')">Fund $${escrowDollars} into escrow</button>` : ''}
+        ${canSubmitDeliverable ? `<button class="cta-outline" onclick="toggleDeliverablePanel('${c.id}')">Mark deliverable as submitted</button>` : ''}
+        ${canReleaseOrRefund && c.deliverable_submitted_at ? `<button class="cta" onclick="releaseEscrow('${c.id}')">Approve &amp; release $${escrowDollars}</button>` : ''}
+        ${canReleaseOrRefund ? `<button class="cta-outline" style="color:#B42318;border-color:#B42318" onclick="refundEscrow('${c.id}')">Refund sponsor</button>` : ''}
         ${canVoid ? `<button class="cta-outline" style="color:#B42318;border-color:#B42318" onclick="voidContract('${c.id}')">Void</button>` : ''}
+      </div>
+      <div id="deliverable-panel-${c.id}" style="display:none;margin-top:10px">
+        <div class="field" style="margin-bottom:8px"><label>Notes for the sponsor <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+          <input id="deliverable-notes-${c.id}" placeholder="e.g. link to the published post">
+        </div>
+        <button class="cta" onclick="submitDeliverable('${c.id}')">Confirm submission</button>
+        <div id="deliverable-msg-${c.id}"></div>
       </div>
       <div id="sign-panel-${c.id}" style="display:none;margin-top:10px">
         <div class="field" style="margin-bottom:8px"><label>Type your full legal name to sign</label>
@@ -293,6 +328,51 @@ async function voidContract(contractId) {
   if (!confirm('Void this contract? This cannot be undone — draft a new one if terms need to change.')) return;
   const { error } = await sb.from('contracts').update({ status: 'void' }).eq('id', contractId);
   if (error) { alert('Could not void contract: ' + error.message); return; }
+  loadContracts();
+}
+
+async function callEscrowApi(action, body) {
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch(`/api/escrow?action=${action}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+    body: JSON.stringify(body),
+  });
+  const j = await res.json().catch(() => ({}));
+  return { ok: res.ok, ...j };
+}
+
+async function fundEscrow(contractId) {
+  const r = await callEscrowApi('fund', { contractId });
+  if (!r.ok) { alert(r.error || 'Could not start escrow payment.'); return; }
+  window.location.href = r.url;
+}
+
+function toggleDeliverablePanel(contractId) {
+  const el = document.getElementById('deliverable-panel-' + contractId);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitDeliverable(contractId) {
+  const notes = document.getElementById('deliverable-notes-' + contractId).value.trim();
+  const msgEl = document.getElementById('deliverable-msg-' + contractId);
+  const r = await callEscrowApi('submit-deliverable', { contractId, notes });
+  if (!r.ok) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(r.error || 'Could not submit.')}</div>`; return; }
+  msgEl.innerHTML = '<div class="msg ok">Marked as submitted.</div>';
+  loadContracts();
+}
+
+async function releaseEscrow(contractId) {
+  if (!confirm('Release the held funds to this creator? This cannot be undone.')) return;
+  const r = await callEscrowApi('release', { contractId });
+  if (!r.ok) { alert(r.error || 'Could not release funds.'); return; }
+  loadContracts();
+}
+
+async function refundEscrow(contractId) {
+  if (!confirm('Refund the held funds back to you? This cannot be undone.')) return;
+  const r = await callEscrowApi('refund', { contractId });
+  if (!r.ok) { alert(r.error || 'Could not refund.'); return; }
   loadContracts();
 }
 
