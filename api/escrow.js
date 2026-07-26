@@ -1,4 +1,5 @@
 // POST /api/escrow?action=connect-onboarding | refresh-connect-status | fund | submit-deliverable | release | refund
+// GET  /api/escrow?action=fee-info
 //
 // One function slot for the whole escrow feature, same consolidation
 // pattern as api/billing.js, api/team.js, api/campaign-actions.js.
@@ -9,8 +10,18 @@ const handleSubmitDeliverable = require('../lib/handlers/escrow-submit-deliverab
 const handleRelease = require('../lib/handlers/escrow-release');
 const handleRefund = require('../lib/handlers/escrow-refund');
 
+const DEFAULT_FEE_PCT = 10;
+
 module.exports = async (req, res) => {
   const action = req.query?.action;
+
+  // Non-sensitive and unauthenticated on purpose -- both sponsor and
+  // creator need to see this BEFORE a contract is funded, not just
+  // after, so the fee is disclosed rather than a backend-only detail.
+  if (action === 'fee-info') {
+    const feePct = Number(process.env.PLATFORM_ESCROW_FEE_PCT) || DEFAULT_FEE_PCT;
+    return res.status(200).json({ feePct });
+  }
 
   if (action === 'connect-onboarding') return handleConnectOnboarding(req, res);
   if (action === 'refresh-connect-status') return handleRefreshConnectStatus(req, res);
@@ -20,6 +31,6 @@ module.exports = async (req, res) => {
   if (action === 'refund') return handleRefund(req, res);
 
   return res.status(400).json({
-    error: 'Unknown or missing action. Use ?action=connect-onboarding, refresh-connect-status, fund, submit-deliverable, release, or refund.',
+    error: 'Unknown or missing action. Use ?action=connect-onboarding, refresh-connect-status, fund, submit-deliverable, release, refund, or fee-info.',
   });
 };

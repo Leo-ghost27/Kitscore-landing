@@ -94,6 +94,17 @@
 <script src="nav.js?v=2"></script>
 <script>
 let profile;
+let escrowFeePct = null;
+
+async function getEscrowFeePct() {
+  if (escrowFeePct != null) return escrowFeePct;
+  try {
+    const res = await fetch('/api/escrow?action=fee-info');
+    const j = await res.json();
+    escrowFeePct = j.feePct;
+  } catch { escrowFeePct = 10; }
+  return escrowFeePct;
+}
 
 async function load() {
   profile = await getCurrentProfile();
@@ -146,7 +157,8 @@ async function renderSponsorForm() {
         </div>
       </div>
       <div class="field"><label>Fund through Kitscore escrow <span style="color:var(--color-text-tertiary)">(optional)</span></label>
-        <input id="ctrEscrowAmount" type="number" min="0" step="0.01" placeholder="Amount in USD, e.g. 2000 — leave blank to handle payment outside Kitscore">
+        <input id="ctrEscrowAmount" type="number" min="0" step="0.01" placeholder="Amount in USD, e.g. 2000 — leave blank to handle payment outside Kitscore" oninput="updateEscrowFeePreview()">
+        <div id="escrowFeePreview" style="font-size:11.5px;color:var(--ink-soft);margin-top:6px"></div>
       </div>
       <div class="field"><label>Exclusivity terms <span style="color:var(--color-text-tertiary)">(optional)</span></label>
         <input id="ctrExclusivity" placeholder="e.g. No competing skincare brand for 30 days">
@@ -162,6 +174,16 @@ async function renderSponsorForm() {
       <div id="ctrFormMsg"></div>
     </div>
   `;
+}
+
+async function updateEscrowFeePreview() {
+  const el = document.getElementById('escrowFeePreview');
+  const val = Number(document.getElementById('ctrEscrowAmount').value);
+  if (!val || val <= 0) { el.textContent = ''; return; }
+  const feePct = await getEscrowFeePct();
+  const fee = val * feePct / 100;
+  const creatorGets = val - fee;
+  el.textContent = `Kitscore's fee: ${feePct}% ($${fee.toFixed(2)}) — creator receives $${creatorGets.toFixed(2)} of the $${val.toFixed(2)} you fund.`;
 }
 
 async function draftContract(briefApplicationId, campaignId) {
@@ -208,6 +230,7 @@ async function draftContract(briefApplicationId, campaignId) {
 async function loadContracts() {
   const listEl = document.getElementById('list');
   const col = profile.role === 'sponsor' ? 'sponsor_id' : 'creator_id';
+  const currentFeePct = await getEscrowFeePct();
   const { data: contracts, error } = await sb.from('contracts')
     .select('*, sponsors!inner(company_name), creators!inner(id, stripe_connect_payouts_enabled, profiles!inner(display_name))')
     .eq(col, profile.id)
@@ -230,6 +253,13 @@ async function loadContracts() {
 
     const hasEscrow = c.escrow_amount_cents != null;
     const escrowDollars = hasEscrow ? (c.escrow_amount_cents / 100).toFixed(2) : null;
+    let feeDisclosure = '';
+    if (hasEscrow) {
+      const feeCents = c.platform_fee_cents != null ? c.platform_fee_cents : Math.round(c.escrow_amount_cents * currentFeePct / 100);
+      const feeIsEstimate = c.platform_fee_cents == null;
+      const creatorGetsDollars = ((c.escrow_amount_cents - feeCents) / 100).toFixed(2);
+      feeDisclosure = ` (Kitscore fee: $${(feeCents / 100).toFixed(2)}${feeIsEstimate ? ' est.' : ''} — creator receives $${creatorGetsDollars})`;
+    }
     const canFund = profile.role === 'sponsor' && hasEscrow && c.status === 'fully_signed' && c.escrow_status === 'not_funded';
     const creatorNotReady = canFund && !c.creators.stripe_connect_payouts_enabled;
     const canSubmitDeliverable = profile.role === 'creator' && c.escrow_status === 'held' && !c.deliverable_submitted_at;
@@ -260,7 +290,7 @@ async function loadContracts() {
         ${c.exclusivity_terms ? `<div><b>Exclusivity:</b> ${escapeHtml(c.exclusivity_terms)}</div>` : ''}
         ${c.additional_terms ? `<div><b>Additional terms:</b> ${escapeHtml(c.additional_terms)}</div>` : ''}
         <div><b>FTC / ad disclosure:</b> ${c.ftc_disclosure_required ? 'Required' : 'Not required'}</div>
-        ${escrowLabel ? `<div><b>Escrow:</b> ${escapeHtml(escrowLabel.replace('Escrow: ',''))}</div>` : ''}
+        ${escrowLabel ? `<div><b>Escrow:</b> ${escapeHtml(escrowLabel.replace('Escrow: ',''))}${feeDisclosure}</div>` : ''}
       </div>
       ${creatorNotReady ? `<div class="msg error">This creator hasn't finished setting up their payout account yet — funding is disabled until they do.</div>` : ''}
       ${c.deliverable_submitted_at ? `<div class="signed-line">✓ Deliverable submitted ${new Date(c.deliverable_submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}${c.deliverable_notes ? ' — ' + escapeHtml(c.deliverable_notes) : ''}</div>` : ''}
