@@ -3,7 +3,7 @@
 // that mutates billing state — never trust client-reported plan changes.
 const Stripe = require('stripe');
 const { adminClient } = require('../lib/supabase-admin');
-const { sendEmail, sponsorReceiptEmail, reportReadyEmail, refundConfirmationEmail } = require('../lib/email');
+const { sendEmail, sponsorReceiptEmail, reportReadyEmail, refundConfirmationEmail, escrowFundedEmail } = require('../lib/email');
 const { deriveVerdict, fallbackSummary, fetchCreatorBriefData } = require('../lib/ai-brief');
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -72,6 +72,50 @@ const handler = async (req, res) => {
       case 'checkout.session.completed': {
         const session = event.data.object;
         const { profileId, profileRole, product, evaluationId } = session.metadata || {};
+
+        // ── Escrow funding for a contract (separate flow from the
+        // report/subscription checkout below -- no profileId/product in
+        // its metadata, just type + contractId). Mark held, not
+        // released -- funds sit in the platform's own Stripe balance
+        // until api/escrow.js?action=release explicitly transfers them.
+        if (session.metadata?.type === 'contract_escrow') {
+          const contractId = session.metadata.contractId;
+          const platformFeeCents = Number(session.metadata.platformFeeCents) || 0;
+          if (contractId) {
+            let chargeId = null;
+            if (session.payment_intent) {
+              const pi = await stripe.paymentIntents.retrieve(session.payment_intent);
+              chargeId = pi.latest_charge || null;
+            }
+
+            await admin.from('contracts').update({
+              escrow_status: 'held',
+              escrow_payment_intent_id: session.payment_intent,
+              escrow_charge_id: chargeId,
+              platform_fee_cents: platformFeeCents,
+              funded_at: new Date().toISOString(),
+            }).eq('id', contractId);
+
+            const { data: contract } = await admin.from('contracts')
+              .select('title, creator_id, sponsors!inner(company_name)').eq('id', contractId).maybeSingle();
+            if (contract) {
+              const { data: creatorProfile } = await admin.from('profiles').select('email').eq('id', contract.creator_id).maybeSingle();
+              if (creatorProfile?.email) {
+                const origin = `https://${req.headers.host}`;
+                await sendEmail({
+                  to: creatorProfile.email,
+                  ...escrowFundedEmail({
+                    contractTitle: contract.title,
+                    amountCents: session.amount_total,
+                    sponsorCompanyName: contract.sponsors.company_name,
+                    contractsUrl: `${origin}/app/contracts.html`,
+                  }),
+                });
+              }
+            }
+          }
+          break;
+        }
 
         // Persist stripe_customer_id if not already stored — to the correct
         // table for this buyer's role, since creator_pro buyers are creators.
@@ -232,6 +276,22 @@ const handler = async (req, res) => {
             .update({ subscription_status: 'past_due' })
             .eq('id', account.id);
         }
+        break;
+      }
+
+      // ── account.updated ──────────────────────────────────────────────────
+      // Fires whenever a connected account's status changes -- including
+      // mid-onboarding as Stripe verifies details, not just at the end.
+      // This is the authoritative sync path; api/escrow.js?action=refresh-
+      // connect-status is a manual/on-return convenience that does the
+      // same lookup, not the only path to correct data.
+      case 'account.updated': {
+        const account = event.data.object;
+        await admin.from('creators').update({
+          stripe_connect_charges_enabled: !!account.charges_enabled,
+          stripe_connect_payouts_enabled: !!account.payouts_enabled,
+          stripe_connect_details_submitted: !!account.details_submitted,
+        }).eq('stripe_connect_account_id', account.id);
         break;
       }
 

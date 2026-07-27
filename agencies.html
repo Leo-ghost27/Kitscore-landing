@@ -125,7 +125,7 @@
   .step p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
   /* ── Features ── */
-  .features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 40px; }
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
   .feature { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
   .feature:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
   .feature-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--accent-dim); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; color: var(--accent); }
@@ -190,6 +190,7 @@
   /* ── Responsive ── */
   @media(max-width: 1024px) {
     .pricing-grid-4 { grid-template-columns: 1fr 1fr; }
+    .features { grid-template-columns: 1fr 1fr; }
   }
   @media(max-width: 720px) {
     nav { padding: 0 16px; }
@@ -440,6 +441,12 @@
         <h3>Approval workflow + score alerts</h3>
         <p>Route a report unlock through your account owner's sign-off before it's confirmed. Get notified if a creator you've already approved sees their Trust Score drop later — before it becomes your problem.</p>
         <span class="tag tag-amber">Team plan</span>
+      </div>
+      <div class="feature">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l4 4v14H5V3z"/><path d="M9 3v4H5"/><path d="M8 13l2 2 4-4"/></svg></div>
+        <h3>Structured deal management</h3>
+        <p>Once a creator's vetted, post an open brief or draft a contract directly — deliverables, compensation, usage rights, and FTC disclosure spelled out, signed by both sides. Fund it through Kitscore escrow and payment is held until the creator delivers and your client's approved it. Kitscore takes a 10% fee out of the payout, disclosed on the contract before anything is funded.</p>
+        <span class="tag tag-green">Escrow protected</span>
       </div>
     </div>
   </div>

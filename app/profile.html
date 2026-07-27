@@ -88,7 +88,7 @@ async function load() {
   renderSidebar('creator', 'profile');
 
   const [{ data: c }, { data: email }, { data: collabs }, { data: press }] = await Promise.all([
-    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images, available_for, causes, profile_views').eq('id', profile.id).single(),
+    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images, available_for, causes, profile_views, stripe_connect_account_id, stripe_connect_charges_enabled, stripe_connect_payouts_enabled, stripe_connect_details_submitted').eq('id', profile.id).single(),
     sb.rpc('fn_get_my_business_email'),
     sb.from('creator_collaborations').select('id, brand_name, logo_url, link').eq('creator_id', profile.id).order('display_order').order('created_at'),
     sb.from('creator_press_mentions').select('id, title, outlet_name, url, mention_date').eq('creator_id', profile.id).order('display_order').order('created_at'),
@@ -131,6 +131,11 @@ async function load() {
     <div class="prow2">
       <div class="field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}"></div>
       <div class="field"><label>Business email</label><input id="businessEmail" value="${escapeHtml(creator.business_email || '')}"></div>
+    </div>
+    <div class="psec">
+      <div class="psec-title">Payouts</div>
+      <div class="psec-sub">Connect a payout account so sponsors can pay you through Kitscore's escrow — funds are held until you deliver and the sponsor approves.</div>
+      ${renderPayoutStatus()}
     </div>
     </div>
 
@@ -648,7 +653,44 @@ async function saveSlug() {
   msg.innerHTML = `<div class="msg ok">Saved — your Verified Media Kit and trust link now use this URL.</div>`;
 }
 
-load();
+function renderPayoutStatus() {
+  if (creator.stripe_connect_payouts_enabled) {
+    return `<div class="msg ok" style="margin-top:4px">Payouts ready — sponsors can fund and release escrow to you.</div>`;
+  }
+  if (creator.stripe_connect_details_submitted) {
+    return `
+      <div class="msg" style="margin-top:4px;background:#FFF7E6;color:#8A5B0A">Stripe is still verifying your details — this can take a little while.</div>
+      <button class="btn-secondary" style="margin-top:8px" onclick="connectPayouts()">Check status / continue setup</button>`;
+  }
+  return `<button class="btn-secondary" style="margin-top:4px" onclick="connectPayouts()">Connect payout account</button>`;
+}
+
+async function connectPayouts() {
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch('/api/escrow?action=connect-onboarding', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok) { alert(j.error || 'Could not start payout setup.'); return; }
+  window.location.href = j.url;
+}
+
+async function refreshConnectStatusIfReturning() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('connect') !== 'return' && params.get('connect') !== 'refresh') return;
+
+  const { data: { session } } = await sb.auth.getSession();
+  await fetch('/api/escrow?action=refresh-connect-status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+  }).catch(() => {});
+
+  window.history.replaceState({}, '', window.location.pathname);
+  await load();
+}
+
+load().then(refreshConnectStatusIfReturning);
 </script>
 </body>
 </html>

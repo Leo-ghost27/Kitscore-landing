@@ -101,7 +101,7 @@
   section h2 { font-size: clamp(20px, 2.6vw, 28px); font-weight: 700; font-family: var(--font-display); letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 14px; text-align: center; }
   section > p.section-sub { font-size: 15px; color: var(--muted); line-height: 1.8; margin: 0 auto 40px; text-align: center; max-width: 560px; }
 
-  .value-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .value-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
   .value-card { background: var(--bg); padding: 32px 28px; border: 0.5px solid var(--border); box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
   .value-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
   .value-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--accent-dim); color: var(--accent); margin-bottom: 18px; font-size: 18px; font-weight: 700; font-family: var(--font-display); }
@@ -138,9 +138,6 @@
   footer a { color: inherit; text-decoration: none; }
   footer a:hover { color: var(--text); }
 
-  @media (max-width: 900px) and (min-width: 761px) {
-    .value-grid { grid-template-columns: repeat(2, 1fr); }
-  }
   @media (max-width: 760px) {
     .container { padding: 0 20px; }
     .value-grid, .steps { grid-template-columns: 1fr; }
@@ -173,8 +170,8 @@
   <div class="hero">
     <div class="hero-copy">
       <span class="badge">★ Founding Creator Cohort — First 100</span>
-      <h1>Get a free, evidence-backed<br><em>Kitscore.</em></h1>
-      <p class="hero-sub">A free, evidence-backed profile you can pitch with — your Verified Media Kit, a shareable media kit with a rate card and verified history, plus a quick trust link for when a sponsor checks you out. Built from verified campaign history, not follower count. Founding Creators also get unlimited OAuth-verified platforms free, normally a $19.99/mo Pro perk.</p>
+      <h1>Stop sending screenshots.<br><em>Start sending proof.</em></h1>
+      <p class="hero-sub">Your free Kitscore is evidence-backed, not follower-count theater: a Verified Media Kit with a rate card and confirmed campaign history, a quick trust link for when a sponsor checks you out, and — when you're ready to close the deal — open briefs, signed contracts, and payment held safely in escrow until you deliver. Built from what you've actually done, not what you typed in. Founding Creators also get unlimited OAuth-verified platforms free, normally a $19.99/mo Pro perk.</p>
       <a href="/app/auth.html" class="hero-cta">Claim Your Founding Spot →</a>
       <div class="hero-note">Free forever. No card required. Takes about 2 minutes.</div>
 
@@ -239,6 +236,13 @@
                   <div class="fc-check-desc">One link, sent to any brand</div>
                 </div>
               </li>
+              <li>
+                <div class="fc-check-box"></div>
+                <div>
+                  <div class="fc-check-title">Payment held safely in escrow</div>
+                  <div class="fc-check-desc">Sponsors fund it upfront — released once you deliver</div>
+                </div>
+              </li>
             </ul>
             <div class="fc-hint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Tap to flip back</div>
           </div>
@@ -286,17 +290,27 @@
       <div class="value-card">
         <div class="value-icon">04</div>
         <h3>Full score transparency</h3>
-        <p>No black box. Every component is named and labelled by how it was verified — live-confirmed, evidence-submitted, or self-reported — so you always know what to fix.</p>
+        <p>No black box. Your Trust Score is five named, weighted components — audience authenticity, engagement quality, brand safety, content consistency, and professionalism — each labelled by how it was verified: live-confirmed, evidence-submitted, or self-reported. <a href="/methodology.html">See the full published formula →</a></p>
       </div>
       <div class="value-card">
         <div class="value-icon">05</div>
         <h3>Ownership-verified platforms</h3>
-        <p>Connect YouTube, TikTok, Instagram, or Twitch directly — not a screenshot, an actual sign-in that proves you own the account and pulls your real, live stats straight from the source.</p>
+        <p>Connect YouTube, TikTok, Instagram, Twitch, or Discord directly — not a screenshot, an actual sign-in that proves you own the account and pulls your real, live stats straight from the source.</p>
       </div>
       <div class="value-card">
         <div class="value-icon">06</div>
+        <h3>Prove your growth, not just your snapshot</h3>
+        <p>A live follower growth chart and real engagement benchmarking pulled from your connected platforms — plus an audience authenticity check that flags accounts with view/engagement patterns that don't add up. Numbers a brand can trend-check, not just a screenshot from last week.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">07</div>
         <h3>Show, don't just tell</h3>
         <p>Add a gallery of your content, list what you're available for, and log past brand work and press features. Pick a color theme so it looks like yours, not a template. Then take your live "Verified by Kitscore" badge with you as a link-in-bio button or embed — the context and the proof, wherever a sponsor finds you first.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">08</div>
+        <h3>Find deals, get paid safely</h3>
+        <p>Browse open briefs from sponsors and apply directly — no more waiting to be discovered. Once you're both in, sign a contract with deliverables and compensation spelled out, then get paid through Kitscore's escrow: the sponsor's payment is held until you deliver and they approve, so you're never left chasing an invoice. Kitscore takes a 10% fee from the payout, disclosed upfront on every contract before a cent moves.</p>
       </div>
     </div>
   </section>
@@ -351,11 +365,15 @@
       </details>
       <details class="faq-item">
         <summary>How is my score actually calculated?</summary>
-        <p>Two ways. Mutually confirmed campaigns — you submit evidence a campaign happened, and the sponsor who ran it confirms it. And ownership-verified platforms — connecting YouTube, TikTok, Instagram, or Twitch pulls your real engagement and posting activity straight from the source, no self-reporting involved. Self-reported claims are always labelled as such and never blended into your verified score.</p>
+        <p>Two ways. Mutually confirmed campaigns — you submit evidence a campaign happened, and the sponsor who ran it confirms it. And ownership-verified platforms — connecting YouTube, TikTok, Instagram, Twitch, or Discord pulls your real engagement and posting activity straight from the source, no self-reporting involved. Self-reported claims are always labelled as such and never blended into your verified score. <a href="/methodology.html">Read the full published formula →</a></p>
       </details>
       <details class="faq-item">
         <summary>What's the difference between free and Pro?</summary>
-        <p>Free profiles can link unlimited platforms and submit unlimited evidence — that's free forever. The only thing capped is ownership-verified platform connections (YouTube, TikTok, Instagram, or Twitch — one free). Founding Creators get that unlimited free too. <a href="/#pricing-creators">See the full plan comparison →</a></p>
+        <p>Free profiles can link unlimited platforms and submit unlimited evidence — that's free forever. The only thing capped is ownership-verified platform connections (YouTube, TikTok, Instagram, Twitch, or Discord — one free). Founding Creators get that unlimited free too. <a href="/#pricing-creators">See the full plan comparison →</a></p>
+      </details>
+      <details class="faq-item">
+        <summary>How do I actually get paid for a sponsorship?</summary>
+        <p>Apply to an open brief (or a sponsor drafts a contract directly once you've agreed on a deal), sign it, and — if the sponsor funds it through Kitscore escrow — the payment is held safely until you submit the deliverable and they approve it. No chasing invoices, no upfront-payment risk on either side. Kitscore takes a 10% fee out of the payout, shown to both of you on the contract before the sponsor ever funds it — never a hidden number.</p>
       </details>
     </div>
   </section>
