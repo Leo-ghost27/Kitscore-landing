@@ -125,7 +125,7 @@
   .step p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
   /* ── Features ── */
-  .features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 40px; }
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 40px; }
   .feature { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
   .feature:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
   .feature-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--accent-dim); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; color: var(--accent); }
@@ -190,6 +190,7 @@
   /* ── Responsive ── */
   @media(max-width: 1024px) {
     .pricing-grid-4 { grid-template-columns: 1fr 1fr; }
+    .features { grid-template-columns: 1fr 1fr; }
   }
   @media(max-width: 720px) {
     nav { padding: 0 16px; }
