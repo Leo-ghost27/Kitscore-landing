@@ -13,7 +13,7 @@
   .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
   .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:16px;max-width:420px}
   .field{margin-bottom:12px}
-  .field label{display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+  .field label{display:block;font-size:11px;font-weight:600;color:var(--color-text-secondary);margin-bottom:4px}
   .field input{width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
   .psec{margin:26px 0 14px;padding-top:18px;border-top:1px solid var(--color-border-tertiary)}
   .psec:first-of-type{margin-top:22px;padding-top:0;border-top:none}
@@ -166,11 +166,11 @@ async function load() {
         </div>
       </div>
       <div style="margin-top:14px">
-        <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:6px">Vibe tags <span style="font-weight:400">— up to 3, shown as pills on your cover</span></div>
+        <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:6px"><strong style="color:var(--color-text-secondary)">Vibe tags</strong> <span style="font-weight:400">— up to 3, shown as pills on your cover</span></div>
         <div id="coverTagsPicker"></div>
       </div>
       <div style="margin-top:14px;max-width:280px">
-        <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:6px">Spotlight stat <span style="font-weight:400">— the number featured on your cover</span></div>
+        <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:6px"><strong style="color:var(--color-text-secondary)">Spotlight stat</strong> <span style="font-weight:400">— the number featured on your cover</span></div>
         <select id="coverSpotlightSelect" onchange="selectCoverSpotlight(this.value)" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px;font-family:inherit;background:#fff">
           <option value="">None</option>
           <option value="reach">Total reach</option>
