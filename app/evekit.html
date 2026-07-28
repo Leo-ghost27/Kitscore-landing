@@ -25,10 +25,18 @@
 
   .cover{background:#0F0F0E;border-radius:16px;padding:44px 40px;margin-bottom:20px;position:relative;overflow:hidden}
   .cover::before{content:'';position:absolute;top:-120px;left:-80px;width:400px;height:400px;background:radial-gradient(circle, rgba(var(--ek-accent-rgb),.35) 0%, transparent 70%);pointer-events:none}
+  .cover-pattern{position:absolute;inset:0;opacity:.16;pointer-events:none}
+  .cover-motif{position:absolute;bottom:10px;right:16px;opacity:.10;pointer-events:none;color:var(--ek-accent-light)}
+  .cover-tags{position:absolute;top:20px;left:40px;display:flex;gap:6px;z-index:1}
+  .cover-tag{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#D4D4D2;font-size:10.5px;font-weight:500;padding:4px 10px;border-radius:20px}
+  .cover-spotlight{position:absolute;top:20px;right:40px;text-align:right;z-index:1}
+  .cover-spotlight .v{font-size:20px;font-weight:700;color:#fff;line-height:1}
+  .cover-spotlight .l{font-size:9px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
   .cover-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ek-accent-light);margin-bottom:16px}
-  .cover-head{display:flex;align-items:center;gap:16px}
+  .cover-head{display:flex;align-items:center;gap:16px;position:relative;z-index:1}
   .cover-avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid rgba(255,255,255,.15)}
   .cover-avatar-placeholder{width:64px;height:64px;border-radius:50%;flex-shrink:0;background:var(--ek-accent);color:#fff;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .cover-avatar.shape-rounded,.cover-avatar-placeholder.shape-rounded{border-radius:22%}
   .cover-name{font-family:'Fraunces',serif;font-size:34px;font-weight:600;color:#fff;margin-bottom:4px}
   .gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
   .gallery-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid #E5E4DF}
@@ -131,6 +139,81 @@ function setEkTheme(key) {
   s.setProperty('--ek-glow', t.glow);
 }
 
+// ── Cover customization (phase 2) ── pattern backgrounds, niche motif
+// icon, vibe tag labels, and the spotlight stat. All rendering-only —
+// the underlying values are picked by the creator on profile.html and
+// written straight to Supabase (same instant-write pattern as
+// selectEkTheme above), so this file only has to know how to draw them.
+const COVER_PATTERNS = {
+  none: '',
+  dots: `<svg width="100%" height="100%" class="cover-pattern" preserveAspectRatio="none"><defs><pattern id="ekpat" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.4" fill="#fff"/></pattern></defs><rect width="100%" height="100%" fill="url(#ekpat)"/></svg>`,
+  lines: `<svg width="100%" height="100%" class="cover-pattern" preserveAspectRatio="none"><defs><pattern id="ekpat" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="18" stroke="#fff" stroke-width="1.6"/></pattern></defs><rect width="100%" height="100%" fill="url(#ekpat)"/></svg>`,
+  waves: `<svg width="100%" height="100%" class="cover-pattern" preserveAspectRatio="none"><defs><pattern id="ekpat" width="40" height="20" patternUnits="userSpaceOnUse"><path d="M0 10 Q10 0 20 10 T40 10" fill="none" stroke="#fff" stroke-width="1.6"/></pattern></defs><rect width="100%" height="100%" fill="url(#ekpat)"/></svg>`,
+};
+
+// Small curated set, not exhaustive -- keyed on substring match against
+// the creator's free-text niche field, falls back to a generic sparkle.
+// Icons are inline SVG (not an icon font) since evekit.html is public
+// and unauthenticated -- keeping it dependency-free here.
+const NICHE_MOTIFS = [
+  [/beauty|makeup|skincare/i, '<circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/>'],
+  [/fitness|gym|workout|health/i, '<path d="M4 12h16M7 8v8M17 8v8M2 10v4M22 10v4"/>'],
+  [/game|gaming|esport/i, '<rect x="3" y="8" width="18" height="9" rx="4"/><path d="M8 12h.01M11 12.5h3M15.5 11v3"/>'],
+  [/food|cook|chef|recipe/i, '<path d="M6 3v7a3 3 0 006 0V3M6 3v18M18 3c-2 0-3 2-3 5s1 5 3 5v10"/>'],
+  [/travel|adventure/i, '<path d="M12 2l2.5 7H22l-6 4.5L18.5 21 12 16l-6.5 5L8 13.5 2 9h7.5z" transform="scale(.9) translate(1.2,1.2)"/>'],
+  [/tech|coding|developer|software/i, '<polyline points="8 6 2 12 8 18"/><polyline points="16 6 22 12 16 18"/>'],
+  [/music|dj|producer|singer/i, '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
+  [/fashion|style|outfit/i, '<path d="M16 4l4 3-3 3-2-2v10H9V8L7 10 4 7l4-3 2 2h4z"/>'],
+];
+function motifPathsFor(niche) {
+  const hit = NICHE_MOTIFS.find(([re]) => re.test(niche || ''));
+  return hit ? hit[1] : '<path d="M12 3l1.9 5.8L20 10l-5 3.6L16.5 20 12 16.5 7.5 20 9 13.6 4 10l6.1-1.2z"/>'; // sparkle fallback
+}
+function coverMotifSvg(niche) {
+  return `<svg class="cover-motif" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">${motifPathsFor(niche)}</svg>`;
+}
+
+const COVER_TAG_LABELS = {
+  cozycore: 'cozycore', lifestyle: 'lifestyle', outdoorsy: 'outdoorsy', comedy: 'comedy',
+  beauty: 'beauty', fitness: 'fitness', gaming: 'gaming', food: 'food', travel: 'travel',
+  tech: 'tech', music: 'music', fashion: 'fashion', parenting: 'parenting', wellness: 'wellness', diy: 'diy',
+};
+function coverTagsHtml(tags) {
+  if (!tags || !tags.length) return '';
+  return `<div class="cover-tags">${tags.slice(0, 3).map(t =>
+    `<span class="cover-tag">#${escapeHtml(COVER_TAG_LABELS[t] || t)}</span>`
+  ).join('')}</div>`;
+}
+
+// Spotlight stat: deliberately computed here from fields already on
+// `kit` rather than a fifth RPC round trip -- reach sums follower_count
+// across every connected platform, engagement reuses the same
+// engagement_quality components the score itself is built from where
+// present, campaigns/trust just echo fields already shown elsewhere on
+// the page in a more prominent spot.
+function coverSpotlightHtml(kit) {
+  if (!kit.coverSpotlightStat) return '';
+  let value, label;
+  if (kit.coverSpotlightStat === 'reach') {
+    const total = (kit.platforms || []).reduce((sum, p) => sum + (p.follower_count || 0), 0);
+    value = formatCompactNumber(total); label = 'Total reach';
+  } else if (kit.coverSpotlightStat === 'campaigns') {
+    value = String(kit.verifiedCount || 0); label = 'Verified campaigns';
+  } else if (kit.coverSpotlightStat === 'trust') {
+    value = String(Math.round(kit.trustScore || 0)); label = 'Trust score';
+  } else if (kit.coverSpotlightStat === 'engagement') {
+    value = kit.confidence != null ? `${Math.round(kit.confidence)}%` : '—'; label = 'Confidence';
+  } else {
+    return '';
+  }
+  return `<div class="cover-spotlight"><div class="v">${escapeHtml(value)}</div><div class="l">${escapeHtml(label)}</div></div>`;
+}
+function formatCompactNumber(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return String(n);
+}
+
 function themePickerHtml(currentTheme) {
   return `<div title="Verified Media Kit color theme" style="display:flex;align-items:center;gap:6px;margin-right:2px">
     ${Object.entries(EK_THEMES).map(([key, t]) => `
@@ -211,11 +294,15 @@ function renderKit(kit, opts) {
 
   document.getElementById('content').innerHTML = `
     <div class="cover">
+      ${COVER_PATTERNS[kit.coverPattern] || ''}
+      ${coverMotifSvg(kit.niche)}
+      ${coverTagsHtml(kit.coverTags)}
+      ${coverSpotlightHtml(kit)}
       <div class="cover-label">Verified Media Kit · Kitscore</div>
       <div class="cover-head">
         ${kit.avatarUrl
-          ? `<img class="cover-avatar" src="${escapeHtml(kit.avatarUrl)}">`
-          : `<div class="cover-avatar-placeholder">${escapeHtml((kit.displayName||'?').trim().charAt(0).toUpperCase())}</div>`}
+          ? `<img class="cover-avatar${kit.avatarShape === 'rounded' ? ' shape-rounded' : ''}" src="${escapeHtml(kit.avatarUrl)}">`
+          : `<div class="cover-avatar-placeholder${kit.avatarShape === 'rounded' ? ' shape-rounded' : ''}">${escapeHtml((kit.displayName||'?').trim().charAt(0).toUpperCase())}</div>`}
         <div>
           <div class="cover-name">${escapeHtml(kit.displayName)}</div>
           <div class="cover-sub">${[kit.niche, kit.location].filter(Boolean).map(escapeHtml).join(' · ') || 'Creator'}</div>
@@ -384,7 +471,7 @@ function escapeHtml(s) {
 // ── Owner (authenticated, dashboard) mode ───────────────────────────────
 async function loadOwnerKit(profile) {
   const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }, { data: audience }, { data: collabs }, { data: press }] = await Promise.all([
-    sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,profile_views,avatar_url,gallery_images,available_for,causes,theme').eq('id', profile.id).single(),
+    sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,profile_views,avatar_url,gallery_images,available_for,causes,theme,cover_pattern,cover_tags,cover_spotlight_stat,avatar_shape').eq('id', profile.id).single(),
     sb.from('campaigns').select('name,objective,creator_confirmed,sponsor_confirmed,created_at').eq('creator_id', profile.id).order('created_at',{ascending:false}),
     sb.rpc('fn_creator_platform_summary', { p_creator_id: profile.id }),
     sb.rpc('fn_get_my_business_email'),
@@ -412,6 +499,7 @@ async function loadOwnerKit(profile) {
     wouldHireAgainPct: c.would_hire_again_pct, repeatSponsorRate: c.repeat_sponsor_rate,
     audienceCountries: audByDim('country'), audienceAges: audByDim('age'), audienceGenders: audByDim('gender'),
     platforms, campaigns: verified, avatarUrl: c.avatar_url, galleryImages: c.gallery_images || [],
+    coverPattern: c.cover_pattern, coverTags: c.cover_tags || [], coverSpotlightStat: c.cover_spotlight_stat, avatarShape: c.avatar_shape,
     collaborations: collabs || [], pressMentions: press || [], availableFor: c.available_for || [], causes: c.causes || [], theme: c.theme,
     verifiedSince,
   };
@@ -493,6 +581,7 @@ async function loadPublicKit(slug) {
     audienceGenders: row.audience_genders || [],
     platforms: row.platforms || [], campaigns: row.campaigns || [],
     avatarUrl: row.avatar_url, galleryImages: row.gallery_images || [],
+    coverPattern: row.cover_pattern, coverTags: row.cover_tags || [], coverSpotlightStat: row.cover_spotlight_stat, avatarShape: row.avatar_shape,
     collaborations: row.collaborations || [], pressMentions: row.press_mentions || [],
     availableFor: row.available_for || [], causes: row.causes || [], theme: row.theme,
     verifiedSince: row.verified_since,
