@@ -1149,90 +1149,6 @@ function renderEvidenceTab() {
   `;
 }
 
-// Exact tier thresholds mirrored from the live scoring functions
-// (fn_recalc_engagement_quality_{youtube,tiktok,twitch} in Supabase) --
-// each bands array is [strongMin, healthyMin, typicalMin, belowTypicalMin],
-// same numbers used to actually compute the score. If those functions
-// change, this needs to change with them or the two will drift apart --
-// exactly the kind of mismatch this feature exists to avoid.
-const ENGAGEMENT_BANDS = {
-  youtube: [
-    { max: 10000,    bands: [1.5, 0.8, 0.3, 0.1] },
-    { max: 100000,   bands: [0.5, 0.25, 0.10, 0.04] },
-    { max: 500000,   bands: [0.30, 0.15, 0.06, 0.025] },
-    { max: 2000000,  bands: [0.15, 0.08, 0.03, 0.01] },
-    { max: Infinity, bands: [0.05, 0.02, 0.008, 0.003] },
-  ],
-  tiktok: [
-    { max: 10000,    bands: [8, 4, 2, 0.8] },
-    { max: 100000,   bands: [6, 3, 1.5, 0.6] },
-    { max: 500000,   bands: [3.5, 2, 1, 0.4] },
-    { max: Infinity, bands: [1.5, 0.8, 0.4, 0.15] },
-  ],
-  twitch: [
-    { max: Infinity, bands: [5, 3, 1.5, 0.5] },
-  ],
-};
-const ENGAGEMENT_TIER_LABELS = ['Strong', 'Healthy', 'Typical', 'Below typical', 'Low'];
-
-// Below this many followers, a ratio's denominator is too small to be
-// meaningful -- a single extra view or like swings the percentage
-// wildly (e.g. 2 followers + 23 videos + 1364 views computes to a
-// nonsensical 2965%, even though the math itself is correct). Same
-// "not enough data yet" treatment as a genuinely missing field, since
-// a technically-real number that's this noisy isn't actually more
-// informative than having none.
-const MIN_FOLLOWERS_FOR_BENCHMARK = 50;
-
-function computeEngagementRatio(platform, p) {
-  if (!p.follower_count || p.follower_count < MIN_FOLLOWERS_FOR_BENCHMARK) return null;
-  if (platform === 'youtube') {
-    if (!p.video_count || p.view_count == null) return null;
-    return (p.view_count / p.video_count) / p.follower_count;
-  }
-  if (platform === 'tiktok') {
-    if (p.like_count == null) return null;
-    return (p.like_count / p.follower_count) * 100;
-  }
-  if (platform === 'twitch') {
-    if (p.subscriber_count == null) return null;
-    return (p.subscriber_count / p.follower_count) * 100;
-  }
-  return null;
-}
-
-function benchmarkFor(platform, p) {
-  const bandSet = ENGAGEMENT_BANDS[platform];
-  if (!bandSet) return null;
-  const ratio = computeEngagementRatio(platform, p);
-  if (ratio == null) return null;
-  const group = bandSet.find(t => p.follower_count < t.max) || bandSet[bandSet.length - 1];
-  const bands = group.bands;
-  let tierIndex = 4;
-  for (let i = 0; i < bands.length; i++) { if (ratio >= bands[i]) { tierIndex = i; break; } }
-  return {
-    ratio,
-    tierLabel: ENGAGEMENT_TIER_LABELS[tierIndex],
-    typicalMin: bands[2],
-    typicalMax: bands[1],
-    displayMultiplier: platform === 'youtube' ? 100 : 1, // YouTube's ratio isn't pre-multiplied in SQL
-  };
-}
-
-function formatPct(n) {
-  return (Math.round(n * 10) / 10).toString().replace(/\.0$/, '');
-}
-
-function benchmarkLineHtml(platform, p) {
-  const b = benchmarkFor(platform, p);
-  if (!b) return '';
-  const yourPct = formatPct(b.ratio * b.displayMultiplier);
-  const rangeLo = formatPct(b.typicalMin * b.displayMultiplier);
-  const rangeHi = formatPct(b.typicalMax * b.displayMultiplier);
-  const metric = platform === 'youtube' ? 'avg views per video, as % of subscribers' : platform === 'twitch' ? 'subscriber conversion' : 'like rate';
-  return `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px">Your ${metric}: <strong style="color:var(--color-text-secondary)">${yourPct}%</strong> · typical range for your size: ${rangeLo}%–${rangeHi}%</div>`;
-}
-
 function authenticityTier(value) {
   if (value >= 85) return { label: 'Strong', color: '#1D9E75' };
   if (value >= 68) return { label: 'Healthy', color: '#1D9E75' };
@@ -1279,8 +1195,6 @@ function renderAuthenticityTab() {
   const platformRows = connectedPlatforms.map(platform => {
     const comp = compMap['engagement_quality_' + platform];
     const label = PLATFORM_LABELS[platform] || (platform.charAt(0).toUpperCase() + platform.slice(1));
-    const rawRow = (platformConnections || []).find(p => p.platform === platform);
-    const benchmarkHtml = rawRow ? benchmarkLineHtml(platform, rawRow) : '';
     if (!comp) {
       return `<div class="fact-row" style="padding:10px 0;border-top:1px solid var(--color-border-tertiary)">
         <div style="display:flex;justify-content:space-between">
@@ -1295,7 +1209,6 @@ function renderAuthenticityTab() {
         <span style="font-size:12.5px;color:var(--color-text-secondary)">${label}</span>
         <span style="font-size:12px;font-weight:600;color:${tier.color}">${tier.label}</span>
       </div>
-      ${benchmarkHtml}
     </div>`;
   }).join('');
 
