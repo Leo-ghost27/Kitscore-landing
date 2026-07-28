@@ -24,6 +24,7 @@ const handleEvidenceNudges = require('../lib/handlers/cron-evidence-nudges');
 const handleTwitchValidate = require('../lib/handlers/cron-twitch-validate');
 const handleYoutubeResync = require('../lib/handlers/cron-youtube-resync');
 const handleTiktokResync = require('../lib/handlers/cron-tiktok-resync');
+const handleDiscordPoll = require('../lib/handlers/cron-discord-poll');
 
 module.exports = async (req, res) => {
   const authHeader = req.headers['authorization'] || '';
@@ -37,6 +38,7 @@ module.exports = async (req, res) => {
   if (job === 'twitch-validate') return handleTwitchValidate(req, res);
   if (job === 'youtube-resync') return handleYoutubeResync(req, res);
   if (job === 'tiktok-resync') return handleTiktokResync(req, res);
+  if (job === 'discord-poll') return handleDiscordPoll(req, res);
 
-  return res.status(400).json({ error: 'Unknown or missing job. Use ?job=evidence-nudges, ?job=twitch-validate, ?job=youtube-resync, or ?job=tiktok-resync.' });
+  return res.status(400).json({ error: 'Unknown or missing job. Use ?job=evidence-nudges, ?job=twitch-validate, ?job=youtube-resync, ?job=tiktok-resync, or ?job=discord-poll.' });
 };
