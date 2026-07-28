@@ -88,7 +88,7 @@ async function load() {
   renderSidebar('creator', 'profile');
 
   const [{ data: c }, { data: email }, { data: collabs }, { data: press }] = await Promise.all([
-    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images, available_for, causes, profile_views, stripe_connect_account_id, stripe_connect_charges_enabled, stripe_connect_payouts_enabled, stripe_connect_details_submitted').eq('id', profile.id).single(),
+    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images, available_for, causes, profile_views, stripe_connect_account_id, stripe_connect_charges_enabled, stripe_connect_payouts_enabled, stripe_connect_details_submitted, cover_pattern, cover_tags, cover_spotlight_stat, avatar_shape').eq('id', profile.id).single(),
     sb.rpc('fn_get_my_business_email'),
     sb.from('creator_collaborations').select('id, brand_name, logo_url, link').eq('creator_id', profile.id).order('display_order').order('created_at'),
     sb.from('creator_press_mentions').select('id, title, outlet_name, url, mention_date').eq('creator_id', profile.id).order('display_order').order('created_at'),
@@ -151,6 +151,34 @@ async function load() {
       <label>Gallery <span style="color:var(--color-text-tertiary);font-weight:400">— optional, up to 4 photos</span></label>
       <div class="gallery-grid" id="galleryGrid"></div>
       <div class="upload-hint">JPG, PNG, or WebP · 5MB max per photo</div>
+    </div>
+
+    <div class="field">
+      <label>Cover style <span style="color:var(--color-text-tertiary);font-weight:400">— customize the banner at the top of your kit. Changes save instantly.</span></label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px">
+        <div>
+          <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:6px">Pattern</div>
+          <div id="coverPatternPicker"></div>
+        </div>
+        <div>
+          <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:6px">Avatar shape</div>
+          <div id="avatarShapePicker"></div>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:6px">Vibe tags <span style="font-weight:400">— up to 3, shown as pills on your cover</span></div>
+        <div id="coverTagsPicker"></div>
+      </div>
+      <div style="margin-top:14px;max-width:280px">
+        <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:6px">Spotlight stat <span style="font-weight:400">— the number featured on your cover</span></div>
+        <select id="coverSpotlightSelect" onchange="selectCoverSpotlight(this.value)" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px;font-family:inherit;background:#fff">
+          <option value="">None</option>
+          <option value="reach">Total reach</option>
+          <option value="engagement">Confidence</option>
+          <option value="campaigns">Verified campaigns</option>
+          <option value="trust">Trust score</option>
+        </select>
+      </div>
     </div>
 
     <div class="field">
@@ -270,6 +298,10 @@ async function load() {
   renderPressMentions();
   renderAvailableFor();
   renderCauses();
+  renderCoverPatternPicker();
+  renderAvatarShapePicker();
+  renderCoverTagsPicker();
+  document.getElementById('coverSpotlightSelect').value = creator.cover_spotlight_stat || '';
 }
 
 const MAX_GALLERY = 4;
@@ -532,6 +564,75 @@ function renderTagList(containerId, values, removeFn) {
 
 function renderAvailableFor() { renderTagList('availableForTags', creator.available_for || [], 'removeAvailableFor'); }
 function renderCauses() { renderTagList('causesTags', creator.causes || [], 'removeCauses'); }
+
+// ── Cover customization (phase 2) ── all four write straight to
+// Supabase on click/change, same instant-preview-no-save-button pattern
+// as selectEkTheme in evekit.html. Bounded choice sets (not free text)
+// so nothing here can render badly on the public kit.
+const COVER_PATTERN_OPTIONS = [
+  ['none', 'None'], ['dots', 'Dots'], ['lines', 'Lines'], ['waves', 'Waves'],
+];
+function renderCoverPatternPicker() {
+  const current = creator.cover_pattern || 'none';
+  document.getElementById('coverPatternPicker').innerHTML = COVER_PATTERN_OPTIONS.map(([key, label]) => `
+    <button type="button" onclick="selectCoverPattern('${key}')"
+      style="padding:6px 12px;margin:0 6px 6px 0;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;
+        border:1px solid ${key === current ? 'var(--color-accent, #5B4FCF)' : 'var(--color-border-tertiary)'};
+        background:${key === current ? 'var(--color-accent, #5B4FCF)' : '#fff'};
+        color:${key === current ? '#fff' : 'inherit'}">${escapeHtml(label)}</button>
+  `).join('');
+}
+async function selectCoverPattern(key) {
+  creator.cover_pattern = key;
+  renderCoverPatternPicker();
+  await sb.from('creators').update({ cover_pattern: key }).eq('id', profile.id);
+}
+
+const AVATAR_SHAPE_OPTIONS = [['circle', 'Circle'], ['rounded', 'Rounded square']];
+function renderAvatarShapePicker() {
+  const current = creator.avatar_shape || 'circle';
+  document.getElementById('avatarShapePicker').innerHTML = AVATAR_SHAPE_OPTIONS.map(([key, label]) => `
+    <button type="button" onclick="selectAvatarShape('${key}')"
+      style="padding:6px 12px;margin:0 6px 6px 0;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;
+        border:1px solid ${key === current ? 'var(--color-accent, #5B4FCF)' : 'var(--color-border-tertiary)'};
+        background:${key === current ? 'var(--color-accent, #5B4FCF)' : '#fff'};
+        color:${key === current ? '#fff' : 'inherit'}">${escapeHtml(label)}</button>
+  `).join('');
+}
+async function selectAvatarShape(key) {
+  creator.avatar_shape = key;
+  renderAvatarShapePicker();
+  await sb.from('creators').update({ avatar_shape: key }).eq('id', profile.id);
+}
+
+const COVER_TAG_OPTIONS = ['cozycore','lifestyle','outdoorsy','comedy','beauty','fitness','gaming','food','travel','tech','music','fashion','parenting','wellness','diy'];
+function renderCoverTagsPicker() {
+  const selected = creator.cover_tags || [];
+  document.getElementById('coverTagsPicker').innerHTML = COVER_TAG_OPTIONS.map(tag => {
+    const on = selected.includes(tag);
+    const disabled = !on && selected.length >= 3;
+    return `<button type="button" ${disabled ? 'disabled' : ''} onclick="toggleCoverTag('${tag}')"
+      style="padding:5px 11px;margin:0 5px 5px 0;border-radius:20px;font-size:11.5px;font-family:inherit;
+        cursor:${disabled ? 'default' : 'pointer'};opacity:${disabled ? '.4' : '1'};
+        border:1px solid ${on ? 'var(--color-accent, #5B4FCF)' : 'var(--color-border-tertiary)'};
+        background:${on ? 'var(--color-accent, #5B4FCF)' : '#fff'};
+        color:${on ? '#fff' : 'inherit'}">#${escapeHtml(tag)}</button>`;
+  }).join('') + `<div style="font-size:10.5px;color:var(--color-text-tertiary);margin-top:4px">${selected.length}/3 selected</div>`;
+}
+async function toggleCoverTag(tag) {
+  const current = creator.cover_tags || [];
+  const updated = current.includes(tag)
+    ? current.filter(t => t !== tag)
+    : (current.length >= 3 ? current : [...current, tag]);
+  creator.cover_tags = updated;
+  renderCoverTagsPicker();
+  await sb.from('creators').update({ cover_tags: updated }).eq('id', profile.id);
+}
+
+async function selectCoverSpotlight(value) {
+  creator.cover_spotlight_stat = value || null;
+  await sb.from('creators').update({ cover_spotlight_stat: value || null }).eq('id', profile.id);
+}
 
 async function addAvailableFor() {
   const input = document.getElementById('availableForInput');
