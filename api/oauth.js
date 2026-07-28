@@ -41,6 +41,7 @@ const instagramStart = require('../lib/handlers/instagram-oauth-start');
 const instagramCallback = require('../lib/handlers/instagram-oauth-callback');
 const discordStart = require('../lib/handlers/discord-oauth-start');
 const discordCallback = require('../lib/handlers/discord-oauth-callback');
+const discordRegisterCommands = require('../lib/handlers/discord-register-commands');
 
 module.exports = async (req, res) => {
   const provider = req.query?.provider;
@@ -60,6 +61,11 @@ module.exports = async (req, res) => {
     if (req.method === 'POST' || action === 'start') return instagramStart(req, res);
     if (req.method === 'GET' && isCallbackRequest) return instagramCallback(req, res);
   } else if (provider === 'discord') {
+    // Checked before the OAuth branches -- register-commands is a
+    // one-time app-setup call (see lib/handlers/discord-register-commands.js),
+    // not a creator OAuth step, so it must not fall through to the
+    // isCallbackRequest branch below just because it's a GET.
+    if (action === 'register-commands') return discordRegisterCommands(req, res);
     if (req.method === 'POST' || action === 'start') return discordStart(req, res);
     if (req.method === 'GET' && isCallbackRequest) return discordCallback(req, res);
   } else {
