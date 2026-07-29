@@ -19,6 +19,7 @@ const NAV_ICONS = {
   users: '<circle cx="8.5" cy="8" r="3.2"/><circle cx="16.5" cy="8.5" r="2.6"/><path d="M2.3 20c0-3.4 2.8-6 6.2-6s6.2 2.6 6.2 6"/><path d="M14.8 14.2c3 .3 5.2 2.7 5.2 5.8"/>',
   logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
   briefs: '<path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
   contracts: '<path d="M9 3h6l4 4v14H5V3z"/><path d="M9 3v4H5"/><path d="M8 13l2 2 4-4"/>',
 };
 
@@ -53,6 +54,7 @@ const NAV = {
     { key: 'admin-brand-safety', href: 'admin-brand-safety.html', icon: 'alert-triangle', label: 'Brand Safety Review' },
     { key: 'admin-signups', href: 'admin-signups.html', icon: 'users', label: 'Signups' },
     { key: 'admin-directory', href: 'admin-directory.html', icon: 'directory', label: 'Directory' },
+    { key: 'admin-system', href: 'admin-system.html', icon: 'settings', label: 'System Health' },
   ],
 };
 
