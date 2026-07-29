@@ -40,6 +40,10 @@
   <div class="sidebar" id="sidebar-mount"></div>
   <div class="app-main">
     <div class="ptitle">Signups</div>
+    <div class="card" id="liquidityCard" style="display:none">
+      <div class="sec">Sponsor liquidity <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— activity, not just headcount. A signed-up sponsor who's never logged or confirmed a campaign isn't liquidity.</span></div>
+      <div class="stats-row" id="liquidityStats"></div>
+    </div>
     <div class="stats-row" id="stats"></div>
     <div class="card">
       <div class="sec">Filter</div>
@@ -75,6 +79,22 @@ async function load() {
   items = data || [];
   renderStats();
   render();
+  loadLiquidity();
+}
+
+async function loadLiquidity() {
+  const { data, error } = await sb.rpc('fn_admin_sponsor_liquidity');
+  if (error) { console.error('Could not load sponsor liquidity:', error.message); return; }
+  const l = (data && data[0]) || {};
+  const pctActive = l.total_sponsors ? Math.round((l.sponsors_with_confirmed_campaign / l.total_sponsors) * 100) : 0;
+  document.getElementById('liquidityCard').style.display = 'block';
+  document.getElementById('liquidityStats').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${l.total_sponsors ?? 0}</div><div class="stat-label">Total sponsors</div></div>
+    <div class="stat-box"><div class="stat-num">${l.sponsors_with_any_campaign ?? 0}</div><div class="stat-label">Logged ≥1 campaign</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:${pctActive >= 30 ? '#1D9E75' : pctActive >= 10 ? '#E58C1A' : '#DC2626'}">${l.sponsors_with_confirmed_campaign ?? 0}</div><div class="stat-label">Reached mutual confirm</div></div>
+    <div class="stat-box"><div class="stat-num">${l.sponsors_active_last_30d ?? 0}</div><div class="stat-label">Active last 30 days</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:${(l.ghost_sponsors ?? 0) > 0 ? '#DC2626' : 'inherit'}">${l.ghost_sponsors ?? 0}</div><div class="stat-label">Never engaged</div></div>
+  `;
 }
 
 function renderStats() {
