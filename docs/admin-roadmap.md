@@ -19,9 +19,18 @@ shipped it if applicable.
   engaged. Admin-only (`fn_is_admin()` gated), not shown to creators.
   Built because admin-signups.html could already show sponsor
   *signup* count but had no visibility into sponsor *activity* — the
-  actual thing that makes a creator's trust score valuable. First-run
-  numbers surfaced a real gap: 9 total sponsors, only 3 ever reached
-  mutual confirmation, only 2 active in the last 30 days.
+  actual thing that makes a creator's trust score valuable.
+  **Correction (2026-07-29):** the original first-run numbers (9 total
+  sponsors, only 3 ever reached mutual confirmation) looked like a
+  concerning liquidity problem, but weren't a real signal — 6 of the 9
+  were seed/demo data or the user's own test accounts (cross-checked by
+  company name and signup clustering). Added `sponsors.is_test`
+  (matching `creators.is_test`, which already existed) and backfilled
+  the 6 known non-real rows; see
+  `supabase/2026-07-29-sponsors-is-test-flag.sql`. Corrected picture:
+  2 real external sponsor signups, both too recent to draw any
+  conclusion from yet. Without this flag, the metric would keep
+  producing a misleadingly alarming headline number indefinitely.
 - Admin signups list + role filter (`app/admin-signups.html`)
 - Admin creator directory (`app/admin-directory.html`)
 - Admin brand safety scan review queue (`app/admin-brand-safety.html`,
