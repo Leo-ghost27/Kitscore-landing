@@ -557,6 +557,7 @@ async function load() {
   dash.nicheBenchmarks = nicheBenchmarks;
 
   renderDashboardShell();
+  loadPeerPercentiles();
 
   // Animate ring + confidence bar after initial render
   requestAnimationFrame(()=>{
@@ -772,6 +773,48 @@ function renderOverviewTab() {
   `;
 }
 
+async function loadPeerPercentiles() {
+  const platforms = Object.keys(dash.compMap || {})
+    .filter(k => k.startsWith('engagement_quality_'))
+    .map(k => k.replace('engagement_quality_', ''));
+  if (!platforms.length) return;
+
+  const results = await Promise.all(platforms.map(async platform => {
+    const { data, error } = await sb.rpc('fn_niche_peer_percentile', { p_creator_id: profile.id, p_platform: platform });
+    if (error) { console.error(`Could not load peer percentile for ${platform}:`, error.message); return null; }
+    const row = data && data[0];
+    return row ? { platform, percentile: row.percentile, cohortSize: row.cohort_size, niche: row.niche } : null;
+  }));
+  dash.peerPercentiles = results.filter(Boolean);
+
+  // fn_niche_peer_percentile is read-only context -- it doesn't affect
+  // score, evidence, or anything else on the page, so re-rendering just
+  // the Score tab (if it's the active one) is enough; no need to
+  // re-fetch or re-render anything else.
+  if (activeTab === 'score') {
+    document.getElementById('tab-panel').innerHTML = renderTabPanel('score');
+  }
+}
+
+function peerPercentileHtml() {
+  if (!dash.peerPercentiles || !dash.peerPercentiles.length) return '';
+  const PLATFORM_LABEL = { youtube:'YouTube', tiktok:'TikTok', twitch:'Twitch', instagram:'Instagram' };
+  return `
+    <div class="card">
+      <div class="sec">How you compare <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— real peers in your niche on Kitscore, for context. Doesn't affect your score.</span></div>
+      ${dash.peerPercentiles.map(p => {
+        const label = PLATFORM_LABEL[p.platform] || p.platform;
+        if (p.percentile == null) {
+          return `<div style="font-size:12.5px;color:var(--color-text-secondary);padding:6px 0">
+            <strong>${escapeHtml(label)}:</strong> Not enough data yet — fewer than 5 verified ${escapeHtml(label)} creators in your ${escapeHtml(p.niche)} niche
+          </div>`;
+        }
+        return `<div style="font-size:12.5px;color:var(--color-text-secondary);padding:6px 0">
+          <strong>${escapeHtml(label)}:</strong> ${p.percentile}th percentile among ${p.cohortSize} verified ${escapeHtml(p.niche)}-niche creators on Kitscore
+        </div>`;
+      }).join('')}
+    </div>`;
+}
 function renderScoreTab() {
   const { hasScore, compMap, improvements, verifiedCount, history } = dash;
   return `
@@ -844,6 +887,8 @@ function renderScoreTab() {
         <a href="evidence.html">Upload evidence →</a>
       </div>`}
     </div>
+
+    ${peerPercentileHtml()}
 
     <!-- ── Improvement loop ── -->
     ${improvements.length?`

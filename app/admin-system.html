@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Health — Kitscore Admin</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+  .sub{font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:12px}
+  .row-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid var(--color-border-tertiary);gap:12px}
+  .row-item:last-child{border-bottom:none}
+  .job-name{font-size:13px;font-weight:500}
+  .job-desc{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+  .btn-check{font-size:12px;padding:7px 14px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;background:#fff;cursor:pointer;white-space:nowrap;font-weight:500}
+  .btn-check:disabled{opacity:.6;cursor:default}
+  .result{font-size:11px;margin-top:8px;padding:8px 10px;border-radius:6px;white-space:pre-wrap;font-family:monospace}
+  .result.ok{background:#E9F7EE;color:#1C7C3F}
+  .result.error{background:#FDECEC;color:#B42318}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">System Health</div>
+    <div class="card">
+      <div class="sec">Scheduled jobs</div>
+      <div class="sub">These run automatically every day. Use "Check now" to run one immediately instead of waiting for its next scheduled time — useful right after setting something up, to confirm it actually works.</div>
+
+      <div class="row-item">
+        <div>
+          <div class="job-name">Discord message-engagement poll</div>
+          <div class="job-desc">Samples recent message activity for each connected Discord server and updates its engagement score. Runs daily at 07:00 UTC.</div>
+        </div>
+        <button class="btn-check" id="btn-discord-poll" onclick="runJob('discord-poll', 'btn-discord-poll', 'result-discord-poll')">Check now</button>
+      </div>
+      <div id="result-discord-poll"></div>
+
+      <div class="row-item">
+        <div>
+          <div class="job-name">Twitch validate &amp; resync</div>
+          <div class="job-desc">Re-checks OAuth tokens and refreshes follower/view stats. Runs daily at 04:00 UTC.</div>
+        </div>
+        <button class="btn-check" id="btn-twitch-validate" onclick="runJob('twitch-validate', 'btn-twitch-validate', 'result-twitch-validate')">Check now</button>
+      </div>
+      <div id="result-twitch-validate"></div>
+
+      <div class="row-item">
+        <div>
+          <div class="job-name">YouTube resync</div>
+          <div class="job-desc">Refreshes subscriber/view stats for OAuth-connected channels. Runs daily at 05:00 UTC.</div>
+        </div>
+        <button class="btn-check" id="btn-youtube-resync" onclick="runJob('youtube-resync', 'btn-youtube-resync', 'result-youtube-resync')">Check now</button>
+      </div>
+      <div id="result-youtube-resync"></div>
+
+      <div class="row-item">
+        <div>
+          <div class="job-name">TikTok resync</div>
+          <div class="job-desc">Refreshes follower/like stats for OAuth-connected accounts. Runs daily at 06:00 UTC.</div>
+        </div>
+        <button class="btn-check" id="btn-tiktok-resync" onclick="runJob('tiktok-resync', 'btn-tiktok-resync', 'result-tiktok-resync')">Check now</button>
+      </div>
+      <div id="result-tiktok-resync"></div>
+
+      <div class="row-item">
+        <div>
+          <div class="job-name">Evidence freshness nudges</div>
+          <div class="job-desc">Emails Pro creators whose evidence is going stale before a pitch. Runs weekly, Monday 09:00 UTC.</div>
+        </div>
+        <button class="btn-check" id="btn-evidence-nudges" onclick="runJob('evidence-nudges', 'btn-evidence-nudges', 'result-evidence-nudges')">Check now</button>
+      </div>
+      <div id="result-evidence-nudges"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="nav.js?v=2"></script>
+<script>
+async function load() {
+  const profile = await requireRole('admin');
+  if (!profile) return;
+  renderSidebar('admin', 'admin-system');
+}
+
+async function runJob(job, btnId, resultId) {
+  const btn = document.getElementById(btnId);
+  const resultEl = document.getElementById(resultId);
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Running…';
+  resultEl.innerHTML = '';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch(`/api/cron?job=${job}`, {
+      headers: { 'Authorization': `Bearer ${session?.access_token}` },
+    });
+    const j = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      resultEl.innerHTML = `<div class="result error">${escapeHtml(j.error || 'Job failed with no error message.')}</div>`;
+    } else {
+      resultEl.innerHTML = `<div class="result ok">${escapeHtml(JSON.stringify(j, null, 2))}</div>`;
+    }
+  } catch (err) {
+    resultEl.innerHTML = `<div class="result error">${escapeHtml(err.message || 'Request failed.')}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+}
+
+load();
+</script>
+</body>
+</html>
