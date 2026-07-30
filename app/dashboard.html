@@ -526,6 +526,36 @@ async function load() {
     score, conf, steps, doneCount, pct, currentStepIdx, nextMs, msPct, compMap, improvements,
     usedPlatforms, unlimitedPlatforms, platformConnections: platformConnections || [], followerHistory: followerHistory || [] };
 
+  // Real category-based engagement benchmarking -- percentile rank among
+  // other creators in the same niche, not a fixed industry range or a
+  // static niche-difficulty multiplier. One RPC call per platform with an
+  // engagement_quality_<platform> score component (any source -- OAuth-
+  // verified or evidence-submitted). fn_niche_peer_percentile
+  // returns {percentile: null, cohort_size} honestly when there aren't
+  // enough peers in that niche yet (currently true for every creator --
+  // see supabase/2026-07-28-add-niche-engagement-benchmark.sql and the
+  // rename to fn_niche_peer_percentile in
+  // supabase/2026-07-29b-rename-niche-peer-percentile.sql) rather
+  // than a misleading percentile from a tiny sample. Deliberately
+  // separate from and complementary to the niche-difficulty-multiplier
+  // approach shipped the same day (which adjusts the score itself using
+  // a static assumption) -- this shows real peer standing instead,
+  // without changing the underlying score at all.
+  const engagementPlatforms = Object.keys(compMap)
+    .filter(k => k.startsWith('engagement_quality_'))
+    .map(k => k.replace('engagement_quality_', ''));
+  const nicheBenchmarks = {};
+  if (engagementPlatforms.length) {
+    const results = await Promise.all(engagementPlatforms.map(p =>
+      sb.rpc('fn_niche_peer_percentile', { p_creator_id: profile.id, p_platform: p })
+    ));
+    engagementPlatforms.forEach((p, i) => {
+      const row = results[i].data && results[i].data[0];
+      if (row) nicheBenchmarks[p] = row;
+    });
+  }
+  dash.nicheBenchmarks = nicheBenchmarks;
+
   renderDashboardShell();
 
   // Animate ring + confidence bar after initial render
@@ -1167,6 +1197,11 @@ function renderEvidenceTab() {
   `;
 }
 
+function ordinal(n) {
+  const s = ['th','st','nd','rd'], v = n % 100;
+  return n + (s[(v-20)%10] || s[v] || s[0]);
+}
+
 function authenticityTier(value) {
   if (value >= 85) return { label: 'Strong', color: '#1D9E75' };
   if (value >= 68) return { label: 'Healthy', color: '#1D9E75' };
@@ -1222,11 +1257,19 @@ function renderAuthenticityTab() {
       </div>`;
     }
     const tier = authenticityTier(comp.value);
+    const bench = (dash.nicheBenchmarks || {})[platform];
+    let benchHtml = '';
+    if (bench) {
+      benchHtml = bench.percentile != null
+        ? `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px">${ordinal(Math.round(bench.percentile))} percentile among ${bench.cohort_size} ${bench.niche} creators</div>`
+        : `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:2px">Not enough ${bench.niche || 'niche'} creators yet to compare (${bench.cohort_size || 0} so far)</div>`;
+    }
     return `<div class="fact-row" style="padding:10px 0;border-top:1px solid var(--color-border-tertiary)">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span style="font-size:12.5px;color:var(--color-text-secondary)">${label}</span>
         <span style="font-size:12px;font-weight:600;color:${tier.color}">${tier.label}</span>
       </div>
+      ${benchHtml}
     </div>`;
   }).join('');
 
