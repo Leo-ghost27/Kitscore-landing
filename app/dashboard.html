@@ -109,6 +109,7 @@
   .pbar-tag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px;white-space:nowrap;flex-shrink:0}
   .tag-live{background:#E9F7EE;color:#1C7C3F}
   .tag-ev{background:#EEF2FF;color:#3730A3}
+  .tag-self{background:#FEF6E7;color:#92600A}
   .tag-pend{background:var(--color-background-secondary);color:var(--color-text-tertiary)}
 
   /* ── Improvement loop ── */
@@ -888,8 +889,8 @@ function renderScoreTab() {
         resolveAllComponents(ac, compMap).map(({comp, matchedKey})=>{
           const val=comp?comp.value:null;
           const status=comp?comp.status:'pending';
-          const tagClass=status==='live_verified'?'tag-live':status==='evidence_submitted'?'tag-ev':'tag-pend';
-          const tagLabel=status==='live_verified'?'Live':status==='evidence_submitted'?'Evidence':'Pending';
+          const tagClass=status==='live_verified'?'tag-live':status==='evidence_submitted'?'tag-ev':status==='self_reported'?'tag-self':'tag-pend';
+          const tagLabel=status==='live_verified'?'Live':status==='evidence_submitted'?'Evidence':status==='self_reported'?'Self-reported':'Pending';
           const barColor=val>=80?'#1D9E75':val>=60?'#2563EB':'#E58C1A';
           return `
           <div class="pbar-row">
