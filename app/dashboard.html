@@ -109,6 +109,7 @@
   .pbar-tag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:10px;white-space:nowrap;flex-shrink:0}
   .tag-live{background:#E9F7EE;color:#1C7C3F}
   .tag-ev{background:#EEF2FF;color:#3730A3}
+  .tag-self{background:#FEF6E7;color:#92600A}
   .tag-pend{background:var(--color-background-secondary);color:var(--color-text-tertiary)}
 
   /* ── Improvement loop ── */
@@ -282,7 +283,7 @@ const ALL_COMPONENTS = [
   { keys:['audience_authenticity'], label:'Audience authenticity', advice:'Connect YouTube, TikTok, Twitch, or Instagram for a live-verified signal — or upload a screenshot of your audience demographics as a starting point.', href:'profile.html' },
   { keys:['engagement_quality_youtube','engagement_quality_tiktok','engagement_quality_twitch','engagement_quality'], baseLabel:'Engagement quality', advice:'Connect YouTube, TikTok, or Twitch so we can verify your engagement rate directly — or upload evidence for a self-reported starting score.', href:'profile.html' },
   { keys:['brand_safety'], label:'Brand safety', advice:'Complete the brand safety questionnaire below — sponsors filter heavily on this.', href:'#brand-safety' },
-  { keys:['content_consistency_youtube','content_consistency_tiktok','content_consistency'], baseLabel:'Content consistency', advice:'Connect YouTube so we can verify your posting cadence directly — or upload evidence for a self-reported starting score.', href:'profile.html' },
+  { keys:['content_consistency_youtube','content_consistency_tiktok','content_consistency_instagram','content_consistency_twitch','content_consistency'], baseLabel:'Content consistency', advice:'Connect YouTube, Instagram, or Twitch so we can verify your posting cadence directly — or upload evidence for a self-reported starting score.', href:'profile.html' },
   { keys:['professionalism'], label:'Professionalism', advice:'Add a business email, location, and niche to your profile.', href:'profile.html' },
 ];
 
@@ -293,6 +294,24 @@ function resolveComponent(ac, compMap) {
     if (compMap[k]) return { comp: compMap[k], matchedKey: k };
   }
   return { comp: null, matchedKey: null };
+}
+
+// Like resolveComponent, but returns EVERY matching key instead of just
+// the first -- used for the score breakdown display, which should show
+// one row per connected platform (industry-standard shape: HypeAuditor,
+// Modash, Favikon etc. all show per-platform metrics rather than picking
+// one "representative" platform and hiding the rest -- see the
+// marketing/competitive review in chat). resolveComponent itself is left
+// alone since the "what should I do next" advice logic (dash.improvements)
+// genuinely wants one representative gap, not every possible gap.
+//
+// Safe to just collect every match with no dedup: the OAuth callback
+// handlers already delete the bare fallback key (e.g. 'content_consistency')
+// the moment any platform-specific key is written, so a creator never
+// legitimately has both at once.
+function resolveAllComponents(ac, compMap) {
+  const matches = ac.keys.filter(k => compMap[k]).map(k => ({ comp: compMap[k], matchedKey: k }));
+  return matches.length ? matches : [{ comp: null, matchedKey: null }];
 }
 
 // Single-path components (audience_authenticity, brand_safety,
@@ -306,6 +325,7 @@ function componentLabel(ac, matchedKey) {
   if (matchedKey.endsWith('_youtube')) return `${ac.baseLabel} (YouTube)`;
   if (matchedKey.endsWith('_tiktok')) return `${ac.baseLabel} (TikTok)`;
   if (matchedKey.endsWith('_twitch')) return `${ac.baseLabel} (Twitch)`;
+  if (matchedKey.endsWith('_instagram')) return `${ac.baseLabel} (Instagram)`;
   return `${ac.baseLabel} (self-reported)`;
 }
 const QUESTIONS = [
@@ -865,21 +885,22 @@ function renderScoreTab() {
         <span>Score breakdown <svg class="info-ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Each component is weighted. Live verified data scores highest."><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
         <a href="/methodology.html" target="_blank" style="font-weight:400;text-transform:none;font-size:11px;color:#2563EB;text-decoration:none">How this is calculated →</a>
       </div>
-      ${hasScore?ALL_COMPONENTS.map(ac=>{
-        const {comp, matchedKey}=resolveComponent(ac, compMap);
-        const val=comp?comp.value:null;
-        const status=comp?comp.status:'pending';
-        const tagClass=status==='live_verified'?'tag-live':status==='evidence_submitted'?'tag-ev':'tag-pend';
-        const tagLabel=status==='live_verified'?'Live':status==='evidence_submitted'?'Evidence':'Pending';
-        const barColor=val>=80?'#1D9E75':val>=60?'#2563EB':'#E58C1A';
-        return `
-        <div class="pbar-row">
-          <span>${componentLabel(ac, matchedKey)}</span>
-          <div class="pbar-track"><div class="pbar-fill" style="width:${val||0}%;background:${barColor}"></div></div>
-          <span class="pbar-val" style="color:${val?barColor:'var(--color-text-tertiary)'}">${val??'—'}</span>
-          <span class="pbar-tag ${tagClass}">${tagLabel}</span>
-        </div>`;
-      }).join(''):`
+      ${hasScore?ALL_COMPONENTS.flatMap(ac=>
+        resolveAllComponents(ac, compMap).map(({comp, matchedKey})=>{
+          const val=comp?comp.value:null;
+          const status=comp?comp.status:'pending';
+          const tagClass=status==='live_verified'?'tag-live':status==='evidence_submitted'?'tag-ev':status==='self_reported'?'tag-self':'tag-pend';
+          const tagLabel=status==='live_verified'?'Live':status==='evidence_submitted'?'Evidence':status==='self_reported'?'Self-reported':'Pending';
+          const barColor=val>=80?'#1D9E75':val>=60?'#2563EB':'#E58C1A';
+          return `
+          <div class="pbar-row">
+            <span>${componentLabel(ac, matchedKey)}</span>
+            <div class="pbar-track"><div class="pbar-fill" style="width:${val||0}%;background:${barColor}"></div></div>
+            <span class="pbar-val" style="color:${val?barColor:'var(--color-text-tertiary)'}">${val??'—'}</span>
+            <span class="pbar-tag ${tagClass}">${tagLabel}</span>
+          </div>`;
+        })
+      ).join(''):`
       <div class="empty-state">
         <div class="es-icon">📊</div>
         <div class="es-title">No score components yet</div>

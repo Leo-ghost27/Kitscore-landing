@@ -245,13 +245,13 @@
       <div class="comp-row">
         <div><div class="comp-name">Audience Authenticity</div><div class="comp-sources" style="margin-top:8px"><span class="src-tag src-live">Live</span><span class="src-tag src-ev">Evidence</span></div></div>
         <div><div class="comp-desc">Measures the quality and genuineness of a creator's audience. Looks at follower growth patterns, engagement-to-follower ratios, geographic consistency, and signs of inauthentic activity such as bot-pattern behaviour or sudden unexplained spikes.</div></div>
-        <div class="weight-badge">25%<span class="weight-sub">of score</span></div>
+        <div class="weight-badge">20%<span class="weight-sub">of score</span></div>
       </div>
 
       <div class="comp-row">
         <div><div class="comp-name">Engagement Quality</div><div class="comp-sources" style="margin-top:8px"><span class="src-tag src-live">Live</span><span class="src-tag src-ev">Evidence</span></div></div>
         <div><div class="comp-desc">Measures how actively an audience responds to content — likes, comments, saves, shares — relative to follower count. Benchmarked against category averages for a defined set of niches (finance, tech, sustainability, health, fashion, beauty, lifestyle, fitness) so a fitness creator's 4% rate is contextualised against the fitness benchmark, not a general average. Niches outside this set are scored against the general average.</div></div>
-        <div class="weight-badge">25%<span class="weight-sub">of score</span></div>
+        <div class="weight-badge">20%<span class="weight-sub">of score</span></div>
       </div>
 
       <div class="comp-row">
@@ -262,14 +262,14 @@
 
       <div class="comp-row">
         <div><div class="comp-name">Content Consistency</div><div class="comp-sources" style="margin-top:8px"><span class="src-tag src-live">Live</span><span class="src-tag src-ev">Evidence</span></div></div>
-        <div><div class="comp-desc">Measures posting regularity, niche focus, and content quality over time. Sponsors want creators who show up reliably — consistent posting schedules and consistent content themes both reduce campaign risk.</div></div>
-        <div class="weight-badge">15%<span class="weight-sub">of score</span></div>
+        <div><div class="comp-desc">Posting regularity over a trailing 8-week window — how many of the last 8 weeks had at least one upload, verified directly from YouTube, Instagram, or Twitch (Twitch measures saved VODs, not live-stream frequency directly — a streamer who deletes VODs after airing won't show full credit here). TikTok support is planned, pending a developer-portal scope approval. No platform connected yet defaults to a self-reported starting score from uploaded evidence.</div></div>
+        <div class="weight-badge">20%<span class="weight-sub">of score</span></div>
       </div>
 
       <div class="comp-row">
         <div><div class="comp-name">Professionalism</div><div class="comp-sources" style="margin-top:8px"><span class="src-tag src-ev">Evidence</span><span class="src-tag src-self">Self-reported</span></div></div>
         <div><div class="comp-desc">Measures the business-readiness signals sponsors rely on: a verified business email, a complete profile with niche and location, media kit availability, and response professionalism based on campaign history feedback.</div></div>
-        <div class="weight-badge">15%<span class="weight-sub">of score</span></div>
+        <div class="weight-badge">20%<span class="weight-sub">of score</span></div>
       </div>
 
     </div>
@@ -425,7 +425,7 @@
     <p>No other platform has this. It cannot be gamed, purchased, or self-reported. It is computed exclusively from campaigns that both the creator and sponsor have independently confirmed.</p>
 
     <div class="callout">
-      <p><strong>Formula:</strong> Campaign completion rate (30%) + Would Hire Again % (30%) + Average sponsor ratings across communication, professionalism, and deliverable quality (25%) + Repeat sponsor rate (15%). Capped at 100. Recomputed automatically on every new confirmed campaign or endorsement.</p>
+      <p><strong>Formula:</strong> Campaign completion rate (30 pts, always counted) + Average sponsor ratings across communication, professionalism, and deliverable quality (25 pts) + Endorsement score from past sponsors (20 pts) + Repeat sponsor rate (15 pts) + Would Hire Again % (10 pts). Each of the last four is only counted once a creator has that kind of data — a brand-new creator with zero campaigns yet is scored on completion rate alone; the score is rescaled to 0–100 based on however many factors actually apply, so a creator with only one or two data points isn't penalized for the ones they don't have yet. Capped at 100. Recomputed automatically on every new confirmed campaign or endorsement.</p>
     </div>
 
     <div class="conf-levels" style="margin-top:24px">
