@@ -73,6 +73,65 @@
   .plat-verified.public_lookup{background:#F0EFE9;color:#6B6B67}
   .no-platforms{font-size:12.5px;color:#9E9E99}
 
+  .score-row{display:grid;grid-template-columns:1fr 2fr 44px 96px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #F0EFE9}
+  .score-row:last-child{border-bottom:none}
+  .sr-label{font-size:13px;font-weight:500;color:#1A1A18}
+  .sr-bar-wrap{background:#F0EFE9;border-radius:4px;height:6px}
+  .sr-bar{height:6px;border-radius:4px}
+  .sr-val{font-size:14px;font-weight:600;color:#1A1A18;text-align:right}
+  .sr-status{font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:20px;text-align:center;white-space:nowrap}
+  .s-live{background:#EBF5DE;color:#2D6A0F}
+  .s-ev{background:#E4F0FB;color:#0C3D6E}
+  .s-self{background:#F0EFE9;color:#6B6B67}
+  .s-need{background:#FDF0DC;color:#92460A}
+  .s-flag{background:#FBE3E1;color:#9E2B22}
+  .no-scores{font-size:12.5px;color:#9E9E99}
+
+  .bs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media(max-width:600px){.bs-grid{grid-template-columns:repeat(2,1fr)}}
+  .bs-item{background:#F9F8F5;border-radius:8px;padding:12px;text-align:center;border:1px solid #E5E4DF}
+  .bs-item .bs-icon{font-size:20px;margin-bottom:6px}
+  .bs-item .bs-label{font-size:11px;color:#6B6B67;margin-bottom:4px}
+  .bs-item .bs-val{font-size:12px;font-weight:600}
+  .bs-pass{color:#2D6A0F}
+  .bs-caution{color:#92460A}
+  .bs-flag{color:#9E2B22}
+  .bs-na{color:#9E9E99}
+
+  .ev-item{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid #F0EFE9}
+  .ev-item:last-child{border-bottom:none}
+  .ev-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:#F0EFE9}
+  .ev-body .ev-title{font-size:13px;font-weight:500;color:#1A1A18;margin-bottom:2px}
+  .ev-body .ev-sub{font-size:12px;color:#6B6B67}
+  .ev-badge{margin-left:auto;flex-shrink:0}
+  .no-evidence{font-size:12.5px;color:#9E9E99}
+
+  .rep-stat{background:#F9F8F5;border-radius:8px;padding:14px;text-align:center;border:1px solid #E5E4DF}
+  .rep-stat .rv{font-size:24px;font-weight:700;color:#1A1A18}
+  .rep-stat .rl{font-size:10px;color:#6B6B67;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+  .rep-stat .rt{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;display:inline-block;margin-top:5px}
+  .rate-stat{padding:10px 12px;background:#F9F8F5;border-radius:6px;border:1px solid #E5E4DF;text-align:center}
+  .rate-stat .l{font-size:10px;color:#6B6B67;margin-bottom:3px}
+  .rate-stat .v{font-size:16px;font-weight:700;color:#1A1A18}
+  .no-reputation{font-size:12.5px;color:#9E9E99}
+
+  .rec-box{background:linear-gradient(135deg,#0F1A0C 0%,#0F0F0E 100%);border-radius:12px;padding:22px 24px;border:1px solid #2A4020}
+  .rec-box.rec-caution{background:linear-gradient(135deg,#1A160C 0%,#0F0F0E 100%);border-color:#4A3A20}
+  .rec-box.rec-avoid{background:linear-gradient(135deg,#1A0C0C 0%,#0F0F0E 100%);border-color:#4A2020}
+  .rec-verdict{font-size:19px;font-weight:700;color:#4ADE80;margin-bottom:8px}
+  .rec-caution .rec-verdict{color:#F0B429}
+  .rec-avoid .rec-verdict{color:#F87171}
+  .rec-body{font-size:13px;color:#9E9E99;line-height:1.7}
+  .rec-body strong{color:#D4D4D2}
+  .rec-stats{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
+  .rec-stat{flex:1;min-width:150px;background:#F9F8F5;border-radius:8px;padding:14px;border:1px solid #E5E4DF}
+  .rec-stat .l{font-size:10px;color:#9E9E99;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+  .rec-stat .v{font-size:20px;font-weight:700;color:#1A1A18}
+  .rec-stat .s{font-size:11px;color:#6B6B67;margin-top:2px}
+
+  .contact-copy{background:transparent;border:1px solid #E5E4DF;color:#6B6B67;padding:9px 14px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+  .contact-copy:hover{border-color:var(--ek-accent);color:var(--ek-accent)}
+
   .rate-box{text-align:center;padding:8px 0}
   .rate-range{font-family:'Fraunces',serif;font-size:32px;font-weight:600;color:var(--ek-accent);margin-bottom:6px}
   .rate-note{font-size:11.5px;color:#9E9E99}
@@ -113,6 +172,50 @@
 <script src="/app/supabase-client.js?v=2"></script>
 <script>
 const AUD_GENDER_LABEL = { female: 'Female', male: 'Male', other: 'Other' };
+
+// ── Brand safety questionnaire config ── mirrors app/dashboard.html's
+// QUESTIONS array exactly (same keys, same option order). opts[0] is
+// always the safe/pass answer, opts[1] is a caution, opts[2] is a flag —
+// same convention dashboard.html relies on when writing answers.
+const BS_QUESTIONS = [
+  { key: 'adult',               icon: '🔞', label: 'Adult content',   opts: ['None', 'Mild', 'Explicit'] },
+  { key: 'gambling',            icon: '🎰', label: 'Gambling',        opts: ['Never', 'Past', 'Active'] },
+  { key: 'political',           icon: '🗳️', label: 'Political',       opts: ['None', 'Occasional', 'Frequent'] },
+  { key: 'profanity',           icon: '🤬', label: 'Profanity',       opts: ['None', 'Occasional', 'Frequent'] },
+  { key: 'family_safe',         icon: '👨‍👩‍👧', label: 'Family safe',     opts: ['Yes', 'Mostly', 'No'] },
+  { key: 'paid_disclosure',     icon: '📢', label: 'Paid disclosure', opts: ['Always', 'Inconsistent', 'Never'] },
+  { key: 'misinformation',      icon: '🚫', label: 'Misinformation',  opts: ['None', 'Suspected', 'Confirmed'] },
+  { key: 'controversy_history', icon: '⚠️', label: 'Controversy',     opts: ['None', 'Minor', 'Major'] },
+];
+
+const SCORE_STATUS_BADGE = {
+  live_verified: { cls: 's-live', label: 'Live Verified' },
+  evidence_submitted: { cls: 's-ev', label: 'Evidence' },
+  self_reported: { cls: 's-self', label: 'Self-reported' },
+  needs_improvement: { cls: 's-need', label: 'Needs work' },
+  flagged: { cls: 's-flag', label: 'Flagged' },
+};
+const EVIDENCE_STATUS_BADGE = {
+  live_verified: { cls: 's-live', label: 'Verified' },
+  submitted: { cls: 's-ev', label: 'Submitted' },
+  self_reported: { cls: 's-self', label: 'Self-reported' },
+};
+function reliabilityTier(score) {
+  if (score >= 90) return { label: 'Excellent', bg: '#FEF3C7', color: '#B8960C' };
+  if (score >= 75) return { label: 'Good', bg: '#D1FAE5', color: '#065F46' };
+  if (score >= 50) return { label: 'Fair', bg: '#F0EFE9', color: '#6B6B67' };
+  return { label: 'Developing', bg: '#F0EFE9', color: '#6B6B67' };
+}
+
+// Same thresholds as lib/ai-brief.js's deriveVerdict() (sponsor-evaluation
+// verdicts) — reused here so a creator's own Verified Media Kit reflects
+// the identical rule-based bar sponsors' paid evaluations use, rather
+// than a second, potentially-inconsistent set of thresholds.
+function deriveEveKitVerdict(trustScore, brandSafetyValue, verifiedCount) {
+  if (trustScore >= 70 && brandSafetyValue >= 70 && verifiedCount >= 2) return 'approve';
+  if (trustScore >= 50 && brandSafetyValue >= 50) return 'caution';
+  return 'avoid';
+}
 
 // ── EveKit color themes ────────────────────────────────────────────────
 // Creator picks one before sending their kit link to a sponsor. Applied
@@ -328,6 +431,22 @@ function renderKit(kit, opts) {
       </div>
     </div>
 
+    <div class="card">
+      <div class="card-title">Score breakdown <span>Weighted trust score · ${Math.round(Number(kit.trustScore)||0)} / 100</span></div>
+      ${(kit.scoreComponents||[]).length ? kit.scoreComponents.map(sc => {
+        const val = Number(sc.value) || 0;
+        const barColor = val >= 80 ? '#3E8A1A' : val >= 60 ? '#2B6CB0' : '#C1791E';
+        const badge = SCORE_STATUS_BADGE[sc.status] || SCORE_STATUS_BADGE.self_reported;
+        return `
+        <div class="score-row">
+          <div class="sr-label">${escapeHtml(sc.label || (sc.key||sc.component_key||'').replace(/_/g,' '))}</div>
+          <div class="sr-bar-wrap"><div class="sr-bar" style="width:${Math.min(val,100)}%;background:${barColor}"></div></div>
+          <div class="sr-val">${val}</div>
+          <div class="sr-status ${badge.cls}">${badge.label}</div>
+        </div>`;
+      }).join('') : `<div class="no-scores">Score components will appear here once your Kitscore profile has been scored.${opts.isOwner ? '' : ''}</div>`}
+    </div>
+
     ${kit.collaborations?.length ? `
     <div class="card">
       <div class="card-title">Brands I've worked with <span style="font-size:9.5px;color:#B0B0AA;text-transform:none;font-weight:400;letter-spacing:0">— self-reported, not verified</span></div>
@@ -367,6 +486,20 @@ function renderKit(kit, opts) {
       </div>` : ''}
     </div>
 
+    <div class="card">
+      <div class="card-title">Brand safety assessment</div>
+      <div class="bs-grid">
+        ${BS_QUESTIONS.map(q => {
+          const found = (kit.brandSafetyAnswers||[]).find(a => a.question_key === q.key);
+          if (!found) return `<div class="bs-item"><div class="bs-icon">${q.icon}</div><div class="bs-label">${q.label}</div><div class="bs-val bs-na">— Not answered</div></div>`;
+          const idx = q.opts.indexOf(found.answer);
+          const tier = idx <= 0 ? 'bs-pass' : idx === 1 ? 'bs-caution' : 'bs-flag';
+          const mark = idx <= 0 ? '✓' : idx === 1 ? '⚠' : '✕';
+          return `<div class="bs-item"><div class="bs-icon">${q.icon}</div><div class="bs-label">${q.label}</div><div class="bs-val ${tier}">${mark} ${escapeHtml(found.answer)}</div></div>`;
+        }).join('')}
+      </div>
+    </div>
+
     ${kit.galleryImages && kit.galleryImages.length ? `
     <div class="card">
       <div class="card-title">Gallery</div>
@@ -375,7 +508,7 @@ function renderKit(kit, opts) {
 
     ${kit.pressMentions?.length ? `
     <div class="card">
-      <div class="card-title">Press mentions <span style="font-size:9.5px;color:#B0B0AA;text-transform:none;font-weight:400;letter-spacing:0">— self-reported</span></div>
+      <div class="card-title">Press &amp; features <span style="font-size:9.5px;color:#B0B0AA;text-transform:none;font-weight:400;letter-spacing:0">— self-reported</span></div>
       <div>${kit.pressMentions.map(p => {
         const inner = `<div style="font-size:13px;color:#1A1A18;font-weight:500">${escapeHtml(p.title)}</div><div style="font-size:11.5px;color:#9E9E99;margin-top:2px">${[p.outlet_name, p.mention_date].filter(Boolean).map(escapeHtml).join(' · ')}</div>`;
         return `<div style="padding:10px 0;border-top:1px solid #F0EFE9">${p.url ? `<a href="${escapeHtml(p.url)}" target="_blank" rel="noopener" style="text-decoration:none">${inner}</a>` : inner}</div>`;
@@ -397,7 +530,7 @@ function renderKit(kit, opts) {
     </div>` : ''}
 
     <div class="card">
-      <div class="card-title">What to charge <span>estimated rate card</span></div>
+      <div class="card-title">Platforms &amp; estimated rate card <span>estimate</span></div>
       <div class="rate-box">
         <div class="rate-range" id="ek-rate-range">—</div>
         <div class="rate-note" id="ek-rate-note"></div>
@@ -427,10 +560,96 @@ function renderKit(kit, opts) {
     </div>
 
     <div class="card">
+      <div class="card-title">Evidence submitted <span>${(kit.evidence||[]).length ? `${kit.evidence.length} item${kit.evidence.length!==1?'s':''}` : ''}</span></div>
+      ${(kit.evidence||[]).length ? kit.evidence.map(e => {
+        const badge = EVIDENCE_STATUS_BADGE[e.status] || EVIDENCE_STATUS_BADGE.self_reported;
+        const sub = [e.evidence_type, e.platform, e.uploaded_at ? new Date(e.uploaded_at).toLocaleDateString('en-US',{year:'numeric',month:'long'}) : null].filter(Boolean).join(' — ');
+        return `
+        <div class="ev-item">
+          <div class="ev-icon">📄</div>
+          <div class="ev-body"><div class="ev-title">${escapeHtml(e.file_name || 'File')}</div><div class="ev-sub">${escapeHtml(sub)}</div></div>
+          <div class="ev-badge sr-status ${badge.cls}">${badge.label}</div>
+        </div>`;
+      }).join('') : `<div class="no-evidence">No evidence submitted yet.${opts.isOwner ? ' Upload analytics screenshots or campaign docs from your dashboard.' : ''}</div>`}
+    </div>
+
+    <div class="card">
+      <div class="card-title">Verified sponsorship reputation</div>
+      ${kit.verifiedCount > 0 ? `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:${(kit.reputationRatings?.communication||kit.reputationRatings?.professionalism||kit.reputationRatings?.deliverable_quality) ? '16px' : '0'}">
+        ${(() => { const tier = reliabilityTier(Number(kit.reliabilityScore)||0); return `
+        <div class="rep-stat">
+          <div class="rv">${Math.round(Number(kit.reliabilityScore)||0)}</div>
+          <div class="rl">Reliability score</div>
+          <div class="rt" style="background:${tier.bg};color:${tier.color}">${tier.label}</div>
+        </div>`; })()}
+        <div class="rep-stat">
+          <div class="rv">${Math.round(Number(kit.wouldHireAgainPct)||0)}%</div>
+          <div class="rl">Would hire again</div>
+          ${kit.reputationRatings?.would_hire_again_total ? `<div class="rt" style="background:#D1FAE5;color:#065F46">${kit.reputationRatings.would_hire_again_yes} of ${kit.reputationRatings.would_hire_again_total} sponsors</div>` : ''}
+        </div>
+        <div class="rep-stat">
+          <div class="rv">${Math.round(Number(kit.repeatSponsorRate)||0)}%</div>
+          <div class="rl">Repeat sponsor rate</div>
+        </div>
+      </div>
+      ${(kit.reputationRatings?.communication || kit.reputationRatings?.professionalism || kit.reputationRatings?.deliverable_quality) ? `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        ${[['Communication','communication'],['Professionalism','professionalism'],['Deliverable quality','deliverable_quality']].map(([label,key]) => `
+        <div class="rate-stat">
+          <div class="l">${label}</div>
+          <div class="v">${kit.reputationRatings[key] != null ? kit.reputationRatings[key] : '—'}${kit.reputationRatings[key] != null ? '<span style="font-size:11px;color:#D97706">★</span>' : ''}</div>
+        </div>`).join('')}
+      </div>` : ''}
+      ` : `<div class="no-reputation">Reputation stats build up once sponsors confirm and rate campaigns with you.</div>`}
+    </div>
+
+    <div class="card">
+      <div class="card-title">Recommendation</div>
+      ${(() => {
+        const bsComp = (kit.scoreComponents||[]).find(sc => (sc.key||sc.component_key)==='brand_safety');
+        const bsValue = bsComp ? Number(bsComp.value)||0 : 0;
+        const trustScore = Math.round(Number(kit.trustScore)||0);
+        const verdict = deriveEveKitVerdict(trustScore, bsValue, kit.verifiedCount||0);
+        const flaggedFlags = (kit.brandSafetyAnswers||[]).filter(a => { const q = BS_QUESTIONS.find(x=>x.key===a.question_key); return q && q.opts.indexOf(a.answer) === 2; });
+        const cautionFlags = (kit.brandSafetyAnswers||[]).filter(a => { const q = BS_QUESTIONS.find(x=>x.key===a.question_key); return q && q.opts.indexOf(a.answer) === 1; });
+        const verdictCopy = {
+          approve: { cls: '', text: '✓ Recommend to Sponsor' },
+          caution: { cls: 'rec-caution', text: '⚠ Proceed with Caution' },
+          avoid: { cls: 'rec-avoid', text: '✕ Not Yet Recommended' },
+        }[verdict];
+        const niche = kit.niche ? escapeHtml(kit.niche) : 'this';
+        const bodyParts = [];
+        bodyParts.push(`<strong>${escapeHtml(kit.displayName||'This creator')}</strong> currently holds a <strong>${trustScore}/100 trust score</strong> (${escapeHtml(BADGE_LABEL[kit.badgeTier]||'New creator')} tier)${kit.verifiedCount ? ` with <strong>${kit.verifiedCount} mutually confirmed campaign${kit.verifiedCount!==1?'s':''}</strong>` : ' and no mutually confirmed campaigns yet'}.`);
+        if (flaggedFlags.length) {
+          bodyParts.push(`Brand safety review flagged ${flaggedFlags.length} area${flaggedFlags.length!==1?'s':''} worth checking before committing.`);
+        } else if (cautionFlags.length) {
+          bodyParts.push(`Brand safety is broadly clean, with ${cautionFlags.length} area${cautionFlags.length!==1?'s':''} worth a quick look.`);
+        } else if (bsComp) {
+          bodyParts.push(`No brand safety flags across the questionnaire.`);
+        }
+        if (kit.reputationRatings?.would_hire_again_total) {
+          bodyParts.push(`${kit.reputationRatings.would_hire_again_yes} of ${kit.reputationRatings.would_hire_again_total} past sponsors said they'd hire again.`);
+        }
+        bodyParts.push(`Suitable for ${niche} brands${kit.location ? ` targeting audiences near ${escapeHtml(kit.location)}` : ''}.`);
+        return `
+        <div class="rec-box ${verdictCopy.cls}">
+          <div class="rec-verdict">${verdictCopy.text}</div>
+          <div class="rec-body">${bodyParts.join(' ')}</div>
+        </div>
+        <div class="rec-stats">
+          <div class="rec-stat"><div class="l">Confidence rating</div><div class="v">${Math.round(Number(kit.confidence)||0)}%</div></div>
+          <div class="rec-stat"><div class="l">Risk level</div><div class="v">${bsValue>=70?'Low':bsValue>=50?'Medium':'High'}</div></div>
+          <div class="rec-stat"><div class="l">Campaigns verified</div><div class="v">${kit.verifiedCount||0}</div></div>
+        </div>`;
+      })()}
+    </div>
+
+    <div class="card">
       <div class="card-title">Contact</div>
       <div class="contact-row">
         ${kit.businessEmail
-          ? `<span class="contact-email">${escapeHtml(kit.businessEmail)}</span><a class="contact-cta" href="mailto:${encodeURIComponent(kit.businessEmail)}?subject=${encodeURIComponent('Partnership inquiry — '+kit.displayName)}">Email ${escapeHtml((kit.displayName||'').split(' ')[0]||'me')}</a>`
+          ? `<span class="contact-email" id="ekContactEmail">${escapeHtml(kit.businessEmail)}</span><div style="display:flex;gap:8px"><button class="contact-copy" onclick="copyContactEmail('${escapeHtml(kit.businessEmail).replace(/'/g,"\\'")}')" id="ekCopyBtn">Copy email</button><a class="contact-cta" href="mailto:${encodeURIComponent(kit.businessEmail)}?subject=${encodeURIComponent('Partnership inquiry — '+kit.displayName)}">Email ${escapeHtml((kit.displayName||'').split(' ')[0]||'me')}</a></div>`
           : `<span class="no-contact">${opts.isOwner ? 'Add a business email in your Profile so brands can reach you from this page.' : 'No contact email listed.'}</span>`}
       </div>
     </div>
@@ -468,19 +687,45 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
+function copyContactEmail(email) {
+  navigator.clipboard.writeText(email).then(() => {
+    const btn = document.getElementById('ekCopyBtn');
+    if (!btn) return;
+    const original = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  });
+}
+
 // ── Owner (authenticated, dashboard) mode ───────────────────────────────
 async function loadOwnerKit(profile) {
-  const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }, { data: audience }, { data: collabs }, { data: press }] = await Promise.all([
+  const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }, { data: audience }, { data: collabs }, { data: press }, { data: scoreComponents }, { data: bsAnswers }, { data: evidenceRows }] = await Promise.all([
     sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,profile_views,avatar_url,gallery_images,available_for,causes,theme,cover_pattern,cover_tags,cover_spotlight_stat,avatar_shape').eq('id', profile.id).single(),
-    sb.from('campaigns').select('name,objective,creator_confirmed,sponsor_confirmed,created_at').eq('creator_id', profile.id).order('created_at',{ascending:false}),
+    sb.from('campaigns').select('name,objective,creator_confirmed,sponsor_confirmed,created_at,communication_rating,professionalism_rating,deliverable_quality_rating,would_hire_again').eq('creator_id', profile.id).order('created_at',{ascending:false}),
     sb.rpc('fn_creator_platform_summary', { p_creator_id: profile.id }),
     sb.rpc('fn_get_my_business_email'),
     sb.from('audience_demographics').select('dimension,label,pct').eq('creator_id', profile.id),
     sb.from('creator_collaborations').select('brand_name,logo_url,link').eq('creator_id', profile.id).order('display_order').order('created_at'),
     sb.from('creator_press_mentions').select('title,outlet_name,url,mention_date').eq('creator_id', profile.id).order('display_order').order('created_at'),
+    sb.from('score_components').select('component_key,label,value,status').eq('creator_id', profile.id),
+    sb.from('brand_safety_answers').select('question_key,answer').eq('creator_id', profile.id),
+    sb.from('evidence_uploads').select('file_name,evidence_type,platform,status,uploaded_at').eq('creator_id', profile.id).neq('status','rejected').order('uploaded_at',{ascending:false}),
   ]);
 
   const verified = (campaigns||[]).filter(x=>x.creator_confirmed&&x.sponsor_confirmed);
+  const ratedVerified = verified.filter(x => x.communication_rating != null || x.professionalism_rating != null || x.deliverable_quality_rating != null);
+  const avgOf = (arr, key) => {
+    const vals = arr.map(x=>x[key]).filter(v=>v!=null);
+    return vals.length ? Math.round((vals.reduce((a,b)=>a+b,0)/vals.length)*10)/10 : null;
+  };
+  const whAnswered = verified.filter(x => x.would_hire_again != null);
+  const reputationRatings = {
+    communication: avgOf(ratedVerified, 'communication_rating'),
+    professionalism: avgOf(ratedVerified, 'professionalism_rating'),
+    deliverable_quality: avgOf(ratedVerified, 'deliverable_quality_rating'),
+    would_hire_again_yes: whAnswered.filter(x=>x.would_hire_again===true).length,
+    would_hire_again_total: whAnswered.length,
+  };
   const platforms = (platformConnections||[]).filter(p=>p.follower_count!=null).sort((a,b)=>b.follower_count-a.follower_count);
   const audByDim = (dim) => (audience||[]).filter(r=>r.dimension===dim).sort((a,b)=>b.pct-a.pct).map(r=>({label:r.label,pct:r.pct}));
   // Earliest connected_at among currently-connected OAuth platforms --
@@ -502,6 +747,8 @@ async function loadOwnerKit(profile) {
     coverPattern: c.cover_pattern, coverTags: c.cover_tags || [], coverSpotlightStat: c.cover_spotlight_stat, avatarShape: c.avatar_shape,
     collaborations: collabs || [], pressMentions: press || [], availableFor: c.available_for || [], causes: c.causes || [], theme: c.theme,
     verifiedSince,
+    scoreComponents: scoreComponents || [], brandSafetyAnswers: bsAnswers || [], evidence: evidenceRows || [],
+    reputationRatings,
   };
 
   const link = `https://kitscore.co/media-kit/${c.slug || ''}`;
@@ -585,6 +832,9 @@ async function loadPublicKit(slug) {
     collaborations: row.collaborations || [], pressMentions: row.press_mentions || [],
     availableFor: row.available_for || [], causes: row.causes || [], theme: row.theme,
     verifiedSince: row.verified_since,
+    scoreComponents: row.score_components || [], brandSafetyAnswers: row.brand_safety_answers || [], evidence: row.evidence || [],
+    wouldHireAgainPct: row.would_hire_again_pct, repeatSponsorRate: row.repeat_sponsor_rate,
+    reputationRatings: row.reputation_ratings || {},
   };
   renderKit(kit, { isOwner: false, slug });
 
