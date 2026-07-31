@@ -625,22 +625,34 @@ function renderKit(kit, opts) {
         const bsComp = (kit.scoreComponents||[]).find(sc => (sc.key||sc.component_key)==='brand_safety');
         const bsValue = bsComp ? Number(bsComp.value)||0 : 0;
         const trustScore = Math.round(Number(kit.trustScore)||0);
-        const verdict = deriveEveKitVerdict(trustScore, bsValue, kit.verifiedCount||0);
+        const verifiedCount = kit.verifiedCount||0;
+        const verdict = deriveEveKitVerdict(trustScore, bsValue, verifiedCount);
+        // "caution" covers two very different situations: (a) trust/safety
+        // signals are themselves middling, or (b) trust/safety are strong
+        // but there's no verified sponsorship track record yet. Those read
+        // very differently to a sponsor, so give them different headlines
+        // instead of a single generic "Proceed with Caution" that looks
+        // contradictory next to a genuinely high trust score.
+        const isTrackRecordCaution = verdict === 'caution' && trustScore >= 70 && bsValue >= 70 && verifiedCount < 2;
         const flaggedFlags = (kit.brandSafetyAnswers||[]).filter(a => { const q = BS_QUESTIONS.find(x=>x.key===a.question_key); return q && q.opts.indexOf(a.answer) === 2; });
         const cautionFlags = (kit.brandSafetyAnswers||[]).filter(a => { const q = BS_QUESTIONS.find(x=>x.key===a.question_key); return q && q.opts.indexOf(a.answer) === 1; });
         const verdictCopy = {
           approve: { cls: '', text: '✓ Recommend to Sponsor' },
-          caution: { cls: 'rec-caution', text: '⚠ Proceed with Caution' },
+          caution: { cls: 'rec-caution', text: isTrackRecordCaution ? '⚠ Strong Profile — No Track Record Yet' : '⚠ Proceed with Caution' },
           avoid: { cls: 'rec-avoid', text: '✕ Not Yet Recommended' },
         }[verdict];
         const niche = kit.niche ? escapeHtml(kit.niche) : 'this';
         const bodyParts = [];
-        bodyParts.push(`<strong>${escapeHtml(kit.displayName||'This creator')}</strong> currently holds a <strong>${trustScore}/100 trust score</strong> (${escapeHtml(BADGE_LABEL[kit.badgeTier]||'New creator')} tier)${kit.verifiedCount ? ` with <strong>${kit.verifiedCount} mutually confirmed campaign${kit.verifiedCount!==1?'s':''}</strong>` : ' and no mutually confirmed campaigns yet'}.`);
+        if (isTrackRecordCaution) {
+          bodyParts.push(`<strong>${escapeHtml(kit.displayName||'This creator')}</strong>'s trust score (<strong>${trustScore}/100</strong>) and brand safety are in good standing — the gap is a verified sponsorship track record: no mutually confirmed campaigns yet, so there's no history to reference on delivery or reliability.`);
+        } else {
+          bodyParts.push(`<strong>${escapeHtml(kit.displayName||'This creator')}</strong> currently holds a <strong>${trustScore}/100 trust score</strong> (${escapeHtml(BADGE_LABEL[kit.badgeTier]||'New creator')} tier)${verifiedCount ? ` with <strong>${verifiedCount} mutually confirmed campaign${verifiedCount!==1?'s':''}</strong>` : ' and no mutually confirmed campaigns yet'}.`);
+        }
         if (flaggedFlags.length) {
           bodyParts.push(`Brand safety review flagged ${flaggedFlags.length} area${flaggedFlags.length!==1?'s':''} worth checking before committing.`);
-        } else if (cautionFlags.length) {
+        } else if (cautionFlags.length && !isTrackRecordCaution) {
           bodyParts.push(`Brand safety is broadly clean, with ${cautionFlags.length} area${cautionFlags.length!==1?'s':''} worth a quick look.`);
-        } else if (bsComp) {
+        } else if (bsComp && !isTrackRecordCaution) {
           bodyParts.push(`No brand safety flags across the questionnaire.`);
         }
         if (kit.reputationRatings?.would_hire_again_total) {
