@@ -36,6 +36,18 @@ shipped it if applicable.
 - Admin brand safety scan review queue (`app/admin-brand-safety.html`,
   `fn_admin_apply_brand_safety_scan`) — approve/reject flagged
   auto-scans before they touch a live score
+- **Contracts oversight** (2026-07-31, `app/admin-contracts.html`) -- every
+  contract signed through app/contracts.html, regardless of escrow status,
+  was previously invisible to admin entirely (no admin-facing page existed;
+  admin-escrow.html only surfaces a contract once it's been funded). Lists
+  every contract with a "stuck" flag (sitting in sent/signed-by-one-side
+  for 5+ days), and lets admin flag/resolve a problem on the contract terms
+  themselves -- separate from escrow money. Built on top of
+  contracts.disputed_at/dispute_reason/disputed_by/admin_resolved_at/
+  admin_resolution_note, which existed live in the DB with a proper FK but
+  no migration file and no application code anywhere -- a schema-only head
+  start that got reconciled and finished here (see
+  2026-07-31c-reconcile-contract-dispute-columns.sql).
 - Admin evidence review (`app/admin-evidence.html`)
 - **Escrow oversight** (2026-07-31, `app/admin-escrow.html`,
   `api/escrow.js` actions `admin-release`/`admin-refund`) — single view
