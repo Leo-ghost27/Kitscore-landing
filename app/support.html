@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support — Kitscore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  body{background:var(--canvas)}
+  .app-main{max-width:800px;padding:40px 48px 80px}
+  .ptitle{font-size:24px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
+  .psub{font-size:14px;color:var(--ink-soft);margin-bottom:20px}
+  .card{background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,21,31,.03);border-radius:0;padding:0;overflow:hidden;margin-bottom:20px}
+  .form-card{padding:26px 28px}
+  .sec{font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:7px}
+  .field input,.field textarea{width:100%;padding:11px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:14px;background:#fff;color:var(--ink);font-family:inherit}
+  .field textarea{resize:vertical;min-height:120px}
+  .cta{padding:10px 18px;background:var(--blue);color:#fff;border:none;border-radius:0;font-size:13.5px;font-weight:600;cursor:pointer}
+  .cta:disabled{opacity:.6;cursor:default}
+  .row-item{padding:18px 22px;border-bottom:1px solid var(--line)}
+  .row-item:last-child{border-bottom:none}
+  .t-subject{font-size:14.5px;font-weight:600;color:var(--ink);margin-bottom:4px}
+  .t-meta{font-size:12px;color:var(--ink-soft);margin-bottom:8px}
+  .t-message{font-size:13px;color:var(--ink);line-height:1.6;white-space:pre-wrap;margin-bottom:8px}
+  .t-notes{font-size:12.5px;color:var(--ink-soft);background:var(--canvas);border-left:2px solid var(--blue);padding:8px 12px;margin-top:8px}
+  .status-tag{font-size:11.5px;font-weight:600;padding:4px 10px;text-transform:capitalize;white-space:nowrap}
+  .st-open{background:#FDECEC;color:#B42318}
+  .st-in_progress{background:var(--gold-soft,#FDF0DC);color:#8C6C3B}
+  .st-resolved{background:var(--green-soft,#E8F5EC);color:#137C52}
+  .msg{font-size:12.5px;margin-top:10px;padding:10px 12px}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.success{background:#E8F5EC;color:#137C52}
+  .empty{font-size:13px;color:var(--ink-soft);padding:24px;text-align:center}
+  .loading{font-size:13px;color:var(--ink-soft);padding:16px 22px}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Support</div>
+    <div class="psub">Run into a bug, a billing question, or anything else that doesn't fit Evidence or Brand Safety review? Tell us here.</div>
+
+    <div class="card form-card">
+      <div class="sec">Report an issue</div>
+      <div class="field">
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" maxlength="200" placeholder="Short summary of the issue">
+      </div>
+      <div class="field">
+        <label for="message">What's going on?</label>
+        <textarea id="message" placeholder="Include what you were trying to do, what happened instead, and any relevant links or dates."></textarea>
+      </div>
+      <button class="cta" id="submitBtn">Submit</button>
+      <div id="submitMsg"></div>
+    </div>
+
+    <div class="card">
+      <div class="row-item" style="border-bottom:1px solid var(--line);padding:14px 22px">
+        <div class="sec" style="margin-bottom:0">Your reports</div>
+      </div>
+      <div id="ticketList" class="loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="nav.js?v=2"></script>
+<script>
+let profile = null;
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+const STATUS_LABEL = { open: 'Open', in_progress: 'In progress', resolved: 'Resolved' };
+
+async function load() {
+  profile = await getCurrentProfile();
+  if (!profile) { window.location.href = 'auth.html'; return; }
+  renderSidebar(profile.role, 'support');
+  await loadTickets();
+}
+
+async function loadTickets() {
+  const listEl = document.getElementById('ticketList');
+  const { data, error } = await sb.from('support_tickets')
+    .select('id,subject,message,status,admin_notes,created_at')
+    .eq('reporter_id', profile.id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    listEl.innerHTML = `<div class="empty">Could not load your reports: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  if (!data || !data.length) {
+    listEl.innerHTML = `<div class="empty">You haven't reported anything yet.</div>`;
+    return;
+  }
+  listEl.innerHTML = data.map(t => `
+    <div class="row-item">
+      <div class="t-subject">${escapeHtml(t.subject)}</div>
+      <div class="t-meta">
+        <span class="status-tag st-${t.status}">${STATUS_LABEL[t.status] || t.status}</span>
+        &nbsp;·&nbsp; ${new Date(t.created_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}
+      </div>
+      <div class="t-message">${escapeHtml(t.message)}</div>
+      ${t.admin_notes ? `<div class="t-notes"><strong>Response:</strong> ${escapeHtml(t.admin_notes)}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const subject = document.getElementById('subject').value.trim();
+  const message = document.getElementById('message').value.trim();
+  const msgEl = document.getElementById('submitMsg');
+  if (!subject || !message) {
+    msgEl.innerHTML = '<div class="msg error">Please fill in both a subject and a description.</div>';
+    return;
+  }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  const { error } = await sb.from('support_tickets').insert({
+    reporter_id: profile.id,
+    subject,
+    message,
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Submit';
+
+  if (error) {
+    msgEl.innerHTML = `<div class="msg error">Could not submit: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  document.getElementById('subject').value = '';
+  document.getElementById('message').value = '';
+  msgEl.innerHTML = '<div class="msg success">Submitted. We\'ll get back to you here.</div>';
+  await loadTickets();
+});
+
+load();
+</script>
+</body>
+</html>

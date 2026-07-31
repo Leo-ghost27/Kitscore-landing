@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revenue — Kitscore Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:4px}
+  .psub{font-size:12px;color:var(--color-text-secondary);margin-bottom:16px}
+  .period-row{display:flex;gap:6px;margin-bottom:16px}
+  .period-btn{font-size:12px;padding:6px 12px;border-radius:20px;border:0.5px solid var(--color-border-tertiary);background:none;cursor:pointer;color:var(--color-text-secondary)}
+  .period-btn.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+  .stat-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:16px}
+  .stat-label{font-size:10.5px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+  .stat-value{font-size:26px;font-weight:600;color:var(--color-text-primary)}
+  .stat-sub{font-size:11px;color:var(--color-text-tertiary);margin-top:4px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .plan-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12.5px}
+  .plan-row:last-child{border-bottom:none}
+  .plan-name{font-weight:500}
+  .plan-count{color:var(--color-text-secondary)}
+  .note{font-size:11px;color:var(--color-text-tertiary);margin-top:10px;line-height:1.5}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
+  .empty{font-size:12px;color:var(--color-text-secondary);padding:20px 0;text-align:center}
+  .msg.error{font-size:12px;background:#FDECEC;color:#B42318;padding:10px;border-radius:var(--border-radius-md)}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Revenue</div>
+    <div class="psub">Pulled live from Stripe — not a locally-cached copy, so it reflects the current state of your Stripe account.</div>
+
+    <div class="period-row" id="periodRow">
+      <button class="period-btn" data-days="7">7 days</button>
+      <button class="period-btn active" data-days="30">30 days</button>
+      <button class="period-btn" data-days="90">90 days</button>
+    </div>
+
+    <div id="content">
+      <div class="loading">Loading revenue data from Stripe…</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="nav.js?v=2"></script>
+<script>
+let currentDays = 30;
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function fmtUsd(cents) {
+  return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
+
+async function load() {
+  const profile = await requireRole('admin');
+  if (!profile) return;
+  renderSidebar('admin', 'admin-revenue');
+
+  document.querySelectorAll('.period-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentDays = parseInt(btn.dataset.days, 10);
+      loadMetrics();
+    });
+  });
+
+  await loadMetrics();
+}
+
+async function loadMetrics() {
+  const contentEl = document.getElementById('content');
+  contentEl.innerHTML = '<div class="loading">Loading revenue data from Stripe…</div>';
+
+  const { data: { session } } = await sb.auth.getSession();
+  try {
+    const res = await fetch(`/api/billing?action=admin-metrics&days=${currentDays}`, {
+      headers: { 'Authorization': `Bearer ${session?.access_token || ''}` },
+    });
+    const m = await res.json();
+    if (!res.ok) {
+      contentEl.innerHTML = `<div class="msg error">${escapeHtml(m.error || 'Could not load metrics')}</div>`;
+      return;
+    }
+    render(m);
+  } catch (err) {
+    contentEl.innerHTML = `<div class="msg error">${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function render(m) {
+  const contentEl = document.getElementById('content');
+  const planRows = Object.entries(m.mrr.planMix || {})
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, count]) => `<div class="plan-row"><span class="plan-name">${escapeHtml(label)}</span><span class="plan-count">${count} active</span></div>`)
+    .join('') || '<div class="empty">No active paid subscriptions.</div>';
+
+  contentEl.innerHTML = `
+    <div class="grid">
+      <div class="stat-card">
+        <div class="stat-label">MRR</div>
+        <div class="stat-value">${fmtUsd(m.mrr.cents)}</div>
+        <div class="stat-sub">${m.churn.activeNow} active/past-due subscriptions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Trialing (pipeline)</div>
+        <div class="stat-value">${m.trialing.count}</div>
+        <div class="stat-sub">${fmtUsd(m.trialing.projectedMrrCents)} projected if all convert</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Cancelled — last ${m.periodDays}d</div>
+        <div class="stat-value">${m.churn.cancelledCount}</div>
+        <div class="stat-sub">~${(m.churn.approxChurnRate * 100).toFixed(1)}% approx. churn rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">One-time revenue — last ${m.periodDays}d</div>
+        <div class="stat-value">${fmtUsd(m.oneTimeRevenue.netCents)}</div>
+        <div class="stat-sub">${m.oneTimeRevenue.count} purchases${m.oneTimeRevenue.refundedCents ? `, ${fmtUsd(m.oneTimeRevenue.refundedCents)} refunded` : ''}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec">Plan mix (active subscriptions)</div>
+      ${planRows}
+      <div class="note">${m.accounts.totalSponsors} sponsor accounts and ${m.accounts.totalCreators} creator accounts total (paid + free).</div>
+    </div>
+
+    <div class="card">
+      <div class="sec">About these numbers</div>
+      <div class="note">${escapeHtml(m.churn.note)}</div>
+      <div class="note">One-time revenue excludes subscription invoice charges (already counted in MRR) to avoid double-counting the same dollars.</div>
+      ${m.unrecognizedItems && m.unrecognizedItems.length ? `<div class="note" style="color:#92600A">⚠ ${m.unrecognizedItems.length} subscription item(s) couldn't be normalized into MRR (usage-based pricing or an unhandled billing interval) — MRR may be understated. Check Stripe directly for these.</div>` : ''}
+    </div>
+  `;
+}
+
+load();
+</script>
+</body>
+</html>

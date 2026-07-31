@@ -21,6 +21,8 @@ const NAV_ICONS = {
   briefs: '<path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/>',
   settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
   contracts: '<path d="M9 3h6l4 4v14H5V3z"/><path d="M9 3v4H5"/><path d="M8 13l2 2 4-4"/>',
+  revenue: '<path d="M4 20V13"/><path d="M10 20V7"/><path d="M16 20v-9"/><path d="M22 20H2"/><path d="M18 4l3 3-3 3"/><path d="M21 7h-9"/>',
+  inbox: '<path d="M3 12h4.5l1.5 3h6l1.5-3H21"/><rect x="3" y="5" width="18" height="15" rx="1"/><path d="M3 12L5 6h14l2 6"/>',
 };
 
 function navIcon(name) {
@@ -35,6 +37,7 @@ const NAV = {
     { key: 'briefs', href: 'briefs.html', icon: 'briefs', label: 'Briefs' },
     { key: 'contracts', href: 'contracts.html', icon: 'contracts', label: 'Contracts' },
     { key: 'evidence', href: 'evidence.html', icon: 'evidence', label: 'Evidence' },
+    { key: 'support', href: 'support.html', icon: 'inbox', label: 'Support' },
     { key: 'profile', href: 'profile.html', icon: 'profile', label: 'Profile' },
     { key: 'pricing-creator', href: 'pricing-creator.html', icon: 'upgrade', label: 'Upgrade' },
   ],
@@ -47,6 +50,7 @@ const NAV = {
     { key: 'history', href: 'history.html', icon: 'history', label: 'History' },
     { key: 'compare', href: 'compare.html', icon: 'compare', label: 'Compare' },
     { key: 'team', href: 'team.html', icon: 'team', label: 'Team' },
+    { key: 'support', href: 'support.html', icon: 'inbox', label: 'Support' },
     { key: 'pricing', href: 'pricing.html', icon: 'plans', label: 'Plans' },
   ],
   admin: [
@@ -58,6 +62,8 @@ const NAV = {
     { key: 'admin-contracts', href: 'admin-contracts.html', icon: 'contracts', label: 'Contracts Oversight' },
     { key: 'admin-escrow', href: 'admin-escrow.html', icon: 'contracts', label: 'Escrow Oversight' },
     { key: 'admin-disputes', href: 'admin-disputes.html', icon: 'alert-triangle', label: 'Dispute Arbitration' },
+    { key: 'admin-revenue', href: 'admin-revenue.html', icon: 'revenue', label: 'Revenue' },
+    { key: 'admin-support', href: 'admin-support.html', icon: 'inbox', label: 'Support Inbox' },
     { key: 'admin-system', href: 'admin-system.html', icon: 'settings', label: 'System Health' },
   ],
 };

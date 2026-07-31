@@ -10,12 +10,14 @@
 // only the URL changed (from a dedicated path to ?action=on this one).
 const handleCheckout = require('../lib/handlers/billing-checkout');
 const handlePortal = require('../lib/handlers/billing-portal');
+const handleAdminMetrics = require('../lib/handlers/admin-revenue-metrics');
 
 module.exports = async (req, res) => {
   const action = req.query?.action;
 
   if (action === 'checkout') return handleCheckout(req, res);
   if (action === 'portal') return handlePortal(req, res);
+  if (action === 'admin-metrics') return handleAdminMetrics(req, res);
 
-  return res.status(400).json({ error: 'Unknown or missing action. Use ?action=checkout or ?action=portal.' });
+  return res.status(400).json({ error: 'Unknown or missing action. Use ?action=checkout, ?action=portal, or ?action=admin-metrics.' });
 };

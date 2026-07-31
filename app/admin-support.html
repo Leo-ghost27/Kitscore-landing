@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support Inbox — Kitscore Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .tabs{display:flex;gap:6px;margin-bottom:14px}
+  .tab{font-size:12px;padding:6px 12px;border-radius:20px;border:0.5px solid var(--color-border-tertiary);background:none;cursor:pointer;color:var(--color-text-secondary)}
+  .tab.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary)}
+  .ticket{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:10px}
+  .ticket-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+  .t-subject{font-size:13.5px;font-weight:600;color:var(--color-text-primary)}
+  .t-meta{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+  .t-message{font-size:12.5px;color:var(--color-text-primary);line-height:1.6;white-space:pre-wrap;margin:8px 0}
+  .status-tag{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;text-transform:capitalize;white-space:nowrap}
+  .st-open{background:#FDECEC;color:#B42318}
+  .st-in_progress{background:#FBEFDC;color:#92600A}
+  .st-resolved{background:#EAF7F0;color:#1D9E75}
+  .role-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--color-background-secondary);color:var(--color-text-secondary);text-transform:capitalize;margin-left:6px}
+  .t-actions{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .t-actions select{font-size:11.5px;padding:6px 8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-family:var(--font-sans)}
+  .t-actions textarea{width:100%;font-size:12px;padding:8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-family:var(--font-sans);resize:vertical;min-height:50px;margin-top:8px}
+  .save-btn{font-size:11.5px;padding:6px 12px;border:none;border-radius:var(--border-radius-md);background:var(--color-text-primary);color:#fff;cursor:pointer;font-weight:500}
+  .save-btn:disabled{opacity:.5;cursor:not-allowed}
+  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.success{background:#EAF7F0;color:#1D9E75}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
+  .empty{font-size:12px;color:var(--color-text-secondary);padding:20px 0;text-align:center}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Support Inbox</div>
+    <div class="card">
+      <div class="sec">Filter</div>
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-status="open">Open</button>
+        <button class="tab" data-status="in_progress">In progress</button>
+        <button class="tab" data-status="resolved">Resolved</button>
+        <button class="tab" data-status="">All</button>
+      </div>
+      <div id="list" class="loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="nav.js?v=2"></script>
+<script>
+let currentStatus = 'open';
+let tickets = [];
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+const STATUS_LABEL = { open: 'Open', in_progress: 'In progress', resolved: 'Resolved' };
+
+async function load() {
+  const profile = await requireRole('admin');
+  if (!profile) return;
+  renderSidebar('admin', 'admin-support');
+  await loadTickets();
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentStatus = tab.dataset.status;
+      loadTickets();
+    });
+  });
+}
+
+async function loadTickets() {
+  const listEl = document.getElementById('list');
+  listEl.innerHTML = '<div class="loading">Loading…</div>';
+
+  let query = sb.from('support_tickets')
+    .select('id,subject,message,status,admin_notes,created_at,reporter:profiles!support_tickets_reporter_id_fkey(display_name,email,role)')
+    .order('created_at', { ascending: true });
+  if (currentStatus) query = query.eq('status', currentStatus);
+
+  const { data, error } = await query;
+  if (error) {
+    listEl.innerHTML = `<div class="empty">Could not load tickets: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  tickets = data || [];
+  if (!tickets.length) {
+    listEl.innerHTML = `<div class="empty">No ${currentStatus ? STATUS_LABEL[currentStatus].toLowerCase() : ''} tickets.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = tickets.map(t => `
+    <div class="ticket" data-id="${t.id}">
+      <div class="ticket-top">
+        <div>
+          <span class="t-subject">${escapeHtml(t.subject)}</span>
+          <span class="role-tag">${escapeHtml(t.reporter?.role || 'unknown')}</span>
+        </div>
+        <span class="status-tag st-${t.status}">${STATUS_LABEL[t.status] || t.status}</span>
+      </div>
+      <div class="t-meta">${escapeHtml(t.reporter?.display_name || 'Unknown')} — ${escapeHtml(t.reporter?.email || '')} · ${new Date(t.created_at).toLocaleString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</div>
+      <div class="t-message">${escapeHtml(t.message)}</div>
+      <div class="t-actions">
+        <select class="status-select" data-id="${t.id}">
+          <option value="open" ${t.status==='open'?'selected':''}>Open</option>
+          <option value="in_progress" ${t.status==='in_progress'?'selected':''}>In progress</option>
+          <option value="resolved" ${t.status==='resolved'?'selected':''}>Resolved</option>
+        </select>
+        <button class="save-btn" data-id="${t.id}">Save</button>
+      </div>
+      <textarea class="notes-input" data-id="${t.id}" placeholder="Notes visible to the reporter…">${escapeHtml(t.admin_notes || '')}</textarea>
+      <div class="msg" id="msg-${t.id}"></div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.save-btn').forEach(btn => {
+    btn.addEventListener('click', () => saveTicket(btn.dataset.id));
+  });
+}
+
+async function saveTicket(id) {
+  const status = document.querySelector(`.status-select[data-id="${id}"]`).value;
+  const notes = document.querySelector(`.notes-input[data-id="${id}"]`).value.trim();
+  const msgEl = document.getElementById(`msg-${id}`);
+  const btn = document.querySelector(`.save-btn[data-id="${id}"]`);
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const { error } = await sb.from('support_tickets')
+    .update({ status, admin_notes: notes || null })
+    .eq('id', id);
+
+  btn.disabled = false;
+  btn.textContent = 'Save';
+
+  if (error) {
+    msgEl.innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  msgEl.innerHTML = '<div class="msg success">Saved.</div>';
+  setTimeout(() => loadTickets(), 500);
+}
+
+load();
+</script>
+</body>
+</html>
