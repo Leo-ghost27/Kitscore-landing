@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sponsors — Kitscore Admin</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .search-row{display:flex;gap:8px;margin-bottom:14px}
+  .search-row input{flex:1;font-size:12px;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-family:var(--font-sans)}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  thead th{text-align:left;font-size:10.5px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary)}
+  tbody td{padding:10px 10px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr.is-restricted{background:#FFFBF5}
+  .fname{font-weight:500;color:var(--color-text-primary)}
+  .femail{color:var(--color-text-tertiary);font-size:11px}
+  .plan-chip{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em}
+  .plan-free{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .plan-starter{background:#EEF2FF;color:#3730A3}
+  .plan-team{background:#EEF2FF;color:#3730A3}
+  .flagged-tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:#FDECEC;color:#B42318;margin-left:4px;white-space:nowrap}
+  .restricted-tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:#FBEFDC;color:#92600A;margin-left:4px;white-space:nowrap}
+  .row-actions{display:flex;gap:6px}
+  .flag-btn,.restrict-btn{font-size:11px;padding:5px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:none;cursor:pointer;color:var(--color-text-secondary);white-space:nowrap}
+  .flag-btn:hover{background:#FDECEC;color:#B42318;border-color:#F3C6C4}
+  .flag-btn.is-flagged{background:#FDECEC;color:#B42318;border-color:#F3C6C4}
+  .restrict-btn:hover{background:#FBEFDC;color:#92600A;border-color:#EFD8AA}
+  .restrict-btn.is-restricted{background:#FBEFDC;color:#92600A;border-color:#EFD8AA}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
+  .empty{font-size:12px;color:var(--color-text-secondary);padding:20px 0;text-align:center}
+  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.success{background:#EAF7F0;color:#1D9E75}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(16,21,31,.4);display:flex;align-items:center;justify-content:center;z-index:50}
+  .modal-box{background:#fff;border-radius:var(--border-radius-md);padding:20px;width:380px;box-shadow:0 8px 30px rgba(0,0,0,.15)}
+  .modal-box h3{font-size:14px;font-weight:600;margin-bottom:4px}
+  .modal-box p{font-size:11px;color:var(--color-text-secondary);margin-bottom:12px}
+  .modal-box textarea{width:100%;font-size:12px;padding:8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);font-family:var(--font-sans);resize:vertical;min-height:70px;margin-bottom:12px}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px}
+  .modal-actions button{font-size:12px;padding:7px 14px;border-radius:var(--border-radius-md);cursor:pointer;font-family:var(--font-sans)}
+  .modal-cancel{background:none;border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)}
+  .modal-submit{background:#B42318;border:none;color:#fff;font-weight:500}
+  .modal-submit.restrict-submit{background:#92600A}
+  .modal-submit:disabled{opacity:.5;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Sponsors</div>
+    <div class="card">
+      <div class="sec">Search</div>
+      <div class="search-row">
+        <input type="text" id="search" placeholder="Search by company, name, or email…">
+      </div>
+      <div id="list" class="loading">Loading…</div>
+      <div id="msg"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="nav.js?v=2"></script>
+<script>
+let items = [];
+let searchTerm = '';
+
+async function load() {
+  const profile = await requireRole('admin');
+  if (!profile) return;
+  renderSidebar('admin', 'admin-sponsors');
+
+  const { data, error } = await sb.rpc('fn_admin_list_sponsor_directory');
+  if (error) {
+    document.getElementById('list').innerHTML = '';
+    document.getElementById('msg').innerHTML = `<div class="msg error">Could not load sponsors: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  items = data || [];
+  render();
+}
+
+function render() {
+  const term = searchTerm.trim().toLowerCase();
+  const filtered = !term ? items : items.filter(i =>
+    (i.company_name || '').toLowerCase().includes(term) ||
+    (i.display_name || '').toLowerCase().includes(term) ||
+    (i.email || '').toLowerCase().includes(term)
+  );
+
+  if (!filtered.length) {
+    document.getElementById('list').innerHTML = '<div class="empty">No sponsors match this search.</div>';
+    return;
+  }
+
+  document.getElementById('list').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Plan</th>
+          <th>Campaigns done</th>
+          <th>Reliability</th>
+          <th>Signed up</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map(i => `
+        <tr class="${i.is_restricted ? 'is-restricted' : ''}">
+          <td>
+            <div class="fname">${escapeHtml(i.company_name || i.display_name || '(no name)')}</div>
+            <div class="femail">${escapeHtml(i.email || 'no email on file')}</div>
+          </td>
+          <td>
+            <span class="plan-chip plan-${i.plan || 'free'}">${escapeHtml(i.plan || 'free')}</span>
+            ${i.is_flagged ? '<span class="flagged-tag">Flagged</span>' : ''}
+            ${i.is_restricted ? '<span class="restricted-tag">Restricted</span>' : ''}
+          </td>
+          <td>${i.campaigns_completed ?? 0}</td>
+          <td>${i.reliability_score ?? 0}</td>
+          <td>${new Date(i.created_at).toLocaleDateString()}</td>
+          <td>
+            <div class="row-actions">
+              <button class="flag-btn ${i.is_flagged ? 'is-flagged' : ''}" data-id="${i.profile_id}" data-name="${escapeHtml(i.company_name || 'this sponsor')}">
+                ${i.is_flagged ? 'Flagged' : 'Flag'}
+              </button>
+              <button class="restrict-btn ${i.is_restricted ? 'is-restricted' : ''}" data-id="${i.profile_id}" data-name="${escapeHtml(i.company_name || 'this sponsor')}" data-restricted="${i.is_restricted}">
+                ${i.is_restricted ? 'Unrestrict' : 'Restrict'}
+              </button>
+            </div>
+          </td>
+        </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+
+  document.querySelectorAll('.flag-btn').forEach(btn => {
+    btn.addEventListener('click', () => openFlagModal(btn.dataset.id, btn.dataset.name));
+  });
+  document.querySelectorAll('.restrict-btn').forEach(btn => {
+    btn.addEventListener('click', () => openRestrictModal(btn.dataset.id, btn.dataset.name, btn.dataset.restricted === 'true'));
+  });
+}
+
+document.getElementById('search').addEventListener('input', (e) => {
+  searchTerm = e.target.value;
+  render();
+});
+
+function openFlagModal(profileId, name) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h3>Flag ${escapeHtml(name)} for review</h3>
+      <p>This writes an audit record (who flagged, when, and why) — it does not change their account status.</p>
+      <textarea id="flag-reason" placeholder="Reason for flagging…"></textarea>
+      <div class="modal-actions">
+        <button class="modal-cancel" id="flag-cancel">Cancel</button>
+        <button class="modal-submit" id="flag-submit" disabled>Flag for review</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const textarea = overlay.querySelector('#flag-reason');
+  const submitBtn = overlay.querySelector('#flag-submit');
+  textarea.addEventListener('input', () => {
+    submitBtn.disabled = !textarea.value.trim();
+  });
+  overlay.querySelector('#flag-cancel').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+  submitBtn.addEventListener('click', async () => {
+    const reason = textarea.value.trim();
+    if (!reason) return;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Flagging…';
+    const { error } = await sb.rpc('fn_admin_flag_sponsor', { p_profile_id: profileId, p_reason: reason });
+    overlay.remove();
+    if (error) {
+      document.getElementById('msg').innerHTML = `<div class="msg error">Could not flag: ${escapeHtml(error.message)}</div>`;
+      return;
+    }
+    document.getElementById('msg').innerHTML = `<div class="msg success">Flagged for review.</div>`;
+    await load();
+  });
+}
+
+function openRestrictModal(profileId, name, currentlyRestricted) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+
+  if (currentlyRestricted) {
+    overlay.innerHTML = `
+      <div class="modal-box">
+        <h3>Remove restriction from ${escapeHtml(name)}?</h3>
+        <p>They'll be able to post new briefs and request new evaluations again.</p>
+        <div class="modal-actions">
+          <button class="modal-cancel" id="restrict-cancel">Cancel</button>
+          <button class="modal-submit restrict-submit" id="restrict-submit">Remove restriction</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#restrict-cancel').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    overlay.querySelector('#restrict-submit').addEventListener('click', async () => {
+      const btn = overlay.querySelector('#restrict-submit');
+      btn.disabled = true;
+      btn.textContent = 'Removing…';
+      const { error } = await sb.rpc('fn_admin_set_sponsor_restriction', { p_profile_id: profileId, p_restricted: false });
+      overlay.remove();
+      if (error) {
+        document.getElementById('msg').innerHTML = `<div class="msg error">Could not update: ${escapeHtml(error.message)}</div>`;
+        return;
+      }
+      document.getElementById('msg').innerHTML = `<div class="msg success">Restriction removed.</div>`;
+      await load();
+    });
+    return;
+  }
+
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <h3>Restrict ${escapeHtml(name)}</h3>
+      <p>Blocks posting new briefs and requesting new evaluations. Existing data stays visible — nothing is deleted, and this does not affect escrow funds already in progress.</p>
+      <textarea id="restrict-reason" placeholder="Reason for restricting…"></textarea>
+      <div class="modal-actions">
+        <button class="modal-cancel" id="restrict-cancel">Cancel</button>
+        <button class="modal-submit restrict-submit" id="restrict-submit" disabled>Restrict account</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const textarea = overlay.querySelector('#restrict-reason');
+  const submitBtn = overlay.querySelector('#restrict-submit');
+  textarea.addEventListener('input', () => {
+    submitBtn.disabled = !textarea.value.trim();
+  });
+  overlay.querySelector('#restrict-cancel').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+  submitBtn.addEventListener('click', async () => {
+    const reason = textarea.value.trim();
+    if (!reason) return;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Restricting…';
+    const { error } = await sb.rpc('fn_admin_set_sponsor_restriction', { p_profile_id: profileId, p_restricted: true, p_reason: reason });
+    overlay.remove();
+    if (error) {
+      document.getElementById('msg').innerHTML = `<div class="msg error">Could not restrict: ${escapeHtml(error.message)}</div>`;
+      return;
+    }
+    document.getElementById('msg').innerHTML = `<div class="msg success">Account restricted.</div>`;
+    await load();
+  });
+}
+
+load();
+</script>
+</body>
+</html>

@@ -13,6 +13,9 @@ module.exports = async (req, res) => {
   try {
     const sponsor = await getAuthedSponsor(req);
     if (!sponsor) return res.status(401).json({ error: 'Not authenticated as a sponsor' });
+    if (sponsor.restricted_at) {
+      return res.status(403).json({ error: 'This account is currently restricted from requesting new evaluations. Contact support if you believe this is a mistake.' });
+    }
 
     const { creatorId, teamId } = req.body || {};
     if (!creatorId) return res.status(400).json({ error: 'creatorId is required' });

@@ -185,7 +185,14 @@ async function postBrief() {
     application_deadline: deadline ? new Date(deadline).toISOString() : null,
   });
 
-  if (error) { msgEl.innerHTML = `<div class="msg error">Could not post brief: ${escapeHtml(error.message)}</div>`; btn.disabled = false; return; }
+  if (error) {
+    const msg = error.message && error.message.includes('row-level security')
+      ? 'Your account is currently restricted from posting new briefs. Contact support if you believe this is a mistake.'
+      : `Could not post brief: ${escapeHtml(error.message)}`;
+    msgEl.innerHTML = `<div class="msg error">${msg}</div>`;
+    btn.disabled = false;
+    return;
+  }
 
   msgEl.innerHTML = '<div class="msg ok">Brief posted — creators can see and apply to it now.</div>';
   await renderSponsorForm();

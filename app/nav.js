@@ -54,6 +54,7 @@ const NAV = {
     { key: 'admin-brand-safety', href: 'admin-brand-safety.html', icon: 'alert-triangle', label: 'Brand Safety Review' },
     { key: 'admin-signups', href: 'admin-signups.html', icon: 'users', label: 'Signups' },
     { key: 'admin-directory', href: 'admin-directory.html', icon: 'directory', label: 'Directory' },
+    { key: 'admin-sponsors', href: 'admin-sponsors.html', icon: 'building', label: 'Sponsors' },
     { key: 'admin-system', href: 'admin-system.html', icon: 'settings', label: 'System Health' },
   ],
 };
