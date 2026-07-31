@@ -47,6 +47,26 @@
   .modal-cancel{background:none;border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)}
   .modal-submit{background:#B42318;border:none;color:#fff;font-weight:500}
   .modal-submit:disabled{opacity:.5;cursor:not-allowed}
+
+  /* Flag history modal */
+  .history-btn{font-size:11px;padding:5px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:none;cursor:pointer;color:var(--color-text-secondary);margin-left:6px}
+  .history-btn:hover{background:var(--color-background-secondary)}
+  .history-box{background:#fff;border-radius:var(--border-radius-md);padding:20px;width:420px;max-height:70vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.15)}
+  .history-box h3{font-size:14px;font-weight:600;margin-bottom:12px}
+  .flag-item{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;margin-bottom:8px}
+  .flag-item.resolved{opacity:.6}
+  .flag-item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+  .flag-reason-text{font-size:12px;color:var(--color-text-primary);white-space:pre-wrap}
+  .flag-meta{font-size:10.5px;color:var(--color-text-tertiary);margin-top:4px}
+  .flag-status{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;white-space:nowrap}
+  .flag-status.open{background:#FDECEC;color:#B42318}
+  .flag-status.resolved{background:#EAF7F0;color:#1D9E75}
+  .resolve-btn{font-size:11px;padding:4px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:none;cursor:pointer;color:var(--color-text-secondary);margin-top:6px}
+  .resolve-btn:hover{background:#EAF7F0;color:#1D9E75;border-color:#BFE6D3}
+  .resolve-btn:disabled{opacity:.5;cursor:not-allowed}
+  .history-empty{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
+  .history-close-row{display:flex;justify-content:flex-end;margin-top:8px}
+  .history-close-row button{font-size:12px;padding:7px 14px;border-radius:var(--border-radius-md);cursor:pointer;font-family:var(--font-sans);background:none;border:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)}
 </style>
 </head>
 <body>
@@ -130,6 +150,7 @@ function render() {
             <button class="flag-btn ${i.is_flagged ? 'is-flagged' : ''}" data-id="${i.profile_id}" data-name="${escapeHtml(i.display_name || 'this creator')}">
               ${i.is_flagged ? 'Flagged' : 'Flag'}
             </button>
+            <button class="history-btn" data-history-id="${i.profile_id}" data-history-name="${escapeHtml(i.display_name || 'this creator')}">History</button>
           </td>
         </tr>
         `).join('')}
@@ -139,6 +160,9 @@ function render() {
 
   document.querySelectorAll('.flag-btn').forEach(btn => {
     btn.addEventListener('click', () => openFlagModal(btn.dataset.id, btn.dataset.name));
+  });
+  document.querySelectorAll('.history-btn').forEach(btn => {
+    btn.addEventListener('click', () => openHistoryModal(btn.dataset.historyId, btn.dataset.historyName));
   });
 }
 
@@ -184,6 +208,70 @@ function openFlagModal(profileId, name) {
     }
     document.getElementById('msg').innerHTML = `<div class="msg success">Flagged for review.</div>`;
     await load();
+  });
+}
+
+// "Resolving" a flag (fn_admin_resolve_creator_flag) is how a creator
+// gets unflagged -- is_flagged in fn_admin_list_creator_directory is
+// computed as "exists an unresolved flag", so resolving the last open
+// one clears the Flagged tag on next load. Resolving doesn't delete the
+// record -- past flags stay visible here (dimmed) as an audit trail,
+// they just stop counting toward is_flagged.
+async function openHistoryModal(profileId, name) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="history-box">
+      <h3>Flag history — ${escapeHtml(name)}</h3>
+      <div id="history-list" class="history-empty">Loading…</div>
+      <div class="history-close-row"><button id="history-close">Close</button></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#history-close').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+  await renderHistoryList(profileId, overlay);
+}
+
+async function renderHistoryList(profileId, overlay) {
+  const listEl = overlay.querySelector('#history-list');
+  const { data, error } = await sb.rpc('fn_admin_get_creator_flags', { p_profile_id: profileId });
+  if (error) {
+    listEl.innerHTML = `<div class="msg error">Could not load flag history: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  if (!data || !data.length) {
+    listEl.innerHTML = `<div class="history-empty">No flags on record for this creator.</div>`;
+    return;
+  }
+  listEl.innerHTML = data.map(f => `
+    <div class="flag-item ${f.resolved ? 'resolved' : ''}">
+      <div class="flag-item-top">
+        <div class="flag-reason-text">${escapeHtml(f.reason)}</div>
+        <span class="flag-status ${f.resolved ? 'resolved' : 'open'}">${f.resolved ? 'Resolved' : 'Open'}</span>
+      </div>
+      <div class="flag-meta">
+        Flagged by ${escapeHtml(f.flagged_by_name || f.flagged_by_email || 'unknown')} on ${new Date(f.created_at).toLocaleDateString()}
+      </div>
+      ${!f.resolved ? `<button class="resolve-btn" data-flag-id="${f.id}">Resolve (unflag)</button>` : ''}
+    </div>
+  `).join('');
+
+  listEl.querySelectorAll('.resolve-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      btn.textContent = 'Resolving…';
+      const { error: resolveErr } = await sb.rpc('fn_admin_resolve_creator_flag', { p_flag_id: btn.dataset.flagId });
+      if (resolveErr) {
+        document.getElementById('msg').innerHTML = `<div class="msg error">Could not resolve: ${escapeHtml(resolveErr.message)}</div>`;
+        btn.disabled = false;
+        btn.textContent = 'Resolve (unflag)';
+        return;
+      }
+      await renderHistoryList(profileId, overlay);
+      await load(); // refresh the Flagged tag in the background table too
+    });
   });
 }
 
