@@ -260,17 +260,24 @@ async function loadContracts() {
       const creatorGetsDollars = ((c.escrow_amount_cents - feeCents) / 100).toFixed(2);
       feeDisclosure = ` (Kitscore fee: $${(feeCents / 100).toFixed(2)}${feeIsEstimate ? ' est.' : ''} — creator receives $${creatorGetsDollars})`;
     }
+    const releasedSoFarCents = c.escrow_released_cents || 0;
+    const refundedSoFarCents = c.escrow_refunded_cents || 0;
+    const partialInProgress = releasedSoFarCents > 0 || refundedSoFarCents > 0;
+
     const canFund = profile.role === 'sponsor' && hasEscrow && c.status === 'fully_signed' && c.escrow_status === 'not_funded';
     const creatorNotReady = canFund && !c.creators.stripe_connect_payouts_enabled;
     const canSubmitDeliverable = profile.role === 'creator' && c.escrow_status === 'held' && !c.deliverable_submitted_at;
-    const canReleaseOrRefund = profile.role === 'sponsor' && c.escrow_status === 'held';
+    const canReleaseOrRefund = profile.role === 'sponsor' && c.escrow_status === 'held' && !partialInProgress;
 
     const escrowLabel = {
       not_funded: hasEscrow ? `Escrow: $${escrowDollars} not yet funded` : null,
       processing: `Escrow: $${escrowDollars} processing`,
-      held: `Escrow: $${escrowDollars} held`,
+      held: partialInProgress
+        ? `Escrow: $${escrowDollars} total — $${(releasedSoFarCents / 100).toFixed(2)} released, $${(refundedSoFarCents / 100).toFixed(2)} refunded so far, remainder held (Kitscore is mediating this one — contact support with questions)`
+        : `Escrow: $${escrowDollars} held`,
       released: `Escrow: $${escrowDollars} released to creator`,
       refunded: `Escrow: $${escrowDollars} refunded to sponsor`,
+      settled: `Escrow: $${(releasedSoFarCents / 100).toFixed(2)} released, $${(refundedSoFarCents / 100).toFixed(2)} refunded — settled`,
       failed: `Escrow: payment failed`,
     }[c.escrow_status];
 

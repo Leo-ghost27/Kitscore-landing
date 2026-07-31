@@ -27,6 +27,7 @@
   .st-held{background:#FEF6E7;color:#92600A}
   .st-released{background:#E9F7EE;color:#1C7C3F}
   .st-refunded{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .st-settled{background:#EAF0FF;color:#2F5FE0}
   .st-failed{background:#FDECEC;color:#B42318}
   .stuck-tag{font-size:10px;padding:3px 8px;border-radius:10px;background:#FDECEC;color:#B42318;font-weight:500}
   .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
@@ -88,6 +89,7 @@
         <button data-status="all">All</button>
         <button data-status="released">Released</button>
         <button data-status="refunded">Refunded</button>
+        <button data-status="settled">Settled (partial)</button>
         <button data-status="failed">Failed</button>
       </div>
       <div id="list" class="loading">Loading…</div>
@@ -192,30 +194,43 @@ async function openDetail(id) {
 
   const amount = c.escrow_amount_cents ? '$' + (c.escrow_amount_cents / 100).toFixed(2) : '—';
   const fee = c.platform_fee_cents ? '$' + (c.platform_fee_cents / 100).toFixed(2) : '—';
-  const canRelease = c.escrow_status === 'held' && c.deliverable_submitted_at;
-  const canRefund = c.escrow_status === 'held';
+  const releasedCents = c.escrow_released_cents || 0;
+  const refundedCents = c.escrow_refunded_cents || 0;
+  const remainingCents = (c.escrow_amount_cents || 0) - releasedCents - refundedCents;
+  const remainingDollars = (remainingCents / 100).toFixed(2);
+  const canRelease = c.escrow_status === 'held' && c.deliverable_submitted_at && remainingCents > 0;
+  const canRefund = c.escrow_status === 'held' && remainingCents > 0;
 
   document.getElementById('modal-content').innerHTML = `
     <h3>${escapeHtml(c.title)}</h3>
     <div class="kv"><span class="kv-label">Sponsor</span><span class="kv-val">${escapeHtml(c.sponsors?.company_name || '—')}</span></div>
     <div class="kv"><span class="kv-label">Creator</span><span class="kv-val">${escapeHtml(c.creators?.profiles?.display_name || '—')}</span></div>
     <div class="kv"><span class="kv-label">Escrow status</span><span class="kv-val">${c.escrow_status}</span></div>
-    <div class="kv"><span class="kv-label">Amount / fee</span><span class="kv-val">${amount} / ${fee}</span></div>
+    <div class="kv"><span class="kv-label">Total escrowed / fee</span><span class="kv-val">${amount} / ${fee}</span></div>
+    ${(releasedCents > 0 || refundedCents > 0) ? `
+    <div class="kv"><span class="kv-label">Released so far</span><span class="kv-val">$${(releasedCents / 100).toFixed(2)}</span></div>
+    <div class="kv"><span class="kv-label">Refunded so far</span><span class="kv-val">$${(refundedCents / 100).toFixed(2)}</span></div>
+    <div class="kv"><span class="kv-label">Remaining undisbursed</span><span class="kv-val">$${remainingDollars}</span></div>
+    ` : ''}
     <div class="kv"><span class="kv-label">Funded</span><span class="kv-val">${c.funded_at ? new Date(c.funded_at).toLocaleString() : '—'}</span></div>
     <div class="kv"><span class="kv-label">Deliverable submitted</span><span class="kv-val">${c.deliverable_submitted_at ? new Date(c.deliverable_submitted_at).toLocaleString() : '—'}</span></div>
-    <div class="kv"><span class="kv-label">Released</span><span class="kv-val">${c.released_at ? new Date(c.released_at).toLocaleString() : '—'}</span></div>
-    <div class="kv"><span class="kv-label">Refunded</span><span class="kv-val">${c.refunded_at ? new Date(c.refunded_at).toLocaleString() : '—'}</span></div>
+    <div class="kv"><span class="kv-label">Fully released at</span><span class="kv-val">${c.released_at ? new Date(c.released_at).toLocaleString() : '—'}</span></div>
+    <div class="kv"><span class="kv-label">Fully refunded at</span><span class="kv-val">${c.refunded_at ? new Date(c.refunded_at).toLocaleString() : '—'}</span></div>
     <div class="kv"><span class="kv-label">Payment intent</span><span class="kv-val">${escapeHtml(c.escrow_payment_intent_id || '—')}</span></div>
-    <div class="kv"><span class="kv-label">Transfer / refund ID</span><span class="kv-val">${escapeHtml(c.escrow_transfer_id || '—')}</span></div>
+    <div class="kv"><span class="kv-label">Latest transfer ID</span><span class="kv-val">${escapeHtml(c.escrow_transfer_id || '—')}</span></div>
     ${c.deliverable_notes ? `<div class="kv"><span class="kv-label">Deliverable notes</span><span class="kv-val">${escapeHtml(c.deliverable_notes)}</span></div>` : ''}
 
     ${(canRelease || canRefund) ? `
-      <textarea id="admin-note" placeholder="Required: why are you forcing this? (shown only to admins, logged permanently)"></textarea>
-      <div class="modal-actions">
-        ${canRelease ? `<button class="btn-release" onclick="forceAction('${c.id}','release')">Force release to creator</button>` : ''}
-        ${canRefund ? `<button class="btn-refund" onclick="forceAction('${c.id}','refund')">Force refund to sponsor</button>` : ''}
+      <div style="margin-top:12px">
+        <label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">Amount to move (of $${remainingDollars} remaining) — leave as-is to move the full remainder</label>
+        <input type="number" id="admin-amount" step="0.01" min="0.01" max="${remainingDollars}" value="${remainingDollars}" style="width:100%;font-size:12px;padding:8px;border:0.5px solid var(--color-border-tertiary);box-sizing:border-box">
       </div>
-      ${!canRelease && c.escrow_status === 'held' ? '<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Release is disabled until the creator submits a deliverable — refund is still available.</div>' : ''}
+      <textarea id="admin-note" placeholder="Required: why are you forcing this? e.g. 'Deliverable was off-brief per sponsor -- mediated: 20% release, 80% refund. Both parties agreed by email.' (shown only to admins, logged permanently)"></textarea>
+      <div class="modal-actions">
+        ${canRelease ? `<button class="btn-release" onclick="forceAction('${c.id}','release')">Release to creator</button>` : ''}
+        ${canRefund ? `<button class="btn-refund" onclick="forceAction('${c.id}','refund')">Refund to sponsor</button>` : ''}
+      </div>
+      ${!canRelease && c.escrow_status === 'held' && remainingCents > 0 ? '<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Release is disabled until the creator submits a deliverable — refund is still available.</div>' : ''}
       <div id="action-msg"></div>
     ` : ''}
 
@@ -240,16 +255,19 @@ document.getElementById('modal-backdrop').addEventListener('click', (e) => {
 
 async function forceAction(contractId, kind) {
   const note = document.getElementById('admin-note').value.trim();
+  const amountDollars = parseFloat(document.getElementById('admin-amount').value);
   const msgEl = document.getElementById('action-msg');
   if (!note) { msgEl.innerHTML = '<div class="msg error">A note is required before forcing this action.</div>'; return; }
-  if (!confirm(`This will move real money via Stripe (${kind}). Are you sure?`)) return;
+  if (!amountDollars || amountDollars <= 0) { msgEl.innerHTML = '<div class="msg error">Enter a valid amount.</div>'; return; }
+  const amountCents = Math.round(amountDollars * 100);
+  if (!confirm(`This will move $${amountDollars.toFixed(2)} via Stripe (${kind}). Are you sure?`)) return;
 
   const { data: { session } } = await sb.auth.getSession();
   try {
     const res = await fetch(`/api/escrow?action=admin-${kind}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
-      body: JSON.stringify({ contractId, note }),
+      body: JSON.stringify({ contractId, note, amountCents }),
     });
     const result = await res.json();
     if (!res.ok) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(result.error || 'Action failed')}</div>`; return; }
