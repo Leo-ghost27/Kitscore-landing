@@ -34,28 +34,20 @@ async function getCurrentProfile() {
   return data;
 }
 
-// Ensures a profile (and matching creators/sponsors row) exists for the given
-// authenticated user, creating it from their signup metadata if missing.
-// Safe to call on every login/session — no-ops if the profile already exists.
-// This covers users who confirmed their email and are logging in for the
-// first time, since the signup form itself only runs while an immediate
-// session exists (i.e. when email confirmation is disabled).
-async function ensureProfile(user) {
-  if (!user) return null;
-  const existing = await getCurrentProfile();
-  if (existing) return existing;
-
-  const role = user.user_metadata?.role;
-  const displayName = user.user_metadata?.display_name;
-  if (!role || !displayName) {
-    console.error('ensureProfile: missing role/display_name metadata for user', user.id);
-    return null;
-  }
-
+// Creates the profile (and matching creators/sponsors row) for the given
+// authenticated user from an explicit role + display name. Shared by
+// ensureProfile() (metadata path) and the "finish setting up your
+// account" fallback (manual path) below, so there's one place that
+// actually writes the row.
+async function createProfile(user, role, displayName) {
   const { data: profile, error: profileErr } = await sb.from('profiles')
     .insert({ auth_user_id: user.id, role, display_name: displayName, email: user.email })
     .select().single();
-  if (profileErr) { console.error('ensureProfile: profile insert failed:', profileErr.message); return null; }
+  if (profileErr) {
+    console.error('createProfile: profile insert failed:', profileErr.message);
+    await logProfileCreationFailure(user, profileErr.message);
+    return null;
+  }
 
   if (role === 'creator') {
     await sb.from('creators').insert({ id: profile.id });
@@ -63,6 +55,46 @@ async function ensureProfile(user) {
     await sb.from('sponsors').insert({ id: profile.id, company_name: displayName });
   }
   return profile;
+}
+
+// Best-effort visibility into ensureProfile() failures so these don't stay
+// invisible the way the missing-metadata dead-end did. Never throws — a
+// logging failure must not block or mask the original error.
+async function logProfileCreationFailure(user, reason) {
+  try {
+    await sb.rpc('fn_log_client_failure', {
+      p_kind: 'profile_creation',
+      p_detail: reason,
+      p_context: { auth_user_id: user?.id, email: user?.email }
+    });
+  } catch (e) { /* logging is best-effort; original error already surfaced above */ }
+}
+
+// Ensures a profile (and matching creators/sponsors row) exists for the given
+// authenticated user, creating it from their signup metadata if missing.
+// Safe to call on every login/session — no-ops if the profile already exists.
+// This covers users who confirmed their email and are logging in for the
+// first time, since the signup form itself only runs while an immediate
+// session exists (i.e. when email confirmation is disabled).
+//
+// If the account has no role/display_name metadata (e.g. accept-invite.html's
+// signUp() doesn't set any, or an account was created directly through
+// Supabase rather than through our forms), this used to log a console error
+// and return null, leaving the person stuck on "Signed in, but no profile
+// found" with no way to recover. Now it returns a sentinel so the caller can
+// show a small "finish setting up your account" form instead.
+const PROFILE_INCOMPLETE = Symbol('profile_incomplete');
+
+async function ensureProfile(user) {
+  if (!user) return null;
+  const existing = await getCurrentProfile();
+  if (existing) return existing;
+
+  const role = user.user_metadata?.role;
+  const displayName = user.user_metadata?.display_name;
+  if (!role || !displayName) return PROFILE_INCOMPLETE;
+
+  return createProfile(user, role, displayName);
 }
 
 // Redirects to auth.html if nobody is signed in, or to the wrong dashboard

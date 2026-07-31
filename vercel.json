@@ -26,7 +26,8 @@
     { "path": "/api/cron?job=twitch-validate", "schedule": "0 4 * * *" },
     { "path": "/api/cron?job=youtube-resync", "schedule": "0 5 * * *" },
     { "path": "/api/cron?job=tiktok-resync", "schedule": "0 6 * * *" },
-    { "path": "/api/cron?job=discord-poll", "schedule": "0 7 * * *" }
+    { "path": "/api/cron?job=discord-poll", "schedule": "0 7 * * *" },
+    { "path": "/api/cron?job=health-check", "schedule": "0 8 * * *" }
   ],
   "headers": [
     {

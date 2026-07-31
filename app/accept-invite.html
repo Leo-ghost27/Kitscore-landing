@@ -96,7 +96,10 @@ async function acceptWithSignup() {
   const password = document.getElementById('password').value;
   if (!displayName || !email || !password) { showMsg('All fields are required.', 'error'); btn.disabled = false; return; }
 
-  const { data, error } = await sb.auth.signUp({ email, password });
+  const { data, error } = await sb.auth.signUp({
+    email, password,
+    options: { data: { role: 'sponsor', display_name: displayName } }
+  });
   if (error) { showMsg(error.message, 'error'); btn.disabled = false; return; }
   if (!data.session) { showMsg('Check your email to confirm, then sign in to accept the invite.', 'ok'); return; }
 
@@ -114,10 +117,18 @@ async function acceptWithLogin() {
   btn.disabled = true;
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
-  const { error } = await sb.auth.signInWithPassword({ email, password });
+  const { data: loginData, error } = await sb.auth.signInWithPassword({ email, password });
   if (error) { showMsg(error.message, 'error'); btn.disabled = false; return; }
-  const profile = await getCurrentProfile();
-  if (!profile) { showMsg('Signed in but no profile found.', 'error'); btn.disabled = false; return; }
+  let profile = await getCurrentProfile();
+  if (!profile) {
+    // Accounts created via acceptWithSignup's !data.session branch (email
+    // confirmation required) never got a profile row -- this flow only
+    // ever creates sponsors, so build it now from what we already know
+    // instead of dead-ending on "no profile found" like it used to.
+    const displayName = loginData.user.user_metadata?.display_name || invite.email.split('@')[0];
+    profile = await createProfile(loginData.user, 'sponsor', displayName);
+  }
+  if (!profile) { showMsg('Signed in but profile setup failed. Please try again or contact support.', 'error'); btn.disabled = false; return; }
   await joinTeam(profile);
 }
 

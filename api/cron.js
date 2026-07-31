@@ -1,4 +1,9 @@
-// GET /api/cron?job=evidence-nudges | ?job=twitch-validate | ?job=youtube-resync | ?job=tiktok-resync | ?job=discord-poll
+// GET /api/cron?job=evidence-nudges | ?job=twitch-validate | ?job=youtube-resync | ?job=tiktok-resync | ?job=discord-poll | ?job=health-check
+//
+// health-check (added 2026-07-31) closes the "found by accident" gap:
+// aggregates client_failures, notification_failures, and stale (never-
+// completed) oauth_states, emailing a digest only when something crosses
+// a real threshold. See lib/handlers/cron-health-check.js for detail.
 //
 // Merges what were two standalone cron functions (api/cron-evidence-
 // nudges.js, api/cron-twitch-validate.js) into one, same reasoning and
@@ -36,6 +41,7 @@ const handleTwitchValidate = require('../lib/handlers/cron-twitch-validate');
 const handleYoutubeResync = require('../lib/handlers/cron-youtube-resync');
 const handleTiktokResync = require('../lib/handlers/cron-tiktok-resync');
 const handleDiscordPoll = require('../lib/handlers/cron-discord-poll');
+const handleHealthCheck = require('../lib/handlers/cron-health-check');
 
 module.exports = async (req, res) => {
   const authHeader = req.headers['authorization'] || '';
@@ -53,6 +59,7 @@ module.exports = async (req, res) => {
   if (job === 'youtube-resync') return handleYoutubeResync(req, res);
   if (job === 'tiktok-resync') return handleTiktokResync(req, res);
   if (job === 'discord-poll') return handleDiscordPoll(req, res);
+  if (job === 'health-check') return handleHealthCheck(req, res);
 
-  return res.status(400).json({ error: 'Unknown or missing job. Use ?job=evidence-nudges, ?job=twitch-validate, ?job=youtube-resync, ?job=tiktok-resync, or ?job=discord-poll.' });
+  return res.status(400).json({ error: 'Unknown or missing job. Use ?job=evidence-nudges, ?job=twitch-validate, ?job=youtube-resync, ?job=tiktok-resync, ?job=discord-poll, or ?job=health-check.' });
 };

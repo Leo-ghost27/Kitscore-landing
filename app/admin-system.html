@@ -78,6 +78,21 @@
         <button class="btn-check" id="btn-evidence-nudges" onclick="runJob('evidence-nudges', 'btn-evidence-nudges', 'result-evidence-nudges')">Check now</button>
       </div>
       <div id="result-evidence-nudges"></div>
+
+      <div class="row-item">
+        <div>
+          <div class="job-name">Signup / connection health check</div>
+          <div class="job-desc">Emails a digest if profile-creation failures, notification failures, or abandoned OAuth connections cross a threshold. Runs daily at 08:00 UTC.</div>
+        </div>
+        <button class="btn-check" id="btn-health-check" onclick="runJob('health-check', 'btn-health-check', 'result-health-check')">Check now</button>
+      </div>
+      <div id="result-health-check"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec">Health summary</div>
+      <div class="sub">Unresolved issues from the last 7 days — these used to only surface by accident (a specific bug report or manual testing), not because anything flagged them.</div>
+      <div id="health-summary"></div>
     </div>
   </div>
 </div>
@@ -90,6 +105,24 @@ async function load() {
   const profile = await requireRole('admin');
   if (!profile) return;
   renderSidebar('admin', 'admin-system');
+  loadHealthSummary();
+}
+
+async function loadHealthSummary() {
+  const el = document.getElementById('health-summary');
+  const { data, error } = await sb.rpc('fn_admin_health_summary');
+  if (error) { el.innerHTML = `<div class="result error">${escapeHtml(error.message)}</div>`; return; }
+  if (!data || data.length === 0) { el.innerHTML = `<div class="job-desc">Nothing unresolved — all clear.</div>`; return; }
+
+  const labels = { client_failure: 'Signup/profile failure', notification_failure: 'Notification failure', stale_oauth_connection: 'Abandoned OAuth connection' };
+  el.innerHTML = data.map(row => `
+    <div class="row-item">
+      <div>
+        <div class="job-name">${escapeHtml(labels[row.category] || row.category)} — ${escapeHtml(row.kind)}</div>
+        <div class="job-desc">${row.count} unresolved, oldest since ${new Date(row.oldest).toLocaleString()}</div>
+      </div>
+    </div>
+  `).join('');
 }
 
 async function runJob(job, btnId, resultId) {

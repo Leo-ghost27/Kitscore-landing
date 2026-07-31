@@ -113,6 +113,23 @@
         <button class="submit" id="resetBtn" onclick="sendReset()"><i class="ti ti-send"></i>Send reset link</button>
         <div style="text-align:center;margin-top:10px"><a href="#" onclick="hideReset(event)" style="font-size:11px;color:var(--color-text-secondary);text-decoration:none">← Back to sign in</a></div>
       </div>
+      <!-- Shown when a signed-in user has no profile and no role/display_name
+           metadata to build one from automatically (e.g. a team invite
+           accepted after email confirmation, or any account created outside
+           the normal signup form). Used to be a dead end -- "Signed in, but
+           no profile found." with no way forward. -->
+      <div id="completeProfilePanel" style="display:none">
+        <h1>Finish setting up your account</h1>
+        <p>We just need a couple more details to get you in.</p>
+        <div class="field"><label>I am a</label>
+          <div class="field-icon"><i class="ti ti-user-circle" aria-hidden="true"></i><select id="completeRole"><option value="creator">Creator</option><option value="sponsor">Sponsor</option></select></div>
+        </div>
+        <div class="field"><label>Name / Company</label>
+          <div class="field-icon"><i class="ti ti-id" aria-hidden="true"></i><input id="completeDisplayName" placeholder="Aaliya Ahmed"></div>
+        </div>
+        <button class="submit" id="completeBtn" onclick="finishProfile()"><i class="ti ti-arrow-right"></i>Continue</button>
+        <div id="completeMsg"></div>
+      </div>
       <!-- Password recovery completion panel (shown when arriving via a reset-link) -->
       <div id="recoveryPanel" style="display:none">
         <h1>Set a new password</h1>
@@ -239,6 +256,38 @@ function showMsg(text, type) {
   document.getElementById('msg').innerHTML = `<div class="msg ${type}">${text}</div>`;
 }
 
+let pendingUser = null; // set when we land on the complete-profile panel
+
+function showCompleteProfile(user) {
+  pendingUser = user;
+  document.querySelector('.tabs').style.display = 'none';
+  document.getElementById('signupOnly').style.display = 'none';
+  document.getElementById('email').closest('.field').style.display = 'none';
+  document.getElementById('password').closest('.field').style.display = 'none';
+  document.getElementById('forgotLink').style.display = 'none';
+  document.getElementById('submitBtn').style.display = 'none';
+  document.getElementById('resetPanel').style.display = 'none';
+  document.getElementById('completeProfilePanel').style.display = 'block';
+}
+
+async function finishProfile() {
+  const role = document.getElementById('completeRole').value;
+  const displayName = document.getElementById('completeDisplayName').value.trim();
+  const msgEl = document.getElementById('completeMsg');
+  if (!displayName) { msgEl.innerHTML = '<div class="msg error">Name / company is required.</div>'; return; }
+  const btn = document.getElementById('completeBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader"></i>Saving…';
+  const profile = await createProfile(pendingUser, role, displayName);
+  if (!profile) {
+    msgEl.innerHTML = '<div class="msg error">Something went wrong. Please try again.</div>';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-arrow-right"></i>Continue';
+    return;
+  }
+  window.location.href = profile.role === 'creator' ? 'dashboard.html' : 'directory.html';
+}
+
 async function submitForm() {
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
@@ -249,7 +298,8 @@ async function submitForm() {
   if (mode === 'login') {
     const { data: loginData, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) { showMsg(error.message, 'error'); btn.disabled = false; return; }
-    await ensureProfile(loginData.user);
+    const result = await ensureProfile(loginData.user);
+    if (result === PROFILE_INCOMPLETE) { showCompleteProfile(loginData.user); return; }
     await routeToDashboard();
     return;
   }
@@ -273,7 +323,7 @@ async function submitForm() {
   }
 
   const profile = await ensureProfile(data.user);
-  if (!profile) { showMsg('Account created but profile setup failed. Please try signing in.', 'error'); btn.disabled = false; return; }
+  if (!profile || profile === PROFILE_INCOMPLETE) { showMsg('Account created but profile setup failed. Please try signing in.', 'error'); btn.disabled = false; return; }
   await routeToDashboard();
 }
 
@@ -286,8 +336,9 @@ async function routeToDashboard() {
 (async () => {
   const { data: { session } } = await sb.auth.getSession();
   if (!session || isRecovering) return;
-  const profile = await ensureProfile(session.user);
-  if (profile) await routeToDashboard();
+  const result = await ensureProfile(session.user);
+  if (result === PROFILE_INCOMPLETE) { showCompleteProfile(session.user); return; }
+  if (result) await routeToDashboard();
 })();
 </script>
 <script>
