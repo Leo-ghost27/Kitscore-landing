@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escrow Oversight — Kitscore Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .filters button{font-size:11px;padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:20px;background:none;cursor:pointer;color:var(--color-text-secondary)}
+  .filters button.active{background:#2563EB;color:#fff;border-color:#2563EB}
+  .row-item{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;cursor:pointer}
+  .row-item:last-child{border-bottom:none}
+  .row-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .row-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .row-main .fname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+  .row-meta{color:var(--color-text-tertiary);font-size:11px}
+  .status-tag{font-size:10px;padding:3px 8px;border-radius:10px;text-transform:capitalize;white-space:nowrap;flex-shrink:0}
+  .st-not_funded{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .st-processing{background:#FEF6E7;color:#92600A}
+  .st-held{background:#FEF6E7;color:#92600A}
+  .st-released{background:#E9F7EE;color:#1C7C3F}
+  .st-refunded{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .st-failed{background:#FDECEC;color:#B42318}
+  .stuck-tag{font-size:10px;padding:3px 8px;border-radius:10px;background:#FDECEC;color:#B42318;font-weight:500}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
+  .empty{font-size:12px;color:var(--color-text-secondary);padding:20px 0;text-align:center}
+  .summary-bar{display:flex;gap:20px;margin-bottom:14px}
+  .summary-item{flex:1}
+  .summary-num{font-size:20px;font-weight:600}
+  .summary-label{font-size:11px;color:var(--color-text-secondary)}
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(16,21,31,.4);z-index:50;align-items:center;justify-content:center}
+  .modal-backdrop.open{display:flex}
+  .modal{background:#fff;border-radius:8px;padding:20px;max-width:480px;width:92%;max-height:85vh;overflow-y:auto}
+  .modal h3{font-size:14px;margin:0 0 12px}
+  .modal .kv{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .modal .kv:last-of-type{border-bottom:none}
+  .modal .kv-label{color:var(--color-text-secondary)}
+  .modal .kv-val{font-weight:500;text-align:right;word-break:break-all}
+  .modal textarea{width:100%;min-height:70px;margin-top:12px;font-family:inherit;font-size:12px;padding:8px;border:0.5px solid var(--color-border-tertiary);box-sizing:border-box}
+  .modal-actions{display:flex;gap:8px;margin-top:14px}
+  .btn-release{font-size:11px;padding:8px 14px;border:none;border-radius:var(--border-radius-sm);background:#1C7C3F;color:#fff;cursor:pointer;flex:1}
+  .btn-refund{font-size:11px;padding:8px 14px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);background:#fff;cursor:pointer;flex:1}
+  .btn-close{font-size:11px;padding:8px 14px;border:none;background:none;cursor:pointer;color:var(--color-text-secondary)}
+  .btn-release:disabled,.btn-refund:disabled{opacity:.5;cursor:not-allowed}
+  .msg{font-size:11px;margin-top:8px;padding:8px}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  .past-actions{margin-top:14px;padding-top:12px;border-top:0.5px solid var(--color-border-tertiary)}
+  .past-action{font-size:11px;color:var(--color-text-secondary);padding:6px 0}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Escrow Oversight</div>
+    <div class="card" style="background:var(--color-background-secondary);border:none">
+      <div style="font-size:11.5px;color:var(--color-text-secondary)">Every contract that's had money touch it — funded, held, released, refunded, or failed. "Stuck" means escrow has been held for 5+ days after the creator submitted the deliverable, with no release or refund. Force actions here call the real Stripe API through the service role and are logged to <code>admin_actions</code>.</div>
+    </div>
+
+    <div class="summary-bar">
+      <div class="summary-item card">
+        <div class="summary-num" id="sum-held">—</div>
+        <div class="summary-label">Currently held</div>
+      </div>
+      <div class="summary-item card">
+        <div class="summary-num" id="sum-stuck" style="color:#B42318">—</div>
+        <div class="summary-label">Stuck (5+ days)</div>
+      </div>
+      <div class="summary-item card">
+        <div class="summary-num" id="sum-total">—</div>
+        <div class="summary-label">Total funded</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec">Filter</div>
+      <div class="filters" id="filters">
+        <button data-status="stuck" class="active">Stuck</button>
+        <button data-status="held">Held</button>
+        <button data-status="all">All</button>
+        <button data-status="released">Released</button>
+        <button data-status="refunded">Refunded</button>
+        <button data-status="failed">Failed</button>
+      </div>
+      <div id="list" class="loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="icons.js?v=2"></script>
+<script src="nav.js?v=2"></script>
+<script>
+let profile;
+let contracts = [];
+let activeFilter = 'stuck';
+const STUCK_DAYS = 5;
+
+function daysSince(dateStr) {
+  if (!dateStr) return null;
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function isStuck(c) {
+  return c.escrow_status === 'held' && c.deliverable_submitted_at
+    && daysSince(c.deliverable_submitted_at) >= STUCK_DAYS;
+}
+
+async function load() {
+  profile = await requireRole('admin');
+  if (!profile) return;
+  renderSidebar('admin', 'admin-escrow');
+
+  const { data, error } = await sb.from('contracts')
+    .select('*, sponsors!inner(company_name), creators!inner(id, stripe_connect_account_id, profiles!inner(display_name))')
+    .neq('escrow_status', 'not_funded')
+    .order('funded_at', { ascending: false });
+
+  if (error) { document.getElementById('list').textContent = 'Could not load: ' + error.message; return; }
+
+  contracts = data || [];
+  updateSummary();
+  document.querySelectorAll('#filters button').forEach(b => b.classList.toggle('active', b.dataset.status === activeFilter));
+  render();
+}
+
+function updateSummary() {
+  document.getElementById('sum-held').textContent = contracts.filter(c => c.escrow_status === 'held').length;
+  document.getElementById('sum-stuck').textContent = contracts.filter(isStuck).length;
+  document.getElementById('sum-total').textContent = contracts.length;
+}
+
+function render() {
+  let filtered = contracts;
+  if (activeFilter === 'stuck') filtered = contracts.filter(isStuck);
+  else if (activeFilter !== 'all') filtered = contracts.filter(c => c.escrow_status === activeFilter);
+
+  const list = document.getElementById('list');
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty">Nothing in this view.</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(c => {
+    const stuck = isStuck(c);
+    const amount = c.escrow_amount_cents ? '$' + (c.escrow_amount_cents / 100).toFixed(2) : '—';
+    const heldDays = c.deliverable_submitted_at ? daysSince(c.deliverable_submitted_at) : null;
+    return `
+    <div class="row-item" onclick="openDetail('${c.id}')">
+      <div class="row-top">
+        <div class="row-main">
+          <span class="fname">${escapeHtml(c.title)}</span>
+          <span class="row-meta">${escapeHtml(c.sponsors?.company_name || 'Unknown sponsor')} → ${escapeHtml(c.creators?.profiles?.display_name || 'Unknown creator')} · ${amount}</span>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${stuck ? `<span class="stuck-tag">${svgIcon('alert-triangle',{size:11})} ${heldDays}d stuck</span>` : ''}
+          <span class="status-tag st-${c.escrow_status}">${c.escrow_status.replace('_',' ')}</span>
+        </div>
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+document.getElementById('filters').addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  activeFilter = btn.dataset.status;
+  document.querySelectorAll('#filters button').forEach(b => b.classList.toggle('active', b === btn));
+  render();
+});
+
+async function openDetail(id) {
+  const c = contracts.find(x => x.id === id);
+  if (!c) return;
+
+  const { data: pastActions } = await sb.from('admin_actions')
+    .select('*').eq('target_table', 'contracts').eq('target_id', id).order('created_at', { ascending: false });
+
+  const amount = c.escrow_amount_cents ? '$' + (c.escrow_amount_cents / 100).toFixed(2) : '—';
+  const fee = c.platform_fee_cents ? '$' + (c.platform_fee_cents / 100).toFixed(2) : '—';
+  const canRelease = c.escrow_status === 'held' && c.deliverable_submitted_at;
+  const canRefund = c.escrow_status === 'held';
+
+  document.getElementById('modal-content').innerHTML = `
+    <h3>${escapeHtml(c.title)}</h3>
+    <div class="kv"><span class="kv-label">Sponsor</span><span class="kv-val">${escapeHtml(c.sponsors?.company_name || '—')}</span></div>
+    <div class="kv"><span class="kv-label">Creator</span><span class="kv-val">${escapeHtml(c.creators?.profiles?.display_name || '—')}</span></div>
+    <div class="kv"><span class="kv-label">Escrow status</span><span class="kv-val">${c.escrow_status}</span></div>
+    <div class="kv"><span class="kv-label">Amount / fee</span><span class="kv-val">${amount} / ${fee}</span></div>
+    <div class="kv"><span class="kv-label">Funded</span><span class="kv-val">${c.funded_at ? new Date(c.funded_at).toLocaleString() : '—'}</span></div>
+    <div class="kv"><span class="kv-label">Deliverable submitted</span><span class="kv-val">${c.deliverable_submitted_at ? new Date(c.deliverable_submitted_at).toLocaleString() : '—'}</span></div>
+    <div class="kv"><span class="kv-label">Released</span><span class="kv-val">${c.released_at ? new Date(c.released_at).toLocaleString() : '—'}</span></div>
+    <div class="kv"><span class="kv-label">Refunded</span><span class="kv-val">${c.refunded_at ? new Date(c.refunded_at).toLocaleString() : '—'}</span></div>
+    <div class="kv"><span class="kv-label">Payment intent</span><span class="kv-val">${escapeHtml(c.escrow_payment_intent_id || '—')}</span></div>
+    <div class="kv"><span class="kv-label">Transfer / refund ID</span><span class="kv-val">${escapeHtml(c.escrow_transfer_id || '—')}</span></div>
+    ${c.deliverable_notes ? `<div class="kv"><span class="kv-label">Deliverable notes</span><span class="kv-val">${escapeHtml(c.deliverable_notes)}</span></div>` : ''}
+
+    ${(canRelease || canRefund) ? `
+      <textarea id="admin-note" placeholder="Required: why are you forcing this? (shown only to admins, logged permanently)"></textarea>
+      <div class="modal-actions">
+        ${canRelease ? `<button class="btn-release" onclick="forceAction('${c.id}','release')">Force release to creator</button>` : ''}
+        ${canRefund ? `<button class="btn-refund" onclick="forceAction('${c.id}','refund')">Force refund to sponsor</button>` : ''}
+      </div>
+      ${!canRelease && c.escrow_status === 'held' ? '<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Release is disabled until the creator submits a deliverable — refund is still available.</div>' : ''}
+      <div id="action-msg"></div>
+    ` : ''}
+
+    ${pastActions && pastActions.length ? `
+      <div class="past-actions">
+        <div class="sec">Past admin actions</div>
+        ${pastActions.map(a => `<div class="past-action"><strong>${a.action_type.replace(/_/g,' ')}</strong> — ${escapeHtml(a.note)} <span style="color:var(--color-text-tertiary)">(${new Date(a.created_at).toLocaleString()})</span></div>`).join('')}
+      </div>
+    ` : ''}
+
+    <div class="modal-actions"><button class="btn-close" onclick="closeModal()">Close</button></div>
+  `;
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-backdrop').classList.remove('open');
+}
+document.getElementById('modal-backdrop').addEventListener('click', (e) => {
+  if (e.target.id === 'modal-backdrop') closeModal();
+});
+
+async function forceAction(contractId, kind) {
+  const note = document.getElementById('admin-note').value.trim();
+  const msgEl = document.getElementById('action-msg');
+  if (!note) { msgEl.innerHTML = '<div class="msg error">A note is required before forcing this action.</div>'; return; }
+  if (!confirm(`This will move real money via Stripe (${kind}). Are you sure?`)) return;
+
+  const { data: { session } } = await sb.auth.getSession();
+  try {
+    const res = await fetch(`/api/escrow?action=admin-${kind}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ contractId, note }),
+    });
+    const result = await res.json();
+    if (!res.ok) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(result.error || 'Action failed')}</div>`; return; }
+    msgEl.innerHTML = '<div class="msg ok">Done.</div>';
+    closeModal();
+    load();
+  } catch (err) {
+    msgEl.innerHTML = `<div class="msg error">${escapeHtml(err.message)}</div>`;
+  }
+}
+
+load();
+</script>
+</body>
+</html>

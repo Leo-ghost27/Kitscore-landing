@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispute Arbitration — Kitscore Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .row-item{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+  .row-item:last-child{border-bottom:none}
+  .row-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .row-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .row-main .fname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+  .row-meta{color:var(--color-text-tertiary);font-size:11px}
+  .dispute-reason-note{background:var(--color-background-secondary);border-radius:6px;padding:8px 10px;font-size:11.5px;color:var(--color-text-secondary);display:flex;gap:6px;align-items:flex-start}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
+  .empty{font-size:12px;color:var(--color-text-secondary);padding:20px 0;text-align:center}
+  .arb-panel{display:none;background:var(--color-background-secondary);border-radius:6px;padding:10px 12px;margin-top:4px}
+  .arb-panel.open{display:block}
+  .arb-panel textarea{width:100%;min-height:60px;font-family:inherit;font-size:12px;padding:8px;border:0.5px solid var(--color-border-tertiary);box-sizing:border-box;margin-bottom:8px}
+  .arb-actions{display:flex;gap:8px}
+  .btn-verify{font-size:11px;padding:6px 12px;border:none;border-radius:var(--border-radius-sm);background:#1C7C3F;color:#fff;cursor:pointer}
+  .btn-cancel{font-size:11px;padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);background:#fff;cursor:pointer}
+  .btn-toggle{font-size:11px;padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);background:#fff;cursor:pointer}
+  .msg{font-size:11px;margin-top:8px;padding:8px}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  .age-tag{font-size:10px;color:var(--color-text-tertiary)}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Dispute Arbitration</div>
+    <div class="card" style="background:var(--color-background-secondary);border:none">
+      <div style="font-size:11.5px;color:var(--color-text-secondary)">Campaigns a creator has disputed. Left alone, resolution only lets the same two parties bounce it back to <code>pending</code> — if they can't agree, it loops forever. Arbitrating here either upholds it (<code>verified</code>, bypassing the normal mutual-confirmation requirement) or closes it out for good (<code>cancelled</code>). Both are logged to <code>admin_actions</code>.</div>
+    </div>
+    <div class="card">
+      <div id="list" class="loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="icons.js?v=2"></script>
+<script src="nav.js?v=2"></script>
+<script>
+let profile;
+let campaigns = [];
+
+function daysSince(dateStr) {
+  if (!dateStr) return null;
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
+}
+
+async function load() {
+  profile = await requireRole('admin');
+  if (!profile) return;
+  renderSidebar('admin', 'admin-disputes');
+
+  const { data, error } = await sb.from('campaigns')
+    .select('*, sponsors!inner(company_name), creators!inner(id, profiles!inner(display_name))')
+    .eq('status', 'disputed')
+    .order('disputed_at', { ascending: true });
+
+  if (error) { document.getElementById('list').textContent = 'Could not load: ' + error.message; return; }
+
+  campaigns = data || [];
+  render();
+}
+
+async function render() {
+  const list = document.getElementById('list');
+  if (!campaigns.length) {
+    list.innerHTML = '<div class="empty">No open disputes.</div>';
+    return;
+  }
+
+  const ids = campaigns.map(c => c.id);
+  const { data: pastActions } = await sb.from('admin_actions')
+    .select('*').eq('target_table', 'campaigns').in('target_id', ids).order('created_at', { ascending: false });
+
+  list.innerHTML = campaigns.map(c => {
+    const age = daysSince(c.disputed_at);
+    const history = (pastActions || []).filter(a => a.target_id === c.id);
+    return `
+    <div class="row-item">
+      <div class="row-top">
+        <div class="row-main">
+          <span class="fname">${escapeHtml(c.name)}</span>
+          <span class="row-meta">${escapeHtml(c.sponsors?.company_name || 'Unknown sponsor')} ↔ ${escapeHtml(c.creators?.profiles?.display_name || 'Unknown creator')}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="age-tag">${age !== null ? age + 'd disputed' : ''}</span>
+          <button class="btn-toggle" onclick="toggleArb('${c.id}')">Arbitrate</button>
+        </div>
+      </div>
+      ${c.dispute_reason ? `<div class="dispute-reason-note">${svgIcon('alert-triangle',{size:12})} Creator's reason: ${escapeHtml(c.dispute_reason)}</div>` : ''}
+      <div class="arb-panel" id="arb-${c.id}">
+        <textarea id="arb-note-${c.id}" placeholder="Required: reasoning for this decision (logged permanently)"></textarea>
+        <div class="arb-actions">
+          <button class="btn-verify" onclick="resolve('${c.id}','verified')">Uphold as verified</button>
+          <button class="btn-cancel" onclick="resolve('${c.id}','cancelled')">Cancel campaign</button>
+        </div>
+        <div id="arb-msg-${c.id}"></div>
+      </div>
+      ${history.length ? `<div style="font-size:11px;color:var(--color-text-tertiary)">Prior admin action: ${escapeHtml(history[0].action_type.replace(/_/g,' '))} — ${escapeHtml(history[0].note)}</div>` : ''}
+    </div>
+  `;
+  }).join('');
+}
+
+function toggleArb(id) {
+  document.getElementById(`arb-${id}`).classList.toggle('open');
+}
+
+async function resolve(id, outcome) {
+  const note = document.getElementById(`arb-note-${id}`).value.trim();
+  const msgEl = document.getElementById(`arb-msg-${id}`);
+  if (!note) { msgEl.innerHTML = '<div class="msg error">Give a reason for this decision.</div>'; return; }
+
+  // fn_validate_campaign_confirmation lets fn_is_admin() bypass the normal
+  // two-party disputed<->pending transition rules entirely, so this update
+  // is allowed straight from the client for an authenticated admin.
+  const { error } = await sb.from('campaigns').update({ status: outcome }).eq('id', id);
+  if (error) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+
+  const { error: logError } = await sb.from('admin_actions').insert({
+    admin_id: profile.id,
+    action_type: outcome === 'verified' ? 'dispute_resolved_verified' : 'dispute_resolved_cancelled',
+    target_table: 'campaigns',
+    target_id: id,
+    note,
+  });
+  if (logError) console.error('admin_actions log failed:', logError.message);
+
+  msgEl.innerHTML = '<div class="msg ok">Resolved.</div>';
+  campaigns = campaigns.filter(c => c.id !== id);
+  render();
+}
+
+load();
+</script>
+</body>
+</html>

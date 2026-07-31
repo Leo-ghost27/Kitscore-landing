@@ -55,6 +55,8 @@ const NAV = {
     { key: 'admin-signups', href: 'admin-signups.html', icon: 'users', label: 'Signups' },
     { key: 'admin-directory', href: 'admin-directory.html', icon: 'directory', label: 'Directory' },
     { key: 'admin-sponsors', href: 'admin-sponsors.html', icon: 'building', label: 'Sponsors' },
+    { key: 'admin-escrow', href: 'admin-escrow.html', icon: 'contracts', label: 'Escrow Oversight' },
+    { key: 'admin-disputes', href: 'admin-disputes.html', icon: 'alert-triangle', label: 'Dispute Arbitration' },
     { key: 'admin-system', href: 'admin-system.html', icon: 'settings', label: 'System Health' },
   ],
 };
