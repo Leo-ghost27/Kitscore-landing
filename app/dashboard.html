@@ -577,6 +577,7 @@ async function load() {
 
   renderDashboardShell();
   loadPeerPercentiles();
+  loadCreatorInterest();
 
   // Animate ring + confidence bar after initial render
   requestAnimationFrame(()=>{
@@ -726,6 +727,8 @@ function renderOverviewTab() {
       </div>
     </div>
 
+    ${creatorInterestHtml()}
+
     <!-- ── Cold-start fix: nudge every new creator toward retroactive deal verification ── -->
     ${verifiedCount < 1 ? `
     <div class="card" style="border:1.5px solid #F3D9A8;background:linear-gradient(135deg,#FFF8EC,#FFFCF6);margin-bottom:0">
@@ -790,6 +793,64 @@ function renderOverviewTab() {
       <a href="campaigns.html" style="font-size:12px;font-weight:500;color:#2563EB;text-decoration:none;display:inline-block;margin-top:8px">Manage campaigns →</a>
     </div>
   `;
+}
+
+// Demand-side transparency ("who's interested in me"): watchlists has
+// real signal about this creator that was previously 100% invisible to
+// them. fn_get_creator_interest enforces the free/Pro gate server-side
+// (aggregate count free, sponsor identity Pro-only) -- see
+// supabase/2026-07-31i-creator-watchlist-interest-visibility.sql for the
+// reasoning. Same load-then-rerender-just-this-tab pattern as
+// loadPeerPercentiles below.
+async function loadCreatorInterest() {
+  const { data, error } = await sb.rpc('fn_get_creator_interest', { p_creator_id: profile.id });
+  if (error) { console.error('Could not load creator interest:', error.message); return; }
+  const rows = data || [];
+  dash.interest = {
+    totalCount: rows.length ? Number(rows[0].total_count) : 0,
+    isLocked: rows.length ? rows[0].is_locked : true,
+    sponsors: rows.length && !rows[0].is_locked
+      ? rows.filter(r => r.sponsor_id).map(r => ({ companyName: r.company_name, watchlistedAt: r.watchlisted_at }))
+      : [],
+  };
+  if (activeTab === 'overview') {
+    document.getElementById('tab-panel').innerHTML = renderTabPanel('overview');
+  }
+}
+
+function creatorInterestHtml() {
+  const interest = dash.interest;
+  if (!interest) return '';
+
+  if (interest.totalCount === 0) {
+    return `
+    <div class="card" style="margin-bottom:0">
+      <div class="sec">Sponsor interest</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">No sponsors have added you to their watchlist yet. A complete profile with verified evidence and a shared Media Kit link is what usually gets you found first.</div>
+    </div>`;
+  }
+
+  const countLine = `${interest.totalCount} sponsor${interest.totalCount === 1 ? '' : 's'} ${interest.totalCount === 1 ? 'has' : 'have'} added you to their watchlist`;
+
+  if (interest.isLocked) {
+    return `
+    <div class="card" style="margin-bottom:0">
+      <div class="sec">Sponsor interest <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— Pro</span></div>
+      <div style="font-size:13px;font-weight:600;color:var(--color-text-primary)">${countLine}</div>
+      <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">You're not just a data point to them. Pro shows you exactly which companies, so you know who to reach out to first. <a href="pricing-creator.html" class="upgrade-link">Upgrade to Pro →</a></div>
+    </div>`;
+  }
+
+  return `
+    <div class="card" style="margin-bottom:0">
+      <div class="sec">Sponsor interest</div>
+      <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:8px">${countLine}</div>
+      ${interest.sponsors.map(s => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px">
+          <span>${escapeHtml(s.companyName || 'Unnamed sponsor')}</span>
+          <span style="color:var(--color-text-tertiary);font-size:11px">${new Date(s.watchlistedAt).toLocaleDateString()}</span>
+        </div>`).join('')}
+    </div>`;
 }
 
 async function loadPeerPercentiles() {
