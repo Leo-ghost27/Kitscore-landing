@@ -25,21 +25,57 @@ Each entry below is tagged with where its numbers actually came from:
 
 ---
 
-## Trust Score — 5 components, uniformly weighted 20% each
+## Trust Score — 4 components, weighted by evidentiary strength
 
-🏗️ **KitScore product judgment.** Equal weighting was a deliberate
-simplicity choice, not derived from a competitor's published formula —
-none of HypeAuditor/Modash/Favikon/IQFluence publish their internal
-weighting either; "equal-weight until you have a specific reason not
-to" is a defensible, explainable default, not a copied standard.
+**Updated 2026-07-31.** Previously 5 components at a flat 20% each,
+carried as an explicit unresolved placeholder since 2026-07-07 (the
+original migration's own comment: *"flagging for Gina to confirm the
+final weight split ... rather than guessing at 20% each"* — never
+confirmed, so it just quietly became the real weighting by default).
+Resolved today:
 
-| Component | Weight | Live source | Notes |
+1. **Professionalism removed as a Trust Score component.** It
+   duplicated `campaigns.professionalism_rating`, which already feeds
+   Reliability Score's "avg. sponsor ratings" factor below — the same
+   sponsor rating was moving two separate creator-facing numbers under
+   two different names. It also defaulted a brand-new creator with zero
+   ratings to a flat 0 (`coalesce(avg(...), 0)`), dragging down 20% of
+   their Trust Score just for being new — unlike every Reliability
+   Score factor, which is excluded entirely until real data exists,
+   Trust Score had no equivalent "don't count what doesn't exist yet"
+   handling for this one component.
+2. **Remaining 4 components rebalanced** by evidentiary strength/stakes
+   rather than flat 20% each (🏗️ Kitscore product judgment, same caveat
+   as before — no external source publishes a "correct" weighting for
+   this construct, this is not a claim to have found the industry
+   number):
+
+| Component | Weight (was) | Live source | Notes |
 |---|---|---|---|
-| Audience Authenticity | 20% | `fn_recalc_audience_authenticity` (2026-07-27) | Checks fake-follower plausibility per connected platform (YouTube/TikTok/Twitch/Instagram), each against platform-specific thresholds. Flags if ANY connected platform looks implausible — not platform-specific in the UI because it's already a cross-platform summary. |
-| Engagement Quality | 20% | `fn_recalc_engagement_quality_youtube` / `_tiktok` (2026-07-28) | 🔬 Niche-adjusted via `fn_niche_engagement_mult` — see below. Multi-platform: shown as one row per connected platform (dashboard.html, 2026-07-29), weight rebalanced via `fn_rebalance_component_family` across however many are live. |
-| Brand Safety | 20% | `brand_safety_penalties` table, all 8 questions live as of 2026-07-28 | See penalty table below. |
-| Content Consistency | 20% | Computed at OAuth-connect time (app code, not a DB trigger) — `google-oauth.js`, `instagram.js`, `twitch.js` | YouTube/Instagram/Twitch live as of 2026-07-29. TikTok blocked on a TikTok Developer Portal scope addition (external, not code). Discord ruled out — no per-creator content signal exists there without Message Content intent. |
-| Professionalism | 20% | `2026-07-07-professionalism-score-component.sql` | Self-reported / evidence-based. |
+| Audience Authenticity | **30%** (20%) | `fn_apply_audience_authenticity` | Core fraud/authenticity check — raised: this is the signal sponsors most fear getting wrong (paying for a bot audience). |
+| Engagement Quality | **30%** (20%) | `fn_recalc_engagement_quality_youtube` / `_tiktok` | Raised: the most consistently evidence-backed predictor of real campaign ROI across the industry generally, even though no single competitor publishes an exact weight to cite. |
+| Brand Safety | **25%** (20%) | `brand_safety_penalties` table | Raised, but less than authenticity/engagement: real legal/reputational exposure for a sponsor, though it already has its own steep per-question penalty system (see below) doing more of the risk-differentiation work than the top-line weight does. |
+| Content Consistency | **15%** (20%) | OAuth-connect-time app code (`google-oauth.js`, `instagram.js`, `twitch.js`) + daily resync (`cron-youtube-resync.js`) | Lowered: an activity indicator (is this creator still posting) more than a trust indicator — weaker standalone signal than the other three. |
+| ~~Professionalism~~ | ~~20%~~ | *(removed)* | See Reliability Score below — same underlying rating, now lives in exactly one place. |
+
+**Multi-platform families (Engagement Quality, Content Consistency)**
+still split their total weight evenly across however many platforms are
+live for a given creator via `fn_rebalance_component_family` — e.g. a
+creator with both YouTube and Discord engagement live gets 15% each,
+summing to the family's 30%.
+
+**Bug fixed in the same pass:** `fn_rebalance_component_family` only
+counted/updated rows with `status = 'live_verified'`, silently skipping
+any sibling in a different status (`evidence_submitted`,
+`needs_improvement`, `flagged`, `self_reported`) — leaving it at a
+stale weight, and undercounting the divisor so whichever platform *was*
+`live_verified` got over-weighted. A component being evidence-submitted
+rather than live-verified affects its value and status badge, not
+whether it should count toward the family's weight split. Fixed to
+count/update every row in the family regardless of status. Found while
+verifying today's rebalance — affected 2 real creator accounts at the
+time, both corrected via a retroactive UPDATE alongside the weight
+change (all existing `score_components` rows, not just future ones).
 
 ## Engagement Quality — niche multiplier
 

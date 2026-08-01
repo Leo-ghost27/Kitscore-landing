@@ -1,0 +1,27 @@
+-- Repo record of the two migrations applied live via Supabase MCP today.
+-- See docs/scoring-formulas.md for the full rationale.
+--
+-- Migration 1: rebalance_trust_score_weights_remove_professionalism_duplicate
+--   - Removed 'professionalism' as a Trust Score component (duplicated
+--     campaigns.professionalism_rating, which already feeds Reliability
+--     Score; also defaulted new creators to a flat 0).
+--   - Rebalanced the remaining 4: audience_authenticity 20%->30%,
+--     engagement_quality 20%->30%, brand_safety 20%->25%,
+--     content_consistency 20%->15%.
+--   - Retroactively updated every existing score_components row (not
+--     just future inserts) and recalculated trust_score for every
+--     affected creator via the existing trg_recalc_trust_score trigger.
+--
+-- Migration 2: fix_rebalance_component_family_status_filter
+--   - fn_rebalance_component_family only counted/updated rows with
+--     status = 'live_verified', silently leaving any sibling in a
+--     different status at a stale weight and undercounting the divisor.
+--     Fixed to count/update every row in the family regardless of
+--     status. Found while verifying migration 1 -- 2 real creator
+--     accounts were affected.
+--
+-- Both were applied directly against the live database; this file is
+-- the git record, not itself something to re-run (CREATE OR REPLACE
+-- FUNCTION is idempotent, but the retroactive UPDATE/DO blocks are not
+-- meant to run twice against data that's already been corrected).
+-- See git history for the exact SQL if you need to replay it.

@@ -284,7 +284,6 @@ const ALL_COMPONENTS = [
   { keys:['engagement_quality_youtube','engagement_quality_tiktok','engagement_quality_twitch','engagement_quality'], baseLabel:'Engagement quality', advice:'Connect YouTube, TikTok, or Twitch so we can verify your engagement rate directly — or upload evidence for a self-reported starting score.', href:'profile.html' },
   { keys:['brand_safety'], label:'Brand safety', advice:'Complete the brand safety questionnaire below — sponsors filter heavily on this.', href:'#brand-safety' },
   { keys:['content_consistency_youtube','content_consistency_tiktok','content_consistency_instagram','content_consistency_twitch','content_consistency'], baseLabel:'Content consistency', advice:'Connect YouTube, Instagram, or Twitch so we can verify your posting cadence directly — or upload evidence for a self-reported starting score.', href:'profile.html' },
-  { keys:['professionalism'], label:'Professionalism', advice:'Add a business email, location, and niche to your profile.', href:'profile.html' },
 ];
 
 // Finds whichever of a component's possible keys the creator actually
@@ -314,8 +313,8 @@ function resolveAllComponents(ac, compMap) {
   return matches.length ? matches : [{ comp: null, matchedKey: null }];
 }
 
-// Single-path components (audience_authenticity, brand_safety,
-// professionalism) always use their fixed label. Dual/triple-path ones
+// Single-path components (audience_authenticity, brand_safety)
+// always use their fixed label. Dual/triple-path ones
 // (engagement quality, content consistency) show which source the
 // creator's actual score came from, or the bare dimension name if
 // they haven't done anything for it yet.
