@@ -13,8 +13,8 @@
   .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
   .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
   .search-row{display:flex;gap:8px;margin-bottom:12px}
-  .search-row input{flex:1;font-size:13px;padding:9px 12px;border:0.5px solid var(--color-border-tertiary);box-sizing:border-box}
-  .search-row select{font-size:12px;padding:9px 10px;border:0.5px solid var(--color-border-tertiary)}
+  .search-row input{flex:1;min-width:0;font-size:13px;padding:9px 12px;border:0.5px solid var(--color-border-tertiary);box-sizing:border-box}
+  .search-row select{width:auto;flex:0 0 auto;font-size:12px;padding:9px 10px;border:0.5px solid var(--color-border-tertiary)}
   .result-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;cursor:pointer}
   .result-item:last-child{border-bottom:none}
   .result-main{display:flex;flex-direction:column;gap:2px}
@@ -42,6 +42,8 @@
   .msg{font-size:11px;margin-top:8px;padding:8px}
   .msg.error{background:#FDECEC;color:#B42318}
   .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  .steps-hint{font-size:11px;color:var(--color-text-secondary);margin:10px 0 14px;padding-left:16px}
+  .steps-hint li{margin-bottom:3px}
   .back-link{font-size:11px;color:var(--color-text-secondary);cursor:pointer;margin-bottom:10px;display:inline-block}
 </style>
 </head>
@@ -56,6 +58,12 @@
 
     <div class="card" id="search-card">
       <div class="sec">Find an account</div>
+      <ol class="steps-hint">
+        <li>Search by the sponsor's company name, the creator's display name, or either one's email.</li>
+        <li>Only accounts that have actually paid Kitscore show up here (no Stripe customer ID = nothing to refund).</li>
+        <li>Click a result to see their real charges pulled live from Stripe.</li>
+        <li>Click Refund on a charge, adjust the amount if it's a partial refund, and write a note -- required, and permanent.</li>
+      </ol>
       <div class="search-row">
         <input type="text" id="search-input" placeholder="Search by name, company, or email...">
         <select id="role-filter">

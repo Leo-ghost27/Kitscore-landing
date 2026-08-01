@@ -46,6 +46,20 @@ shipped it if applicable.
   partial refund with an optional Stripe reason code, mandatory note,
   logged to admin_actions. Distinct from escrow refunds (contract money,
   see Escrow Oversight above) -- this is plan billing money.
+- **Fixes from first real-user pass on the four admin tools above**
+  (2026-07-31): (1) admin-refunds.html's search input was nearly
+  unusable -- the account-type `<select>` next to it had no explicit
+  width, so it inherited shared.css's global `width:100%` and claimed the
+  whole row, squeezing the search box to near-zero. Fixed by giving the
+  select `width:auto; flex:0 0 auto` instead. Added inline numbered
+  guidance in the search card while in there. (2) Support Inbox
+  (admin-support.html, built by a parallel session) failed with
+  "permission denied for table support_tickets" for every admin -- RLS
+  was correct, but the table had no GRANT to anon/authenticated at all,
+  only service_role/postgres, so Postgres blocked every request before
+  RLS was even evaluated. Fixed via
+  supabase/2026-07-31d-fix-support-tickets-grants.sql (same root cause
+  as the sponsor_flags grant fix earlier the same day, different table).
 - **Contracts oversight** (2026-07-31, `app/admin-contracts.html`) -- every
   contract signed through app/contracts.html, regardless of escrow status,
   was previously invisible to admin entirely (no admin-facing page existed;
