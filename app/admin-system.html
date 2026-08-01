@@ -141,7 +141,8 @@ async function loadHealthSummary() {
         <div class="job-name">${escapeHtml(CATEGORY_LABELS[g.category] || g.category)} — ${escapeHtml(g.kind)}</div>
         <div class="job-desc">${g.ids.length} unresolved, oldest since ${new Date(g.oldest).toLocaleString()}</div>
       </div>
-      ${action ? `<button class="btn-resolve" id="btn-${groupId}" onclick='resolveGroup(${JSON.stringify(g.ids)}, "${action.rpc}", "btn-${groupId}", "result-${groupId}")'>${action.label}</button>` : ''}
+      ${action ? `<button class="btn-resolve" id="btn-${groupId}" onclick='resolveGroup(${JSON.stringify(g.ids)}, "${action.rpc}", "btn-${groupId}", "result-${groupId}")'>${action.label}</button>`
+               : `<span class="job-desc">No automatic resolve action for this type yet — check manually.</span>`}
     </div>
     <div id="result-${groupId}"></div>`;
   }).join('');
