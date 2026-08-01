@@ -37,6 +37,15 @@
   .msg.error{background:#FDECEC;color:#B42318}
   .msg.ok{background:#E9F7EE;color:#1C7C3F}
   .empty{font-size:12px;color:var(--color-text-secondary);padding:20px 0;text-align:center}
+  .video-links{display:flex;flex-direction:column;gap:4px}
+  .video-links a{font-size:11.5px;color:#2563EB;text-decoration:none}
+  .video-links a:hover{text-decoration:underline}
+  .video-links .no-link{font-size:11.5px;color:var(--color-text-tertiary);font-style:italic}
+  .selfreport-toggle{font-size:11px;color:#2563EB;background:none;border:none;cursor:pointer;padding:0;text-align:left;width:fit-content}
+  .selfreport-panel{display:none;background:var(--color-background-secondary);border-radius:6px;padding:8px 10px;font-size:11.5px;margin-top:2px}
+  .selfreport-panel.open{display:block}
+  .selfreport-row{display:flex;justify-content:space-between;gap:8px;padding:2px 0}
+  .selfreport-row .a{font-weight:500}
 </style>
 </head>
 <body>
@@ -45,7 +54,7 @@
   <div class="app-main">
     <div class="ptitle">Brand Safety Review</div>
     <div class="card" style="background:var(--color-background-secondary);border:none">
-      <div style="font-size:11.5px;color:var(--color-text-secondary)">Clean scans auto-apply and need no action here. Flagged scans hold in <strong>Pending review</strong> and never touch a creator's live score until you approve or reject them — see the pattern note in <code>2026-07-13-brand-safety-scan.sql</code>.</div>
+      <div style="font-size:11.5px;color:var(--color-text-secondary)">Clean scans auto-apply and need no action here. Flagged scans hold in <strong>Pending review</strong> and never touch a creator's live score until you approve or reject them — see the pattern note in <code>2026-07-13-brand-safety-scan.sql</code>. Watch the linked video(s) yourself before deciding — the scanner only ever read the title/description text, never the video.</div>
     </div>
     <div class="card">
       <div class="sec">Filter</div>
@@ -69,6 +78,23 @@
 let profile;
 let items = [];
 let activeFilter = 'pending_review';
+let videosByCreator = new Map();   // creator_id -> [{platform, title, video_id}]
+let answersByCreator = new Map();  // creator_id -> [{question_key, answer}]
+
+// ⚠ DUPLICATED CONTENT — kept in sync by hand. Must match the QUESTIONS
+// array in app/dashboard.html (the actual questionnaire the creator
+// fills out) or this panel will show the wrong question wording. Only
+// labels are duplicated here, not the penalty logic.
+const QUESTION_LABELS = {
+  family_safe: 'Is your content generally family-safe?',
+  political: 'How often do you post political content?',
+  gambling: 'Gambling promotion history?',
+  adult: 'Adult/mature content?',
+  profanity: 'Profanity frequency?',
+  paid_disclosure: 'How consistently do you disclose paid partnerships?',
+  misinformation: 'Any confirmed or suspected misinformation history?',
+  controversy_history: 'Any public controversy history?',
+};
 
 async function load() {
   profile = await requireRole('admin');
@@ -85,8 +111,54 @@ async function load() {
   if (error) { document.getElementById('list').textContent = 'Could not load: ' + error.message; return; }
 
   items = data || [];
+
+  const creatorIds = [...new Set(items.map(s => s.creator_id))];
+  if (creatorIds.length > 0) {
+    const [videosRes, answersRes] = await Promise.all([
+      sb.from('creator_videos').select('creator_id, platform, title, video_id').in('creator_id', creatorIds),
+      sb.from('brand_safety_answers').select('creator_id, question_key, answer').in('creator_id', creatorIds),
+    ]);
+    for (const v of (videosRes.data || [])) {
+      if (!videosByCreator.has(v.creator_id)) videosByCreator.set(v.creator_id, []);
+      videosByCreator.get(v.creator_id).push(v);
+    }
+    for (const a of (answersRes.data || [])) {
+      if (!answersByCreator.has(a.creator_id)) answersByCreator.set(a.creator_id, []);
+      answersByCreator.get(a.creator_id).push(a);
+    }
+  }
+
   document.querySelectorAll('#filters button').forEach(b => b.classList.toggle('active', b.dataset.status === activeFilter));
   render(preselect);
+}
+
+function renderVideoLinks(s) {
+  if (!s.flagged_titles || s.flagged_titles.length === 0) return '';
+  const creatorVideos = videosByCreator.get(s.creator_id) || [];
+  const links = s.flagged_titles.map(title => {
+    const match = creatorVideos.find(v => v.platform === s.platform && v.title === title);
+    if (match && match.video_id) {
+      return `<a href="https://www.youtube.com/watch?v=${encodeURIComponent(match.video_id)}" target="_blank" rel="noopener">▶ ${escapeHtml(title)}</a>`;
+    }
+    return `<span class="no-link">${escapeHtml(title)} (video no longer on file — search the title directly)</span>`;
+  }).join('');
+  return `<div class="video-links">${links}</div>`;
+}
+
+function renderSelfReport(s, idx) {
+  const answers = answersByCreator.get(s.creator_id) || [];
+  const panelId = `selfreport-${idx}`;
+  if (answers.length === 0) {
+    return `<div class="job-desc" style="font-size:11px">No self-reported questionnaire on file for this creator.</div>`;
+  }
+  const rows = Object.keys(QUESTION_LABELS).map(key => {
+    const found = answers.find(a => a.question_key === key);
+    return `<div class="selfreport-row"><span>${escapeHtml(QUESTION_LABELS[key])}</span><span class="a">${found ? escapeHtml(found.answer) : '—'}</span></div>`;
+  }).join('');
+  return `
+    <button class="selfreport-toggle" onclick="document.getElementById('${panelId}').classList.toggle('open')">Show self-reported answers ▾</button>
+    <div class="selfreport-panel" id="${panelId}">${rows}</div>
+  `;
 }
 
 function render(highlightId) {
@@ -98,7 +170,7 @@ function render(highlightId) {
     return;
   }
 
-  list.innerHTML = filtered.map(s => {
+  list.innerHTML = filtered.map((s, idx) => {
     const creatorName = s.creators?.profiles?.display_name || 'Unknown creator';
     const isPending = s.status === 'pending_review';
     return `
@@ -118,6 +190,8 @@ function render(highlightId) {
       </div>
       ${s.categories && s.categories.length ? `<div>${s.categories.map(c => `<span class="cat-chip">${escapeHtml(c)}</span>`).join('')}</div>` : ''}
       ${s.rationale ? `<div class="rationale">${escapeHtml(s.rationale)}</div>` : ''}
+      ${renderVideoLinks(s)}
+      ${renderSelfReport(s, idx)}
     </div>
   `;
   }).join('');
