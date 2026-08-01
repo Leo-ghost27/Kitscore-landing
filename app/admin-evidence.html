@@ -47,7 +47,7 @@
         <button data-status="all" class="active">All</button>
         <button data-status="self_reported">Self-reported</button>
         <button data-status="submitted">Submitted</button>
-        <button data-status="live_verified">Live verified</button>
+        <button data-status="live_verified">Approved (evidence-verified)</button>
         <button data-status="rejected">Rejected</button>
       </div>
       <div id="list" class="loading">Loading…</div>
@@ -63,6 +63,21 @@
 let profile;
 let items = [];
 let activeFilter = 'all';
+
+// Display text only -- the underlying status value stays 'live_verified'
+// (matches score_components / fn_recalc_evidence_component, no schema
+// change). Labeled this way because picking this option does NOT grant
+// the same "Live" / OAuth-verified trust level the wording used to
+// imply -- it writes status 'evidence_submitted' to the creator's score,
+// same honesty distinction methodology.html already draws between
+// self-reported and OAuth-verified components. This is purely an admin
+// eyeballing a screenshot, not Kitscore independently confirming it.
+const STATUS_LABELS = {
+  self_reported: 'Self-reported',
+  submitted: 'Submitted',
+  live_verified: 'Approved (evidence-verified)',
+  rejected: 'Rejected',
+};
 
 async function load() {
   profile = await requireRole('admin');
@@ -96,13 +111,13 @@ function render() {
         <span class="row-meta">${escapeHtml(creatorName)} · ${escapeHtml(e.platform || '')} · ${escapeHtml(e.evidence_type || '')} · ${new Date(e.uploaded_at).toLocaleDateString()}</span>
       </div>
       <div class="row-actions">
-        <span class="status-tag st-${e.status}">${e.status.replace('_',' ')}</span>
+        <span class="status-tag st-${e.status}">${escapeHtml(STATUS_LABELS[e.status] || e.status)}</span>
         ${e.storage_path ? `<button class="link-btn" onclick="download('${e.storage_path}')">View</button>` : ''}
         <select class="status-select" onchange="updateStatus('${e.id}', this.value)">
-          <option value="self_reported" ${e.status === 'self_reported' ? 'selected' : ''}>Self-reported</option>
-          <option value="submitted" ${e.status === 'submitted' ? 'selected' : ''}>Submitted</option>
-          <option value="live_verified" ${e.status === 'live_verified' ? 'selected' : ''}>Live verified</option>
-          <option value="rejected" ${e.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+          <option value="self_reported" ${e.status === 'self_reported' ? 'selected' : ''}>${STATUS_LABELS.self_reported}</option>
+          <option value="submitted" ${e.status === 'submitted' ? 'selected' : ''}>${STATUS_LABELS.submitted}</option>
+          <option value="live_verified" ${e.status === 'live_verified' ? 'selected' : ''}>${STATUS_LABELS.live_verified}</option>
+          <option value="rejected" ${e.status === 'rejected' ? 'selected' : ''}>${STATUS_LABELS.rejected}</option>
         </select>
       </div>
     </div>
