@@ -28,6 +28,13 @@
   .win{background:var(--green-soft);color:#137C52;font-weight:600}
   .loading{font-size:13px;color:var(--ink-soft)}
   .limit-note{font-size:12px;color:var(--ink-faint);margin-bottom:10px}
+  .cmp-val{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+  .cmp-tag{font-family:var(--font-sans);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:1px 6px;border-radius:3px}
+  .cmp-tag.live{background:#D1FAE5;color:#065F46}
+  .cmp-tag.ev{background:#FEF3C7;color:#92600A}
+  .cmp-tag.self{background:#F0EFE9;color:#6B6B67}
+  .cmp-tag.pend{background:#F0EFE9;color:#6B6B67}
+  .cmp-platform-note{font-size:10.5px;color:var(--ink-faint);font-family:var(--font-sans)}
 </style>
 </head>
 <body>
@@ -104,6 +111,12 @@ function removeCreator(id) {
   renderPicker(); renderChips(); renderCompare();
 }
 
+const STATUS_TAGS = {
+  live_verified: { cls: 'live', label: 'Live' },
+  evidence_submitted: { cls: 'ev', label: 'Evidence' },
+  self_reported: { cls: 'self', label: 'Self-reported' },
+};
+
 async function renderCompare() {
   if (selectedIds.length === 0) { document.getElementById('result').innerHTML = ''; return; }
 
@@ -113,31 +126,63 @@ async function renderCompare() {
       sb.from('campaigns').select('status').eq('creator_id', id).eq('status', 'verified'),
     ]);
     const map = {};
-    (comp || []).forEach(c => map[c.component_key] = c.value);
+    (comp || []).forEach(c => map[c.component_key] = c);
     const creator = allCreators.find(c => c.id === id);
     return { creator, map, verified: (camp || []).length };
   }));
 
+  // Component keys aren't all fixed strings -- engagement_quality and
+  // content_consistency are suffixed per platform (e.g. _youtube,
+  // _discord) depending on which platform a creator's primary evidence
+  // for that metric comes from. Hardcoding one suffix meant a creator
+  // whose data lived under a different platform showed a blank "--" for
+  // a metric they actually have a real score for. Instead, find
+  // whichever key in that family each creator actually has.
+  function familyMatch(map, prefix) {
+    const key = Object.keys(map).find(k => k === prefix || k.startsWith(prefix + '_'));
+    return key ? map[key] : null;
+  }
+  // Platform note extracted from the stored label (e.g. "Engagement
+  // quality (YouTube)" -> "(YouTube)") so the comparison is transparent
+  // about the fact that two creators' numbers here may come from
+  // different platforms and aren't necessarily apples-to-apples.
+  function platformNote(component) {
+    if (!component?.label) return '';
+    const match = component.label.match(/\(([^)]+)\)/);
+    return match ? ` (${match[1]})` : '';
+  }
+  function renderCell(component) {
+    if (!component) return '<div class="cmp-cell">—</div>';
+    const tag = STATUS_TAGS[component.status];
+    return `<div class="cmp-cell"><div class="cmp-val">
+      <span>${component.value}${platformNote(component)}</span>
+      ${tag ? `<span class="cmp-tag ${tag.cls}">${tag.label}</span>` : ''}
+    </div></div>`;
+  }
+
   const metricRows = [
-    ['Trust score', r => r.creator.trust_score],
-    ['Audience authenticity', r => r.map.audience_authenticity],
-    ['Engagement quality (YouTube)', r => r.map.engagement_quality_youtube],
-    ['Brand safety', r => r.map.brand_safety],
-    ['Content consistency (YouTube)', r => r.map.content_consistency_youtube],
-    ['Verified campaigns', r => r.verified],
+    ['Trust score', r => ({ value: r.creator.trust_score }), false],
+    ['Audience authenticity', r => familyMatch(r.map, 'audience_authenticity'), true],
+    ['Engagement quality', r => familyMatch(r.map, 'engagement_quality'), true],
+    ['Brand safety', r => familyMatch(r.map, 'brand_safety'), true],
+    ['Content consistency', r => familyMatch(r.map, 'content_consistency'), true],
+    ['Verified campaigns', r => ({ value: r.verified }), false],
   ];
 
   const cols = results.length + 1;
   document.getElementById('result').innerHTML = `
     <div class="cmp-table" style="grid-template-columns:repeat(${cols}, 1fr)">
       <div class="cmp-cell cmp-head">Metric</div>
-      ${results.map(r => `<div class="cmp-cell cmp-head">${escapeHtml(r.creator.profiles.display_name)}</div>`).join('')}
-      ${metricRows.map(([label, getter]) => {
-        const values = results.map(getter);
+      ${results.map(r => `<div class="cmp-cell cmp-head"><a href="evaluate.html?creator=${r.creator.id}" style="color:inherit;text-decoration:none">${escapeHtml(r.creator.profiles.display_name)} ↗</a></div>`).join('')}
+      ${metricRows.map(([label, getter, isComponent]) => {
+        const components = results.map(getter);
+        const values = components.map(c => c?.value ?? null);
         const max = Math.max(...values.map(v => v ?? -Infinity));
         return `
         <div class="cmp-cell">${label}</div>
-        ${values.map(v => `<div class="cmp-cell ${v === max && v != null ? 'win' : ''}">${v ?? '—'}</div>`).join('')}
+        ${isComponent
+          ? components.map(c => c && c.value === max ? renderCell(c).replace('cmp-cell', 'cmp-cell win') : renderCell(c)).join('')
+          : values.map(v => `<div class="cmp-cell ${v === max && v != null ? 'win' : ''}">${v ?? '—'}</div>`).join('')}
       `; }).join('')}
     </div>
   `;

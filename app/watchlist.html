@@ -34,6 +34,11 @@
   .loading{font-size:13px;color:var(--ink-soft);padding:40px;text-align:center}
   .empty-tip{font-size:13.5px;color:var(--ink-soft);text-align:center;padding:56px 40px}
   .empty-tip a{color:var(--blue);text-decoration:none;font-weight:600}
+  .controls{display:flex;gap:12px;margin-bottom:14px;align-items:center}
+  .controls select{padding:9px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:13px;background:#fff;color:var(--ink)}
+  .filter-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .filter-pill{font-size:13px;font-weight:600;padding:8px 16px;border:1px solid var(--line);border-radius:0;background:#fff;cursor:pointer;color:var(--ink-soft)}
+  .filter-pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 </style>
 </head>
 <body>
@@ -42,6 +47,13 @@
   <div class="app-main">
     <div class="ptitle">Watchlist</div>
     <div class="psub" id="psub">Creators you've saved for quick access.</div>
+    <div class="controls" id="controlsBar" style="display:none">
+      <select id="sortSel" onchange="render()">
+        <option value="saved">Sort: recently saved</option>
+        <option value="trust_score">Sort: highest trust score</option>
+      </select>
+    </div>
+    <div class="filter-pills" id="nichePills"></div>
     <div id="content" class="loading">Loading…</div>
   </div>
 </div>
@@ -51,6 +63,9 @@
 <script src="nav.js?v=2"></script>
 <script>
 let sponsorProfile;
+let savedList = [];
+let plan = 'free';
+let activeNiche = 'all';
 
 async function load() {
   sponsorProfile = await requireRole('sponsor');
@@ -58,29 +73,64 @@ async function load() {
   renderSidebar('sponsor', 'watchlist');
 
   const { data: sponsor } = await sb.from('sponsors').select('plan').eq('id', sponsorProfile.id).single();
-  const plan = sponsor?.plan || 'free';
+  plan = sponsor?.plan || 'free';
   if (plan === 'free') {
     document.getElementById('psub').textContent = "Creators you've saved for quick access — Free plan allows up to 3.";
   }
 
   const { data: saved, error } = await sb.from('watchlists')
-    .select('creator_id, creators(*, profiles!inner(display_name))')
+    .select('creator_id, created_at, creators(*, profiles!inner(display_name))')
     .eq('sponsor_id', sponsorProfile.id)
     .order('created_at', { ascending: false });
   if (error) { document.getElementById('content').textContent = 'Could not load watchlist: ' + error.message; return; }
 
+  savedList = saved || [];
+  renderNichePills();
+  render();
+}
+
+function renderNichePills() {
+  const el = document.getElementById('nichePills');
+  if (savedList.length === 0) { el.innerHTML = ''; return; }
+  const niches = [...new Set(savedList.map(s => (s.creators.niche || '').trim()).filter(Boolean))].sort();
+  if (!niches.length) { el.innerHTML = ''; return; }
+  el.innerHTML = ['all', ...niches].map(n =>
+    `<button class="filter-pill ${activeNiche === n ? 'active' : ''}" onclick="setNiche('${n.replace(/'/g, "\\'")}')">${n === 'all' ? 'All' : escapeHtml(n)}</button>`
+  ).join('');
+}
+
+function setNiche(n) {
+  activeNiche = n;
+  renderNichePills();
+  render();
+}
+
+function render() {
+  document.getElementById('controlsBar').style.display = savedList.length > 0 ? 'flex' : 'none';
+
   const progressHtml = plan === 'free' ? `
     <div class="wl-progress">
-      <div class="wl-dots">${[0,1,2].map(i => `<div class="wl-dot ${i < saved.length ? 'on' : ''}"></div>`).join('')}</div>
-      <span class="wl-progress-text">${Math.min(saved.length, 3)} of 3 used on the Free plan</span>
+      <div class="wl-dots">${[0,1,2].map(i => `<div class="wl-dot ${i < savedList.length ? 'on' : ''}"></div>`).join('')}</div>
+      <span class="wl-progress-text">${Math.min(savedList.length, 3)} of 3 used on the Free plan</span>
     </div>` : '';
 
-  if (!saved || saved.length === 0) {
+  if (!savedList || savedList.length === 0) {
     document.getElementById('content').innerHTML = `${progressHtml}<div class="card-list"><div class="empty-tip">No saved creators yet. <a href="directory.html">Browse the directory →</a></div></div>`;
     return;
   }
 
-  document.getElementById('content').innerHTML = `${progressHtml}<div class="card-list">${saved.map(s => { const c = s.creators; return `
+  const filtered = activeNiche === 'all' ? savedList : savedList.filter(s => (s.creators.niche || '') === activeNiche);
+  const sortBy = document.getElementById('sortSel').value;
+  const sorted = [...filtered].sort((a, b) => sortBy === 'trust_score'
+    ? (b.creators.trust_score || 0) - (a.creators.trust_score || 0)
+    : new Date(b.created_at) - new Date(a.created_at));
+
+  if (!sorted.length) {
+    document.getElementById('content').innerHTML = `${progressHtml}<div class="card-list"><div class="empty-tip">No saved creators match this filter.</div></div>`;
+    return;
+  }
+
+  document.getElementById('content').innerHTML = `${progressHtml}<div class="card-list">${sorted.map(s => { const c = s.creators; return `
     <div class="wl-row">
       <div class="avatar">${escapeHtml(c.profiles.display_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
       <div class="info"><div class="name">${escapeHtml(c.profiles.display_name)}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
