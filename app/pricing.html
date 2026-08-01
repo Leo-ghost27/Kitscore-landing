@@ -88,17 +88,28 @@
     return `<button class="${tier === 'team' ? 'btn-primary' : 'btn-outline'}" onclick="${onclick}">${label}</button>`;
   };
 
+  // ⚠ DUPLICATED CONTENT — kept in sync by hand, not by any templating
+  // system. This "On Demand / Starter / Team / Enterprise" pricing grid
+  // duplicates index.html's #pricing-sponsors and agencies.html's
+  // #pricing sections (this is the checkout page, so it's the one where
+  // an inaccurate feature list actually costs someone money -- e.g. the
+  // On Demand tier's Escrow bullet went missing here for a stretch while
+  // the other two stayed correct). If you change a feature bullet,
+  // price, or plan name here, make the same change in both other files,
+  // or the pages will describe two different products. Last verified in
+  // sync: 2026-07-31.
   document.getElementById('plansWrap').innerHTML = `
     <div class="plan ${plan==='free' || plan==='pro' ? 'is-current' : ''}">
       <h3>On Demand</h3>
       <div class="price">$29<span>/report</span></div>
       <div class="desc">For agencies evaluating creators on a campaign-by-campaign basis.</div>
       <ul>
-        <li>Full trust score + confidence rating</li>
+        <li>Full Trust Score + Confidence Rating</li>
         <li>Sponsor decision memo PDF</li>
         <li>8-point brand safety assessment</li>
         <li>Verified campaign history</li>
         <li>Audience fit analysis</li>
+        <li>Post open briefs, sign contracts &amp; pay through Kitscore Escrow</li>
         <li>No subscription required</li>
       </ul>
       <button class="btn-outline" onclick="window.location.href='directory.html'">Browse directory</button>
@@ -135,6 +146,7 @@
         <li>Everything in Team</li>
         <li>Unlimited evaluations</li>
         <li>API access <span style="color:var(--ink-faint);font-weight:400">(coming soon)</span></li>
+        <li>Advanced roles &amp; permissions <span style="color:var(--ink-faint);font-weight:400">(coming soon)</span></li>
         <li>Dedicated account contact <span style="color:var(--ink-faint);font-weight:400">(coming soon)</span></li>
         <li>Custom SLA</li>
       </ul>
