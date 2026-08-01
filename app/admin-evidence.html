@@ -63,6 +63,7 @@
 let profile;
 let items = [];
 let activeFilter = 'all';
+let metricsByCreator = new Map(); // creator_id -> [{platform, ...}] from fn_admin_creator_platform_metrics
 
 // Display text only -- the underlying status value stays 'live_verified'
 // (matches score_components / fn_recalc_evidence_component, no schema
@@ -90,7 +91,45 @@ async function load() {
   if (error) { document.getElementById('list').textContent = 'Could not load: ' + error.message; return; }
 
   items = data || [];
+
+  // Fetch each creator's OAuth-verified platform metrics (never their
+  // tokens -- fn_admin_creator_platform_metrics only returns follower/
+  // subscriber/etc counts) so the reviewer has a real number to compare
+  // the uploaded screenshot against, one RPC call per distinct creator.
+  const creatorIds = [...new Set(items.map(e => e.creator_id))];
+  await Promise.all(creatorIds.map(async (id) => {
+    const { data: metrics, error: mErr } = await sb.rpc('fn_admin_creator_platform_metrics', { p_creator_id: id });
+    if (!mErr) metricsByCreator.set(id, metrics || []);
+  }));
+
   render();
+}
+
+// Renders "OAuth on file: <metric> · synced <date>" if this creator has a
+// connected platform matching the evidence's platform field, so the
+// reviewer has a real number to eyeball the screenshot against. This is
+// NOT an automated discrepancy check -- evidence_uploads never captures
+// a claimed number from the creator, only a file, so there's nothing to
+// diff against automatically. Purely a "here's the verified figure"
+// assist.
+function renderPlatformMetric(e) {
+  const platformKey = (e.platform || '').toLowerCase();
+  if (!platformKey || platformKey === 'multi') return '';
+  const metrics = metricsByCreator.get(e.creator_id) || [];
+  const match = metrics.find(m => m.platform === platformKey);
+  if (!match) return '';
+
+  const parts = [];
+  if (match.subscriber_count != null) parts.push(`${match.subscriber_count.toLocaleString()} subscribers`);
+  if (match.follower_count != null) parts.push(`${match.follower_count.toLocaleString()} followers`);
+  if (match.media_count != null) parts.push(`${match.media_count.toLocaleString()} posts`);
+  if (match.video_count != null) parts.push(`${match.video_count.toLocaleString()} videos`);
+  if (match.view_count != null) parts.push(`${match.view_count.toLocaleString()} views`);
+  if (match.avg_likes_per_post != null) parts.push(`${Math.round(match.avg_likes_per_post).toLocaleString()} avg likes/post`);
+  if (parts.length === 0) return '';
+
+  const synced = match.last_synced_at ? new Date(match.last_synced_at).toLocaleDateString() : 'unknown date';
+  return `<div class="job-desc" style="font-size:11px">OAuth on file for ${escapeHtml(e.platform)}: ${escapeHtml(parts.join(' · '))} · synced ${synced}</div>`;
 }
 
 function render() {
@@ -109,6 +148,7 @@ function render() {
       <div class="row-main">
         <span class="fname">${escapeHtml(e.file_name)}</span>
         <span class="row-meta">${escapeHtml(creatorName)} · ${escapeHtml(e.platform || '')} · ${escapeHtml(e.evidence_type || '')} · ${new Date(e.uploaded_at).toLocaleDateString()}</span>
+        ${renderPlatformMetric(e)}
       </div>
       <div class="row-actions">
         <span class="status-tag st-${e.status}">${escapeHtml(STATUS_LABELS[e.status] || e.status)}</span>
