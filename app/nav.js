@@ -56,6 +56,7 @@ const NAV = {
   admin: [
     { key: 'admin-evidence', href: 'admin-evidence.html', icon: 'shield-check', label: 'Evidence Review' },
     { key: 'admin-brand-safety', href: 'admin-brand-safety.html', icon: 'alert-triangle', label: 'Brand Safety Review' },
+    { key: 'admin-disclosure-review', href: 'admin-disclosure-review.html', icon: 'alert-triangle', label: 'Disclosure Review' },
     { key: 'admin-signups', href: 'admin-signups.html', icon: 'users', label: 'Signups' },
     { key: 'admin-directory', href: 'admin-directory.html', icon: 'directory', label: 'Directory' },
     { key: 'admin-sponsors', href: 'admin-sponsors.html', icon: 'building', label: 'Sponsors' },
