@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refund Issuance — Kitscore Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .search-row{display:flex;gap:8px;margin-bottom:12px}
+  .search-row input{flex:1;font-size:13px;padding:9px 12px;border:0.5px solid var(--color-border-tertiary);box-sizing:border-box}
+  .search-row select{font-size:12px;padding:9px 10px;border:0.5px solid var(--color-border-tertiary)}
+  .result-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;cursor:pointer}
+  .result-item:last-child{border-bottom:none}
+  .result-main{display:flex;flex-direction:column;gap:2px}
+  .result-name{font-weight:500}
+  .result-meta{color:var(--color-text-tertiary);font-size:11px}
+  .role-tag{font-size:10px;padding:3px 8px;border-radius:10px;background:var(--color-background-secondary);color:var(--color-text-secondary);text-transform:capitalize}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
+  .empty{font-size:12px;color:var(--color-text-secondary);padding:16px 0;text-align:center}
+  .charge-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+  .charge-item:last-child{border-bottom:none}
+  .charge-main{display:flex;flex-direction:column;gap:2px}
+  .charge-meta{color:var(--color-text-tertiary);font-size:11px}
+  .refunded-tag{font-size:10px;padding:3px 8px;border-radius:10px;background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .btn-refund-open{font-size:11px;padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);background:#fff;cursor:pointer}
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(16,21,31,.4);z-index:50;align-items:center;justify-content:center}
+  .modal-backdrop.open{display:flex}
+  .modal{background:#fff;border-radius:8px;padding:20px;max-width:440px;width:92%}
+  .modal h3{font-size:14px;margin:0 0 12px}
+  .modal label{font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px;margin-top:12px}
+  .modal input,.modal select,.modal textarea{width:100%;font-size:12px;padding:8px;border:0.5px solid var(--color-border-tertiary);box-sizing:border-box}
+  .modal textarea{min-height:70px}
+  .modal-actions{display:flex;gap:8px;margin-top:16px}
+  .btn-refund{font-size:11px;padding:8px 14px;border:none;border-radius:var(--border-radius-sm);background:#B42318;color:#fff;cursor:pointer;flex:1}
+  .btn-close{font-size:11px;padding:8px 14px;border:none;background:none;cursor:pointer;color:var(--color-text-secondary)}
+  .msg{font-size:11px;margin-top:8px;padding:8px}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  .back-link{font-size:11px;color:var(--color-text-secondary);cursor:pointer;margin-bottom:10px;display:inline-block}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Refund Issuance</div>
+    <div class="card" style="background:var(--color-background-secondary);border:none">
+      <div style="font-size:11.5px;color:var(--color-text-secondary)">Subscription/billing refunds (starter, team, creator pro plan charges) -- not contract escrow, that's Escrow Oversight. Refunds here call the real Stripe API directly, same as the Stripe dashboard would, but logged to admin_actions with a required note. The existing confirmation email to the customer fires automatically either way.</div>
+    </div>
+
+    <div class="card" id="search-card">
+      <div class="sec">Find an account</div>
+      <div class="search-row">
+        <input type="text" id="search-input" placeholder="Search by name, company, or email...">
+        <select id="role-filter">
+          <option value="all">All</option>
+          <option value="sponsors">Sponsors</option>
+          <option value="creators">Creators</option>
+        </select>
+      </div>
+      <div id="search-results" class="empty">Type at least 2 characters to search.</div>
+    </div>
+
+    <div class="card" id="charges-card" style="display:none">
+      <span class="back-link" onclick="backToSearch()">← Back to search</span>
+      <div class="sec" id="charges-heading">Charges</div>
+      <div id="charges-list" class="loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="icons.js?v=2"></script>
+<script src="nav.js?v=2"></script>
+<script>
+let profile;
+let currentAccount = null;
+let currentCharges = [];
+let searchDebounce = null;
+
+async function load() {
+  profile = await requireRole('admin');
+  if (!profile) return;
+  renderSidebar('admin', 'admin-refunds');
+}
+
+document.getElementById('search-input').addEventListener('input', () => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(runSearch, 300);
+});
+document.getElementById('role-filter').addEventListener('change', runSearch);
+
+async function runSearch() {
+  const term = document.getElementById('search-input').value.trim();
+  const roleFilter = document.getElementById('role-filter').value;
+  const resultsEl = document.getElementById('search-results');
+
+  if (term.length < 2) { resultsEl.innerHTML = '<div class="empty">Type at least 2 characters to search.</div>'; return; }
+  resultsEl.innerHTML = '<div class="loading">Searching…</div>';
+
+  const results = [];
+
+  if (roleFilter === 'all' || roleFilter === 'sponsors') {
+    const { data } = await sb.from('sponsors')
+      .select('id, company_name, stripe_customer_id, profiles!inner(display_name, email)')
+      .not('stripe_customer_id', 'is', null)
+      .or(`company_name.ilike.%${term}%,profiles.display_name.ilike.%${term}%,profiles.email.ilike.%${term}%`)
+      .limit(10);
+    (data || []).forEach(s => results.push({ table: 'sponsors', id: s.id, name: s.company_name || s.profiles?.display_name, email: s.profiles?.email, role: 'sponsor' }));
+  }
+  if (roleFilter === 'all' || roleFilter === 'creators') {
+    const { data } = await sb.from('creators')
+      .select('id, stripe_customer_id, profiles!inner(display_name, email)')
+      .not('stripe_customer_id', 'is', null)
+      .or(`profiles.display_name.ilike.%${term}%,profiles.email.ilike.%${term}%`)
+      .limit(10);
+    (data || []).forEach(c => results.push({ table: 'creators', id: c.id, name: c.profiles?.display_name, email: c.profiles?.email, role: 'creator' }));
+  }
+
+  if (!results.length) { resultsEl.innerHTML = '<div class="empty">No paying accounts match that search.</div>'; return; }
+
+  resultsEl.innerHTML = results.map(r => `
+    <div class="result-item" onclick='openAccount(${JSON.stringify(r).replace(/'/g, "&#39;")})'>
+      <div class="result-main">
+        <span class="result-name">${escapeHtml(r.name || 'Unnamed')}</span>
+        <span class="result-meta">${escapeHtml(r.email || '')}</span>
+      </div>
+      <span class="role-tag">${r.role}</span>
+    </div>
+  `).join('');
+}
+
+async function openAccount(account) {
+  currentAccount = account;
+  document.getElementById('search-card').style.display = 'none';
+  document.getElementById('charges-card').style.display = 'block';
+  document.getElementById('charges-heading').textContent = 'Charges — ' + (account.name || 'Unnamed');
+  document.getElementById('charges-list').innerHTML = '<div class="loading">Loading charges from Stripe…</div>';
+
+  const { data: { session } } = await sb.auth.getSession();
+  try {
+    const res = await fetch('/api/billing?action=admin-list-charges&accountTable=' + account.table + '&accountId=' + account.id, {
+      headers: { 'Authorization': 'Bearer ' + (session?.access_token || '') },
+    });
+    const result = await res.json();
+    if (!res.ok) { document.getElementById('charges-list').innerHTML = '<div class="empty">' + escapeHtml(result.error || 'Could not load charges') + '</div>'; return; }
+    currentCharges = result.charges || [];
+    renderCharges();
+  } catch (err) {
+    document.getElementById('charges-list').innerHTML = '<div class="empty">' + escapeHtml(err.message) + '</div>';
+  }
+}
+
+function backToSearch() {
+  document.getElementById('search-card').style.display = 'block';
+  document.getElementById('charges-card').style.display = 'none';
+}
+
+function renderCharges() {
+  const listEl = document.getElementById('charges-list');
+  if (!currentCharges.length) { listEl.innerHTML = '<div class="empty">No charges found for this customer in Stripe.</div>'; return; }
+
+  listEl.innerHTML = currentCharges.map(c => {
+    const dollars = (c.amount / 100).toFixed(2);
+    const remainingCents = c.amount - c.amountRefunded;
+    const date = new Date(c.created * 1000).toLocaleDateString();
+    const chargeJson = JSON.stringify(Object.assign({}, c, { remainingCents })).replace(/'/g, "&#39;");
+    return '<div class="charge-item">' +
+      '<div class="charge-main">' +
+        '<span>$' + dollars + ' ' + c.currency.toUpperCase() + ' — ' + escapeHtml(c.description || 'Kitscore charge') + '</span>' +
+        '<span class="charge-meta">' + date + ' · ' + escapeHtml(c.id) + (c.amountRefunded > 0 ? ' · $' + (c.amountRefunded/100).toFixed(2) + ' already refunded' : '') + '</span>' +
+      '</div>' +
+      (c.refunded || remainingCents <= 0
+        ? '<span class="refunded-tag">Fully refunded</span>'
+        : '<button class="btn-refund-open" onclick=\'openRefundModal(' + chargeJson + ')\'>Refund</button>') +
+    '</div>';
+  }).join('');
+}
+
+function openRefundModal(charge) {
+  const remainingDollars = (charge.remainingCents / 100).toFixed(2);
+  document.getElementById('modal-content').innerHTML = `
+    <h3>Refund charge ${escapeHtml(charge.id)}</h3>
+    <label>Amount to refund (of $${remainingDollars} available)</label>
+    <input type="number" id="refund-amount" step="0.01" min="0.01" max="${remainingDollars}" value="${remainingDollars}">
+    <label>Reason (optional, feeds Stripe's own reporting)</label>
+    <select id="refund-reason">
+      <option value="">— none —</option>
+      <option value="requested_by_customer">Requested by customer</option>
+      <option value="duplicate">Duplicate charge</option>
+      <option value="fraudulent">Fraudulent</option>
+    </select>
+    <label>Note (required, logged permanently)</label>
+    <textarea id="refund-note" placeholder="Why is this being refunded?"></textarea>
+    <div class="modal-actions">
+      <button class="btn-refund" onclick='submitRefund("${charge.id}")'>Issue refund</button>
+      <button class="btn-close" onclick="closeModal()">Cancel</button>
+    </div>
+    <div id="refund-msg"></div>
+  `;
+  document.getElementById('modal-backdrop').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-backdrop').classList.remove('open');
+}
+document.getElementById('modal-backdrop').addEventListener('click', (e) => {
+  if (e.target.id === 'modal-backdrop') closeModal();
+});
+
+async function submitRefund(chargeId) {
+  const amountDollars = parseFloat(document.getElementById('refund-amount').value);
+  const reason = document.getElementById('refund-reason').value;
+  const note = document.getElementById('refund-note').value.trim();
+  const msgEl = document.getElementById('refund-msg');
+
+  if (!amountDollars || amountDollars <= 0) { msgEl.innerHTML = '<div class="msg error">Enter a valid amount.</div>'; return; }
+  if (!note) { msgEl.innerHTML = '<div class="msg error">A note is required.</div>'; return; }
+  if (!confirm('This will refund $' + amountDollars.toFixed(2) + ' via Stripe. Are you sure?')) return;
+
+  const { data: { session } } = await sb.auth.getSession();
+  try {
+    const res = await fetch('/api/billing?action=admin-refund', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (session?.access_token || '') },
+      body: JSON.stringify({
+        chargeId: chargeId,
+        accountTable: currentAccount.table,
+        accountId: currentAccount.id,
+        amountCents: Math.round(amountDollars * 100),
+        reason: reason || undefined,
+        note: note,
+      }),
+    });
+    const result = await res.json();
+    if (!res.ok) { msgEl.innerHTML = '<div class="msg error">' + escapeHtml(result.error || 'Refund failed') + '</div>'; return; }
+    msgEl.innerHTML = '<div class="msg ok">Refund issued.</div>';
+    closeModal();
+    openAccount(currentAccount);
+  } catch (err) {
+    msgEl.innerHTML = '<div class="msg error">' + escapeHtml(err.message) + '</div>';
+  }
+}
+
+load();
+</script>
+</body>
+</html>

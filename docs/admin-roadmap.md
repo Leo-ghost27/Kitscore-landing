@@ -36,6 +36,16 @@ shipped it if applicable.
 - Admin brand safety scan review queue (`app/admin-brand-safety.html`,
   `fn_admin_apply_brand_safety_scan`) — approve/reject flagged
   auto-scans before they touch a live score
+- **Refund issuance tool** (2026-07-31, `app/admin-refunds.html`,
+  `api/billing.js` actions `admin-list-charges`/`admin-refund`) -- the only
+  path to a subscription/billing refund (starter/team/creator_pro plan
+  charges) was Stripe's own dashboard; `charge.refunded` in
+  api/stripe-webhook.js is purely reactive, it only sends the customer's
+  confirmation email after a refund already happened elsewhere. Search a
+  paying sponsor/creator, see their real Stripe charges, issue a full or
+  partial refund with an optional Stripe reason code, mandatory note,
+  logged to admin_actions. Distinct from escrow refunds (contract money,
+  see Escrow Oversight above) -- this is plan billing money.
 - **Contracts oversight** (2026-07-31, `app/admin-contracts.html`) -- every
   contract signed through app/contracts.html, regardless of escrow status,
   was previously invisible to admin entirely (no admin-facing page existed;

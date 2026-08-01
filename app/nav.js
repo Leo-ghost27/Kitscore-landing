@@ -61,6 +61,7 @@ const NAV = {
     { key: 'admin-sponsors', href: 'admin-sponsors.html', icon: 'building', label: 'Sponsors' },
     { key: 'admin-contracts', href: 'admin-contracts.html', icon: 'contracts', label: 'Contracts Oversight' },
     { key: 'admin-escrow', href: 'admin-escrow.html', icon: 'contracts', label: 'Escrow Oversight' },
+    { key: 'admin-refunds', href: 'admin-refunds.html', icon: 'contracts', label: 'Refund Issuance' },
     { key: 'admin-disputes', href: 'admin-disputes.html', icon: 'alert-triangle', label: 'Dispute Arbitration' },
     { key: 'admin-revenue', href: 'admin-revenue.html', icon: 'revenue', label: 'Revenue' },
     { key: 'admin-support', href: 'admin-support.html', icon: 'inbox', label: 'Support Inbox' },
