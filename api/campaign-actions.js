@@ -1,4 +1,4 @@
-// POST /api/campaign-actions?action=invite-sponsor | ?action=notify-dispute | ?action=invite-creator
+// POST /api/campaign-actions?action=invite-sponsor | ?action=notify-dispute | ?action=invite-creator | ?action=scan-contract-clauses
 //
 // Merges the former api/creator-actions.js (invite-sponsor,
 // notify-dispute) and api/sponsor-actions.js (invite-creator) into one
@@ -12,11 +12,16 @@
 // hence the "campaign-actions" name rather than reusing either the
 // creator- or sponsor- prefix.
 //
+// scan-contract-clauses added 2026-08-01 -- contract-side, not campaign-
+// side, but landed here rather than consuming the last Vercel function
+// slot (11/12 used). See lib/handlers/scan-contract-clauses.js.
+//
 // Frees a Vercel Hobby function slot (was 2 files, now 1) -- see
 // api/billing.js for the full reasoning on why this pattern exists.
 const handleInviteSponsor = require('../lib/handlers/creator-invite-sponsor');
 const handleNotifyDispute = require('../lib/handlers/creator-notify-dispute');
 const handleInviteCreator = require('../lib/handlers/sponsor-invite-creator');
+const handleScanContractClauses = require('../lib/handlers/scan-contract-clauses');
 
 module.exports = async (req, res) => {
   const action = req.query?.action;
@@ -24,6 +29,7 @@ module.exports = async (req, res) => {
   if (action === 'invite-sponsor') return handleInviteSponsor(req, res);
   if (action === 'notify-dispute') return handleNotifyDispute(req, res);
   if (action === 'invite-creator') return handleInviteCreator(req, res);
+  if (action === 'scan-contract-clauses') return handleScanContractClauses(req, res);
 
-  return res.status(400).json({ error: 'Unknown or missing action. Use ?action=invite-sponsor, ?action=notify-dispute, or ?action=invite-creator.' });
+  return res.status(400).json({ error: 'Unknown or missing action. Use ?action=invite-sponsor, notify-dispute, invite-creator, or scan-contract-clauses.' });
 };

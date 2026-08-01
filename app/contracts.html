@@ -227,6 +227,66 @@ async function draftContract(briefApplicationId, campaignId) {
 }
 
 // ── Shared: list + sign ─────────────────────────────────────────────────────
+// ── Creator-side legal protection: contract clause scan ────────────────────
+// Flags one-sided indemnification/liability language in a contract's terms
+// before signing. See lib/contract-clause-scan.js for the full design note.
+// Explicitly NOT legal advice -- every state below preserves that framing.
+// Only scans contracts whose terms are actually locked (status !== 'draft'
+// -- see fn_validate_contract_changes), since draft terms can still change.
+const scanTriggered = new Set();
+
+function clauseScanHtml(c) {
+  if (c.status === 'draft' || c.status === 'void') return '';
+
+  if (!c.clause_scanned_at) {
+    return `<div id="clause-scan-${c.id}" style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Checking contract terms for one-sided liability language…</div>`;
+  }
+  if (c.clause_scan_flagged) {
+    return `
+      <div id="clause-scan-${c.id}" class="msg error" style="margin-top:8px">
+        <div style="font-weight:600;margin-bottom:4px">⚠ This contract may shift extra legal risk onto you</div>
+        <div style="margin-bottom:6px">${escapeHtml(c.clause_scan_rationale || '')}</div>
+        ${(c.clause_scan_concerns||[]).map(t => `<div style="font-style:italic;font-size:11px;padding:4px 8px;background:rgba(255,255,255,.5);margin-bottom:4px">"${escapeHtml(t)}"</div>`).join('')}
+        <div style="font-size:10.5px;margin-top:4px">This isn't legal advice — it's a pattern flag worth having a lawyer look at, especially before signing.</div>
+      </div>`;
+  }
+  return `<div id="clause-scan-${c.id}" style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">✓ No one-sided indemnification language found in this contract's terms (automated check, not legal advice)</div>`;
+}
+
+async function ensureClauseScan(contract) {
+  if (contract.status === 'draft' || contract.status === 'void') return;
+  if (contract.clause_scanned_at) return;
+  if (scanTriggered.has(contract.id)) return;
+  scanTriggered.add(contract.id);
+
+  const { data: { session } } = await sb.auth.getSession();
+  try {
+    const res = await fetch('/api/campaign-actions?action=scan-contract-clauses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ contractId: contract.id }),
+    });
+    const result = await res.json();
+    const el = document.getElementById(`clause-scan-${contract.id}`);
+    if (!el || !res.ok) return;
+
+    if (result.notRun) { el.remove(); return; }
+    if (result.flagged) {
+      el.outerHTML = `
+        <div class="msg error" style="margin-top:8px">
+          <div style="font-weight:600;margin-bottom:4px">⚠ This contract may shift extra legal risk onto you</div>
+          <div style="margin-bottom:6px">${escapeHtml(result.rationale || '')}</div>
+          ${(result.concerns||[]).map(t => `<div style="font-style:italic;font-size:11px;padding:4px 8px;background:rgba(255,255,255,.5);margin-bottom:4px">"${escapeHtml(t)}"</div>`).join('')}
+          <div style="font-size:10.5px;margin-top:4px">This isn't legal advice — it's a pattern flag worth having a lawyer look at, especially before signing.</div>
+        </div>`;
+    } else {
+      el.textContent = '✓ No one-sided indemnification language found in this contract\'s terms (automated check, not legal advice)';
+    }
+  } catch (err) {
+    console.error('Clause scan failed:', err.message);
+  }
+}
+
 async function loadContracts() {
   const listEl = document.getElementById('list');
   const col = profile.role === 'sponsor' ? 'sponsor_id' : 'creator_id';
@@ -243,6 +303,8 @@ async function loadContracts() {
       : '<div class="empty">No contracts yet. A sponsor will draft one once you\'ve agreed on a deal.</div>';
     return;
   }
+
+  contracts.forEach(c => ensureClauseScan(c));
 
   listEl.innerHTML = contracts.map(c => {
     const counterparty = profile.role === 'sponsor' ? c.creators.profiles.display_name : c.sponsors.company_name;
@@ -299,6 +361,7 @@ async function loadContracts() {
         <div><b>FTC / ad disclosure:</b> ${c.ftc_disclosure_required ? 'Required' : 'Not required'}</div>
         ${escrowLabel ? `<div><b>Kitscore Escrow:</b> ${escapeHtml(escrowLabel.replace('Escrow: ',''))}${feeDisclosure}</div>` : ''}
       </div>
+      ${clauseScanHtml(c)}
       ${creatorNotReady ? `<div class="msg error">This creator hasn't finished setting up their payout account yet — funding is disabled until they do.</div>` : ''}
       ${c.deliverable_submitted_at ? `<div class="signed-line">✓ Deliverable submitted ${new Date(c.deliverable_submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}${c.deliverable_notes ? ' — ' + escapeHtml(c.deliverable_notes) : ''}</div>` : ''}
       ${c.sponsor_signed_at ? `<div class="signed-line">✓ Signed by sponsor (${escapeHtml(c.sponsor_signature_name||'')}) — ${new Date(c.sponsor_signed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
