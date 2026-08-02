@@ -95,6 +95,7 @@
 <script>
 let profile;
 let escrowFeePct = null;
+const openDeliverablePanels = new Set();
 
 async function getEscrowFeePct() {
   if (escrowFeePct != null) return escrowFeePct;
@@ -148,6 +149,11 @@ async function renderSponsorForm() {
       <div class="field"><label>Deliverables</label>
         <textarea id="ctrDeliverables" placeholder="e.g. 1 dedicated YouTube video (8–12 min), 2 Instagram Stories linking to product page"></textarea>
       </div>
+      <div class="field">
+        <label>Deliverable checklist <span style="color:var(--color-text-tertiary)">(each item is tracked and checked off separately)</span></label>
+        <div id="checklistItems"></div>
+        <button type="button" class="cta-outline" onclick="addChecklistRow()">+ Add item</button>
+      </div>
       <div class="field-row">
         <div class="field"><label>Compensation</label>
           <input id="ctrCompensation" placeholder="e.g. $2,000 flat fee, net-30 after delivery">
@@ -174,6 +180,36 @@ async function renderSponsorForm() {
       <div id="ctrFormMsg"></div>
     </div>
   `;
+  checklistRows = [];
+  addChecklistRow();
+}
+
+// ── Sponsor: deliverable checklist rows on the draft form ──────────────────
+let checklistRows = [];
+let checklistRowSeq = 0;
+
+function addChecklistRow(description = '', quantity = 1) {
+  checklistRows.push({ key: ++checklistRowSeq, description, quantity });
+  renderChecklistRows();
+}
+
+function removeChecklistRow(key) {
+  checklistRows = checklistRows.filter(r => r.key !== key);
+  renderChecklistRows();
+}
+
+function renderChecklistRows() {
+  const el = document.getElementById('checklistItems');
+  if (!el) return;
+  el.innerHTML = checklistRows.map(r => `
+    <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+      <input value="${escapeHtml(r.description)}" placeholder="e.g. Instagram Reel" style="flex:3"
+        oninput="checklistRows.find(x=>x.key===${r.key}).description=this.value">
+      <input type="number" min="1" value="${r.quantity}" style="flex:1"
+        oninput="checklistRows.find(x=>x.key===${r.key}).quantity=Number(this.value)||1">
+      <button type="button" class="cta-outline" style="color:#B42318;border-color:#B42318;padding:8px 10px"
+        onclick="removeChecklistRow(${r.key})">✕</button>
+    </div>`).join('');
 }
 
 async function updateEscrowFeePreview() {
@@ -198,6 +234,11 @@ async function draftContract(briefApplicationId, campaignId) {
   if (!deliverables) { msgEl.innerHTML = '<div class="msg error">Describe the deliverables.</div>'; return; }
   if (!compensation) { msgEl.innerHTML = '<div class="msg error">Add the compensation terms.</div>'; return; }
 
+  const items = checklistRows
+    .map(r => ({ description: r.description.trim(), quantity: r.quantity }))
+    .filter(r => r.description);
+  if (!items.length) { msgEl.innerHTML = '<div class="msg error">Add at least one checklist item (e.g. "1 Reel", "Usage rights confirmation").</div>'; return; }
+
   const usageRights = document.getElementById('ctrUsageRights').value.trim();
   const escrowAmountUsd = document.getElementById('ctrEscrowAmount').value;
   const exclusivity = document.getElementById('ctrExclusivity').value.trim();
@@ -207,7 +248,7 @@ async function draftContract(briefApplicationId, campaignId) {
   const btn = document.getElementById('draftBtn');
   btn.disabled = true;
 
-  const { error } = await sb.from('contracts').insert({
+  const { data: inserted, error } = await sb.from('contracts').insert({
     sponsor_id: profile.id, creator_id: creatorId, created_by: profile.id,
     title, deliverables, compensation,
     usage_rights: usageRights || null,
@@ -217,9 +258,19 @@ async function draftContract(briefApplicationId, campaignId) {
     additional_terms: additional || null,
     brief_application_id: briefApplicationId || null,
     campaign_id: campaignId || null,
-  });
+  }).select('id').single();
 
   if (error) { msgEl.innerHTML = `<div class="msg error">Could not save contract: ${escapeHtml(error.message)}</div>`; btn.disabled = false; return; }
+
+  const { error: itemsError } = await sb.from('contract_deliverable_items').insert(
+    items.map((it, i) => ({
+      contract_id: inserted.id,
+      description: it.description,
+      quantity: it.quantity,
+      sort_order: i,
+    }))
+  );
+  if (itemsError) { msgEl.innerHTML = `<div class="msg error">Contract saved, but the checklist items failed: ${escapeHtml(itemsError.message)}</div>`; btn.disabled = false; await loadContracts(); return; }
 
   msgEl.innerHTML = '<div class="msg ok">Contract saved as a draft. Send it when you\'re ready — terms lock once sent.</div>';
   await renderSponsorForm();
@@ -304,6 +355,14 @@ async function loadContracts() {
     return;
   }
 
+  const { data: items } = await sb.from('contract_deliverable_items')
+    .select('*').in('contract_id', contracts.map(c => c.id)).order('sort_order');
+  const itemsByContract = {};
+  (items || []).forEach(it => {
+    (itemsByContract[it.contract_id] = itemsByContract[it.contract_id] || []).push(it);
+  });
+  contracts.forEach(c => { c._items = itemsByContract[c.id] || []; });
+
   contracts.forEach(c => ensureClauseScan(c));
 
   listEl.innerHTML = contracts.map(c => {
@@ -329,6 +388,9 @@ async function loadContracts() {
     const canFund = profile.role === 'sponsor' && hasEscrow && c.status === 'fully_signed' && c.escrow_status === 'not_funded';
     const creatorNotReady = canFund && !c.creators.stripe_connect_payouts_enabled;
     const canSubmitDeliverable = profile.role === 'creator' && c.escrow_status === 'held' && !c.deliverable_submitted_at;
+    const items = c._items || [];
+    const itemsDoneCount = items.filter(it => it.completed_at).length;
+    const allItemsDone = items.length === 0 || itemsDoneCount === items.length;
     const canReleaseOrRefund = profile.role === 'sponsor' && c.escrow_status === 'held' && !partialInProgress;
 
     const escrowLabel = {
@@ -354,6 +416,15 @@ async function loadContracts() {
       </div>
       <div class="contract-terms">
         <div><b>Deliverables:</b> ${escapeHtml(c.deliverables)}</div>
+        ${items.length ? `
+        <div style="margin-top:6px">
+          <b>Checklist</b> <span style="color:var(--ink-soft);font-weight:400">(${itemsDoneCount}/${items.length} done)</span>
+          <div style="margin-top:4px">
+            ${items.map(it => `<div style="font-size:12.5px;color:${it.completed_at ? '#137C52' : 'var(--ink)'}">
+              ${it.completed_at ? '✓' : '☐'} ${it.quantity > 1 ? it.quantity + '× ' : ''}${escapeHtml(it.description)}${it.completed_notes ? ' — ' + escapeHtml(it.completed_notes) : ''}
+            </div>`).join('')}
+          </div>
+        </div>` : ''}
         <div><b>Compensation:</b> ${escapeHtml(c.compensation)}</div>
         ${c.usage_rights ? `<div><b>Usage rights:</b> ${escapeHtml(c.usage_rights)}</div>` : ''}
         ${c.exclusivity_terms ? `<div><b>Exclusivity:</b> ${escapeHtml(c.exclusivity_terms)}</div>` : ''}
@@ -376,11 +447,24 @@ async function loadContracts() {
         ${canReleaseOrRefund ? `<button class="cta-outline" style="color:#B42318;border-color:#B42318" onclick="refundEscrow('${c.id}')">Refund sponsor</button>` : ''}
         ${canVoid ? `<button class="cta-outline" style="color:#B42318;border-color:#B42318" onclick="voidContract('${c.id}')">Void</button>` : ''}
       </div>
-      <div id="deliverable-panel-${c.id}" style="display:none;margin-top:10px">
+      <div id="deliverable-panel-${c.id}" style="display:${openDeliverablePanels.has(c.id) ? 'block' : 'none'};margin-top:10px">
+        ${items.length ? `
+        <div style="margin-bottom:10px">
+          ${items.map(it => `
+          <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">
+            <input type="checkbox" style="margin-top:3px" ${it.completed_at ? 'checked' : ''} ${c.deliverable_submitted_at ? 'disabled' : ''}
+              onchange="toggleChecklistItem('${c.id}','${it.id}',this.checked)">
+            <div style="flex:1">
+              <div style="font-size:13px">${it.quantity > 1 ? it.quantity + '× ' : ''}${escapeHtml(it.description)}</div>
+              <input placeholder="Optional note or link" value="${escapeHtml(it.completed_notes || '')}" style="margin-top:4px;font-size:12px;padding:6px 8px" ${c.deliverable_submitted_at ? 'disabled' : ''}
+                onchange="setChecklistItemNote('${c.id}','${it.id}',this.value)">
+            </div>
+          </div>`).join('')}
+        </div>` : `
         <div class="field" style="margin-bottom:8px"><label>Notes for the sponsor <span style="color:var(--color-text-tertiary)">(optional)</span></label>
           <input id="deliverable-notes-${c.id}" placeholder="e.g. link to the published post">
-        </div>
-        <button class="cta" onclick="submitDeliverable('${c.id}')">Confirm submission</button>
+        </div>`}
+        <button class="cta" ${!allItemsDone ? 'disabled title="Check off every item first"' : ''} onclick="submitDeliverable('${c.id}')">Confirm submission${items.length ? ` (${itemsDoneCount}/${items.length})` : ''}</button>
         <div id="deliverable-msg-${c.id}"></div>
       </div>
       <div id="sign-panel-${c.id}" style="display:none;margin-top:10px">
@@ -450,11 +534,29 @@ async function fundEscrow(contractId) {
 
 function toggleDeliverablePanel(contractId) {
   const el = document.getElementById('deliverable-panel-' + contractId);
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  const showing = el.style.display === 'none';
+  el.style.display = showing ? 'block' : 'none';
+  if (showing) openDeliverablePanels.add(contractId); else openDeliverablePanels.delete(contractId);
+}
+
+async function toggleChecklistItem(contractId, itemId, checked) {
+  const { error } = await sb.from('contract_deliverable_items')
+    .update({ completed_at: checked ? new Date().toISOString() : null })
+    .eq('id', itemId);
+  if (error) { alert('Could not update item: ' + error.message); }
+  loadContracts();
+}
+
+async function setChecklistItemNote(contractId, itemId, note) {
+  const { error } = await sb.from('contract_deliverable_items')
+    .update({ completed_notes: note.trim() || null })
+    .eq('id', itemId);
+  if (error) alert('Could not save note: ' + error.message);
 }
 
 async function submitDeliverable(contractId) {
-  const notes = document.getElementById('deliverable-notes-' + contractId).value.trim();
+  const notesEl = document.getElementById('deliverable-notes-' + contractId);
+  const notes = notesEl ? notesEl.value.trim() : '';
   const msgEl = document.getElementById('deliverable-msg-' + contractId);
   const r = await callEscrowApi('submit-deliverable', { contractId, notes });
   if (!r.ok) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(r.error || 'Could not submit.')}</div>`; return; }
