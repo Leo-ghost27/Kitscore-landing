@@ -92,6 +92,19 @@
     </div>
 
     <div class="card">
+      <div class="sec">Table permissions check</div>
+      <div class="sub">Catches a specific, recurring bug: a table with a correct row-level security policy but no table-level grant at all -- Postgres blocks every request before RLS is even evaluated, and it only ever surfaced by accident (someone clicking into a broken admin page). Run this any time a new table ships, or if a page says "permission denied."</div>
+      <div class="row-item">
+        <div>
+          <div class="job-name">Scan all tables for missing grants</div>
+          <div class="job-desc">Lists any table that has an RLS policy but isn't actually reachable by a logged-in user.</div>
+        </div>
+        <button class="btn-check" id="btn-grants-check" onclick="runGrantsCheck()">Check now</button>
+      </div>
+      <div id="result-grants-check"></div>
+    </div>
+
+    <div class="card">
       <div class="sec">Health summary</div>
       <div class="sub">Unresolved issues from the last 7 days — these used to only surface by accident (a specific bug report or manual testing), not because anything flagged them. Grouped by type; each group can be cleared once you've dealt with it.</div>
       <div id="health-summary"></div>
@@ -166,6 +179,28 @@ async function resolveGroup(ids, rpcName, btnId, resultId) {
     resultEl.innerHTML = `<div class="result ok">Cleared ${ids.length} issue(s).</div>`;
     loadHealthSummary();
   }
+}
+
+async function runGrantsCheck() {
+  const btn = document.getElementById('btn-grants-check');
+  const resultEl = document.getElementById('result-grants-check');
+  btn.disabled = true;
+  btn.textContent = 'Checking…';
+  resultEl.innerHTML = '';
+
+  const { data, error } = await sb.rpc('fn_admin_check_table_grants');
+  btn.disabled = false;
+  btn.textContent = 'Check now';
+
+  if (error) {
+    resultEl.innerHTML = `<div class="result error">${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    resultEl.innerHTML = `<div class="result ok">All clear -- every table with an RLS policy is reachable.</div>`;
+    return;
+  }
+  resultEl.innerHTML = `<div class="result error">Missing grants on: ${data.map(r => escapeHtml(r.table_name)).join(', ')}\n\nFix: GRANT SELECT ON public.&lt;table&gt; TO anon, authenticated; (add UPDATE/INSERT too if the page needs to write to it).</div>`;
 }
 
 async function runJob(job, btnId, resultId) {
