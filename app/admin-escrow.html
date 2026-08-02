@@ -191,6 +191,8 @@ async function openDetail(id) {
 
   const { data: pastActions } = await sb.from('admin_actions')
     .select('*').eq('target_table', 'contracts').eq('target_id', id).order('created_at', { ascending: false });
+  const { data: items } = await sb.from('contract_deliverable_items')
+    .select('*').eq('contract_id', id).order('sort_order');
 
   const amount = c.escrow_amount_cents ? '$' + (c.escrow_amount_cents / 100).toFixed(2) : '—';
   const fee = c.platform_fee_cents ? '$' + (c.platform_fee_cents / 100).toFixed(2) : '—';
@@ -214,6 +216,9 @@ async function openDetail(id) {
     ` : ''}
     <div class="kv"><span class="kv-label">Funded</span><span class="kv-val">${c.funded_at ? new Date(c.funded_at).toLocaleString() : '—'}</span></div>
     <div class="kv"><span class="kv-label">Deliverable submitted</span><span class="kv-val">${c.deliverable_submitted_at ? new Date(c.deliverable_submitted_at).toLocaleString() : '—'}</span></div>
+    ${items && items.length ? `<div class="kv" style="align-items:flex-start"><span class="kv-label">Checklist</span><span class="kv-val">${items.filter(i=>i.completed_at).length}/${items.length} done<br>
+      ${items.map(i => `${i.completed_at ? '✓' : '☐'} ${i.quantity > 1 ? i.quantity + '× ' : ''}${escapeHtml(i.description)}${i.completed_note ? ' — ' + escapeHtml(i.completed_note) : ''}`).join('<br>')}
+    </span></div>` : ''}
     <div class="kv"><span class="kv-label">Fully released at</span><span class="kv-val">${c.released_at ? new Date(c.released_at).toLocaleString() : '—'}</span></div>
     <div class="kv"><span class="kv-label">Fully refunded at</span><span class="kv-val">${c.refunded_at ? new Date(c.refunded_at).toLocaleString() : '—'}</span></div>
     <div class="kv"><span class="kv-label">Payment intent</span><span class="kv-val">${escapeHtml(c.escrow_payment_intent_id || '—')}</span></div>

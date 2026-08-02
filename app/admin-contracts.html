@@ -208,6 +208,8 @@ async function openDetail(id) {
 
   const { data: pastActions } = await sb.from('admin_actions')
     .select('*').eq('target_table', 'contracts').eq('target_id', id).order('created_at', { ascending: false });
+  const { data: items } = await sb.from('contract_deliverable_items')
+    .select('*').eq('contract_id', id).order('sort_order');
 
   const hasEscrow = c.escrow_status && c.escrow_status !== 'not_funded';
   const flagged = isFlagged(c);
@@ -224,6 +226,9 @@ async function openDetail(id) {
 
     <div class="sec" style="margin-top:14px">Terms</div>
     <div class="terms-block"><strong>Deliverables:</strong> ${escapeHtml(c.deliverables)}</div>
+    ${items && items.length ? `<div class="terms-block"><strong>Checklist</strong> (${items.filter(i=>i.completed_at).length}/${items.length} done):<br>
+      ${items.map(i => `${i.completed_at ? '✓' : '☐'} ${i.quantity > 1 ? i.quantity + '× ' : ''}${escapeHtml(i.description)}${i.completed_note ? ' — ' + escapeHtml(i.completed_note) : ''}`).join('<br>')}
+    </div>` : ''}
     <div class="terms-block"><strong>Compensation:</strong> ${escapeHtml(c.compensation)}</div>
     ${c.usage_rights ? `<div class="terms-block"><strong>Usage rights:</strong> ${escapeHtml(c.usage_rights)}</div>` : ''}
     ${c.exclusivity_terms ? `<div class="terms-block"><strong>Exclusivity:</strong> ${escapeHtml(c.exclusivity_terms)}</div>` : ''}
