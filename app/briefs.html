@@ -100,6 +100,7 @@
 <script src="nav.js?v=2"></script>
 <script>
 let profile;
+let isCreatorPro = false;
 
 async function load() {
   profile = await getCurrentProfile();
@@ -111,6 +112,8 @@ async function load() {
     await renderSponsorForm();
     await loadSponsorBriefs();
   } else if (profile.role === 'creator') {
+    const { data: c } = await sb.from('creators').select('plan').eq('id', profile.id).maybeSingle();
+    isCreatorPro = c?.plan === 'pro';
     document.getElementById('formArea').innerHTML = '';
     await loadOpenBriefs();
   } else {
@@ -304,6 +307,10 @@ async function loadOpenBriefs() {
     <div class="apply-panel" id="apply-panel-${b.id}" style="display:none">
       <div class="field"><label>Your pitch</label>
         <textarea id="pitch-${b.id}" placeholder="Why you're a fit for this brief"></textarea>
+        ${isCreatorPro
+          ? `<button type="button" class="toggle-link" style="margin-top:4px" onclick="draftPitch('${b.id}')" id="draft-btn-${b.id}">✨ Draft with AI</button>`
+          : `<a href="pricing-creator.html" class="toggle-link" style="margin-top:4px;display:inline-block">✨ Draft with AI <span style="font-size:9.5px;font-weight:700;background:#EDE9FE;color:#5B4FCF;padding:1px 6px;border-radius:8px;margin-left:2px;vertical-align:1px">PRO</span></a>`}
+        <div id="draft-msg-${b.id}"></div>
       </div>
       <div class="field"><label>Proposed rate <span style="color:var(--color-text-tertiary)">(optional)</span></label>
         <input id="rate-${b.id}" placeholder="e.g. $400 flat">
@@ -317,6 +324,37 @@ async function loadOpenBriefs() {
 function toggleApplyForm(briefId) {
   const el = document.getElementById('apply-panel-' + briefId);
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function draftPitch(briefId) {
+  const btn = document.getElementById('draft-btn-' + briefId);
+  const msgEl = document.getElementById('draft-msg-' + briefId);
+  btn.disabled = true;
+  btn.textContent = 'Drafting…';
+  msgEl.innerHTML = '';
+
+  const { data: { session } } = await sb.auth.getSession();
+  try {
+    const res = await fetch('/api/campaign-actions?action=draft-pitch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ briefId }),
+    });
+    const result = await res.json();
+
+    if (res.status === 403 && result.upgradeRequired) {
+      msgEl.innerHTML = `<div class="msg" style="font-size:11.5px">Pitch Assistant is a Pro feature — <a href="pricing-creator.html" style="color:#2563EB">upgrade to Pro</a> to draft pitches with AI.</div>`;
+    } else if (!res.ok || result.notRun) {
+      msgEl.innerHTML = `<div class="msg error">Could not draft a pitch right now.</div>`;
+    } else {
+      document.getElementById('pitch-' + briefId).value = result.draft;
+      msgEl.innerHTML = `<div class="msg" style="font-size:11px;color:var(--color-text-tertiary)">Drafted — edit before you submit. Not guaranteed to land the deal, just a starting point.</div>`;
+    }
+  } catch (err) {
+    msgEl.innerHTML = `<div class="msg error">${escapeHtml(err.message)}</div>`;
+  }
+  btn.disabled = false;
+  btn.textContent = '✨ Draft with AI';
 }
 
 async function applyToBrief(briefId) {

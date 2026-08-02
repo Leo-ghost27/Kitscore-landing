@@ -449,8 +449,13 @@ async function loadCreatorCampaigns() {
             ? `<span class="waiting" title="You've confirmed. This needs the sponsor's confirmation too before it counts toward your trust score.">${c.sponsor_confirmed ? 'Confirmed' : 'Waiting on sponsor'}</span>`
             : `<button class="confirm-btn" title="Confirms this happened as logged. It still needs the sponsor's confirmation too before it counts toward your score." onclick="confirmCampaign('${c.id}')">Confirm</button>
                <button class="dispute-btn" title="Say this is wrong or didn't happen. It won't count toward your score until resolved, and the sponsor will see your reason." onclick="toggleDispute('${c.id}')">Dispute</button>`}
+        ${c.status === 'verified' ? `<button class="resolve-btn" onclick="toggleRecap('${c.id}')">Performance recap</button>` : ''}
       </div>
     </div>
+    ${c.status === 'verified' ? `
+    <div id="recap-panel-${c.id}" class="dispute-panel" style="display:none">
+      <div id="recap-body-${c.id}" style="font-size:11.5px;color:var(--color-text-secondary)">Loading…</div>
+    </div>` : ''}
     ${c.status === 'disputed' && c.dispute_reason
       ? `<div class="dispute-reason-note">${svgIcon('alert-triangle', {size:12})} Your reason: ${escapeHtml(c.dispute_reason)}</div>`
       : ''}
@@ -639,6 +644,60 @@ async function fetchWithRetry(url, options, retries, delayMs) {
     await new Promise(r => setTimeout(r, delayMs));
     return fetchWithRetry(url, options, retries - 1, delayMs * 2);
   }
+}
+
+// ── Performance recap (data-only, no AI call, ungated) ──────────────────
+const recapLoaded = new Set();
+
+function fmtDelta(startVal, endVal) {
+  if (startVal == null || endVal == null) return null;
+  const delta = endVal - startVal;
+  const pct = startVal > 0 ? ((delta / startVal) * 100).toFixed(1) : null;
+  const sign = delta >= 0 ? '+' : '';
+  return `${sign}${delta.toLocaleString()}${pct !== null ? ` (${sign}${pct}%)` : ''}`;
+}
+
+async function toggleRecap(campaignId) {
+  const panel = document.getElementById(`recap-panel-${campaignId}`);
+  const isHidden = panel.style.display === 'none';
+  panel.style.display = isHidden ? 'block' : 'none';
+  if (!isHidden || recapLoaded.has(campaignId)) return;
+  recapLoaded.add(campaignId);
+
+  const bodyEl = document.getElementById(`recap-body-${campaignId}`);
+  const { data, error } = await sb.rpc('fn_creator_campaign_performance_recap', { p_campaign_id: campaignId });
+  if (error || !data) {
+    bodyEl.innerHTML = `Could not load performance recap: ${escapeHtml(error?.message || 'unknown error')}`;
+    return;
+  }
+
+  const platforms = data.platforms || [];
+  if (!platforms.length) {
+    bodyEl.innerHTML = 'No connected platforms to report on.';
+    return;
+  }
+
+  const windowLabel = `${new Date(data.windowStart).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})} — ${data.stillActive ? 'ongoing' : new Date(data.windowEnd).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}`;
+
+  const rows = platforms.map(p => {
+    const delta = fmtDelta(p.windowStartFollowerCount, p.windowEndFollowerCount);
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+        <div style="text-transform:capitalize;font-weight:500">${escapeHtml(p.platform)}</div>
+        <div style="text-align:right">
+          <div>${(p.currentFollowerCount ?? 0).toLocaleString()} followers</div>
+          <div style="font-size:10.5px;color:var(--color-text-tertiary)">
+            ${delta ? `${delta} followers during this window` : 'No historical snapshot from before this campaign started — can\'t show growth for this window yet'}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  bodyEl.innerHTML = `
+    <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:8px">Campaign window: ${windowLabel} · follower counts from your connected platforms, not campaign-specific analytics</div>
+    ${rows}
+    <div style="font-size:10px;color:var(--color-text-tertiary);margin-top:8px">Historical tracking only goes back to when platform snapshots began — older campaigns may not have a "before" data point.</div>
+  `;
 }
 
 async function withdrawDispute(id) {
