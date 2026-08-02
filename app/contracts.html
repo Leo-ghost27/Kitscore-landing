@@ -421,7 +421,7 @@ async function loadContracts() {
           <b>Checklist</b> <span style="color:var(--ink-soft);font-weight:400">(${itemsDoneCount}/${items.length} done)</span>
           <div style="margin-top:4px">
             ${items.map(it => `<div style="font-size:12.5px;color:${it.completed_at ? '#137C52' : 'var(--ink)'}">
-              ${it.completed_at ? '✓' : '☐'} ${it.quantity > 1 ? it.quantity + '× ' : ''}${escapeHtml(it.description)}${it.completed_notes ? ' — ' + escapeHtml(it.completed_notes) : ''}
+              ${it.completed_at ? '✓' : '☐'} ${it.quantity > 1 ? it.quantity + '× ' : ''}${escapeHtml(it.description)}${it.completed_note ? ' — ' + escapeHtml(it.completed_note) : ''}
             </div>`).join('')}
           </div>
         </div>` : ''}
@@ -456,7 +456,7 @@ async function loadContracts() {
               onchange="toggleChecklistItem('${c.id}','${it.id}',this.checked)">
             <div style="flex:1">
               <div style="font-size:13px">${it.quantity > 1 ? it.quantity + '× ' : ''}${escapeHtml(it.description)}</div>
-              <input placeholder="Optional note or link" value="${escapeHtml(it.completed_notes || '')}" style="margin-top:4px;font-size:12px;padding:6px 8px" ${c.deliverable_submitted_at ? 'disabled' : ''}
+              <input placeholder="Optional note or link" value="${escapeHtml(it.completed_note || '')}" style="margin-top:4px;font-size:12px;padding:6px 8px" ${c.deliverable_submitted_at ? 'disabled' : ''}
                 onchange="setChecklistItemNote('${c.id}','${it.id}',this.value)">
             </div>
           </div>`).join('')}
@@ -549,7 +549,7 @@ async function toggleChecklistItem(contractId, itemId, checked) {
 
 async function setChecklistItemNote(contractId, itemId, note) {
   const { error } = await sb.from('contract_deliverable_items')
-    .update({ completed_notes: note.trim() || null })
+    .update({ completed_note: note.trim() || null })
     .eq('id', itemId);
   if (error) alert('Could not save note: ' + error.message);
 }
