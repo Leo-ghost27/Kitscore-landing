@@ -368,6 +368,8 @@
   .hiw2-card h3 { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 10px; line-height: 1.3; }
   .hiw2-card p { font-size: 13px; color: var(--muted); line-height: 1.65; }
   @media (max-width: 768px) { .hiw2-steps { grid-template-columns: 1fr; } }
+  #tab2-creators .hiw2-steps { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 768px) { #tab2-creators .hiw2-steps { grid-template-columns: 1fr; } }
 
   .creator-tiers { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
   .tier-card {
@@ -920,6 +922,7 @@
   </div>
 
   <div id="tab2-creators" class="hiw2-panel">
+    <p style="font-size:13px;color:var(--muted);margin:-8px 0 20px">Not creator analytics — verified sponsorship infrastructure. The promise: turn proof into paid work.</p>
     <div class="hiw2-steps">
       <div class="hiw2-card">
         <div class="hiw2-num">01</div>
@@ -934,7 +937,12 @@
       <div class="hiw2-card">
         <div class="hiw2-num">03</div>
         <h3>Get Your Verified Media Kit</h3>
-        <p>A free, pitch-ready media kit — bio, rate card, platform stats, and verified highlights — built from your Kitscore data. Send it to brands cold, or share your minimal trust link once you're already in talks. Browse open briefs and get paid through Kitscore escrow once a deal's signed — Kitscore takes a 10% fee, always shown to you upfront.</p>
+        <p>A free, pitch-ready media kit — bio, rate card, platform stats, and verified highlights — built from your Kitscore data. Send it to brands cold, or share your minimal trust link once you're already in talks.</p>
+      </div>
+      <div class="hiw2-card">
+        <div class="hiw2-num">04</div>
+        <h3>Close the Deal, Protected</h3>
+        <p>Browse open briefs and apply directly. Sign a contract that's scanned for one-sided terms before you sign, work off a real deliverable checklist so scope is never a guessing game, and get paid through Kitscore Escrow — funds held until you deliver, Kitscore's 10% fee always shown upfront. Every completed campaign becomes a Performance Recap: proof for the next pitch.</p>
       </div>
     </div>
     <div style="text-align:center">
@@ -1211,6 +1219,40 @@
         <img src="assets/product-evidence.png" alt="Kitscore creator evidence upload view" style="width:100%;display:block">
       </div>
       <p style="font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center">Submitting campaign evidence</p>
+    </div>
+    <div>
+      <div style="border:0.5px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04)">
+        <div style="background:#F4F5F7;padding:8px 12px;display:flex;gap:6px;border-bottom:0.5px solid var(--border)">
+          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
+          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
+          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
+        </div>
+        <img src="assets/product-briefs.png" alt="Kitscore open briefs — creators apply directly to sponsorship opportunities" style="width:100%;display:block">
+      </div>
+      <p style="font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center">Browsing and applying to open briefs</p>
+    </div>
+    <div>
+      <div style="border:0.5px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04)">
+        <div style="background:#F4F5F7;padding:8px 12px;display:flex;gap:6px;border-bottom:0.5px solid var(--border)">
+          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
+          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
+          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
+        </div>
+        <img src="assets/product-contracts-clause-scan.png" alt="Kitscore contract with automatic clause scan for one-sided liability language" style="width:100%;display:block">
+      </div>
+      <p style="font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center">Contracts, signed safely — with an automatic clause scan</p>
+    </div>
+    <!-- TODO: still needs a real screenshot — Performance Recap (app/campaigns.html, post-campaign recap view). Placeholder path below will 404 until supplied. -->
+    <div>
+      <div style="border:0.5px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04)">
+        <div style="background:#F4F5F7;padding:8px 12px;display:flex;gap:6px;border-bottom:0.5px solid var(--border)">
+          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
+          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
+          <div style="width:9px;height:9px;border-radius:50%;background:#E3E5E9"></div>
+        </div>
+        <img src="assets/product-performance-recap.png" alt="Kitscore Performance Recap after a completed campaign" style="width:100%;display:block">
+      </div>
+      <p style="font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center">Performance Recap — proof for your next pitch</p>
     </div>
   </div>
 
