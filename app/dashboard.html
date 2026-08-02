@@ -1315,7 +1315,7 @@ function renderEvidenceTab() {
       <div class="sec">Brand safety questionnaire <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— updates your score live</span></div>
       ${QUESTIONS.map(q=>`
         <div class="qrow">
-          <span style="font-size:12px">${q.label}</span>
+          <span style="font-size:12px">${q.label}${q.key==='paid_disclosure' && yt?.verification_method==='oauth' ? '<div style="font-size:10.5px;color:var(--color-text-tertiary);font-weight:400;margin-top:2px">Your YouTube uploads are cross-checked against the paid-promotion setting on YouTube \u2014 this supplements, not replaces, your answer.</div>' : ''}</span>
           <span class="opts">${q.opts.map(o=>`<button class="${answerMap[q.key]===o?'sel':''}" onclick="answerQuestion('${q.key}','${o}')">${o}</button>`).join('')}</span>
         </div>`).join('')}
     </div>

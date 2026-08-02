@@ -502,7 +502,7 @@ function renderKit(kit, opts) {
     </div>
 
     <div class="card">
-      <div class="card-title">Brand safety assessment</div>
+      <div class="card-title">Brand safety assessment <span style="font-size:9.5px;color:#B0B0AA;text-transform:none;font-weight:400;letter-spacing:0">— self-reported by creator</span></div>
       <div class="bs-grid">
         ${BS_QUESTIONS.map(q => {
           const found = (kit.brandSafetyAnswers||[]).find(a => a.question_key === q.key);
