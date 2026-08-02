@@ -28,6 +28,7 @@
   .st-fully_signed{background:#E9F7EE;color:#1C7C3F}
   .st-void{background:var(--color-background-secondary);color:var(--color-text-tertiary)}
   .flag-tag{font-size:10px;padding:3px 8px;border-radius:10px;background:#FDECEC;color:#B42318;font-weight:500}
+  .legal-tag{font-size:10px;padding:3px 8px;border-radius:10px;background:#FDF0E3;color:#92400E;font-weight:500}
   .stuck-tag{font-size:10px;padding:3px 8px;border-radius:10px;background:#FEF6E7;color:#92600A;font-weight:500}
   .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
   .empty{font-size:12px;color:var(--color-text-secondary);padding:20px 0;text-align:center}
@@ -63,7 +64,7 @@
   <div class="app-main">
     <div class="ptitle">Contracts Oversight</div>
     <div class="card" style="background:var(--color-background-secondary);border:none">
-      <div style="font-size:11.5px;color:var(--color-text-secondary)">Every contract signed through app/contracts.html, regardless of escrow status. "Stuck" means it's sat in sent/signed-by-one-side for 5+ days with no progress. Flagging a problem here (or resolving one) is separate from money -- for escrow intervention on a funded contract, use Escrow Oversight instead; this modal links there directly when relevant.</div>
+      <div style="font-size:11.5px;color:var(--color-text-secondary)">Every contract signed through app/contracts.html, regardless of escrow status. "Stuck" means it's sat in sent/signed-by-one-side for 5+ days with no progress. "Legal risk" means the automated clause scan flagged one-sided indemnification/liability language -- the creator and sponsor already saw this on the contract itself, this is admin visibility into the same result. Flagging a problem here (or resolving one) is separate from money -- for escrow intervention on a funded contract, use Escrow Oversight instead; this modal links there directly when relevant.</div>
     </div>
 
     <div class="summary-bar">
@@ -76,6 +77,10 @@
         <div class="summary-label">Stuck (5+ days)</div>
       </div>
       <div class="summary-item card">
+        <div class="summary-num" id="sum-legal" style="color:#B42318">—</div>
+        <div class="summary-label">Legal risk flagged</div>
+      </div>
+      <div class="summary-item card">
         <div class="summary-num" id="sum-total">—</div>
         <div class="summary-label">Total contracts</div>
       </div>
@@ -85,6 +90,7 @@
       <div class="sec">Filter</div>
       <div class="filters" id="filters">
         <button data-status="flagged" class="active">Flagged</button>
+        <button data-status="legal_risk">Legal risk</button>
         <button data-status="stuck">Stuck</button>
         <button data-status="all">All</button>
         <button data-status="fully_signed">Fully signed</button>
@@ -118,6 +124,10 @@ function isFlagged(c) {
   return c.disputed_at && !c.admin_resolved_at;
 }
 
+function isLegalRisk(c) {
+  return c.clause_scan_flagged === true;
+}
+
 function isStuck(c) {
   return ['sent', 'signed_by_creator', 'signed_by_sponsor'].includes(c.status)
     && daysSince(c.updated_at) >= STUCK_DAYS;
@@ -143,12 +153,14 @@ async function load() {
 function updateSummary() {
   document.getElementById('sum-open').textContent = contracts.filter(isFlagged).length;
   document.getElementById('sum-stuck').textContent = contracts.filter(isStuck).length;
+  document.getElementById('sum-legal').textContent = contracts.filter(isLegalRisk).length;
   document.getElementById('sum-total').textContent = contracts.length;
 }
 
 function render() {
   let filtered = contracts;
   if (activeFilter === 'flagged') filtered = contracts.filter(isFlagged);
+  else if (activeFilter === 'legal_risk') filtered = contracts.filter(isLegalRisk);
   else if (activeFilter === 'stuck') filtered = contracts.filter(isStuck);
   else if (activeFilter !== 'all') filtered = contracts.filter(c => c.status === activeFilter);
 
@@ -160,6 +172,7 @@ function render() {
 
   list.innerHTML = filtered.map(c => {
     const flagged = isFlagged(c);
+    const legalRisk = isLegalRisk(c);
     const stuck = isStuck(c);
     const escrowNote = c.escrow_status && c.escrow_status !== 'not_funded' ? ' · escrow ' + c.escrow_status.replace('_',' ') : '';
     return `
@@ -171,6 +184,7 @@ function render() {
         </div>
         <div style="display:flex;gap:6px;align-items:center">
           ${flagged ? `<span class="flag-tag">${svgIcon('alert-triangle',{size:11})} Flagged</span>` : ''}
+          ${legalRisk ? `<span class="legal-tag">${svgIcon('alert-triangle',{size:11})} Legal risk</span>` : ''}
           ${stuck ? `<span class="stuck-tag">${daysSince(c.updated_at)}d stuck</span>` : ''}
           <span class="status-tag st-${c.status}">${c.status.replace(/_/g,' ')}</span>
         </div>
@@ -214,6 +228,17 @@ async function openDetail(id) {
     ${c.usage_rights ? `<div class="terms-block"><strong>Usage rights:</strong> ${escapeHtml(c.usage_rights)}</div>` : ''}
     ${c.exclusivity_terms ? `<div class="terms-block"><strong>Exclusivity:</strong> ${escapeHtml(c.exclusivity_terms)}</div>` : ''}
     ${c.additional_terms ? `<div class="terms-block"><strong>Additional terms:</strong> ${escapeHtml(c.additional_terms)}</div>` : ''}
+
+    ${c.clause_scanned_at ? `
+      <div class="sec" style="margin-top:14px">Automated legal risk scan</div>
+      ${c.clause_scan_flagged ? `
+        <div class="dispute-note">
+          <div>${svgIcon('alert-triangle',{size:12})} ${escapeHtml(c.clause_scan_rationale || '')}</div>
+          ${(c.clause_scan_concerns||[]).map(t => `<div style="font-style:italic;font-size:11px;margin-top:4px">"${escapeHtml(t)}"</div>`).join('')}
+        </div>
+        <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-top:4px">Both parties saw this flag directly on the contract already -- this is the same result, not a separate admin-only check. Not legal advice.</div>
+      ` : `<div style="font-size:11.5px;color:var(--color-text-tertiary)">No one-sided indemnification language found (automated check, not legal advice).</div>`}
+    ` : ''}
 
     ${c.disputed_at ? `
       <div class="sec" style="margin-top:14px">Problem${c.admin_resolved_at ? ' (resolved)' : ''}</div>
