@@ -291,6 +291,7 @@ const TEAM_TABS = [
   ['branding', 'photo', 'Branding'],
   ['clients', 'briefcase', 'Clients'],
   ['alerts', 'bolt', 'Alerts'],
+  ['billing', 'card', 'Billing'],
 ];
 
 const CLIENT_STATUSES = [
@@ -311,7 +312,7 @@ async function renderTeam(keepTab) {
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
-  const [{ data: members }, { data: notes }, { data: pendingInvites }, { data: approvals }, { data: clients }, { count: evalCount }, { data: scoreAlerts }] = await Promise.all([
+  const [{ data: members }, { data: notes }, { data: pendingInvites }, { data: approvals }, { data: clients }, { count: evalCount }, { data: scoreAlerts }, { data: billingRows }] = await Promise.all([
     sb.rpc('fn_team_roster', { p_team_id: myTeam.id }),
     sb.rpc('fn_team_notes', { p_team_id: myTeam.id }),
     sb.from('team_invites').select('email, expires_at').eq('team_id', myTeam.id).is('accepted_at', null).gt('expires_at', new Date().toISOString()),
@@ -319,6 +320,7 @@ async function renderTeam(keepTab) {
     sb.rpc('fn_team_clients', { p_team_id: myTeam.id }),
     sb.from('evaluations').select('id', { count: 'exact', head: true }).eq('team_id', myTeam.id).gte('created_at', monthStart.toISOString()),
     sb.rpc('fn_team_score_alerts', { p_team_id: myTeam.id }),
+    sb.rpc('fn_team_billing_summary', { p_team_id: myTeam.id }),
   ]);
 
   let enrichedApprovals = approvals || [];
@@ -340,6 +342,7 @@ async function renderTeam(keepTab) {
     clients: clients || [],
     evalCount: evalCount || 0,
     scoreAlerts: scoreAlerts || [],
+    billing: (billingRows && billingRows[0]) || null,
   };
 
   renderTeamShell();
@@ -429,7 +432,82 @@ function renderTabPanel(key) {
   if (key === 'branding') return renderBrandingTab();
   if (key === 'clients') return renderClientsTab();
   if (key === 'alerts') return renderAlertsTab();
+  if (key === 'billing') return renderBillingTab();
   return '';
+}
+
+const BILLING_STATUS_STYLE = {
+  active: { label: 'Active', bg: 'var(--green-soft)', fg: '#137C52' },
+  past_due: { label: 'Past due', bg: '#FFF7ED', fg: '#8A4B0A' },
+  cancelled: { label: 'Cancelled', bg: '#FDECEC', fg: '#B42318' },
+};
+
+function renderBillingTab() {
+  const b = teamData.billing;
+  if (!b) {
+    return `<div class="card"><div class="sec">Billing</div><div style="font-size:13px;color:var(--ink-soft)">Could not load billing details for this team.</div></div>`;
+  }
+  const statusInfo = BILLING_STATUS_STYLE[b.subscription_status] || { label: b.subscription_status || 'Unknown', bg: '#F1F3F7', fg: 'var(--ink-soft)' };
+  const QUOTA = 150;
+  const used = b.evals_used_this_period || 0;
+  const pct = Math.min(100, Math.round((used / QUOTA) * 100));
+  const since = b.period_start ? new Date(b.period_start).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : null;
+
+  return `
+    <div class="card">
+      <div class="sec">Plan &amp; status</div>
+      <div class="row-item">
+        <span>Plan</span>
+        <span style="font-weight:600;text-transform:capitalize">${escapeHtml(b.plan || '—')} ${b.plan === 'team' ? '· $299/mo' : ''}</span>
+      </div>
+      <div class="row-item">
+        <span>Subscription status</span>
+        <span class="role-badge" style="background:${statusInfo.bg};color:${statusInfo.fg}">${escapeHtml(statusInfo.label)}</span>
+      </div>
+      <div class="row-item">
+        <span>Billing owner</span>
+        <span style="font-weight:600">${escapeHtml(b.owner_display_name || '—')}</span>
+      </div>
+      ${b.subscription_status === 'past_due' ? `
+      <div class="msg error" style="margin-top:10px">Payment is past due. ${myRole === 'owner' ? 'Update your payment method below to avoid losing access.' : `Ask ${escapeHtml(b.owner_display_name || 'your team owner')} to update the payment method to avoid losing access.`}</div>` : ''}
+    </div>
+
+    <div class="card usage-card">
+      <div style="flex-shrink:0">
+        <div class="sec" style="margin-bottom:6px">Usage this period</div>
+        <div style="font-size:12px;color:var(--ink-faint)">Against the Team plan's monthly evaluation allowance${since ? ` &middot; since ${since}` : ''}</div>
+      </div>
+      <div class="usage-bar-track"><div class="usage-bar-fill" style="width:${pct}%;${used >= QUOTA ? 'background:#B42318' : ''}"></div></div>
+      <div class="usage-num">${used} / ${QUOTA}</div>
+    </div>
+
+    <div class="card">
+      <div class="sec">Payment &amp; invoices</div>
+      ${myRole === 'owner' ? `
+        <div style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">Manage your payment method, view invoices, or cancel the subscription in Stripe's billing portal.</div>
+        <button class="cta" onclick="openBillingPortal()" ${b.has_payment_method ? '' : 'title="A payment method will be created on your first portal visit"'}>Manage billing →</button>
+        <div id="billingPortalMsg"></div>
+      ` : `
+        <div style="font-size:13px;color:var(--ink-soft)">Only ${escapeHtml(b.owner_display_name || 'your team owner')} can update the payment method, view invoices, or change the plan.</div>
+      `}
+    </div>
+  `;
+}
+
+async function openBillingPortal() {
+  const msgEl = document.getElementById('billingPortalMsg');
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/billing?action=portal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+    });
+    const json = await res.json();
+    if (!res.ok) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(json.error || 'Could not open billing portal.')}</div>`; return; }
+    window.location.href = json.url;
+  } catch (err) {
+    msgEl.innerHTML = `<div class="msg error">Request failed: ${escapeHtml(err.message)}</div>`;
+  }
 }
 
 function renderAlertsTab() {

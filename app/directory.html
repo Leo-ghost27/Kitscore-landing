@@ -19,6 +19,16 @@
   .signout{font-size:13.5px;color:var(--blue);cursor:pointer;background:none;border:none;font-weight:500}
   .controls{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
   .controls select{max-width:280px;padding:11px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:14px;background:#fff;color:var(--ink)}
+  .controls input[type=search]{flex:1;min-width:200px;max-width:320px;padding:11px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:14px;background:#fff;color:var(--ink)}
+  .controls input[type=number]{width:120px;padding:11px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:14px;background:#fff;color:var(--ink)}
+  .save-search-btn{padding:11px 14px;font-size:13px;font-weight:600;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:0;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px}
+  .save-search-btn:hover{border-color:var(--blue);color:var(--blue)}
+  .saved-search-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+  .saved-search-chip{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;padding:6px 8px 6px 12px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer}
+  .saved-search-chip:hover{border-color:var(--blue-line);color:var(--blue)}
+  .saved-search-chip button{background:none;border:none;cursor:pointer;color:var(--ink-faint);padding:2px;display:flex;align-items:center}
+  .saved-search-chip button:hover{color:#B42318}
+  .saved-search-label{font-size:11.5px;color:var(--ink-faint);margin-right:2px}
   .filter-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
   .filter-pill{font-size:13px;font-weight:600;padding:8px 16px;border:1px solid var(--line);border-radius:0;background:#fff;cursor:pointer;color:var(--ink-soft)}
   .filter-pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
@@ -65,11 +75,15 @@
     </div>
     <div id="usageBanner"></div>
     <div class="controls">
+      <input type="search" id="searchInput" placeholder="Search by name, niche, or location…" oninput="render()">
+      <input type="number" id="minTrustInput" placeholder="Min trust score" min="0" max="100" oninput="render()">
       <select id="sortSel" onchange="render()">
         <option value="trust_score">Sort: highest trust score</option>
         <option value="verified">Sort: most verified campaigns</option>
       </select>
+      <button class="save-search-btn" onclick="saveCurrentSearch()">Save search</button>
     </div>
+    <div class="saved-search-row" id="savedSearchRow"></div>
     <div class="filter-pills" id="nichePills"></div>
     <div id="content" class="loading">Loading creators from Supabase…</div>
   </div>
@@ -84,6 +98,7 @@ let creators = [];
 let watchlisted = new Set();
 let sponsorProfile;
 let activeNiche = 'all';
+let savedSearches = [];
 
 async function load() {
   sponsorProfile = await requireRole('sponsor');
@@ -105,7 +120,61 @@ async function load() {
     .filter(r => r.trust_score && r.trust_score >= 10)
     .map(r => ({ ...r, name: r.profiles.display_name, verified: verifiedCounts[r.id] || 0 }));
   renderNichePills();
+  await loadSavedSearches();
   render();
+}
+
+async function loadSavedSearches() {
+  const { data, error } = await sb.from('saved_searches').select('*').eq('sponsor_id', sponsorProfile.id).order('created_at', { ascending: false });
+  if (error) { document.getElementById('savedSearchRow').innerHTML = ''; return; }
+  savedSearches = data || [];
+  renderSavedSearchRow();
+}
+
+function renderSavedSearchRow() {
+  const el = document.getElementById('savedSearchRow');
+  if (!savedSearches.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<span class="saved-search-label">Saved:</span>` + savedSearches.map(s => `
+    <span class="saved-search-chip" onclick="applySavedSearch('${s.id}')" title="Apply this saved search">
+      ${escapeHtml(s.name)}
+      <button onclick="event.stopPropagation(); deleteSavedSearch('${s.id}')" title="Delete">${svgIcon('x', {size:12, stroke:'currentColor', strokeWidth:2})}</button>
+    </span>`).join('');
+}
+
+function applySavedSearch(id) {
+  const s = savedSearches.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('searchInput').value = s.query || '';
+  document.getElementById('minTrustInput').value = s.min_trust_score != null ? s.min_trust_score : '';
+  document.getElementById('sortSel').value = s.sort_by || 'trust_score';
+  activeNiche = s.niche || 'all';
+  renderNichePills();
+  render();
+}
+
+async function saveCurrentSearch() {
+  const query = document.getElementById('searchInput').value.trim();
+  const minTrust = document.getElementById('minTrustInput').value;
+  const sortBy = document.getElementById('sortSel').value;
+  const name = prompt('Name this search (e.g. "High-trust beauty creators"):');
+  if (!name || !name.trim()) return;
+  const { error } = await sb.from('saved_searches').insert({
+    sponsor_id: sponsorProfile.id,
+    name: name.trim(),
+    query: query || null,
+    niche: activeNiche === 'all' ? null : activeNiche,
+    min_trust_score: minTrust !== '' ? Number(minTrust) : null,
+    sort_by: sortBy,
+  });
+  if (error) { alert('Could not save search: ' + error.message); return; }
+  await loadSavedSearches();
+}
+
+async function deleteSavedSearch(id) {
+  if (!confirm('Delete this saved search?')) return;
+  const { error } = await sb.from('saved_searches').delete().eq('id', id);
+  if (error) { alert('Could not delete: ' + error.message); return; }
+  await loadSavedSearches();
 }
 
 async function renderUsageBanner() {
@@ -153,7 +222,21 @@ function setNiche(n) {
 
 function render() {
   const sortBy = document.getElementById('sortSel').value;
-  const filtered = activeNiche === 'all' ? creators : creators.filter(c => (c.niche || '') === activeNiche);
+  const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+  const minTrustRaw = document.getElementById('minTrustInput').value;
+  const minTrust = minTrustRaw !== '' ? Number(minTrustRaw) : null;
+
+  let filtered = activeNiche === 'all' ? creators : creators.filter(c => (c.niche || '') === activeNiche);
+  if (q) {
+    filtered = filtered.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      (c.niche || '').toLowerCase().includes(q) ||
+      (c.location || '').toLowerCase().includes(q)
+    );
+  }
+  if (minTrust !== null && !Number.isNaN(minTrust)) {
+    filtered = filtered.filter(c => c.trust_score >= minTrust);
+  }
   const sorted = [...filtered].sort((a, b) => sortBy === 'verified' ? b.verified - a.verified : b.trust_score - a.trust_score);
   if (!sorted.length) { document.getElementById('content').innerHTML = '<div class="loading">No creators match this filter yet.</div>'; return; }
   document.getElementById('content').innerHTML = `<div class="grid">${sorted.map(c => `
