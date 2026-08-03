@@ -442,15 +442,27 @@ const BILLING_STATUS_STYLE = {
   cancelled: { label: 'Cancelled', bg: '#FDECEC', fg: '#B42318' },
 };
 
+// Mirrors app/pricing.html's plan tiers (Free/On Demand pay-per-report,
+// Starter $99/mo · 25 evals, Team $299/mo · 150 evals). Per pricing.html's
+// own sync note, keep these three in lockstep by hand -- there's no shared
+// source of truth yet. Free/on-demand has no monthly allowance, so quota
+// is null and the usage card is skipped for it.
+const PLAN_INFO = {
+  free: { label: 'On Demand', priceLabel: '$29/report', quota: null },
+  starter: { label: 'Starter', priceLabel: '$99/mo', quota: 25 },
+  team: { label: 'Team', priceLabel: '$299/mo', quota: 150 },
+  pro: { label: 'Pro (Legacy)', priceLabel: null, quota: null },
+};
+
 function renderBillingTab() {
   const b = teamData.billing;
   if (!b) {
     return `<div class="card"><div class="sec">Billing</div><div style="font-size:13px;color:var(--ink-soft)">Could not load billing details for this team.</div></div>`;
   }
   const statusInfo = BILLING_STATUS_STYLE[b.subscription_status] || { label: b.subscription_status || 'Unknown', bg: '#F1F3F7', fg: 'var(--ink-soft)' };
-  const QUOTA = 150;
+  const planInfo = PLAN_INFO[b.plan] || { label: b.plan || '—', priceLabel: null, quota: null };
   const used = b.evals_used_this_period || 0;
-  const pct = Math.min(100, Math.round((used / QUOTA) * 100));
+  const pct = planInfo.quota ? Math.min(100, Math.round((used / planInfo.quota) * 100)) : 0;
   const since = b.period_start ? new Date(b.period_start).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : null;
 
   return `
@@ -458,7 +470,7 @@ function renderBillingTab() {
       <div class="sec">Plan &amp; status</div>
       <div class="row-item">
         <span>Plan</span>
-        <span style="font-weight:600;text-transform:capitalize">${escapeHtml(b.plan || '—')} ${b.plan === 'team' ? '· $299/mo' : ''}</span>
+        <span style="font-weight:600">${escapeHtml(planInfo.label)}${planInfo.priceLabel ? ` · ${escapeHtml(planInfo.priceLabel)}` : ''}</span>
       </div>
       <div class="row-item">
         <span>Subscription status</span>
@@ -472,14 +484,21 @@ function renderBillingTab() {
       <div class="msg error" style="margin-top:10px">Payment is past due. ${myRole === 'owner' ? 'Update your payment method below to avoid losing access.' : `Ask ${escapeHtml(b.owner_display_name || 'your team owner')} to update the payment method to avoid losing access.`}</div>` : ''}
     </div>
 
+    ${planInfo.quota ? `
     <div class="card usage-card">
       <div style="flex-shrink:0">
         <div class="sec" style="margin-bottom:6px">Usage this period</div>
-        <div style="font-size:12px;color:var(--ink-faint)">Against the Team plan's monthly evaluation allowance${since ? ` &middot; since ${since}` : ''}</div>
+        <div style="font-size:12px;color:var(--ink-faint)">Against the ${escapeHtml(planInfo.label)} plan's monthly evaluation allowance${since ? ` &middot; since ${since}` : ''}</div>
       </div>
-      <div class="usage-bar-track"><div class="usage-bar-fill" style="width:${pct}%;${used >= QUOTA ? 'background:#B42318' : ''}"></div></div>
-      <div class="usage-num">${used} / ${QUOTA}</div>
+      <div class="usage-bar-track"><div class="usage-bar-fill" style="width:${pct}%;${used >= planInfo.quota ? 'background:#B42318' : ''}"></div></div>
+      <div class="usage-num">${used} / ${planInfo.quota}</div>
     </div>
+    ` : `
+    <div class="card">
+      <div class="sec" style="margin-bottom:6px">Usage this period</div>
+      <div style="font-size:13px;color:var(--ink-soft)">${escapeHtml(planInfo.label)} is pay-per-report — no monthly allowance to track. You've unlocked ${used} evaluation${used === 1 ? '' : 's'} this period at $29 each.</div>
+    </div>
+    `}
 
     <div class="card">
       <div class="sec">Payment &amp; invoices</div>
