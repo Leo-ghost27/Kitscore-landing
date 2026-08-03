@@ -50,6 +50,7 @@ const NAV = {
     { key: 'history', href: 'history.html', icon: 'history', label: 'History' },
     { key: 'compare', href: 'compare.html', icon: 'compare', label: 'Compare' },
     { key: 'team', href: 'team.html', icon: 'team', label: 'Team' },
+    { key: 'profile-sponsor', href: 'profile-sponsor.html', icon: 'profile', label: 'Profile' },
     { key: 'support', href: 'support.html', icon: 'inbox', label: 'Support' },
     { key: 'pricing', href: 'pricing.html', icon: 'plans', label: 'Plans' },
   ],
