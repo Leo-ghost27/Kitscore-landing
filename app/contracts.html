@@ -62,6 +62,7 @@
     <div class="ptitle">Contracts</div>
     <div class="psub" id="psub">Deliverables, compensation, and usage rights — agreed and signed in one place.</div>
     <div id="formArea"></div>
+    <div id="trackerArea"></div>
     <div class="card" id="list"><div class="loading">Loading…</div></div>
     <div class="hw-grid">
       <div class="hw-step">
@@ -118,7 +119,37 @@ async function load() {
   } else {
     document.getElementById('formArea').innerHTML = '';
   }
+  await renderTracker();
   await loadContracts();
+}
+
+// ── Task tracker: everything due/overdue across ALL active contracts ───────
+async function renderTracker() {
+  const el = document.getElementById('trackerArea');
+  const rpc = profile.role === 'sponsor' ? 'fn_sponsor_deliverable_tracker' : 'fn_creator_deliverable_tracker';
+  const { data: rows, error } = await sb.rpc(rpc);
+  if (error || !rows || !rows.length) { el.innerHTML = ''; return; }
+
+  const overdue = rows.filter(r => r.is_overdue);
+  const upcoming = rows.filter(r => !r.is_overdue);
+  const counterpartyKey = profile.role === 'sponsor' ? 'creator_name' : 'sponsor_name';
+
+  el.innerHTML = `
+    <div class="card" style="margin-bottom:16px">
+      <div class="sec" style="margin-bottom:4px">Active deliverables${overdue.length ? ` <span style="color:#B42318">— ${overdue.length} overdue</span>` : ''}</div>
+      <div style="font-size:11.5px;color:var(--ink-faint);margin-bottom:10px">Everything not yet marked complete, across every active contract</div>
+      ${[...overdue, ...upcoming].map(r => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--line);font-size:12.5px">
+          <div>
+            <span style="font-weight:600">${escapeHtml(r.description)}</span>
+            <span style="color:var(--ink-soft)"> — ${profile.role === 'sponsor' ? 'with' : 'for'} ${escapeHtml(r[counterpartyKey] || '—')} · ${escapeHtml(r.contract_title)}</span>
+          </div>
+          <div style="white-space:nowrap;margin-left:10px">
+            ${r.due_date ? `<span style="color:${r.is_overdue ? '#B42318' : 'var(--ink-soft)'};font-weight:${r.is_overdue ? '600' : '400'}">${r.is_overdue ? 'overdue — was due' : 'due'} ${fmtDate(r.due_date)}</span>` : '<span style="color:var(--ink-faint)">no due date</span>'}
+            ${r.requires_approval ? ` · <span style="color:${CONTENT_STATUS_COLOR[r.content_status]};font-weight:600">${CONTENT_STATUS_LABEL[r.content_status]}</span>` : ''}
+          </div>
+        </div>`).join('')}
+    </div>`;
 }
 
 // ── Sponsor: draft a contract ──────────────────────────────────────────────
@@ -189,7 +220,7 @@ let checklistRows = [];
 let checklistRowSeq = 0;
 
 function addChecklistRow(description = '', quantity = 1) {
-  checklistRows.push({ key: ++checklistRowSeq, description, quantity });
+  checklistRows.push({ key: ++checklistRowSeq, description, quantity, dueDate: '', requiresApproval: false, revisionLimit: '' });
   renderChecklistRows();
 }
 
@@ -202,13 +233,30 @@ function renderChecklistRows() {
   const el = document.getElementById('checklistItems');
   if (!el) return;
   el.innerHTML = checklistRows.map(r => `
-    <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
-      <input value="${escapeHtml(r.description)}" placeholder="e.g. Instagram Reel" style="flex:3"
-        oninput="checklistRows.find(x=>x.key===${r.key}).description=this.value">
-      <input type="number" min="1" value="${r.quantity}" style="flex:1"
-        oninput="checklistRows.find(x=>x.key===${r.key}).quantity=Number(this.value)||1">
-      <button type="button" class="cta-outline" style="color:#B42318;border-color:#B42318;padding:8px 10px"
-        onclick="removeChecklistRow(${r.key})">✕</button>
+    <div style="border:0.5px solid var(--color-border-tertiary);padding:10px;margin-bottom:8px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input value="${escapeHtml(r.description)}" placeholder="e.g. Instagram Reel" style="flex:3"
+          oninput="checklistRows.find(x=>x.key===${r.key}).description=this.value">
+        <input type="number" min="1" value="${r.quantity}" style="flex:1"
+          oninput="checklistRows.find(x=>x.key===${r.key}).quantity=Number(this.value)||1">
+        <button type="button" class="cta-outline" style="color:#B42318;border-color:#B42318;padding:8px 10px"
+          onclick="removeChecklistRow(${r.key})">✕</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+        <div style="flex:1"><label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:2px">Due date (optional)</label>
+          <input type="date" value="${r.dueDate}" style="font-size:12px;padding:6px 8px"
+            oninput="checklistRows.find(x=>x.key===${r.key}).dueDate=this.value"></div>
+        <div style="flex:1;display:flex;align-items:flex-end;gap:6px;padding-bottom:2px">
+          <input type="checkbox" id="reqApproval-${r.key}" ${r.requiresApproval ? 'checked' : ''}
+            onchange="checklistRows.find(x=>x.key===${r.key}).requiresApproval=this.checked; renderChecklistRows()">
+          <label for="reqApproval-${r.key}" style="font-size:11.5px;font-weight:400;margin:0">Requires your approval before it counts as done</label>
+        </div>
+        ${r.requiresApproval ? `
+        <div style="width:140px"><label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:2px">Revision limit</label>
+          <input type="number" min="0" placeholder="Unlimited" value="${r.revisionLimit}" style="font-size:12px;padding:6px 8px"
+            oninput="checklistRows.find(x=>x.key===${r.key}).revisionLimit=this.value"></div>
+        ` : ''}
+      </div>
     </div>`).join('');
 }
 
@@ -235,7 +283,7 @@ async function draftContract(briefApplicationId, campaignId) {
   if (!compensation) { msgEl.innerHTML = '<div class="msg error">Add the compensation terms.</div>'; return; }
 
   const items = checklistRows
-    .map(r => ({ description: r.description.trim(), quantity: r.quantity }))
+    .map(r => ({ description: r.description.trim(), quantity: r.quantity, dueDate: r.dueDate, requiresApproval: r.requiresApproval, revisionLimit: r.revisionLimit }))
     .filter(r => r.description);
   if (!items.length) { msgEl.innerHTML = '<div class="msg error">Add at least one checklist item (e.g. "1 Reel", "Usage rights confirmation").</div>'; return; }
 
@@ -268,6 +316,9 @@ async function draftContract(briefApplicationId, campaignId) {
       description: it.description,
       quantity: it.quantity,
       sort_order: i,
+      due_date: it.dueDate || null,
+      requires_approval: !!it.requiresApproval,
+      revision_limit: it.requiresApproval && it.revisionLimit !== '' ? Number(it.revisionLimit) : null,
     }))
   );
   if (itemsError) { msgEl.innerHTML = `<div class="msg error">Contract saved, but the checklist items failed: ${escapeHtml(itemsError.message)}</div>`; btn.disabled = false; await loadContracts(); return; }
@@ -285,6 +336,75 @@ async function draftContract(briefApplicationId, campaignId) {
 // Only scans contracts whose terms are actually locked (status !== 'draft'
 // -- see fn_validate_contract_changes), since draft terms can still change.
 const scanTriggered = new Set();
+
+// ── Deliverable item due dates + content approval ───────────────────────────
+const CONTENT_STATUS_LABEL = {
+  not_submitted: 'Not submitted', submitted: 'Awaiting your review',
+  revision_requested: 'Revision requested', approved: 'Approved',
+};
+const CONTENT_STATUS_COLOR = {
+  not_submitted: 'var(--ink-soft)', submitted: '#8A4B0A',
+  revision_requested: '#B42318', approved: '#137C52',
+};
+function isOverdue(it) { return it.due_date && !it.completed_at && new Date(it.due_date) < new Date(new Date().toDateString()); }
+function fmtDate(d) { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); }
+function itemMetaHtml(it) {
+  const parts = [];
+  if (it.due_date) parts.push(`<span style="color:${isOverdue(it) ? '#B42318' : 'var(--ink-soft)'};font-weight:${isOverdue(it) ? '600' : '400'}">${isOverdue(it) ? 'overdue — was due' : 'due'} ${fmtDate(it.due_date)}</span>`);
+  if (it.requires_approval) {
+    const revLabel = it.revision_limit != null ? ` (${it.revision_count}/${it.revision_limit} revisions)` : (it.revision_count ? ` (${it.revision_count} revision${it.revision_count > 1 ? 's' : ''})` : '');
+    parts.push(`<span style="color:${CONTENT_STATUS_COLOR[it.content_status]};font-weight:600">${CONTENT_STATUS_LABEL[it.content_status]}${revLabel}</span>`);
+  }
+  return parts.length ? ` <span style="font-size:11px">· ${parts.join(' · ')}</span>` : '';
+}
+
+// Sponsor-facing content review panel: any item across this contract that's
+// awaiting the sponsor's approve/request-revision decision, shown regardless
+// of whether the creator's "mark deliverable as submitted" panel is open.
+function contentReviewHtml(c) {
+  if (profile.role !== 'sponsor') return '';
+  const pending = (c._items || []).filter(it => it.requires_approval && it.content_status === 'submitted');
+  if (!pending.length) return '';
+  return `
+    <div style="margin-top:10px;border:0.5px solid #F0C36D;background:#FFFBF0;padding:10px">
+      <div style="font-size:12px;font-weight:600;margin-bottom:8px">Content awaiting your review</div>
+      ${pending.map(it => `
+        <div style="margin-bottom:8px;padding-bottom:8px;border-bottom:0.5px solid #F0E0AE;last-child:border-none">
+          <div style="font-size:12.5px;margin-bottom:4px">${escapeHtml(it.description)}${it.completed_note ? ` — <a href="${escapeHtml(it.completed_note)}" target="_blank" rel="noopener" style="color:var(--blue)">${escapeHtml(it.completed_note)}</a>` : ' (no link/note provided)'}</div>
+          <div style="display:flex;gap:6px">
+            <button class="cta" style="padding:6px 10px;font-size:11.5px" onclick="approveContent('${c.id}','${it.id}')">Approve</button>
+            <button class="cta-outline" style="padding:6px 10px;font-size:11.5px" onclick="requestRevision('${c.id}','${it.id}')">Request revision</button>
+          </div>
+          <div id="review-msg-${it.id}"></div>
+        </div>`).join('')}
+    </div>`;
+}
+
+async function approveContent(contractId, itemId) {
+  const { error } = await sb.from('contract_deliverable_items').update({ content_status: 'approved' }).eq('id', itemId);
+  const el = document.getElementById(`review-msg-${itemId}`);
+  if (error) { el.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  await loadContracts();
+}
+
+async function requestRevision(contractId, itemId) {
+  const note = prompt('What needs to change?');
+  if (note === null) return;
+  const { error } = await sb.from('contract_deliverable_items').update({ content_status: 'revision_requested', revision_note: note.trim() || null }).eq('id', itemId);
+  const el = document.getElementById(`review-msg-${itemId}`);
+  if (error) { el.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  await loadContracts();
+}
+
+async function submitContentForReview(itemId) {
+  const link = document.getElementById(`submit-link-${itemId}`).value.trim();
+  const { error } = await sb.from('contract_deliverable_items')
+    .update({ content_status: 'submitted', completed_note: link || null }).eq('id', itemId);
+  const el = document.getElementById(`submit-msg-${itemId}`);
+  if (error) { el.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  await loadContracts();
+}
+
 
 function clauseScanHtml(c) {
   if (c.status === 'draft' || c.status === 'void') return '';
@@ -421,7 +541,7 @@ async function loadContracts() {
           <b>Checklist</b> <span style="color:var(--ink-soft);font-weight:400">(${itemsDoneCount}/${items.length} done)</span>
           <div style="margin-top:4px">
             ${items.map(it => `<div style="font-size:12.5px;color:${it.completed_at ? '#137C52' : 'var(--ink)'}">
-              ${it.completed_at ? '✓' : '☐'} ${it.quantity > 1 ? it.quantity + '× ' : ''}${escapeHtml(it.description)}${it.completed_note ? ' — ' + escapeHtml(it.completed_note) : ''}
+              ${it.completed_at ? '✓' : '☐'} ${it.quantity > 1 ? it.quantity + '× ' : ''}${escapeHtml(it.description)}${it.completed_note ? ' — ' + escapeHtml(it.completed_note) : ''}${itemMetaHtml(it)}
             </div>`).join('')}
           </div>
         </div>` : ''}
@@ -433,6 +553,7 @@ async function loadContracts() {
         ${escrowLabel ? `<div><b>Kitscore Escrow:</b> ${escapeHtml(escrowLabel.replace('Escrow: ',''))}${feeDisclosure}</div>` : ''}
       </div>
       ${clauseScanHtml(c)}
+      ${contentReviewHtml(c)}
       ${creatorNotReady ? `<div class="msg error">This creator hasn't finished setting up their payout account yet — funding is disabled until they do.</div>` : ''}
       ${c.deliverable_submitted_at ? `<div class="signed-line">✓ Deliverable submitted ${new Date(c.deliverable_submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}${c.deliverable_notes ? ' — ' + escapeHtml(c.deliverable_notes) : ''}</div>` : ''}
       ${c.sponsor_signed_at ? `<div class="signed-line">✓ Signed by sponsor (${escapeHtml(c.sponsor_signature_name||'')}) — ${new Date(c.sponsor_signed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
@@ -450,16 +571,31 @@ async function loadContracts() {
       <div id="deliverable-panel-${c.id}" style="display:${openDeliverablePanels.has(c.id) ? 'block' : 'none'};margin-top:10px">
         ${items.length ? `
         <div style="margin-bottom:10px">
-          ${items.map(it => `
+          ${items.map(it => {
+            if (it.requires_approval && it.content_status !== 'approved') {
+              return `
+              <div style="margin-bottom:10px;padding:8px;background:#F9F8F5">
+                <div style="font-size:13px;margin-bottom:4px">${it.quantity > 1 ? it.quantity + '× ' : ''}${escapeHtml(it.description)}${itemMetaHtml(it)}</div>
+                ${it.content_status === 'revision_requested' && it.revision_note ? `<div style="font-size:12px;color:#B42318;margin-bottom:6px">Sponsor asked for a revision: "${escapeHtml(it.revision_note)}"</div>` : ''}
+                ${it.content_status === 'submitted'
+                  ? `<div style="font-size:12px;color:var(--ink-soft)">Waiting for sponsor review…</div>`
+                  : `<div style="display:flex;gap:6px">
+                       <input id="submit-link-${it.id}" placeholder="Link to your draft/content" value="${escapeHtml(it.completed_note || '')}" style="flex:1;font-size:12px;padding:6px 8px">
+                       <button class="cta-outline" style="padding:6px 10px;font-size:11.5px" onclick="submitContentForReview('${it.id}')">Submit for review</button>
+                     </div><div id="submit-msg-${it.id}"></div>`}
+              </div>`;
+            }
+            return `
           <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px">
             <input type="checkbox" style="margin-top:3px" ${it.completed_at ? 'checked' : ''} ${c.deliverable_submitted_at ? 'disabled' : ''}
               onchange="toggleChecklistItem('${c.id}','${it.id}',this.checked)">
             <div style="flex:1">
-              <div style="font-size:13px">${it.quantity > 1 ? it.quantity + '× ' : ''}${escapeHtml(it.description)}</div>
+              <div style="font-size:13px">${it.quantity > 1 ? it.quantity + '× ' : ''}${escapeHtml(it.description)}${itemMetaHtml(it)}</div>
               <input placeholder="Optional note or link" value="${escapeHtml(it.completed_note || '')}" style="margin-top:4px;font-size:12px;padding:6px 8px" ${c.deliverable_submitted_at ? 'disabled' : ''}
                 onchange="setChecklistItemNote('${c.id}','${it.id}',this.value)">
             </div>
-          </div>`).join('')}
+          </div>`;
+          }).join('')}
         </div>` : `
         <div class="field" style="margin-bottom:8px"><label>Notes for the sponsor <span style="color:var(--color-text-tertiary)">(optional)</span></label>
           <input id="deliverable-notes-${c.id}" placeholder="e.g. link to the published post">

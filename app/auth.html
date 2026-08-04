@@ -217,6 +217,20 @@ function setMode(m) {
   hideReset();
 }
 
+// A DM/marketing link can jump straight to signup (?mode=signup) with a
+// role preselected (?role=creator|sponsor) instead of landing on Sign In
+// and making someone find the "Create account" tab themselves.
+(function applyModeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('mode') === 'signup') {
+    setMode('signup');
+    const role = params.get('role');
+    if (role === 'creator' || role === 'sponsor') {
+      document.getElementById('role').value = role;
+    }
+  }
+})();
+
 function showForgot(e) {
   e.preventDefault();
   document.getElementById('resetPanel').style.display = 'block';

@@ -127,6 +127,17 @@ async function save() {
   }).eq('id', profile.id);
 
   if (error) { showMsg('saveMsg', 'Could not save: ' + error.message, 'error'); return; }
+
+  // The sidebar (nav.js) and every admin/creator-facing list show
+  // profiles.display_name, not sponsors.company_name -- they were only
+  // ever set to the same value once, at signup (handle_new_auth_user).
+  // Keep them in sync here so editing company name actually shows up
+  // everywhere it's displayed, not just on this form.
+  const { error: nameErr } = await sb.from('profiles').update({ display_name: companyName }).eq('id', profile.id);
+  if (nameErr) { showMsg('saveMsg', 'Saved company details, but the account name shown in your sidebar could not be updated: ' + nameErr.message, 'error'); return; }
+  profile.display_name = companyName;
+  renderSidebar('sponsor', 'profile-sponsor');
+
   sponsor = { company_name: companyName, logo_url: logoUrl, contact_email: contactEmail };
   showMsg('saveMsg', 'Saved.', 'ok');
 }
