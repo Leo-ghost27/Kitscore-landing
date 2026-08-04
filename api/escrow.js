@@ -1,4 +1,4 @@
-// POST /api/escrow?action=connect-onboarding | refresh-connect-status | fund | submit-deliverable | release | refund | admin-release | admin-refund
+// POST /api/escrow?action=connect-onboarding | refresh-connect-status | fund | submit-deliverable | release | release-milestone | refund | admin-release | admin-refund
 // GET  /api/escrow?action=fee-info
 //
 // One function slot for the whole escrow feature, same consolidation
@@ -11,6 +11,7 @@ const handleRefreshConnectStatus = require('../lib/handlers/escrow-refresh-conne
 const handleFund = require('../lib/handlers/escrow-fund');
 const handleSubmitDeliverable = require('../lib/handlers/escrow-submit-deliverable');
 const handleRelease = require('../lib/handlers/escrow-release');
+const handleReleaseMilestone = require('../lib/handlers/escrow-release-milestone');
 const handleRefund = require('../lib/handlers/escrow-refund');
 const handleAdminRelease = require('../lib/handlers/escrow-admin-release');
 const handleAdminRefund = require('../lib/handlers/escrow-admin-refund');
@@ -33,11 +34,12 @@ module.exports = async (req, res) => {
   if (action === 'fund') return handleFund(req, res);
   if (action === 'submit-deliverable') return handleSubmitDeliverable(req, res);
   if (action === 'release') return handleRelease(req, res);
+  if (action === 'release-milestone') return handleReleaseMilestone(req, res);
   if (action === 'refund') return handleRefund(req, res);
   if (action === 'admin-release') return handleAdminRelease(req, res);
   if (action === 'admin-refund') return handleAdminRefund(req, res);
 
   return res.status(400).json({
-    error: 'Unknown or missing action. Use ?action=connect-onboarding, refresh-connect-status, fund, submit-deliverable, release, refund, admin-release, admin-refund, or fee-info.',
+    error: 'Unknown or missing action. Use ?action=connect-onboarding, refresh-connect-status, fund, submit-deliverable, release, release-milestone, refund, admin-release, admin-refund, or fee-info.',
   });
 };

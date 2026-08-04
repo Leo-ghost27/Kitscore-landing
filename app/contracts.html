@@ -169,7 +169,7 @@ async function renderSponsorForm() {
     <div class="card form-card">
       <div class="sec">Draft a new contract</div>
       <div class="field"><label>Creator</label>
-        <select id="ctrCreatorSel">
+        <select id="ctrCreatorSel" onchange="updatePricingBenchmark()">
           <option value="">Select a creator…</option>
           ${options.map(o => `<option value="${escapeHtml(o.id)}" ${o.id === preselectCreator ? 'selected' : ''}>${escapeHtml(o.name)}</option>`).join('')}
         </select>
@@ -196,9 +196,24 @@ async function renderSponsorForm() {
       <div class="field"><label>Fund through <strong>Kitscore Escrow</strong> <span style="color:var(--color-text-tertiary)">(optional)</span></label>
         <input id="ctrEscrowAmount" type="number" min="0" step="0.01" placeholder="Amount in USD, e.g. 2000 — leave blank to handle payment outside Kitscore" oninput="updateEscrowFeePreview()">
         <div id="escrowFeePreview" style="font-size:11.5px;color:var(--ink-soft);margin-top:6px"></div>
+        <div id="pricingBenchmark" style="font-size:11.5px;color:var(--ink-soft);margin-top:4px"></div>
       </div>
-      <div class="field"><label>Exclusivity terms <span style="color:var(--color-text-tertiary)">(optional)</span></label>
-        <input id="ctrExclusivity" placeholder="e.g. No competing skincare brand for 30 days">
+      <div class="checkbox-field">
+        <input type="checkbox" id="ctrUseMilestones" onchange="toggleMilestoneMode(this.checked)">
+        <label for="ctrUseMilestones" style="margin:0;font-weight:400">Split payment into milestones instead of releasing all at once</label>
+      </div>
+      <div id="milestoneArea" style="display:none;margin-bottom:14px">
+        <div id="milestoneRows"></div>
+        <button type="button" class="cta-outline" style="padding:6px 10px;font-size:12px" onclick="addMilestoneRow()">+ Add milestone</button>
+        <div id="milestoneTotal" style="font-size:11.5px;color:var(--ink-soft);margin-top:6px"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Exclusivity terms <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+          <input id="ctrExclusivity" placeholder="e.g. No competing skincare brand for 30 days">
+        </div>
+        <div class="field"><label>Whitelisting <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+          <input id="ctrWhitelisting" placeholder="e.g. Sponsor may run paid ads through creator's handle for 60 days">
+        </div>
       </div>
       <div class="checkbox-field">
         <input type="checkbox" id="ctrFtc" checked>
@@ -213,7 +228,68 @@ async function renderSponsorForm() {
   `;
   checklistRows = [];
   addChecklistRow();
+  milestoneRows = [];
+  useMilestones = false;
+  if (preselectCreator) updatePricingBenchmark();
 }
+
+async function updatePricingBenchmark() {
+  const el = document.getElementById('pricingBenchmark');
+  const creatorId = document.getElementById('ctrCreatorSel').value;
+  if (!el) return;
+  if (!creatorId) { el.textContent = ''; return; }
+  const { data: rows, error } = await sb.rpc('fn_pricing_benchmark', { p_creator_id: creatorId });
+  const row = !error && rows && rows[0];
+  if (!row) { el.textContent = ''; return; }
+  el.innerHTML = `Similar creators on Kitscore: $${(row.min_cents / 100).toFixed(0)}–$${(row.max_cents / 100).toFixed(0)} (median $${(row.median_cents / 100).toFixed(0)}), based on ${row.sample_size} funded contracts.`;
+}
+
+// ── Sponsor: milestone rows (optional, replaces flat escrow amount) ────────
+let milestoneRows = [];
+let milestoneRowSeq = 0;
+let useMilestones = false;
+
+function toggleMilestoneMode(checked) {
+  useMilestones = checked;
+  document.getElementById('milestoneArea').style.display = checked ? 'block' : 'none';
+  document.getElementById('ctrEscrowAmount').disabled = checked;
+  document.getElementById('ctrEscrowAmount').placeholder = checked ? 'Set by your milestones below' : 'Amount in USD, e.g. 2000 — leave blank to handle payment outside Kitscore';
+  if (checked && !milestoneRows.length) { addMilestoneRow(); addMilestoneRow(); }
+  renderMilestoneRows();
+}
+
+function addMilestoneRow(title = '', amountUsd = '') {
+  milestoneRows.push({ key: ++milestoneRowSeq, title, amountUsd, dueDate: '' });
+  renderMilestoneRows();
+}
+
+function removeMilestoneRow(key) {
+  milestoneRows = milestoneRows.filter(r => r.key !== key);
+  renderMilestoneRows();
+}
+
+function renderMilestoneRows() {
+  const el = document.getElementById('milestoneRows');
+  if (!el) return;
+  el.innerHTML = milestoneRows.map(r => `
+    <div style="display:flex;gap:8px;margin-bottom:6px;align-items:center">
+      <input value="${escapeHtml(r.title)}" placeholder="e.g. Draft approved" style="flex:2"
+        oninput="milestoneRows.find(x=>x.key===${r.key}).title=this.value">
+      <input type="number" min="0" step="0.01" value="${r.amountUsd}" placeholder="Amount USD" style="flex:1"
+        oninput="milestoneRows.find(x=>x.key===${r.key}).amountUsd=this.value; renderMilestoneTotal()">
+      <input type="date" value="${r.dueDate}" style="flex:1"
+        oninput="milestoneRows.find(x=>x.key===${r.key}).dueDate=this.value">
+      <button type="button" class="cta-outline" style="color:#B42318;border-color:#B42318;padding:8px 10px"
+        onclick="removeMilestoneRow(${r.key})">✕</button>
+    </div>`).join('');
+  renderMilestoneTotal();
+}
+
+function renderMilestoneTotal() {
+  const total = milestoneRows.reduce((sum, r) => sum + (Number(r.amountUsd) || 0), 0);
+  document.getElementById('milestoneTotal').textContent = `Total escrow: $${total.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+}
+
 
 // ── Sponsor: deliverable checklist rows on the draft form ──────────────────
 let checklistRows = [];
@@ -287,9 +363,19 @@ async function draftContract(briefApplicationId, campaignId) {
     .filter(r => r.description);
   if (!items.length) { msgEl.innerHTML = '<div class="msg error">Add at least one checklist item (e.g. "1 Reel", "Usage rights confirmation").</div>'; return; }
 
+  let milestones = [];
+  if (useMilestones) {
+    milestones = milestoneRows
+      .map(r => ({ title: r.title.trim(), amountUsd: Number(r.amountUsd) || 0, dueDate: r.dueDate }))
+      .filter(r => r.title);
+    if (milestones.length < 2) { msgEl.innerHTML = '<div class="msg error">Add at least 2 milestones, or turn off milestone mode.</div>'; return; }
+    if (milestones.some(m => m.amountUsd <= 0)) { msgEl.innerHTML = '<div class="msg error">Every milestone needs an amount greater than $0.</div>'; return; }
+  }
+
   const usageRights = document.getElementById('ctrUsageRights').value.trim();
   const escrowAmountUsd = document.getElementById('ctrEscrowAmount').value;
   const exclusivity = document.getElementById('ctrExclusivity').value.trim();
+  const whitelisting = document.getElementById('ctrWhitelisting').value.trim();
   const ftcRequired = document.getElementById('ctrFtc').checked;
   const additional = document.getElementById('ctrAdditional').value.trim();
 
@@ -300,8 +386,12 @@ async function draftContract(briefApplicationId, campaignId) {
     sponsor_id: profile.id, creator_id: creatorId, created_by: profile.id,
     title, deliverables, compensation,
     usage_rights: usageRights || null,
-    escrow_amount_cents: escrowAmountUsd ? Math.round(Number(escrowAmountUsd) * 100) : null,
+    // When using milestones, escrow_amount_cents is left null here and
+    // set automatically by trg_sync_contract_escrow_amount once the
+    // milestone rows are inserted below, so it always equals their sum.
+    escrow_amount_cents: useMilestones ? null : (escrowAmountUsd ? Math.round(Number(escrowAmountUsd) * 100) : null),
     exclusivity_terms: exclusivity || null,
+    whitelisting_terms: whitelisting || null,
     ftc_disclosure_required: ftcRequired,
     additional_terms: additional || null,
     brief_application_id: briefApplicationId || null,
@@ -309,6 +399,19 @@ async function draftContract(briefApplicationId, campaignId) {
   }).select('id').single();
 
   if (error) { msgEl.innerHTML = `<div class="msg error">Could not save contract: ${escapeHtml(error.message)}</div>`; btn.disabled = false; return; }
+
+  if (milestones.length) {
+    const { error: milestonesError } = await sb.from('contract_milestones').insert(
+      milestones.map((m, i) => ({
+        contract_id: inserted.id,
+        title: m.title,
+        amount_cents: Math.round(m.amountUsd * 100),
+        sort_order: i,
+        due_date: m.dueDate || null,
+      }))
+    );
+    if (milestonesError) { msgEl.innerHTML = `<div class="msg error">Contract saved, but milestones failed: ${escapeHtml(milestonesError.message)}</div>`; btn.disabled = false; await loadContracts(); return; }
+  }
 
   const { error: itemsError } = await sb.from('contract_deliverable_items').insert(
     items.map((it, i) => ({
@@ -463,7 +566,7 @@ async function loadContracts() {
   const col = profile.role === 'sponsor' ? 'sponsor_id' : 'creator_id';
   const currentFeePct = await getEscrowFeePct();
   const { data: contracts, error } = await sb.from('contracts')
-    .select('*, sponsors!inner(company_name), creators!inner(id, stripe_connect_payouts_enabled, profiles!inner(display_name))')
+    .select('*, sponsors!inner(company_name), creators!inner(id, trust_score, stripe_connect_payouts_enabled, profiles!inner(display_name))')
     .eq(col, profile.id)
     .order('created_at', { ascending: false });
 
@@ -482,6 +585,14 @@ async function loadContracts() {
     (itemsByContract[it.contract_id] = itemsByContract[it.contract_id] || []).push(it);
   });
   contracts.forEach(c => { c._items = itemsByContract[c.id] || []; });
+
+  const { data: milestones } = await sb.from('contract_milestones')
+    .select('*').in('contract_id', contracts.map(c => c.id)).order('sort_order');
+  const milestonesByContract = {};
+  (milestones || []).forEach(m => {
+    (milestonesByContract[m.contract_id] = milestonesByContract[m.contract_id] || []).push(m);
+  });
+  contracts.forEach(c => { c._milestones = milestonesByContract[c.id] || []; });
 
   contracts.forEach(c => ensureClauseScan(c));
 
@@ -503,7 +614,14 @@ async function loadContracts() {
     }
     const releasedSoFarCents = c.escrow_released_cents || 0;
     const refundedSoFarCents = c.escrow_refunded_cents || 0;
-    const partialInProgress = releasedSoFarCents > 0 || refundedSoFarCents > 0;
+    const milestones = (c._milestones || []).slice().sort((a, b) => a.sort_order - b.sort_order);
+    const hasMilestones = milestones.length > 0;
+    // Milestone releases legitimately increment escrow_released_cents in
+    // normal, expected use -- only treat it as the legacy dispute-
+    // mediation "partial settlement" state when there are NO milestones,
+    // since that path (escrow-release.js / escrow-refund.js) is what
+    // actually sets those fields for a non-milestone contract.
+    const partialInProgress = !hasMilestones && (releasedSoFarCents > 0 || refundedSoFarCents > 0);
 
     const canFund = profile.role === 'sponsor' && hasEscrow && c.status === 'fully_signed' && c.escrow_status === 'not_funded';
     const creatorNotReady = canFund && !c.creators.stripe_connect_payouts_enabled;
@@ -511,14 +629,18 @@ async function loadContracts() {
     const items = c._items || [];
     const itemsDoneCount = items.filter(it => it.completed_at).length;
     const allItemsDone = items.length === 0 || itemsDoneCount === items.length;
-    const canReleaseOrRefund = profile.role === 'sponsor' && c.escrow_status === 'held' && !partialInProgress;
+    // Milestone contracts release per-milestone below instead of via the
+    // single whole-contract release/refund button.
+    const canReleaseOrRefund = profile.role === 'sponsor' && c.escrow_status === 'held' && !partialInProgress && !hasMilestones;
 
     const escrowLabel = {
       not_funded: hasEscrow ? `Escrow: $${escrowDollars} not yet funded` : null,
       processing: `Escrow: $${escrowDollars} processing`,
-      held: partialInProgress
-        ? `Escrow: $${escrowDollars} total — $${(releasedSoFarCents / 100).toFixed(2)} released, $${(refundedSoFarCents / 100).toFixed(2)} refunded so far, remainder held (Kitscore is mediating this one — contact support with questions)`
-        : `Escrow: $${escrowDollars} held`,
+      held: hasMilestones
+        ? `Escrow: $${escrowDollars} total — $${(releasedSoFarCents / 100).toFixed(2)} released across milestones so far`
+        : (partialInProgress
+          ? `Escrow: $${escrowDollars} total — $${(releasedSoFarCents / 100).toFixed(2)} released, $${(refundedSoFarCents / 100).toFixed(2)} refunded so far, remainder held (Kitscore is mediating this one — contact support with questions)`
+          : `Escrow: $${escrowDollars} held`),
       released: `Escrow: $${escrowDollars} released to creator`,
       refunded: `Escrow: $${escrowDollars} refunded to sponsor`,
       settled: `Escrow: $${(releasedSoFarCents / 100).toFixed(2)} released, $${(refundedSoFarCents / 100).toFixed(2)} refunded — settled`,
@@ -548,10 +670,36 @@ async function loadContracts() {
         <div><b>Compensation:</b> ${escapeHtml(c.compensation)}</div>
         ${c.usage_rights ? `<div><b>Usage rights:</b> ${escapeHtml(c.usage_rights)}</div>` : ''}
         ${c.exclusivity_terms ? `<div><b>Exclusivity:</b> ${escapeHtml(c.exclusivity_terms)}</div>` : ''}
+        ${c.whitelisting_terms ? `<div><b>Whitelisting:</b> ${escapeHtml(c.whitelisting_terms)}</div>` : ''}
         ${c.additional_terms ? `<div><b>Additional terms:</b> ${escapeHtml(c.additional_terms)}</div>` : ''}
         <div><b>FTC / ad disclosure:</b> ${c.ftc_disclosure_required ? 'Required' : 'Not required'}</div>
         ${escrowLabel ? `<div><b>Kitscore Escrow:</b> ${escapeHtml(escrowLabel.replace('Escrow: ',''))}${feeDisclosure}</div>` : ''}
       </div>
+      ${hasMilestones ? `
+      <div style="margin-top:10px">
+        <b style="font-size:12.5px">Milestones</b>
+        <div style="margin-top:4px">
+          ${milestones.map(m => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--line);font-size:12.5px">
+              <div>
+                <span style="color:${m.status === 'released' ? '#137C52' : 'var(--ink)'}">${m.status === 'released' ? '✓' : '○'} ${escapeHtml(m.title)}</span>
+                <span style="color:var(--ink-soft)"> — $${(m.amount_cents / 100).toFixed(2)}</span>
+                ${m.due_date ? ` <span style="color:var(--ink-faint)">· due ${fmtDate(m.due_date)}</span>` : ''}
+              </div>
+              ${profile.role === 'sponsor' && c.escrow_status === 'held' && m.status === 'pending'
+                ? `<button class="cta-outline" style="padding:5px 9px;font-size:11.5px" onclick="releaseMilestone('${c.id}','${m.id}')">Release $${(m.amount_cents / 100).toFixed(2)}</button>`
+                : (m.status === 'released' ? `<span style="color:var(--ink-faint);font-size:11px">released</span>` : '')}
+            </div>`).join('')}
+        </div>
+        <div id="milestone-msg-${c.id}"></div>
+      </div>` : ''}
+      ${hasEscrow && ['held', 'released'].includes(c.escrow_status) ? `
+      <div style="margin-top:10px;font-size:12px;color:var(--ink-soft)">
+        <b style="color:var(--ink);font-size:12.5px">Post-campaign summary</b> — $${escrowDollars} ${c.escrow_status === 'released' ? 'paid out' : 'in escrow'},
+        ${itemsDoneCount}/${items.length || 0} deliverables complete${c.funded_at && c.deliverable_submitted_at ? `, delivered in ${Math.max(0, Math.round((new Date(c.deliverable_submitted_at) - new Date(c.funded_at)) / 86400000))} day${Math.round((new Date(c.deliverable_submitted_at) - new Date(c.funded_at)) / 86400000) === 1 ? '' : 's'}` : ''},
+        creator's trust score at time of this deal: ${c.creators.trust_score != null ? Math.round(c.creators.trust_score) : '—'}.
+        <span style="color:var(--ink-faint)">Based on what Kitscore can verify — not a claim about downstream sales or conversions.</span>
+      </div>` : ''}
       ${clauseScanHtml(c)}
       ${contentReviewHtml(c)}
       ${creatorNotReady ? `<div class="msg error">This creator hasn't finished setting up their payout account yet — funding is disabled until they do.</div>` : ''}
@@ -704,6 +852,14 @@ async function releaseEscrow(contractId) {
   if (!confirm('Release the held funds to this creator? This cannot be undone.')) return;
   const r = await callEscrowApi('release', { contractId });
   if (!r.ok) { alert(r.error || 'Could not release funds.'); return; }
+  loadContracts();
+}
+
+async function releaseMilestone(contractId, milestoneId) {
+  if (!confirm('Release this milestone\'s funds to the creator? This cannot be undone.')) return;
+  const msgEl = document.getElementById('milestone-msg-' + contractId);
+  const r = await callEscrowApi('release-milestone', { contractId, milestoneId });
+  if (!r.ok) { if (msgEl) msgEl.innerHTML = `<div class="msg error">${escapeHtml(r.error || 'Could not release milestone.')}</div>`; return; }
   loadContracts();
 }
 
