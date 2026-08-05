@@ -95,6 +95,7 @@
 <script src="nav.js?v=2"></script>
 <script>
 let profile;
+let isTeamPlan = false;
 let escrowFeePct = null;
 const openDeliverablePanels = new Set();
 
@@ -128,7 +129,19 @@ async function renderTracker() {
   const el = document.getElementById('trackerArea');
   const rpc = profile.role === 'sponsor' ? 'fn_sponsor_deliverable_tracker' : 'fn_creator_deliverable_tracker';
   const { data: rows, error } = await sb.rpc(rpc);
-  if (error || !rows || !rows.length) { el.innerHTML = ''; return; }
+  if (error || !rows || !rows.length) {
+    // Distinguish "nothing due" from "not on Team plan" for sponsors --
+    // the RPC itself returns empty either way, so this is a UI-only
+    // nudge, not a security boundary (that's enforced in the RPC).
+    if (profile.role === 'sponsor' && !isTeamPlan) {
+      el.innerHTML = `<div class="card" style="margin-bottom:16px;font-size:12.5px;color:var(--ink-soft)">
+        See everything due across all your active contracts in one place with <a href="pricing.html" style="color:var(--blue)">Team plan</a>.
+      </div>`;
+    } else {
+      el.innerHTML = '';
+    }
+    return;
+  }
 
   const overdue = rows.filter(r => r.is_overdue);
   const upcoming = rows.filter(r => !r.is_overdue);
@@ -159,6 +172,9 @@ async function renderSponsorForm() {
   const options = error ? [] : (creators || [])
     .map(c => ({ id: c.id, name: c.profiles.display_name }))
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  const { data: myPlan } = await sb.rpc('fn_my_sponsor_plan');
+  isTeamPlan = myPlan === 'team';
 
   const params = new URLSearchParams(window.location.search);
   const preselectCreator = params.get('creator') || '';
@@ -199,8 +215,8 @@ async function renderSponsorForm() {
         <div id="pricingBenchmark" style="font-size:11.5px;color:var(--ink-soft);margin-top:4px"></div>
       </div>
       <div class="checkbox-field">
-        <input type="checkbox" id="ctrUseMilestones" onchange="toggleMilestoneMode(this.checked)">
-        <label for="ctrUseMilestones" style="margin:0;font-weight:400">Split payment into milestones instead of releasing all at once</label>
+        <input type="checkbox" id="ctrUseMilestones" onchange="toggleMilestoneMode(this.checked)" ${isTeamPlan ? '' : 'disabled'}>
+        <label for="ctrUseMilestones" style="margin:0;font-weight:400">Split payment into milestones instead of releasing all at once${isTeamPlan ? '' : ' <a href="pricing.html" style="color:var(--blue)">— Team plan</a>'}</label>
       </div>
       <div id="milestoneArea" style="display:none;margin-bottom:14px">
         <div id="milestoneRows"></div>
@@ -323,9 +339,9 @@ function renderChecklistRows() {
           <input type="date" value="${r.dueDate}" style="font-size:12px;padding:6px 8px"
             oninput="checklistRows.find(x=>x.key===${r.key}).dueDate=this.value"></div>
         <div style="flex:1;display:flex;align-items:flex-end;gap:6px;padding-bottom:2px">
-          <input type="checkbox" id="reqApproval-${r.key}" ${r.requiresApproval ? 'checked' : ''}
+          <input type="checkbox" id="reqApproval-${r.key}" ${r.requiresApproval ? 'checked' : ''} ${isTeamPlan ? '' : 'disabled'}
             onchange="checklistRows.find(x=>x.key===${r.key}).requiresApproval=this.checked; renderChecklistRows()">
-          <label for="reqApproval-${r.key}" style="font-size:11.5px;font-weight:400;margin:0">Requires your approval before it counts as done</label>
+          <label for="reqApproval-${r.key}" style="font-size:11.5px;font-weight:400;margin:0">Requires your approval before it counts as done${isTeamPlan ? '' : ' <a href="pricing.html" style="color:var(--blue)">— Team plan</a>'}</label>
         </div>
         ${r.requiresApproval ? `
         <div style="width:140px"><label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:2px">Revision limit</label>
