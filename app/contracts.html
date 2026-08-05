@@ -883,7 +883,9 @@ async function loadContracts() {
         ${canFund && !creatorNotReady ? `<button class="cta" onclick="fundEscrow('${c.id}')">Fund $${escrowDollars} into Kitscore Escrow</button>` : ''}
         ${canSubmitDeliverable ? `<button class="cta-outline" onclick="toggleDeliverablePanel('${c.id}')">Mark deliverable as submitted</button>` : ''}
         ${canReleaseOrRefund && c.deliverable_submitted_at ? `<button class="cta" onclick="releaseEscrow('${c.id}')">Approve &amp; release $${escrowDollars}</button>` : ''}
-        ${canReleaseOrRefund ? `<button class="cta-outline" style="color:#B42318;border-color:#B42318" onclick="refundEscrow('${c.id}')">Refund sponsor</button>` : ''}
+        ${canReleaseOrRefund && !c.deliverable_submitted_at ? `<button class="cta-outline" style="color:#B42318;border-color:#B42318" onclick="refundEscrow('${c.id}')">Refund sponsor</button>` : ''}
+        ${canReleaseOrRefund && c.deliverable_submitted_at && !(c.disputed_at && !c.admin_resolved_at) ? `<button class="cta-outline" style="color:#B42318;border-color:#B42318" onclick="disputeEscrow('${c.id}')">Report a problem</button>` : ''}
+        ${c.disputed_at && !c.admin_resolved_at ? `<div class="msg" style="background:#FDECEC;color:#B42318;margin-top:8px">Flagged ${new Date(c.disputed_at).toLocaleDateString()} — Kitscore is reviewing. Funds stay held until resolved.</div>` : ''}
         ${canVoid ? `<button class="cta-outline" style="color:#B42318;border-color:#B42318" onclick="voidContract('${c.id}')">Void</button>` : ''}
       </div>
       <div id="deliverable-panel-${c.id}" style="display:${openDeliverablePanels.has(c.id) ? 'block' : 'none'};margin-top:10px">
@@ -1037,6 +1039,14 @@ async function refundEscrow(contractId) {
   if (!confirm('Refund the held funds back to you? This cannot be undone.')) return;
   const r = await callEscrowApi('refund', { contractId });
   if (!r.ok) { alert(r.error || 'Could not refund.'); return; }
+  loadContracts();
+}
+
+async function disputeEscrow(contractId) {
+  const reason = prompt('What went wrong? This freezes the funds and brings Kitscore in to review — nothing is refunded automatically.');
+  if (!reason || !reason.trim()) return;
+  const r = await callEscrowApi('dispute', { contractId, reason: reason.trim() });
+  if (!r.ok) { alert(r.error || 'Could not open a dispute.'); return; }
   loadContracts();
 }
 
