@@ -31,6 +31,12 @@
   .wl-link:hover{text-decoration:underline}
   .remove-btn{background:none;border:none;cursor:pointer;font-size:18px;color:var(--ink-faint);line-height:1}
   .remove-btn:hover{color:#E0245E}
+  .wl-note{font-size:12px;color:var(--ink-soft);border:none;border-bottom:1px dashed transparent;background:none;padding:2px 0;width:180px;font-family:inherit}
+  .wl-note:hover, .wl-note:focus{border-bottom-color:var(--line);outline:none}
+  .wl-note::placeholder{color:var(--ink-faint)}
+  .score-delta{font-size:11px;font-weight:600;font-family:var(--font-mono)}
+  .score-delta.up{color:#137C52}
+  .score-delta.down{color:#B42318}
   .loading{font-size:13px;color:var(--ink-soft);padding:40px;text-align:center}
   .empty-tip{font-size:13.5px;color:var(--ink-soft);text-align:center;padding:56px 40px}
   .empty-tip a{color:var(--blue);text-decoration:none;font-weight:600}
@@ -79,7 +85,7 @@ async function load() {
   }
 
   const { data: saved, error } = await sb.from('watchlists')
-    .select('creator_id, created_at, creators(*, profiles!inner(display_name))')
+    .select('creator_id, created_at, note, trust_score_at_save, creators(*, profiles!inner(display_name))')
     .eq('sponsor_id', sponsorProfile.id)
     .order('created_at', { ascending: false });
   if (error) { document.getElementById('content').textContent = 'Could not load watchlist: ' + error.message; return; }
@@ -130,15 +136,28 @@ function render() {
     return;
   }
 
-  document.getElementById('content').innerHTML = `${progressHtml}<div class="card-list">${sorted.map(s => { const c = s.creators; return `
+  document.getElementById('content').innerHTML = `${progressHtml}<div class="card-list">${sorted.map(s => { const c = s.creators;
+    const delta = (s.trust_score_at_save != null) ? Math.round(c.trust_score - s.trust_score_at_save) : 0;
+    return `
     <div class="wl-row">
       <div class="avatar">${escapeHtml(c.profiles.display_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
       <div class="info"><div class="name">${escapeHtml(c.profiles.display_name)}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
-      <div class="pbar-val">${c.trust_score}</div>
+      <input class="wl-note" placeholder="Add a note…" value="${escapeHtml(s.note || '')}" onclick="event.stopPropagation()"
+        onchange="saveNote('${c.id}', this.value)">
+      <div style="text-align:right">
+        <div class="pbar-val">${c.trust_score}</div>
+        ${delta !== 0 ? `<div class="score-delta ${delta > 0 ? 'up' : 'down'}">${delta > 0 ? '▲' : '▼'} ${Math.abs(delta)} since saved</div>` : ''}
+      </div>
       <span class="wl-link" onclick="window.location.href='evaluate.html?creator=${c.id}'" style="cursor:pointer">View →</span>
       <button class="remove-btn" onclick="event.stopPropagation(); remove('${c.id}')" title="Remove from watchlist">×</button>
     </div>
   `; }).join('')}</div>`;
+}
+
+async function saveNote(creatorId, note) {
+  const { error } = await sb.from('watchlists').update({ note: note.trim() || null })
+    .eq('sponsor_id', sponsorProfile.id).eq('creator_id', creatorId);
+  if (error) alert('Could not save note: ' + error.message);
 }
 
 async function remove(creatorId) {

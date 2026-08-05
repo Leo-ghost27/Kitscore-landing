@@ -35,6 +35,13 @@
   .cmp-tag.self{background:#F0EFE9;color:#6B6B67}
   .cmp-tag.pend{background:#F0EFE9;color:#6B6B67}
   .cmp-platform-note{font-size:10.5px;color:var(--ink-faint);font-family:var(--font-sans)}
+  .save-shortlist-btn{padding:10px 14px;font-size:13px;font-weight:600;background:#fff;color:var(--ink);border:1px solid var(--line);cursor:pointer}
+  .save-shortlist-btn:hover{border-color:var(--blue);color:var(--blue)}
+  .shortlist-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+  .shortlist-chip{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;padding:6px 8px 6px 12px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer}
+  .shortlist-chip:hover{border-color:var(--blue);color:var(--blue)}
+  .shortlist-chip button{background:none;border:none;cursor:pointer;color:var(--ink-faint);padding:2px}
+  .shortlist-chip button:hover{color:#B42318}
 </style>
 </head>
 <body>
@@ -46,7 +53,9 @@
     <div class="picker">
       <select id="creatorPick"></select>
       <button id="addBtn" onclick="addCreator()">Add to compare</button>
+      <button class="save-shortlist-btn" onclick="saveShortlist()">Save shortlist</button>
     </div>
+    <div class="shortlist-row" id="shortlistRow"></div>
     <div class="chips" id="chips"></div>
     <div id="result"></div>
   </div>
@@ -59,14 +68,16 @@
 let allCreators = [];
 let selectedIds = [];
 let maxCompare = 2;
+let shortlists = [];
+let sponsorProfile;
 const PLAN_LIMITS = { free: 2, starter: 5, team: Infinity };
 
 async function load() {
-  const profile = await requireRole('sponsor');
-  if (!profile) return;
+  sponsorProfile = await requireRole('sponsor');
+  if (!sponsorProfile) return;
   renderSidebar('sponsor', 'compare');
 
-  const { data: sponsor } = await sb.from('sponsors').select('plan').eq('id', profile.id).single();
+  const { data: sponsor } = await sb.from('sponsors').select('plan').eq('id', sponsorProfile.id).single();
   const plan = sponsor?.plan || 'free';
   maxCompare = PLAN_LIMITS[plan] ?? 2;
   document.getElementById('psub').textContent = maxCompare === Infinity
@@ -81,6 +92,55 @@ async function load() {
   renderPicker();
   renderChips();
   renderCompare();
+  await loadShortlists();
+}
+
+async function loadShortlists() {
+  const { data, error } = await sb.from('comparison_shortlists').select('*').eq('sponsor_id', sponsorProfile.id).order('created_at', { ascending: false });
+  if (error) { document.getElementById('shortlistRow').innerHTML = ''; return; }
+  shortlists = data || [];
+  renderShortlistRow();
+}
+
+function renderShortlistRow() {
+  const el = document.getElementById('shortlistRow');
+  if (!shortlists.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<span style="font-size:11.5px;color:var(--ink-faint);margin-right:2px">Saved:</span>` + shortlists.map(s => `
+    <span class="shortlist-chip" onclick="applyShortlist('${s.id}')" title="Load this shortlist">
+      ${escapeHtml(s.name)} <span style="color:var(--ink-faint);font-weight:400">(${s.creator_ids.length})</span>
+      <button onclick="event.stopPropagation(); deleteShortlist('${s.id}')" title="Delete">✕</button>
+    </span>`).join('');
+}
+
+function applyShortlist(id) {
+  const s = shortlists.find(x => x.id === id);
+  if (!s) return;
+  const capped = maxCompare === Infinity ? s.creator_ids : s.creator_ids.slice(0, maxCompare);
+  if (capped.length < s.creator_ids.length) {
+    alert(`This shortlist has ${s.creator_ids.length} creators, but your plan allows ${maxCompare} at a time — showing the first ${maxCompare}.`);
+  }
+  selectedIds = capped.filter(id => allCreators.some(c => c.id === id));
+  renderPicker(); renderChips(); renderCompare();
+}
+
+async function saveShortlist() {
+  if (!selectedIds.length) { alert('Add at least one creator to compare first.'); return; }
+  const name = prompt('Name this shortlist (e.g. "Q3 skincare finalists"):');
+  if (!name || !name.trim()) return;
+  const { error } = await sb.from('comparison_shortlists').insert({
+    sponsor_id: sponsorProfile.id,
+    name: name.trim(),
+    creator_ids: selectedIds,
+  });
+  if (error) { alert('Could not save shortlist: ' + error.message); return; }
+  await loadShortlists();
+}
+
+async function deleteShortlist(id) {
+  if (!confirm('Delete this saved shortlist?')) return;
+  const { error } = await sb.from('comparison_shortlists').delete().eq('id', id);
+  if (error) { alert('Could not delete: ' + error.message); return; }
+  await loadShortlists();
 }
 
 function renderPicker() {
