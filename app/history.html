@@ -71,7 +71,7 @@ async function load() {
   }
 
   const { data: evals, error } = await sb.from('evaluations')
-    .select('*, creators(trust_score, niche, profiles!inner(display_name)), clients(name)')
+    .select('*, price_cents, creators(trust_score, niche, profiles!inner(display_name)), clients(name)')
     .eq('sponsor_id', profile.id)
     .order('created_at', { ascending: false });
   if (error) { document.getElementById('content').textContent = 'Could not load: ' + error.message; return; }
@@ -98,6 +98,18 @@ function renderList() {
     return;
   }
 
+  const paidUnlocks = allEvals.filter(e => e.stripe_payment_id);
+  const pricedUnlocks = paidUnlocks.filter(e => e.price_cents != null);
+  const totalSpendCents = pricedUnlocks.reduce((sum, e) => sum + e.price_cents, 0);
+  const untrackedCount = paidUnlocks.length - pricedUnlocks.length;
+  const spendBar = paidUnlocks.length ? `
+    <div class="card" style="margin-bottom:14px;padding:14px 22px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px"><b>$${(totalSpendCents / 100).toFixed(2)}</b> <span style="color:var(--ink-soft)">spent across ${pricedUnlocks.length} paid unlock${pricedUnlocks.length === 1 ? '' : 's'}</span>
+        ${untrackedCount ? `<span style="color:var(--ink-faint)"> · ${untrackedCount} earlier unlock${untrackedCount === 1 ? '' : 's'} not included (priced before spend tracking started)</span>` : ''}</div>
+      <button onclick="exportCsv()" style="font-size:12px;font-weight:600;padding:7px 12px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer">Export CSV</button>
+    </div>` : `
+    <div style="text-align:right;margin-bottom:10px"><button onclick="exportCsv()" style="font-size:12px;font-weight:600;padding:7px 12px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer">Export CSV</button></div>`;
+
   let evals = allEvals;
   if (selectedClientFilter === 'unassigned') evals = evals.filter(e => !e.client_id);
   else if (selectedClientFilter !== 'all') evals = evals.filter(e => e.client_id === selectedClientFilter);
@@ -113,11 +125,11 @@ function renderList() {
     </div>` : '';
 
   if (!evals.length) {
-    document.getElementById('content').innerHTML = filterBar + `<div class="card"><div class="empty-tip">No evaluations for this client yet.</div></div>`;
+    document.getElementById('content').innerHTML = spendBar + filterBar + `<div class="card"><div class="empty-tip">No evaluations for this client yet.</div></div>`;
     return;
   }
 
-  document.getElementById('content').innerHTML = filterBar + `
+  document.getElementById('content').innerHTML = spendBar + filterBar + `
     <div class="card">
       ${evals.map(e => `
         <div class="row-item">
@@ -133,6 +145,27 @@ function renderList() {
         </div>
       `).join('')}
     </div>`;
+}
+
+function exportCsv() {
+  const rows = [['Creator', 'Date', 'Trust score', 'Verdict', 'Unlocked', 'Amount paid (USD)', 'Client']];
+  allEvals.forEach(e => rows.push([
+    e.creators?.profiles?.display_name || '',
+    new Date(e.created_at).toLocaleDateString('en-GB'),
+    e.creators?.trust_score ?? '',
+    e.recommendation_verdict || '',
+    e.unlocked ? 'Yes' : 'No',
+    e.price_cents != null ? (e.price_cents / 100).toFixed(2) : '',
+    e.clients?.name || '',
+  ]));
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `kitscore-evaluation-history-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 load();

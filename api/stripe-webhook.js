@@ -133,6 +133,11 @@ const handler = async (req, res) => {
               .update({
                 unlocked: true,
                 stripe_payment_id: session.payment_intent || session.id,
+                // Real amount actually charged this checkout -- $29
+                // on-demand or $12 Starter overage, whichever applied.
+                // Lets history.html report real spend instead of
+                // assuming every paid unlock cost the same amount.
+                price_cents: session.amount_total,
               }).eq('id', evaluationId);
 
             // Send receipt email to the sponsor
