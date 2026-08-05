@@ -27,6 +27,7 @@ const handleNotifyDispute = require('../lib/handlers/creator-notify-dispute');
 const handleInviteCreator = require('../lib/handlers/sponsor-invite-creator');
 const handleScanContractClauses = require('../lib/handlers/scan-contract-clauses');
 const handleDraftPitch = require('../lib/handlers/draft-pitch');
+const handleInviteSponsorContract = require('../lib/handlers/creator-invite-sponsor-contract');
 
 module.exports = async (req, res) => {
   const action = req.query?.action;
@@ -36,6 +37,7 @@ module.exports = async (req, res) => {
   if (action === 'invite-creator') return handleInviteCreator(req, res);
   if (action === 'scan-contract-clauses') return handleScanContractClauses(req, res);
   if (action === 'draft-pitch') return handleDraftPitch(req, res);
+  if (action === 'invite-sponsor-contract') return handleInviteSponsorContract(req, res);
 
-  return res.status(400).json({ error: 'Unknown or missing action. Use ?action=invite-sponsor, notify-dispute, invite-creator, scan-contract-clauses, or draft-pitch.' });
+  return res.status(400).json({ error: 'Unknown or missing action. Use ?action=invite-sponsor, notify-dispute, invite-creator, scan-contract-clauses, draft-pitch, or invite-sponsor-contract.' });
 };
