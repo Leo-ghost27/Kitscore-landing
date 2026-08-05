@@ -154,6 +154,70 @@
   .hero2-stat-num.accent { color: var(--accent); }
   .hero2-stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
+  /* LIVE TICKER */
+  .live-ticker { background: var(--accent); overflow: hidden; white-space: nowrap; position: relative; height: 34px; display: flex; align-items: center; }
+  .live-ticker-track { display: inline-flex; align-items: center; gap: 40px; animation: liveTickerScroll 32s linear infinite; padding-left: 100%; }
+  .live-ticker:hover .live-ticker-track { animation-play-state: paused; }
+  .live-ticker-item { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: #fff; flex-shrink: 0; }
+  .live-ticker-item strong { font-weight: 700; }
+  .live-ticker-item .live-time { color: rgba(255,255,255,.65); margin-left: 2px; }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #86EFAC; flex-shrink: 0; }
+  @keyframes liveTickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+  /* HERO v3 — creator-first */
+  .hero3 { padding: 64px 2rem 88px; max-width: 1180px; margin: 0 auto; }
+  .hero3-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 64px; align-items: start; }
+  .hero3-left { text-align: left; }
+  .hero3-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--bg2); color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; border: 1px solid var(--border); margin-bottom: 26px; }
+  .hero3-left h1 { font-family: var(--font-display); font-size: clamp(2.1rem, 4.6vw, 3.4rem); font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; color: var(--text); margin-bottom: 22px; }
+  .hero3-left h1 .accent { color: var(--accent); }
+  .hero3-left h1 em { font-style: italic; color: var(--muted2); font-weight: 500; }
+  .hero3-left .hero-sub { text-align: left; margin: 0 0 30px; max-width: 480px; }
+  .hero3-stats { display: flex; gap: 40px; margin: 32px 0 28px; }
+  .hero3-stat-num { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
+  .hero3-stat-label { font-size: 11px; color: var(--muted); margin-top: 5px; }
+  .hero3-avatars { display: flex; align-items: center; gap: 16px; }
+  .hero3-avatar-stack { display: flex; align-items: center; }
+  .hero3-avatar-stack span { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); margin-left: -9px; }
+  .hero3-avatar-stack span:first-child { margin-left: 0; }
+  .hero3-avatar-stack .hero3-avatar-more { background: var(--bg3); color: var(--muted); }
+  .hero3-avatar-num { font-size: 13.5px; color: var(--text); }
+  .hero3-avatar-num strong { font-weight: 700; }
+  .hero3-avatar-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .journey-card { background: var(--bg2); border: 1px solid var(--border); padding: 28px 28px 24px; }
+  .journey-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 22px; }
+  .journey-step { display: flex; align-items: flex-start; gap: 14px; position: relative; padding-bottom: 26px; }
+  .journey-step:last-of-type { padding-bottom: 0; }
+  .journey-step::before { content: ''; position: absolute; left: 15px; top: 32px; bottom: 0; width: 2px; background: var(--border-hover); }
+  .journey-step.done::before { background: var(--accent); }
+  .journey-step:last-of-type::before { display: none; }
+  .journey-check { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 1; }
+  .journey-check.done { background: var(--accent); color: #fff; }
+  .journey-check.next { background: #22C55E; color: #fff; }
+  .journey-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
+  .journey-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .journey-title.next-text { color: #16A34A; }
+  .journey-result { margin-top: 20px; background: var(--green-bg); border: 1px solid #BEE3A0; color: var(--green); font-size: 13px; font-weight: 700; text-align: center; padding: 12px; }
+  .journey-caption { text-align: center; font-size: 12px; color: var(--muted2); margin-top: 16px; }
+  .journey-caption a { color: var(--accent); font-weight: 600; }
+
+  .sponsor-band { border: 0.5px solid var(--border); border-left: 3px solid var(--accent); padding: 32px 36px; background: var(--bg); display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+  .sponsor-band-copy { flex: 1; min-width: 280px; }
+  .sponsor-band-copy h3 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin: 0 0 10px; }
+  .sponsor-band-copy p { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.7; max-width: 480px; }
+  .sponsor-band-ctas { display: flex; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
+
+  @media (max-width: 900px) {
+    .hero3-grid { grid-template-columns: 1fr; gap: 40px; }
+    .hero3-left { text-align: center; }
+    .hero3-left .hero-sub { margin-left: auto; margin-right: auto; text-align: center; }
+    .hero3-left .hero-buttons { justify-content: center; }
+    .hero3-stats { justify-content: center; }
+    .hero3-avatars { justify-content: center; }
+    .sponsor-band { flex-direction: column; }
+  }
+
   .dm-wrap { perspective: 1400px; width: 100%; max-width: 380px; height: 460px; margin: 0 auto; }
   .dm-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; cursor: pointer; transition: transform .15s ease-out; }
   .dm-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; transform-style: preserve-3d; }
@@ -746,6 +810,20 @@
 </head>
 <body>
 
+<!-- LIVE TICKER -->
+<div class="live-ticker" aria-hidden="true">
+  <div class="live-ticker-track">
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Sophie L.</strong> just matched with <strong>Willow Skincare</strong><span class="live-time">2m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Marcus T.</strong> just matched with <strong>Ridge Outdoors</strong><span class="live-time">5m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Aisha K.</strong> just matched with <strong>Bloom Nutrition</strong><span class="live-time">8m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Diego R.</strong> just matched with <strong>Vantage Coffee</strong><span class="live-time">11m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Sophie L.</strong> just matched with <strong>Willow Skincare</strong><span class="live-time">2m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Marcus T.</strong> just matched with <strong>Ridge Outdoors</strong><span class="live-time">5m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Aisha K.</strong> just matched with <strong>Bloom Nutrition</strong><span class="live-time">8m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Diego R.</strong> just matched with <strong>Vantage Coffee</strong><span class="live-time">11m ago</span></span>
+  </div>
+</div>
+
 <!-- NAV -->
 <nav>
   <a href="/" style="display:flex;align-items:center;gap:9px;text-decoration:none">
@@ -771,25 +849,83 @@
 </nav>
 
 <!-- HERO -->
-<div class="hero2">
-  <div class="hero2-grid">
-    <div class="hero2-left">
-      <span class="hero2-eyebrow"><span style="width:7px;height:7px;border-radius:50%;background:#22C55E;flex-shrink:0"></span>Verified Sponsorship Reputation</span>
-      <h1>Know Before<br><span class="accent">You Sponsor</span></h1>
-      <p style="font-size:15px;font-weight:600;color:var(--text);margin:0 0 12px">Every media kit is self-reported. Every Kitscore isn't.</p>
-      <p class="hero-sub">Evaluate creators using verified campaign history, sponsor endorsements, reliability scores, and evidence-backed reports. Then post an open brief, sign a contract, and pay through escrow — funds held until the creator delivers. Make sponsorship decisions using proof, not guesswork.</p>
-      <p class="hero-unlock">See a creator's <strong>Trust Score</strong> and <strong>Reliability Score</strong> instantly. Unlock the full evaluation, risk analysis, and sponsor decision memo for <strong>$29</strong>.</p>
-      <div class="hero-buttons">
-        <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Evaluate a Creator →</a>
-        <a href="/sample-sponsor-decision-memo.html" target="_blank" class="btn-ghost" style="text-decoration:none">View Sample Report</a>
+<div class="hero3">
+  <div class="hero3-grid">
+    <div class="hero3-left">
+      <span class="hero3-eyebrow"><span style="width:7px;height:7px;border-radius:50%;background:#22C55E;flex-shrink:0"></span>Join 500+ Verified Creators</span>
+      <h1>Your next <span class="accent">brand deal</span><br>starts with <span class="accent">proof</span>,<br><em>not promise.</em></h1>
+      <p class="hero-sub">Sponsors don't trust follower counts anymore. They trust evidence. Claim your profile, verify your campaigns, and get your Kitscore — the number that gets you hired.</p>
+      <div class="hero-buttons" style="justify-content:flex-start">
+        <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Get Your Next Sponsor — Join Free →</a>
+        <a href="#for-sponsors" class="btn-ghost" style="text-decoration:none">I'm a Sponsor →</a>
       </div>
-      <div class="hero2-stats">
-        <div><div class="hero2-stat-num">100%</div><div class="hero2-stat-label">Evidence-Backed</div></div>
-        <div><div class="hero2-stat-num accent">$29</div><div class="hero2-stat-label">Per Evaluation</div></div>
-        <div><div class="hero2-stat-num">Verified</div><div class="hero2-stat-label">Trust Scoring</div></div>
+      <div class="hero3-stats">
+        <div><div class="hero3-stat-num">Free</div><div class="hero3-stat-label">To Claim</div></div>
+        <div><div class="hero3-stat-num">7 Days</div><div class="hero3-stat-label">Avg. To First Deal</div></div>
+        <div><div class="hero3-stat-num">100%</div><div class="hero3-stat-label">Evidence-Backed</div></div>
+      </div>
+      <div class="hero3-avatars">
+        <div class="hero3-avatar-stack">
+          <span>SL</span><span>MT</span><span>AK</span><span>DR</span><span>PS</span><span>JM</span><span>LV</span><span class="hero3-avatar-more">+497</span>
+        </div>
+        <div>
+          <div class="hero3-avatar-num"><strong>500+</strong> creators verified</div>
+          <div class="hero3-avatar-sub">Join them — claim your profile free</div>
+        </div>
       </div>
     </div>
 
+    <div class="hero3-right">
+      <div class="journey-card">
+        <div class="journey-label">Your Kitscore Journey</div>
+        <div class="journey-step done">
+          <div class="journey-check done">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div><div class="journey-title">Claim your profile</div><div class="journey-desc">Free. Takes 2 minutes.</div></div>
+        </div>
+        <div class="journey-step done">
+          <div class="journey-check done">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div><div class="journey-title">Upload your evidence</div><div class="journey-desc">Campaign screenshots, contracts, deliverables.</div></div>
+        </div>
+        <div class="journey-step done">
+          <div class="journey-check done">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div><div class="journey-title">Get your Kitscore</div><div class="journey-desc">Trust Score + Reliability Score, verified.</div></div>
+        </div>
+        <div class="journey-step">
+          <div class="journey-check next">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <div><div class="journey-title next-text">Get your next sponsor</div><div class="journey-desc">Sponsors browse verified creators and reach out.</div></div>
+        </div>
+        <div class="journey-result">✓ Kitscore: 91 · Gold Tier</div>
+      </div>
+      <div class="journey-caption">claim → verify → score → <a href="/app/auth.html">get hired</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- FOR SPONSORS BAND -->
+<section id="for-sponsors" style="padding:0 2rem 48px;max-width:1100px;margin:0 auto">
+  <div class="sponsor-band">
+    <div class="sponsor-band-copy">
+      <span class="section-label" style="margin:0 0 8px;display:block">For Sponsors</span>
+      <h3>Evaluate creators with proof, not guesswork.</h3>
+      <p>See a creator's <strong style="color:var(--text)">Trust Score</strong> and <strong style="color:var(--text)">Reliability Score</strong> instantly. Unlock the full evaluation, risk analysis, and decision memo for <strong style="color:var(--text)">$29</strong>.</p>
+    </div>
+    <div class="sponsor-band-ctas">
+      <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Evaluate a Creator →</a>
+      <a href="/sample-sponsor-decision-memo.html" target="_blank" class="btn-ghost" style="text-decoration:none">View Sample Report</a>
+    </div>
+  </div>
+</section>
+
+<div class="hero2" style="display:none">
+  <div class="hero2-grid">
     <div class="dm-col">
       <div class="dm-wrap" id="dmWrap">
         <div class="dm-card" id="dmCard">
