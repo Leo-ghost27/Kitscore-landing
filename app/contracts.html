@@ -118,7 +118,8 @@ async function load() {
     document.getElementById('psub').textContent = 'Draft a contract for a creator, then both of you sign it here.';
     await renderSponsorForm();
   } else {
-    document.getElementById('formArea').innerHTML = '';
+    document.getElementById('psub').textContent = 'Deliverables, compensation, and usage rights — agreed and signed in one place.';
+    renderCreatorInviteForm();
   }
   await renderTracker();
   await loadContracts();
@@ -445,6 +446,159 @@ async function draftContract(briefApplicationId, campaignId) {
   msgEl.innerHTML = '<div class="msg ok">Contract saved as a draft. Send it when you\'re ready — terms lock once sent.</div>';
   await renderSponsorForm();
   await loadContracts();
+}
+
+// ── Creator: bring a deal you already have ──────────────────────────────────
+// The mirror of renderSponsorForm -- a creator who already has a sponsor
+// deal lined up outside Kitscore's briefs marketplace invites that sponsor
+// to sign a real, protected contract (clause scan, deliverable checklist,
+// escrow) without needing the sponsor to already have an account. See
+// lib/handlers/creator-invite-sponsor-contract.js and
+// app/confirm-contract-invite.html for the rest of this flow.
+//
+// Deliberately simpler than the sponsor form: no milestones, no per-item
+// "requires approval" (both are sponsor-plan-gated controls that don't
+// make sense to set before the sponsor even has an account) -- just
+// description + quantity per checklist item, matching what
+// creator_contract_invites.deliverable_items actually stores.
+let inviteChecklistRows = [];
+let inviteChecklistRowSeq = 0;
+
+function renderCreatorInviteForm() {
+  document.getElementById('formArea').innerHTML = `
+    <div class="card form-card">
+      <div class="sec">Already have a deal? Bring it here</div>
+      <p style="font-size:12.5px;color:var(--ink-soft);margin:-8px 0 16px;line-height:1.5">You don't need to find a sponsor through Kitscore for this to be useful. If you've already got a deal lined up — a DM, an email, a handshake — invite that sponsor to sign a real contract here: clause scan, deliverable checklist, and escrow protection included, same as any other Kitscore contract.</p>
+      <div class="field-row">
+        <div class="field"><label>Sponsor's email</label>
+          <input id="invSponsorEmail" type="email" placeholder="sponsor@brand.com">
+        </div>
+        <div class="field"><label>Sponsor's name <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+          <input id="invSponsorName" placeholder="e.g. Jane at GHG">
+        </div>
+      </div>
+      <div class="field"><label>Contract title</label>
+        <input id="invTitle" placeholder="e.g. Summer skincare launch agreement">
+      </div>
+      <div class="field"><label>Deliverables</label>
+        <textarea id="invDeliverables" placeholder="e.g. 1 dedicated YouTube video (8–12 min), 2 Instagram Stories linking to product page"></textarea>
+      </div>
+      <div class="field">
+        <label>Deliverable checklist <span style="color:var(--color-text-tertiary)">(each item is tracked separately — this is what escrow release is checked against)</span></label>
+        <div id="invChecklistItems"></div>
+        <button type="button" class="cta-outline" onclick="addInviteChecklistRow()">+ Add item</button>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Compensation you agreed to</label>
+          <input id="invCompensation" placeholder="e.g. $2,000 flat fee, net-30 after delivery">
+        </div>
+        <div class="field"><label>Usage rights <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+          <input id="invUsageRights" placeholder="e.g. 90 days paid social usage">
+        </div>
+      </div>
+      <div class="field"><label>Propose funding through <strong>Kitscore Escrow</strong> <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+        <input id="invEscrowAmount" type="number" min="0" step="0.01" placeholder="Amount in USD, e.g. 2000 — the sponsor can still change this before funding" oninput="updateInviteEscrowFeePreview()">
+        <div id="invEscrowFeePreview" style="font-size:11.5px;color:var(--ink-soft);margin-top:6px"></div>
+      </div>
+      <div class="field"><label>Exclusivity terms <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+        <input id="invExclusivity" placeholder="e.g. No competing skincare brand for 30 days">
+      </div>
+      <div class="field"><label>Additional terms <span style="color:var(--color-text-tertiary)">(optional)</span></label>
+        <textarea id="invAdditional" placeholder="Anything else you already agreed to."></textarea>
+      </div>
+      <button class="cta" id="inviteBtn" onclick="sendContractInvite()">Send for the sponsor to review and sign</button>
+      <div id="invFormMsg"></div>
+      <p style="font-size:11px;color:var(--color-text-tertiary);margin-top:10px;line-height:1.5">Nothing is binding on the sponsor until they actually sign — they'll see every term before agreeing to anything, and can push back if something's off.</p>
+    </div>
+  `;
+  inviteChecklistRows = [];
+  inviteChecklistRowSeq = 0;
+  addInviteChecklistRow();
+}
+
+function addInviteChecklistRow(description = '', quantity = 1) {
+  inviteChecklistRows.push({ key: ++inviteChecklistRowSeq, description, quantity });
+  renderInviteChecklistRows();
+}
+
+function removeInviteChecklistRow(key) {
+  inviteChecklistRows = inviteChecklistRows.filter(r => r.key !== key);
+  renderInviteChecklistRows();
+}
+
+function renderInviteChecklistRows() {
+  const el = document.getElementById('invChecklistItems');
+  if (!el) return;
+  el.innerHTML = inviteChecklistRows.map(r => `
+    <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+      <input value="${escapeHtml(r.description)}" placeholder="e.g. Instagram Reel" style="flex:3"
+        oninput="inviteChecklistRows.find(x=>x.key===${r.key}).description=this.value">
+      <input type="number" min="1" value="${r.quantity}" style="flex:1"
+        oninput="inviteChecklistRows.find(x=>x.key===${r.key}).quantity=Number(this.value)||1">
+      <button type="button" class="cta-outline" style="color:#B42318;border-color:#B42318;padding:8px 10px"
+        onclick="removeInviteChecklistRow(${r.key})">✕</button>
+    </div>`).join('');
+}
+
+async function updateInviteEscrowFeePreview() {
+  const el = document.getElementById('invEscrowFeePreview');
+  const val = Number(document.getElementById('invEscrowAmount').value);
+  if (!val || val <= 0) { el.textContent = ''; return; }
+  const feePct = await getEscrowFeePct();
+  const fee = val * feePct / 100;
+  const youGet = val - fee;
+  el.textContent = `Kitscore's fee: ${feePct}% ($${fee.toFixed(2)}) — you'd receive $${youGet.toFixed(2)} of the $${val.toFixed(2)} once funded.`;
+}
+
+async function sendContractInvite() {
+  const sponsorEmail = document.getElementById('invSponsorEmail').value.trim();
+  const sponsorName = document.getElementById('invSponsorName').value.trim();
+  const title = document.getElementById('invTitle').value.trim();
+  const deliverables = document.getElementById('invDeliverables').value.trim();
+  const compensation = document.getElementById('invCompensation').value.trim();
+  const msgEl = document.getElementById('invFormMsg');
+
+  if (!sponsorEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sponsorEmail)) { msgEl.innerHTML = '<div class="msg error">Enter a valid sponsor email.</div>'; return; }
+  if (!title) { msgEl.innerHTML = '<div class="msg error">Give the contract a title.</div>'; return; }
+  if (!deliverables) { msgEl.innerHTML = '<div class="msg error">Describe the deliverables.</div>'; return; }
+  if (!compensation) { msgEl.innerHTML = '<div class="msg error">Add the compensation you agreed to.</div>'; return; }
+
+  const deliverableItems = inviteChecklistRows
+    .map(r => ({ description: r.description.trim(), quantity: r.quantity }))
+    .filter(r => r.description);
+  if (!deliverableItems.length) { msgEl.innerHTML = '<div class="msg error">Add at least one checklist item (e.g. "1 Reel", "1 YouTube video").</div>'; return; }
+
+  const escrowAmountUsd = document.getElementById('invEscrowAmount').value;
+  const usageRights = document.getElementById('invUsageRights').value.trim();
+  const exclusivityTerms = document.getElementById('invExclusivity').value.trim();
+  const additionalTerms = document.getElementById('invAdditional').value.trim();
+
+  const btn = document.getElementById('inviteBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/campaign-actions?action=invite-sponsor-contract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({
+        sponsorEmail, sponsorName: sponsorName || undefined, title, deliverables, compensation,
+        escrowAmountUsd: escrowAmountUsd || undefined, usageRights: usageRights || undefined,
+        exclusivityTerms: exclusivityTerms || undefined, additionalTerms: additionalTerms || undefined,
+        deliverableItems,
+      }),
+    });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.error || 'Could not send the invite');
+
+    msgEl.innerHTML = `<div class="msg ok">Sent to ${escapeHtml(sponsorEmail)}. They'll get a one-click link to review and sign — nothing's binding until they do.</div>`;
+    renderCreatorInviteForm();
+  } catch (err) {
+    msgEl.innerHTML = `<div class="msg error">${escapeHtml(err.message)}</div>`;
+    btn.disabled = false;
+    btn.textContent = 'Send for the sponsor to review and sign';
+  }
 }
 
 // ── Shared: list + sign ─────────────────────────────────────────────────────
