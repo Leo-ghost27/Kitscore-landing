@@ -211,7 +211,7 @@
   .journey-feature-desc { font-size: 12px; color: #9DB4D6; margin-top: 3px; line-height: 1.5; }
   .journey-back-hint { text-align: center; font-size: 11px; color: #7FA8E0; margin-top: 22px; }
 
-  .sponsor-band { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg-alt); display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+  .sponsor-band { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg); box-shadow: var(--shadow-sm); display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
   .estimator-box { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg); box-shadow: var(--shadow-sm); }
   .estimator-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
   .estimator-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 20px; }
@@ -247,8 +247,8 @@
   .eyebrow-chip.sponsor svg { color: #6D4FC7; }
 
   /* HERO DIVIDER */
-  .hero-divider { position: relative; height: 1px; background: var(--border-hover); margin: 44px 0; }
-  .hero-divider-pill { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--bg); border: 1px solid var(--border-hover); border-radius: 999px; padding: 6px 16px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .hero-divider { position: relative; width: 100vw; margin-left: calc(50% - 50vw); margin-top: 44px; margin-bottom: 44px; background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 18px 0; display: flex; align-items: center; justify-content: center; }
+  .hero-divider-pill { background: var(--bg); border: 1px solid var(--border-hover); border-radius: 999px; padding: 6px 16px; font-size: 12px; color: var(--muted); white-space: nowrap; }
 
   /* DARK CTA VARIANT (sponsor) */
   .btn-dark { background: var(--text); color: #fff; border: none; cursor: pointer; padding: 12px 24px; border-radius: 0; font-size: 14px; font-weight: 600; font-family: var(--font); transition: opacity 0.15s, transform 0.15s; display: inline-flex; align-items: center; gap: 6px; }
@@ -1200,7 +1200,7 @@
 <hr class="section-divider" />
 
 <!-- HOW IT WORKS -->
-<div class="band-alt">
+<div style="background: var(--bg)">
 <section id="how-it-works">
   <div class="section-label">How it works</div>
   <h2 class="section-h">Built for <strong>two audiences.</strong></h2>
