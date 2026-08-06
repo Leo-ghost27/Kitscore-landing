@@ -198,6 +198,18 @@
   .journey-result { margin-top: 20px; background: var(--green-bg); border: 1px solid #BEE3A0; color: var(--green); font-size: 13px; font-weight: 700; text-align: center; padding: 12px; }
   .journey-caption { text-align: center; font-size: 12px; color: var(--muted2); margin-top: 16px; }
   .journey-caption a { color: var(--accent); font-weight: 600; }
+  .journey-wrap { perspective: 1400px; }
+  .journey-flip { position: relative; width: 100%; height: 460px; transform-style: preserve-3d; transition: transform .15s ease-out; cursor: pointer; }
+  .journey-face { position: absolute; inset: 0; backface-visibility: hidden; overflow: hidden; }
+  .journey-face.journey-front { background: var(--bg2); border: 1px solid var(--border); padding: 28px 28px 24px; }
+  .journey-face.journey-back { background: #0B1B33; transform: rotateY(180deg); padding: 28px 26px; display: flex; flex-direction: column; justify-content: center; }
+  .journey-back-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #7FA8E0; margin-bottom: 20px; }
+  .journey-feature { display: flex; gap: 13px; margin-bottom: 20px; }
+  .journey-feature:last-of-type { margin-bottom: 0; }
+  .journey-feature-icon { flex-shrink: 0; color: #8FD65C; }
+  .journey-feature-title { font-size: 13.5px; font-weight: 700; color: #fff; }
+  .journey-feature-desc { font-size: 12px; color: #9DB4D6; margin-top: 3px; line-height: 1.5; }
+  .journey-back-hint { text-align: center; font-size: 11px; color: #7FA8E0; margin-top: 22px; }
 
   .sponsor-band { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg2); display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
   .estimator-box { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg2); }
@@ -849,6 +861,7 @@
   <div class="nav-links">
     <a href="#how-it-works" class="nav-link">How it works</a>
     <a href="#directory" class="nav-link">Directory</a>
+    <a href="/for-creators.html" class="nav-link">For Creators</a>
     <a href="#decision-memo" class="nav-link">Decision Memo</a>
     <a href="/methodology.html" class="nav-link">Methodology</a>
     <a href="#pricing" class="nav-link">Pricing</a>
@@ -885,7 +898,9 @@
     </div>
 
     <div class="hero3-right">
-      <div class="journey-card">
+      <div class="journey-wrap" id="journeyWrap">
+      <div class="journey-flip" id="journeyFlip">
+      <div class="journey-face journey-front">
         <div class="journey-label">Your Kitscore Journey</div>
         <div class="journey-step done">
           <div class="journey-check done">
@@ -913,10 +928,54 @@
         </div>
         <div class="journey-result">✓ Kitscore: 91 · Gold Tier</div>
       </div>
+      <div class="journey-face journey-back">
+        <div class="journey-back-label">How your deal is protected</div>
+        <div class="journey-feature">
+          <div class="journey-feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <div><div class="journey-feature-title">Escrow-held payments</div><div class="journey-feature-desc">Funds are locked before you start, released when you deliver.</div></div>
+        </div>
+        <div class="journey-feature">
+          <div class="journey-feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg></div>
+          <div><div class="journey-feature-title">Signed contracts</div><div class="journey-feature-desc">Clear terms and deliverables before any work begins.</div></div>
+        </div>
+        <div class="journey-feature">
+          <div class="journey-feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <div><div class="journey-feature-title">Dispute protection</div><div class="journey-feature-desc">If something goes wrong, there's a resolution process.</div></div>
+        </div>
+        <div class="journey-feature">
+          <div class="journey-feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M9 13.5L7 22l5-3 5 3-2-8.5"/></svg></div>
+          <div><div class="journey-feature-title">Verified evidence</div><div class="journey-feature-desc">Your Kitscore is proof, not a self-reported number.</div></div>
+        </div>
+        <div class="journey-back-hint">tap to flip back</div>
+      </div>
+      </div>
+      </div>
       <div class="journey-caption">claim → verify → score → <a href="/app/auth.html">get hired</a></div>
     </div>
   </div>
 </div>
+<script>
+(function(){
+  var wrap = document.getElementById('journeyWrap');
+  var flip = document.getElementById('journeyFlip');
+  if (!wrap || !flip) return;
+  var flipped = false, tiltX = 0, tiltY = 0;
+  function render(){
+    var flipDeg = flipped ? 180 : 0;
+    flip.style.transform = 'rotateX(' + tiltX + 'deg) rotateY(' + (flipDeg + tiltY) + 'deg)';
+  }
+  wrap.addEventListener('mousemove', function(e){
+    var r = wrap.getBoundingClientRect();
+    var px = (e.clientX - r.left) / r.width - 0.5;
+    var py = (e.clientY - r.top) / r.height - 0.5;
+    tiltX = py * -12;
+    tiltY = px * 12;
+    render();
+  });
+  wrap.addEventListener('mouseleave', function(){ tiltX = 0; tiltY = 0; render(); });
+  wrap.addEventListener('click', function(){ flipped = !flipped; render(); });
+})();
+</script>
 
 <!-- TIER ESTIMATOR -->
 <section id="tier-estimator" style="padding:0 2rem 48px;max-width:1100px;margin:0 auto">
