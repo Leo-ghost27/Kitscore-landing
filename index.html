@@ -245,12 +245,17 @@
   .eyebrow-chip.creator { background: var(--accent-dim); }
   .eyebrow-chip.sponsor { background: var(--accent-dim); }
 
-  /* HERO DIVIDER */
+  /* HERO DIVIDER — proof-stat ticker */
   .hero-divider { position: relative; width: 100vw; margin-left: calc(50% - 50vw); margin-top: 40px; margin-bottom: 40px; }
-  .hero-divider-line { border: none; border-top: 0.5px solid var(--border); margin: 0; }
-  .hero-divider-pill { position: relative; top: -13px; margin: 0 auto; width: fit-content; background: var(--bg); border: 0.5px solid var(--border-hover); border-radius: 999px; padding: 7px 18px; font-size: 12.5px; color: var(--muted); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: border-color 0.15s, color 0.15s; }
+  .hero-divider-ticker { background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); overflow: hidden; white-space: nowrap; position: relative; height: 40px; display: flex; align-items: center; }
+  .hero-divider-track { display: inline-flex; align-items: center; gap: 36px; animation: dividerTickerScroll 26s linear infinite; padding-left: 100%; }
+  .hero-divider-ticker:hover .hero-divider-track { animation-play-state: paused; }
+  .hero-divider-item { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .hero-divider-item strong { font-family: var(--font-display); font-weight: 700; color: var(--accent); font-size: 13px; }
+  .hero-divider-sep { color: var(--border-hover); flex-shrink: 0; }
+  @keyframes dividerTickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+  .hero-divider-pill { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--bg); border: 0.5px solid var(--border-hover); border-radius: 999px; padding: 7px 18px; font-size: 12.5px; color: var(--muted); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: border-color 0.15s, color 0.15s, box-shadow 0.15s; box-shadow: 0 0 0 6px var(--bg); }
   .hero-divider-pill:hover { border-color: var(--accent); color: var(--accent); }
-  .hero-divider-wrap { display: flex; justify-content: center; }
 
   /* DARK CTA VARIANT (sponsor) */
   .btn-dark { background: var(--text); color: #fff; border: none; cursor: pointer; padding: 12px 24px; border-radius: 0; font-size: 14px; font-weight: 600; font-family: var(--font); transition: opacity 0.15s, transform 0.15s; display: inline-flex; align-items: center; gap: 6px; }
@@ -1071,13 +1076,26 @@
   </div>
 
   <div class="hero-divider">
-    <hr class="hero-divider-line" />
-    <div class="hero-divider-wrap">
-      <a href="#for-sponsors" class="hero-divider-pill">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-        Brought a sponsor instead?
-      </a>
+    <div class="hero-divider-ticker" aria-hidden="true">
+      <div class="hero-divider-track">
+        <span class="hero-divider-item"><strong>91</strong> Trust Score</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>94%</strong> Reliability Score</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>$29</strong> full evaluation</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>500+</strong> verified creators</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>100%</strong> evidence-backed</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>8-point</strong> brand safety check</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>91</strong> Trust Score</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>94%</strong> Reliability Score</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>$29</strong> full evaluation</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>500+</strong> verified creators</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>100%</strong> evidence-backed</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>8-point</strong> brand safety check</span>
+      </div>
     </div>
+    <a href="#for-sponsors" class="hero-divider-pill">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+      Brought a sponsor instead?
+    </a>
   </div>
 </section>
 <script>
@@ -1235,7 +1253,7 @@
       <div class="hiw2-card">
         <div class="hiw2-num">03</div>
         <h3>Unlock the Full Evaluation for $29</h3>
-        <p>Score breakdown, risk assessment, audience fit analysis, evidence summary, and a sponsor decision memo PDF — everything to say yes with confidence. Ready to move forward? Post an open brief or draft a contract directly, and pay through Kitscore escrow — funds held until the creator delivers and you approve, no upfront risk.</p>
+        <p>Score breakdown, risk assessment, audience fit, evidence summary, and a sponsor decision memo PDF. Then post a brief or draft a contract and pay through Kitscore escrow — funds held until delivery, no upfront risk.</p>
       </div>
     </div>
     <div style="text-align:center">
@@ -1264,7 +1282,7 @@
       <div class="hiw2-card">
         <div class="hiw2-num">04</div>
         <h3>Close the Deal, Protected</h3>
-        <p>Browse open briefs and apply directly. Sign a contract that's scanned for one-sided terms before you sign, work off a real deliverable checklist so scope is never a guessing game, and get paid through Kitscore Escrow — funds held until you deliver, Kitscore's 10% fee always shown upfront. Every completed campaign becomes a Performance Recap: proof for the next pitch.</p>
+        <p>Browse briefs and apply. Contracts get scanned for one-sided terms, work runs off a real deliverable checklist, and payment goes through Kitscore Escrow — fee always shown upfront. Every campaign becomes proof for the next pitch.</p>
       </div>
     </div>
     <p class="hiw2-bring-deal"><strong>Already have a sponsor?</strong> You don't need an open brief — bring the deal you already struck straight to Kitscore for a contract and escrow protection. Kitscore takes 10%, less than half what Fiverr takes.</p>
@@ -1458,8 +1476,21 @@
   <div style="margin-top:44px;display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start;border-top:0.5px solid var(--border);padding-top:44px">
     <div>
       <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;margin-bottom:14px;color:var(--text)">Built for the people making real decisions.</h3>
-      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:14px">Kitscore was built because sponsorship decisions were being made on the wrong signals. Follower counts, reach screenshots, and self-reported media kits were passing as due diligence.</p>
-      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:24px">We built the infrastructure to change that — verified campaign history, mutual confirmation, sponsor endorsements, reliability scores. A platform where every number comes with proof.</p>
+      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:16px">Sponsorship decisions were being made on follower counts, reach screenshots, and self-reported media kits. We built the infrastructure to change that:</p>
+      <ul style="list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:10px">
+        <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
+          Verified campaign history, not self-reported claims
+        </li>
+        <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
+          Mutual confirmation between creator and sponsor
+        </li>
+        <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
+          Sponsor endorsements and reliability scores — every number comes with proof
+        </li>
+      </ul>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <a href="/app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Evaluate a Creator →</a>
         <a href="/compare.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Kitscore vs. AI Content-Scoring Tools →</a>
