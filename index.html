@@ -208,6 +208,18 @@
   .journey-caption a { color: var(--accent); font-weight: 600; }
 
   .sponsor-band { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg2); display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+  .estimator-box { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg2); }
+  .estimator-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .estimator-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 20px; }
+  .estimator-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 22px; }
+  .estimator-fields label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .estimator-fields input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--border); border-radius: 0; background: #fff; font-family: var(--font); font-size: 14px; color: var(--text); }
+  .estimator-fields input:focus { outline: none; border-color: var(--accent); }
+  .estimator-result { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 18px; flex-wrap: wrap; gap: 16px; }
+  .estimator-result-item .estimator-result-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .estimator-result-item .estimator-result-value { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--text); }
+  .estimator-result-item .estimator-result-value.accent { color: var(--accent); }
+  @media (max-width: 640px) { .estimator-fields { grid-template-columns: 1fr; } }
   .sponsor-band-copy { flex: 1; min-width: 280px; }
   .sponsor-band-copy h3 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin: 0 0 10px; }
   .sponsor-band-copy p { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.7; max-width: 480px; }
@@ -921,6 +933,62 @@
     </div>
   </div>
 </div>
+
+<!-- TIER ESTIMATOR -->
+<section id="tier-estimator" style="padding:0 2rem 48px;max-width:1100px;margin:0 auto">
+  <div class="estimator-box">
+    <div class="estimator-label">Try it now</div>
+    <h3 class="estimator-title">See your estimated tier</h3>
+    <div class="estimator-fields">
+      <div>
+        <label for="est-followers">Followers</label>
+        <input type="number" id="est-followers" value="12000" min="0" step="100" />
+      </div>
+      <div>
+        <label for="est-likes">Avg. likes per post</label>
+        <input type="number" id="est-likes" value="420" min="0" step="10" />
+      </div>
+      <div>
+        <label for="est-comments">Avg. comments per post</label>
+        <input type="number" id="est-comments" value="18" min="0" step="1" />
+      </div>
+    </div>
+    <div class="estimator-result">
+      <div class="estimator-result-item">
+        <div class="estimator-result-label">Estimated tier</div>
+        <div class="estimator-result-value accent" id="est-tier">Silver</div>
+      </div>
+      <div class="estimator-result-item">
+        <div class="estimator-result-label">Est. Kitscore</div>
+        <div class="estimator-result-value" id="est-score">62</div>
+      </div>
+      <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Claim this score for real →</a>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  function calcEstimator(){
+    var f = parseFloat(document.getElementById('est-followers').value) || 0;
+    var l = parseFloat(document.getElementById('est-likes').value) || 0;
+    var c = parseFloat(document.getElementById('est-comments').value) || 0;
+    var engagement = f > 0 ? ((l + c) / f) * 100 : 0;
+    var followerPoints = Math.min(40, Math.log10(f + 1) * 8);
+    var engagementPoints = Math.min(45, engagement * 6.5);
+    var score = Math.round(Math.min(97, 15 + followerPoints + engagementPoints));
+    var tier = 'Bronze';
+    if (score >= 85) tier = 'Gold';
+    else if (score >= 65) tier = 'Silver';
+    else if (score < 40) tier = 'Unranked';
+    document.getElementById('est-score').textContent = score;
+    document.getElementById('est-tier').textContent = tier;
+  }
+  ['est-followers', 'est-likes', 'est-comments'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calcEstimator);
+  });
+  calcEstimator();
+})();
+</script>
 
 <!-- FOR SPONSORS BAND -->
 <section id="for-sponsors" style="padding:0 2rem 48px;max-width:1100px;margin:0 auto">
