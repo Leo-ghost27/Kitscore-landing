@@ -243,12 +243,14 @@
   .eyebrow-chip-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
   .eyebrow-chip { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .eyebrow-chip.creator { background: var(--accent-dim); }
-  .eyebrow-chip.sponsor { background: #EFEAFB; }
-  .eyebrow-chip.sponsor svg { color: #6D4FC7; }
+  .eyebrow-chip.sponsor { background: var(--accent-dim); }
 
   /* HERO DIVIDER */
-  .hero-divider { position: relative; width: 100vw; margin-left: calc(50% - 50vw); margin-top: 44px; margin-bottom: 44px; background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 18px 0; display: flex; align-items: center; justify-content: center; }
-  .hero-divider-pill { background: var(--bg); border: 1px solid var(--border-hover); border-radius: 999px; padding: 6px 16px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .hero-divider { position: relative; width: 100vw; margin-left: calc(50% - 50vw); margin-top: 40px; margin-bottom: 40px; }
+  .hero-divider-line { border: none; border-top: 0.5px solid var(--border); margin: 0; }
+  .hero-divider-pill { position: relative; top: -13px; margin: 0 auto; width: fit-content; background: var(--bg); border: 0.5px solid var(--border-hover); border-radius: 999px; padding: 7px 18px; font-size: 12.5px; color: var(--muted); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: border-color 0.15s, color 0.15s; }
+  .hero-divider-pill:hover { border-color: var(--accent); color: var(--accent); }
+  .hero-divider-wrap { display: flex; justify-content: center; }
 
   /* DARK CTA VARIANT (sponsor) */
   .btn-dark { background: var(--text); color: #fff; border: none; cursor: pointer; padding: 12px 24px; border-radius: 0; font-size: 14px; font-weight: 600; font-family: var(--font); transition: opacity 0.15s, transform 0.15s; display: inline-flex; align-items: center; gap: 6px; }
@@ -1069,7 +1071,13 @@
   </div>
 
   <div class="hero-divider">
-    <div class="hero-divider-pill">Brought a sponsor instead?</div>
+    <hr class="hero-divider-line" />
+    <div class="hero-divider-wrap">
+      <a href="#for-sponsors" class="hero-divider-pill">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+        Brought a sponsor instead?
+      </a>
+    </div>
   </div>
 </section>
 <script>
@@ -1105,7 +1113,7 @@
     <div class="sponsor-band-copy">
       <div class="eyebrow-chip-row">
         <div class="eyebrow-chip sponsor">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6D4FC7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/><path d="m9 12 2 2 4-4"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/><path d="m9 12 2 2 4-4"/></svg>
         </div>
         <span class="section-label" style="margin:0">For Sponsors</span>
       </div>
@@ -1458,7 +1466,7 @@
         <a href="mailto:hello@kitscore.co" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Contact us</a>
       </div>
     </div>
-    <div style="background:var(--accent-dim);border:0.5px solid #B5D4F4;border-radius:0;padding:18px 20px;border-left:2px solid var(--accent)">
+    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:18px 20px;border-left:2px solid var(--accent);box-shadow:var(--shadow-sm)">
       <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:5px">Our mission</div>
       <div style="font-size:13px;color:var(--text);line-height:1.65">Make sponsorship decisions based on proof, not promises. We're building the reputation infrastructure for the creator economy.</div>
     </div>
