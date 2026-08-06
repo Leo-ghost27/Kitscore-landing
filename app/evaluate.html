@@ -63,7 +63,63 @@ const VERDICT_STYLE = {
   caution: ['b-amber','ti-alert-triangle','Caution'],
   avoid: ['b-red','ti-circle-x','Avoid']
 };
+function computeRiskLevel(compRowMap, penaltyTotal) {
+  const brandSafety = compRowMap.brand_safety;
+  if (penaltyTotal >= 15 || (brandSafety && brandSafety.value < 60)) return { label: 'High', color: '#B42318' };
+  if (penaltyTotal >= 5 || (brandSafety && brandSafety.value < 80)) return { label: 'Medium', color: '#92600A' };
+  return { label: 'Low', color: '#1C7C3F' };
+}
 let creatorId, profile, currentEvalId, isTeamOwner = false, myTeamId = null, teamClients = [];
+
+// Kept logically identical to buildKeyFindings / buildRecommendationConditions
+// / componentRiskBand in lib/handlers/document-sponsor-memo.js -- if you
+// change the rules there, change them here too, or the on-screen page and
+// the paid PDF will disagree again (that was the original bug this fixed).
+function componentRiskBand(value) {
+  if (value == null) return null;
+  const v = Number(value);
+  if (v >= 80) return { label: 'Low', color: '#1C7C3F' };
+  if (v >= 60) return { label: 'Medium', color: '#92600A' };
+  return { label: 'High', color: '#B42318' };
+}
+function buildKeyFindings({ compRowMap, verifiedCount, creator, safetyAnswers, penaltyTotal }) {
+  const out = [];
+  out.push(verifiedCount > 0
+    ? { ok: true, text: `${verifiedCount} verified campaign${verifiedCount === 1 ? '' : 's'} with mutual sponsor confirmation` }
+    : { ok: false, text: 'No verified campaigns on file yet' });
+  const auth = compRowMap.audience_authenticity;
+  if (auth) out.push({ ok: Number(auth.value) >= 70, text: `Audience authenticity scored ${auth.value}/100` });
+  const consist = compRowMap.content_consistency_youtube;
+  if (consist) out.push({ ok: Number(consist.value) >= 70, text: `Content consistency scored ${consist.value}/100 (YouTube)` });
+  if (creator?.would_hire_again_pct != null) {
+    out.push({ ok: Number(creator.would_hire_again_pct) >= 70, text: `${creator.would_hire_again_pct}% of past sponsors said they'd hire again` });
+  }
+  if ((safetyAnswers || []).length > 0) {
+    out.push(penaltyTotal === 0
+      ? { ok: true, text: 'No brand-safety concerns flagged in self-report' }
+      : { ok: false, text: `Brand-safety self-report flagged ${penaltyTotal} penalty point${penaltyTotal === 1 ? '' : 's'}` });
+  }
+  return out.slice(0, 5);
+}
+function buildRecommendationConditions({ verdictKey, riskLabel, compRowMap, verifiedCount, penaltyTotal }) {
+  const conditions = [];
+  const auth = compRowMap.audience_authenticity;
+  if (verdictKey === 'avoid') {
+    if (riskLabel === 'High') conditions.push('Brand safety self-report indicates elevated risk (see Risk Assessment) — do not proceed without a direct conversation with the creator.');
+    if (verifiedCount === 0) conditions.push('No verified campaign history exists to confirm delivery reliability.');
+    if (auth && Number(auth.value) < 60) conditions.push(`Audience authenticity score (${auth.value}/100) is below Kitscore's recommended threshold.`);
+    if (conditions.length === 0) conditions.push('Overall Kitscore falls below the recommended threshold for this evaluation.');
+  } else if (verdictKey === 'caution') {
+    if (riskLabel !== 'Low') conditions.push('Review brand-safety self-report answers before finalizing creative direction.');
+    if (verifiedCount < 2) conditions.push('Limited verified campaign history — consider a smaller trial engagement first.');
+    if (auth && Number(auth.value) < 75) conditions.push(`Audience authenticity is self/derived at ${auth.value}/100 — confirm independently if the campaign is high-budget.`);
+    if (conditions.length === 0) conditions.push('No specific blockers identified beyond standard due diligence — proceed with normal contract terms.');
+  } else {
+    conditions.push('Confirm campaign scope and deliverables align with your specific goals.');
+    if (penaltyTotal > 0) conditions.push('Review brand-safety self-report answers before finalizing creative direction.');
+  }
+  return conditions.slice(0, 4);
+}
 
 async function authedFetch(url, body) {
   const { data: { session } } = await sb.auth.getSession();
@@ -93,14 +149,17 @@ async function load() {
     } else if (checkoutState === 'cancelled') {
       document.getElementById('banner').innerHTML = `<div class="banner pending">Checkout cancelled — no charge was made.</div>`;
     }
-  const [{ data: creator }, { data: profileRow }, { data: components }, { data: campaigns }, { data: evalRow }, { data: membership }, { data: sponsorRow }] = await Promise.all([
-    sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, reliability_score, repeat_sponsor_rate').eq('id', creatorId).single(),
+  const [{ data: creator }, { data: profileRow }, { data: components }, { data: campaigns }, { data: evalRow }, { data: membership }, { data: sponsorRow }, { data: audience }, { data: safetyAnswers }, { data: penaltyTable }] = await Promise.all([
+    sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, reliability_score, repeat_sponsor_rate, would_hire_again_pct').eq('id', creatorId).single(),
     sb.from('profiles').select('display_name').eq('id', creatorId).single(),
     sb.from('score_components').select('*').eq('creator_id', creatorId),
     sb.from('campaigns').select('status').eq('creator_id', creatorId).eq('status', 'verified'),
     sb.from('evaluations').select('*').eq('creator_id', creatorId).eq('sponsor_id', profile.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
     sb.from('team_members').select('team_id, role').eq('sponsor_id', profile.id),
-    sb.from('sponsors').select('plan, evals_used_this_period').eq('id', profile.id).maybeSingle(),
+    sb.from('sponsors').select('company_name, plan, evals_used_this_period').eq('id', profile.id).maybeSingle(),
+    sb.from('audience_demographics').select('dimension, label, pct').eq('creator_id', creatorId),
+    sb.from('brand_safety_answers').select('*').eq('creator_id', creatorId),
+    sb.from('brand_safety_penalties').select('*'),
   ]);
   // A sponsor can belong to up to 2 teams. maybeSingle() would throw once
   // that's possible, so this resolves the same "active team" the switcher
@@ -141,6 +200,12 @@ async function load() {
   const verifiedCount = (campaigns || []).length;
   const compMap = {};
   (components || []).forEach(c => compMap[c.component_key] = c.value);
+  const compRowMap = {};
+  (components || []).forEach(c => compRowMap[c.component_key] = c);
+
+  const penaltyLookup = {};
+  (penaltyTable || []).forEach(p => { penaltyLookup[`${p.question_key}::${p.answer}`] = Number(p.penalty) || 0; });
+  const penaltyTotal = (safetyAnswers || []).reduce((sum, a) => sum + (penaltyLookup[`${a.question_key}::${a.answer}`] || 0), 0);
 
   const creatorName = escapeHtml(profileRow?.display_name || 'Creator');
   const trustScore = creator?.trust_score ?? 0;
@@ -223,6 +288,68 @@ async function load() {
   }
 
   // ── Unlocked — show everything ────────────────────────────────────────────
+  const riskInfo = computeRiskLevel(compRowMap, penaltyTotal);
+  const findings = buildKeyFindings({ compRowMap, verifiedCount, creator, safetyAnswers, penaltyTotal });
+  const conditions = buildRecommendationConditions({ verdictKey: evalRow.recommendation_verdict || 'caution', riskLabel: riskInfo.label, compRowMap, verifiedCount, penaltyTotal });
+
+  const audByDim = (dim) => (audience || []).filter(r => r.dimension === dim).sort((a, b) => b.pct - a.pct);
+  const audCountries = audByDim('country'), audAges = audByDim('age'), audGenders = audByDim('gender');
+  const AUD_GENDER_LABEL = { female: 'Female', male: 'Male', other: 'Other' };
+  const hasAudienceData = audCountries.length > 0 || audAges.length > 0 || audGenders.length > 0;
+
+  const planLabel = evalRow.team_id ? 'Team' : (sponsorRow?.plan ? sponsorRow.plan.charAt(0).toUpperCase() + sponsorRow.plan.slice(1) : '—');
+  const unlockedDate = evalRow.unlocked_at ? new Date(evalRow.unlocked_at).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+
+  const sponsorContextCard = `
+    <div class="card">
+      <div class="sec">Sponsor context</div>
+      <div class="row"><span style="width:160px;color:var(--color-text-secondary)">Sponsor</span><strong>${escapeHtml(sponsorRow?.company_name || '—')}</strong></div>
+      <div class="row"><span style="width:160px;color:var(--color-text-secondary)">Plan</span><strong>${escapeHtml(planLabel)}</strong></div>
+      <div class="row"><span style="width:160px;color:var(--color-text-secondary)">Evaluation ID</span><strong>${escapeHtml(evalRow.id.slice(0,8))}</strong></div>
+      <div class="row"><span style="width:160px;color:var(--color-text-secondary)">Unlocked</span><strong>${escapeHtml(unlockedDate)}</strong></div>
+    </div>`;
+
+  const keyFindingsCard = `
+    <div class="card">
+      <div class="sec">Key findings</div>
+      ${findings.map(f => `<div class="row"><span style="width:8px;height:8px;border-radius:50%;background:${f.ok ? '#1C7C3F' : '#92600A'};display:inline-block;flex-shrink:0"></span>${escapeHtml(f.text)}</div>`).join('')}
+    </div>`;
+
+  const audienceFitCard = hasAudienceData ? `
+    <div class="card">
+      <div class="sec">Audience fit analysis</div>
+      <div style="font-size:10px;font-style:italic;color:var(--color-text-tertiary);margin-bottom:8px">Self-reported by the creator, not verified against platform analytics.</div>
+      ${audCountries.length ? `<div class="row"><span style="width:160px;color:var(--color-text-secondary)">Top countries</span><strong>${escapeHtml(audCountries.map(c=>`${c.label} (${c.pct}%)`).join(', '))}</strong></div>` : ''}
+      ${audAges.length ? `<div class="row"><span style="width:160px;color:var(--color-text-secondary)">Age breakdown</span><strong>${escapeHtml(audAges.map(a=>`${a.label} (${a.pct}%)`).join(', '))}</strong></div>` : ''}
+      ${audGenders.length ? `<div class="row"><span style="width:160px;color:var(--color-text-secondary)">Gender split</span><strong>${escapeHtml(audGenders.map(g=>`${AUD_GENDER_LABEL[g.label]||g.label} (${g.pct}%)`).join(', '))}</strong></div>` : ''}
+    </div>` : '';
+
+  const compRiskRows = [
+    ['Audience authenticity', compRowMap.audience_authenticity],
+    ['Content consistency (YouTube)', compRowMap.content_consistency_youtube],
+  ].filter(([, comp]) => comp && componentRiskBand(comp.value));
+  const riskAssessmentCard = ((safetyAnswers||[]).length > 0 || compRiskRows.length > 0) ? `
+    <div class="card">
+      <div class="sec">Risk assessment</div>
+      ${(safetyAnswers||[]).map(a => {
+        const penalty = penaltyLookup[`${a.question_key}::${a.answer}`] || 0;
+        const rr = penalty >= 8 ? {label:'High',color:'#B42318'} : penalty >= 3 ? {label:'Medium',color:'#92600A'} : {label:'Low',color:'#1C7C3F'};
+        return `<div class="row" style="justify-content:space-between"><span>${escapeHtml(a.question_key.replace(/_/g,' '))}: ${escapeHtml(a.answer)}</span><strong style="color:${rr.color}">${rr.label}</strong></div>`;
+      }).join('')}
+      ${compRiskRows.map(([label, comp]) => {
+        const band = componentRiskBand(comp.value);
+        return `<div class="row" style="justify-content:space-between"><span>${escapeHtml(label)}: ${comp.value}/100</span><strong style="color:${band.color}">${band.label}</strong></div>`;
+      }).join('')}
+      <div style="font-size:10px;color:var(--color-text-tertiary);margin-top:8px">Brand-safety rows are self-reported by the creator. Audience authenticity and content consistency are computed from verified platform data.</div>
+    </div>` : '';
+
+  const recommendationCard = `
+    <div class="card">
+      <div class="sec">Recommendation & conditions</div>
+      <div style="font-weight:600;margin-bottom:8px">${label}</div>
+      ${conditions.map(c => `<div class="row"><span style="width:8px;height:8px;border-radius:50%;background:#2563EB;display:inline-block;flex-shrink:0;margin-top:5px"></span>${escapeHtml(c)}</div>`).join('')}
+    </div>`;
+
   document.getElementById('content').innerHTML = `
     <div style="font-size:13px;font-weight:500;margin-bottom:12px">${creatorName} · ${escapeHtml(creator?.niche||'')} · ${escapeHtml(creator?.location||'')}</div>
     <div class="teaser-hero">
@@ -236,47 +363,18 @@ async function load() {
         <span class="badge b-blue">${verifiedCount} verified campaigns</span>
       </div>
       <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.7;margin-bottom:12px">${escapeHtml(evalRow.recommendation_summary || '')}</div>
-      ${(() => {
-        try {
-          const brief = evalRow.ai_summary ? JSON.parse(evalRow.ai_summary) : null;
-          if (!brief) return '';
-          const sections = [
-            { label: 'Audience fit', key: 'audience_fit', icon: 'ti-users' },
-            { label: 'Risk assessment', key: 'risk_assessment', icon: 'ti-shield-check' },
-            { label: 'Confidence', key: 'confidence_note', icon: 'ti-chart-bar' },
-            { label: 'Recommendation', key: 'recommendation', icon: 'ti-bulb' },
-          ];
-          return `
-            <div style="border-top:0.5px solid var(--color-border-tertiary);padding-top:10px;margin-top:4px">
-              <div style="font-size:9px;font-weight:600;letter-spacing:.08em;color:var(--color-text-tertiary);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px">
-                <span style="width:6px;height:6px;border-radius:50%;background:#2563EB;display:inline-block"></span>Kitscore AI Decision Brief
-              </div>
-              ${sections.map(s => brief[s.key] ? `
-                <div style="display:flex;gap:10px;margin-bottom:10px;align-items:flex-start">
-                  <i class="ti ${s.icon}" style="color:#2563EB;font-size:13px;margin-top:1px;flex-shrink:0"></i>
-                  <div>
-                    <div style="font-size:10px;font-weight:600;color:var(--color-text-primary);margin-bottom:2px">${s.label}</div>
-                    <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">${escapeHtml(String(brief[s.key]))}</div>
-                  </div>
-                </div>
-              ` : '').join('')}
-              <div style="font-size:9px;color:var(--color-text-tertiary);margin-top:6px">Generated from ${verifiedCount} verified campaigns · ${escapeHtml(String(creator?.confidence ?? ''))}% confidence · Kitscore AI</div>
-            </div>`;
-        } catch(e) { return ''; }
-      })()}
       <button class="cta" style="background:#1C7C3F;margin-top:12px" onclick="downloadPdf()"><i class="ti ti-file-download"></i>Download PDF</button>
       <button class="cta" style="background:var(--color-background-secondary);color:var(--color-text-secondary);margin-top:12px;margin-left:8px" onclick="window.location.href='campaigns.html?creator=${creatorId}'"><i class="ti ti-flag"></i>Log a campaign with this creator</button>
     </div>
+    ${sponsorContextCard}
+    ${keyFindingsCard}
+    ${audienceFitCard}
     <div class="card">
       <div class="sec">Score breakdown</div>
       ${(components||[]).map(c => `<div class="row"><span style="width:160px;color:var(--color-text-secondary)">${c.label}</span><strong>${c.value}</strong></div>`).join('')}
     </div>
-    <div class="card">
-      <div class="sec">Key reasons</div>
-      <div class="row"><i class="ti ti-rosette-discount-check" style="color:#1C7C3F"></i>${verifiedCount} mutually verified campaigns</div>
-      <div class="row"><i class="ti ti-shield-check" style="color:#1C7C3F"></i>Brand safety score: ${compMap.brand_safety ?? '—'}</div>
-      <div class="row"><i class="ti ti-users" style="color:#1C7C3F"></i>Audience authenticity: ${compMap.audience_authenticity ?? '—'}</div>
-    </div>
+    ${riskAssessmentCard}
+    ${recommendationCard}
     ${evalRow.team_id ? `
     <div class="card">
       <div class="sec">Client</div>
