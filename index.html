@@ -88,6 +88,8 @@
   .nav-links { display: flex; gap: 24px; align-items: center; }
   .nav-link { font-size: 13px; font-weight: 500; color: var(--muted); transition: color 0.15s; }
   .nav-link:hover { color: var(--text); }
+  .nav-link--audience { padding: 5px 10px; border-radius: 4px; background: var(--accent-dim); color: var(--accent) !important; }
+  .nav-link--audience:hover { background: var(--accent-dim2); color: var(--accent-light) !important; }
   .nav-cta {
     background: var(--accent); color: #fff;
     border: none; cursor: pointer;
@@ -904,11 +906,11 @@
   <div class="nav-links">
     <a href="#how-it-works" class="nav-link">How it works</a>
     <a href="#directory" class="nav-link">Directory</a>
-    <a href="/for-creators.html" class="nav-link">For Creators</a>
+    <a href="/for-creators.html" class="nav-link nav-link--audience">For Creators</a>
+    <a href="/agencies.html" class="nav-link nav-link--audience">Agencies</a>
     <a href="#decision-memo" class="nav-link">Decision Memo</a>
     <a href="/methodology.html" class="nav-link">Methodology</a>
     <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="/agencies.html" class="nav-link">Agencies</a>
     <a href="/app/auth.html" class="nav-link">Sign in</a>
   </div>
   <a href="/app/auth.html" class="nav-cta" style="text-decoration:none">Get Started</a>
@@ -1787,11 +1789,8 @@
   </div>
 </section>
 
-<hr class="section-divider" />
-
 <!-- SPONSOR DECISION MEMO -->
-<div class="band-alt">
-<section id="decision-memo" style="padding:64px 2rem;max-width:960px;margin:0 auto">
+<section id="decision-memo" style="padding:24px 2rem 64px;max-width:960px;margin:0 auto">
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center">
     <div>
       <div class="section-label section-label--pill">Sponsorship Due Diligence</div>
@@ -1854,12 +1853,9 @@
     </div>
   </div>
 </section>
-</div>
-
-<hr class="section-divider" />
 
 <!-- PRICING -->
-<section id="pricing">
+<section id="pricing" style="padding-top:24px">
   <div class="section-label" style="text-align:center">Pricing</div>
   <h2 class="section-h" style="text-align:center">Simple, <strong>transparent pricing.</strong></h2>
   <p class="section-sub" style="text-align:center;margin-left:auto;margin-right:auto">Pay per evaluation or subscribe for ongoing creator pipeline management.</p>
