@@ -212,19 +212,47 @@
   .journey-back-hint { text-align: center; font-size: 11px; color: #7FA8E0; margin-top: 22px; }
 
   .sponsor-band { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg-alt); display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
-  .estimator-box { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg-alt); }
+  .estimator-box { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg); box-shadow: var(--shadow-sm); }
   .estimator-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
   .estimator-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 20px; }
   .estimator-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 22px; }
   .estimator-fields label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
   .estimator-fields input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--border); border-radius: 0; background: #fff; font-family: var(--font); font-size: 14px; color: var(--text); }
   .estimator-fields input:focus { outline: none; border-color: var(--accent); }
-  .estimator-result { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 18px; flex-wrap: wrap; gap: 16px; }
+  .estimator-result { display: flex; align-items: flex-end; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 18px; flex-wrap: wrap; gap: 16px; }
   .estimator-result-item .estimator-result-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
   .estimator-result-item .estimator-result-value { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--text); }
   .estimator-result-item .estimator-result-value.accent { color: var(--accent); }
   .estimator-disclaimer { font-size: 11.5px; color: var(--muted); margin: 14px 0 0; }
-  @media (max-width: 640px) { .estimator-fields { grid-template-columns: 1fr; } }
+  .estimator-cta-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .estimator-microcopy { font-size: 10.5px; color: var(--muted2); }
+  .estimator-live-tag { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .estimator-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; flex-shrink: 0; }
+  @media (max-width: 640px) { .estimator-fields { grid-template-columns: 1fr; } .estimator-result { align-items: flex-start; } .estimator-cta-wrap { align-items: flex-start; } }
+
+  /* TIER METER */
+  .tier-meter { margin-bottom: 20px; }
+  .tier-meter-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .tier-meter-track { position: relative; height: 6px; background: var(--bg3); border-radius: 3px; }
+  .tier-meter-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.2s ease; }
+  .tier-meter-dot { position: absolute; top: 50%; width: 12px; height: 12px; background: var(--bg); border: 2px solid var(--accent); border-radius: 50%; transform: translate(-50%, -50%); transition: left 0.2s ease; }
+  .tier-meter-labels { display: flex; justify-content: space-between; margin-top: 6px; }
+  .tier-meter-labels span { font-size: 9.5px; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* SECTION EYEBROW WITH ICON CHIP */
+  .eyebrow-chip-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .eyebrow-chip { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .eyebrow-chip.creator { background: var(--accent-dim); }
+  .eyebrow-chip.sponsor { background: #EFEAFB; }
+  .eyebrow-chip.sponsor svg { color: #6D4FC7; }
+
+  /* HERO DIVIDER */
+  .hero-divider { position: relative; height: 1px; background: var(--border-hover); margin: 44px 0; }
+  .hero-divider-pill { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--bg); border: 1px solid var(--border-hover); border-radius: 999px; padding: 6px 16px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+  /* DARK CTA VARIANT (sponsor) */
+  .btn-dark { background: var(--text); color: #fff; border: none; cursor: pointer; padding: 12px 24px; border-radius: 0; font-size: 14px; font-weight: 600; font-family: var(--font); transition: opacity 0.15s, transform 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-dark:hover { opacity: 0.85; transform: translateY(-1px); }
   .sponsor-band-copy { flex: 1; min-width: 280px; }
   .sponsor-band-copy h3 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin: 0 0 10px; }
   .sponsor-band-copy p { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.7; max-width: 480px; }
@@ -978,9 +1006,14 @@
 </script>
 
 <!-- TIER ESTIMATOR -->
-<section id="tier-estimator" style="padding:0 2rem 48px;max-width:1100px;margin:0 auto">
+<section id="tier-estimator" style="padding:0 2rem 0;max-width:1100px;margin:0 auto">
   <div class="estimator-box">
-    <div class="estimator-label">Try it now</div>
+    <div class="eyebrow-chip-row">
+      <div class="eyebrow-chip creator">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="estimator-label" style="margin-bottom:0">Try it now</div>
+    </div>
     <h3 class="estimator-title">See your estimated tier</h3>
     <div class="estimator-fields">
       <div>
@@ -996,18 +1029,47 @@
         <input type="number" id="est-comments" value="18" min="0" step="1" />
       </div>
     </div>
+
+    <div class="tier-meter">
+      <div class="tier-meter-top">
+        <div class="estimator-result-label" style="margin-bottom:0">Estimated tier</div>
+        <div class="estimator-result-item" style="text-align:right">
+          <div class="estimator-result-value accent" id="est-tier" style="font-size:20px;line-height:1">Silver</div>
+        </div>
+      </div>
+      <div class="tier-meter-track">
+        <div class="tier-meter-fill" id="tier-meter-fill" style="width:0%"></div>
+        <div class="tier-meter-dot" id="tier-meter-dot" style="left:0%"></div>
+      </div>
+      <div class="tier-meter-labels">
+        <span>Unranked</span>
+        <span>Bronze</span>
+        <span>Silver</span>
+        <span>Gold</span>
+      </div>
+    </div>
+
     <div class="estimator-result">
-      <div class="estimator-result-item">
-        <div class="estimator-result-label">Estimated tier</div>
-        <div class="estimator-result-value accent" id="est-tier">Silver</div>
+      <div class="estimator-live-tag">
+        <span class="estimator-live-dot"></span>
+        Updates as you type
       </div>
-      <div class="estimator-result-item">
-        <div class="estimator-result-label">Est. Kitscore</div>
-        <div class="estimator-result-value" id="est-score">62</div>
+      <div style="display:flex;align-items:flex-end;gap:24px">
+        <div class="estimator-result-item">
+          <div class="estimator-result-label">Est. Kitscore</div>
+          <div class="estimator-result-value" id="est-score">62</div>
+        </div>
+        <div class="estimator-cta-wrap">
+          <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Claim this score for real →</a>
+          <span class="estimator-microcopy">No signup · 10 seconds</span>
+        </div>
       </div>
-      <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Claim this score for real →</a>
     </div>
     <p class="estimator-disclaimer">Rough estimate only, not your official Kitscore. Your real Kitscore is calculated from verified campaign evidence after you claim your profile.</p>
+  </div>
+
+  <div class="hero-divider">
+    <div class="hero-divider-pill">Brought a sponsor instead?</div>
   </div>
 </section>
 <script>
@@ -1026,6 +1088,9 @@
     else if (score < 40) tier = 'Unranked';
     document.getElementById('est-score').textContent = score;
     document.getElementById('est-tier').textContent = tier;
+    var pct = Math.max(0, Math.min(100, (score / 97) * 100));
+    document.getElementById('tier-meter-fill').style.width = pct + '%';
+    document.getElementById('tier-meter-dot').style.left = pct + '%';
   }
   ['est-followers', 'est-likes', 'est-comments'].forEach(function(id){
     document.getElementById(id).addEventListener('input', calcEstimator);
@@ -1038,12 +1103,17 @@
 <section id="for-sponsors" style="padding:0 2rem 48px;max-width:1100px;margin:0 auto">
   <div class="sponsor-band">
     <div class="sponsor-band-copy">
-      <span class="section-label" style="margin:0 0 8px;display:block">For Sponsors</span>
+      <div class="eyebrow-chip-row">
+        <div class="eyebrow-chip sponsor">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6D4FC7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <span class="section-label" style="margin:0">For Sponsors</span>
+      </div>
       <h3>Evaluate creators with proof, not guesswork.</h3>
       <p>See a creator's <strong style="color:var(--text)">Trust Score</strong> and <strong style="color:var(--text)">Reliability Score</strong> instantly. Unlock the full evaluation, risk analysis, and decision memo for <strong style="color:var(--text)">$29</strong>.</p>
     </div>
     <div class="sponsor-band-ctas">
-      <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Evaluate a Creator →</a>
+      <a href="/app/auth.html" class="btn-dark" style="text-decoration:none">Evaluate a Creator →</a>
       <a href="/sample-sponsor-decision-memo.html" target="_blank" class="btn-ghost" style="text-decoration:none">View Sample Report</a>
     </div>
   </div>
