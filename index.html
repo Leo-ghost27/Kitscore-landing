@@ -33,7 +33,7 @@
   :root {
     /* White/blue palette — matches shared.css exactly */
     --bg:   #FFFFFF;
-    --bg-alt: #FAF8F3;
+    --bg-alt: #F4F5F7;
     --bg2:  #F4F5F7;
     --bg3:  #ECEEF1;
     --border: #E3E5E9;
@@ -88,6 +88,8 @@
   .nav-links { display: flex; gap: 24px; align-items: center; }
   .nav-link { font-size: 13px; font-weight: 500; color: var(--muted); transition: color 0.15s; }
   .nav-link:hover { color: var(--text); }
+  .nav-link--audience { padding: 5px 10px; border-radius: 4px; background: var(--accent-dim); color: var(--accent) !important; }
+  .nav-link--audience:hover { background: var(--accent-dim2); color: var(--accent-light) !important; }
   .nav-cta {
     background: var(--accent); color: #fff;
     border: none; cursor: pointer;
@@ -176,14 +178,11 @@
   .hero3-stats { display: flex; gap: 40px; margin: 32px 0 28px; }
   .hero3-stat-num { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
   .hero3-stat-label { font-size: 11px; color: var(--muted); margin-top: 5px; }
-  .hero3-avatars { display: flex; align-items: center; gap: 16px; }
-  .hero3-avatar-stack { display: flex; align-items: center; }
-  .hero3-avatar-stack span { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); margin-left: -9px; }
-  .hero3-avatar-stack span:first-child { margin-left: 0; }
-  .hero3-avatar-stack .hero3-avatar-more { background: var(--bg3); color: var(--muted); }
-  .hero3-avatar-num { font-size: 13.5px; color: var(--text); }
-  .hero3-avatar-num strong { font-weight: 700; }
-  .hero3-avatar-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .platform-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .platform-row-label { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .platform-row svg { width: 18px; height: 18px; color: var(--muted); flex-shrink: 0; }
+  .hero-no-min { font-size: 12.5px; color: var(--green, #2E7D32); font-weight: 600; margin: 0 0 22px; }
 
   .journey-card { background: var(--bg2); border: 1px solid var(--border); padding: 28px 28px 24px; }
   .journey-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 22px; }
@@ -201,8 +200,68 @@
   .journey-result { margin-top: 20px; background: var(--green-bg); border: 1px solid #BEE3A0; color: var(--green); font-size: 13px; font-weight: 700; text-align: center; padding: 12px; }
   .journey-caption { text-align: center; font-size: 12px; color: var(--muted2); margin-top: 16px; }
   .journey-caption a { color: var(--accent); font-weight: 600; }
+  .journey-wrap { perspective: 1400px; }
+  .journey-flip { position: relative; width: 100%; height: 460px; transform-style: preserve-3d; transition: transform .15s ease-out; cursor: pointer; }
+  .journey-face { position: absolute; inset: 0; backface-visibility: hidden; overflow: hidden; }
+  .journey-face.journey-front { background: var(--bg2); border: 1px solid var(--border); padding: 28px 28px 24px; }
+  .journey-face.journey-back { background: #0B1B33; transform: rotateY(180deg); padding: 28px 26px; display: flex; flex-direction: column; justify-content: center; }
+  .journey-back-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #7FA8E0; margin-bottom: 20px; }
+  .journey-feature { display: flex; gap: 13px; margin-bottom: 20px; }
+  .journey-feature:last-of-type { margin-bottom: 0; }
+  .journey-feature-icon { flex-shrink: 0; color: #8FD65C; }
+  .journey-feature-title { font-size: 13.5px; font-weight: 700; color: #fff; }
+  .journey-feature-desc { font-size: 12px; color: #9DB4D6; margin-top: 3px; line-height: 1.5; }
+  .journey-back-hint { text-align: center; font-size: 11px; color: #7FA8E0; margin-top: 22px; }
 
-  .sponsor-band { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg2); display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+  .sponsor-band { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg); box-shadow: var(--shadow-sm); display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+  .estimator-box { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg); box-shadow: var(--shadow-sm); }
+  .estimator-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .estimator-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 20px; }
+  .estimator-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 22px; }
+  .estimator-fields label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .estimator-fields input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--border); border-radius: 0; background: #fff; font-family: var(--font); font-size: 14px; color: var(--text); }
+  .estimator-fields input:focus { outline: none; border-color: var(--accent); }
+  .estimator-result { display: flex; align-items: flex-end; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 18px; flex-wrap: wrap; gap: 16px; }
+  .estimator-result-item .estimator-result-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .estimator-result-item .estimator-result-value { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--text); }
+  .estimator-result-item .estimator-result-value.accent { color: var(--accent); }
+  .estimator-disclaimer { font-size: 11.5px; color: var(--muted); margin: 14px 0 0; }
+  .estimator-cta-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .estimator-microcopy { font-size: 10.5px; color: var(--muted2); }
+  .estimator-live-tag { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .estimator-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; flex-shrink: 0; }
+  @media (max-width: 640px) { .estimator-fields { grid-template-columns: 1fr; } .estimator-result { align-items: flex-start; } .estimator-cta-wrap { align-items: flex-start; } }
+
+  /* TIER METER */
+  .tier-meter { margin-bottom: 20px; }
+  .tier-meter-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .tier-meter-track { position: relative; height: 6px; background: var(--bg3); border-radius: 3px; }
+  .tier-meter-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.2s ease; }
+  .tier-meter-dot { position: absolute; top: 50%; width: 12px; height: 12px; background: var(--bg); border: 2px solid var(--accent); border-radius: 50%; transform: translate(-50%, -50%); transition: left 0.2s ease; }
+  .tier-meter-labels { display: flex; justify-content: space-between; margin-top: 6px; }
+  .tier-meter-labels span { font-size: 9.5px; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* SECTION EYEBROW WITH ICON CHIP */
+  .eyebrow-chip-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .eyebrow-chip { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .eyebrow-chip.creator { background: var(--accent-dim); }
+  .eyebrow-chip.sponsor { background: var(--accent-dim); }
+
+  /* HERO DIVIDER — proof-stat ticker */
+  .hero-divider { position: relative; width: 100vw; margin-left: calc(50% - 50vw); margin-top: 40px; margin-bottom: 40px; }
+  .hero-divider-ticker { background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); overflow: hidden; white-space: nowrap; position: relative; height: 40px; display: flex; align-items: center; }
+  .hero-divider-track { display: inline-flex; align-items: center; gap: 36px; animation: dividerTickerScroll 26s linear infinite; padding-left: 100%; }
+  .hero-divider-ticker:hover .hero-divider-track { animation-play-state: paused; }
+  .hero-divider-item { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .hero-divider-item strong { font-family: var(--font-display); font-weight: 700; color: var(--accent); font-size: 13px; }
+  .hero-divider-sep { color: var(--border-hover); flex-shrink: 0; }
+  @keyframes dividerTickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+  .hero-divider-pill { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--bg); border: 0.5px solid var(--border-hover); border-radius: 999px; padding: 7px 18px; font-size: 12.5px; color: var(--muted); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: border-color 0.15s, color 0.15s, box-shadow 0.15s; box-shadow: 0 0 0 6px var(--bg); }
+  .hero-divider-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* DARK CTA VARIANT (sponsor) */
+  .btn-dark { background: var(--text); color: #fff; border: none; cursor: pointer; padding: 12px 24px; border-radius: 0; font-size: 14px; font-weight: 600; font-family: var(--font); transition: opacity 0.15s, transform 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-dark:hover { opacity: 0.85; transform: translateY(-1px); }
   .sponsor-band-copy { flex: 1; min-width: 280px; }
   .sponsor-band-copy h3 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin: 0 0 10px; }
   .sponsor-band-copy p { font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.7; max-width: 480px; }
@@ -214,7 +273,7 @@
     .hero3-left .hero-sub { margin-left: auto; margin-right: auto; text-align: center; }
     .hero3-left .hero-buttons { justify-content: center; }
     .hero3-stats { justify-content: center; }
-    .hero3-avatars { justify-content: center; }
+    .platform-row { justify-content: center; }
     .sponsor-band { flex-direction: column; }
   }
 
@@ -814,13 +873,21 @@
 <div class="live-ticker" aria-hidden="true">
   <div class="live-ticker-track">
     <span class="live-ticker-item"><span class="live-dot"></span><strong>Sophie L.</strong> just matched with <strong>Willow Skincare</strong><span class="live-time">2m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Bloom Agency</strong> evaluated 3 creators<span class="live-time">4m ago</span></span>
     <span class="live-ticker-item"><span class="live-dot"></span><strong>Marcus T.</strong> just matched with <strong>Ridge Outdoors</strong><span class="live-time">5m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Ridge Outdoors</strong> upgraded to Team<span class="live-time">7m ago</span></span>
     <span class="live-ticker-item"><span class="live-dot"></span><strong>Aisha K.</strong> just matched with <strong>Bloom Nutrition</strong><span class="live-time">8m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Vantage Coffee</strong> ran a $29 evaluation<span class="live-time">9m ago</span></span>
     <span class="live-ticker-item"><span class="live-dot"></span><strong>Diego R.</strong> just matched with <strong>Vantage Coffee</strong><span class="live-time">11m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Willow Skincare</strong> unlocked a Decision Memo<span class="live-time">13m ago</span></span>
     <span class="live-ticker-item"><span class="live-dot"></span><strong>Sophie L.</strong> just matched with <strong>Willow Skincare</strong><span class="live-time">2m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Bloom Agency</strong> evaluated 3 creators<span class="live-time">4m ago</span></span>
     <span class="live-ticker-item"><span class="live-dot"></span><strong>Marcus T.</strong> just matched with <strong>Ridge Outdoors</strong><span class="live-time">5m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Ridge Outdoors</strong> upgraded to Team<span class="live-time">7m ago</span></span>
     <span class="live-ticker-item"><span class="live-dot"></span><strong>Aisha K.</strong> just matched with <strong>Bloom Nutrition</strong><span class="live-time">8m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Vantage Coffee</strong> ran a $29 evaluation<span class="live-time">9m ago</span></span>
     <span class="live-ticker-item"><span class="live-dot"></span><strong>Diego R.</strong> just matched with <strong>Vantage Coffee</strong><span class="live-time">11m ago</span></span>
+    <span class="live-ticker-item"><span class="live-dot"></span><strong>Willow Skincare</strong> unlocked a Decision Memo<span class="live-time">13m ago</span></span>
   </div>
 </div>
 
@@ -839,10 +906,11 @@
   <div class="nav-links">
     <a href="#how-it-works" class="nav-link">How it works</a>
     <a href="#directory" class="nav-link">Directory</a>
+    <a href="/for-creators.html" class="nav-link nav-link--audience">For Creators</a>
+    <a href="/agencies.html" class="nav-link nav-link--audience">Agencies</a>
     <a href="#decision-memo" class="nav-link">Decision Memo</a>
     <a href="/methodology.html" class="nav-link">Methodology</a>
     <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="/agencies.html" class="nav-link">Agencies</a>
     <a href="/app/auth.html" class="nav-link">Sign in</a>
   </div>
   <a href="/app/auth.html" class="nav-cta" style="text-decoration:none">Get Started</a>
@@ -853,10 +921,18 @@
   <div class="hero3-grid">
     <div class="hero3-left">
       <span class="hero3-eyebrow"><span style="width:7px;height:7px;border-radius:50%;background:#22C55E;flex-shrink:0"></span>Join 500+ Verified Creators</span>
+      <div class="platform-row">
+        <span class="platform-row-label">Works with</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="Twitch"><title>Twitch</title><path d="M5 3L3 7v13h5v3l3-3h4l5-5V3H5z"/><path d="M15 8v5M11 8v5"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="Discord"><title>Discord</title><path d="M7 8.5C9 7 15 7 17 8.5"/><path d="M6 9c-2 3-2.5 6-2 8 2 1.5 4 2 4 2l1-2"/><path d="M18 9c2 3 2.5 6 2 8-2 1.5-4 2-4 2l-1-2"/><circle cx="9" cy="13" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="13" r="1.1" fill="currentColor" stroke="none"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="TikTok"><title>TikTok</title><path d="M13 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M13 3c.3 2.5 2 4.3 4.5 4.6"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="YouTube"><title>YouTube</title><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/></svg>
+      </div>
       <h1>Your next <span class="accent">brand deal</span><br>starts with <span class="accent">proof</span>,<br><em>not promise.</em></h1>
       <p class="hero-sub">Sponsors don't trust follower counts anymore. They trust evidence. Claim your profile, verify your campaigns, and get your Kitscore — the number that gets you hired.</p>
+      <p class="hero-no-min">No credit card. No follower minimum. Nano and micro creators welcome.</p>
       <div class="hero-buttons" style="justify-content:flex-start">
-        <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Get Your Next Sponsor — Join Free →</a>
+        <a href="/for-creators.html" class="btn-primary" style="text-decoration:none">Get Your Next Sponsor — Join Free →</a>
         <a href="#for-sponsors" class="btn-ghost" style="text-decoration:none">I'm a Sponsor →</a>
       </div>
       <div class="hero3-stats">
@@ -864,19 +940,12 @@
         <div><div class="hero3-stat-num">7 Days</div><div class="hero3-stat-label">Avg. To First Deal</div></div>
         <div><div class="hero3-stat-num">100%</div><div class="hero3-stat-label">Evidence-Backed</div></div>
       </div>
-      <div class="hero3-avatars">
-        <div class="hero3-avatar-stack">
-          <span>SL</span><span>MT</span><span>AK</span><span>DR</span><span>PS</span><span>JM</span><span>LV</span><span class="hero3-avatar-more">+497</span>
-        </div>
-        <div>
-          <div class="hero3-avatar-num"><strong>500+</strong> creators verified</div>
-          <div class="hero3-avatar-sub">Join them — claim your profile free</div>
-        </div>
-      </div>
     </div>
 
     <div class="hero3-right">
-      <div class="journey-card">
+      <div class="journey-wrap" id="journeyWrap">
+      <div class="journey-flip" id="journeyFlip">
+      <div class="journey-face journey-front">
         <div class="journey-label">Your Kitscore Journey</div>
         <div class="journey-step done">
           <div class="journey-check done">
@@ -904,16 +973,178 @@
         </div>
         <div class="journey-result">✓ Kitscore: 91 · Gold Tier</div>
       </div>
+      <div class="journey-face journey-back">
+        <div class="journey-back-label">How your deal is protected</div>
+        <div class="journey-feature">
+          <div class="journey-feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <div><div class="journey-feature-title">Escrow-held payments</div><div class="journey-feature-desc">Funds are locked before you start, released when you deliver.</div></div>
+        </div>
+        <div class="journey-feature">
+          <div class="journey-feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg></div>
+          <div><div class="journey-feature-title">Signed contracts</div><div class="journey-feature-desc">Clear terms and deliverables before any work begins.</div></div>
+        </div>
+        <div class="journey-feature">
+          <div class="journey-feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <div><div class="journey-feature-title">Dispute protection</div><div class="journey-feature-desc">If something goes wrong, there's a resolution process.</div></div>
+        </div>
+        <div class="journey-feature">
+          <div class="journey-feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M9 13.5L7 22l5-3 5 3-2-8.5"/></svg></div>
+          <div><div class="journey-feature-title">Verified evidence</div><div class="journey-feature-desc">Your Kitscore is proof, not a self-reported number.</div></div>
+        </div>
+        <div class="journey-back-hint">tap to flip back</div>
+      </div>
+      </div>
+      </div>
       <div class="journey-caption">claim → verify → score → <a href="/app/auth.html">get hired</a></div>
     </div>
   </div>
 </div>
+<script>
+(function(){
+  var wrap = document.getElementById('journeyWrap');
+  var flip = document.getElementById('journeyFlip');
+  if (!wrap || !flip) return;
+  var flipped = false, tiltX = 0, tiltY = 0;
+  function render(){
+    var flipDeg = flipped ? 180 : 0;
+    flip.style.transform = 'rotateX(' + tiltX + 'deg) rotateY(' + (flipDeg + tiltY) + 'deg)';
+  }
+  wrap.addEventListener('mousemove', function(e){
+    var r = wrap.getBoundingClientRect();
+    var px = (e.clientX - r.left) / r.width - 0.5;
+    var py = (e.clientY - r.top) / r.height - 0.5;
+    tiltX = py * -12;
+    tiltY = px * 12;
+    render();
+  });
+  wrap.addEventListener('mouseleave', function(){ tiltX = 0; tiltY = 0; render(); });
+  wrap.addEventListener('click', function(){ flipped = !flipped; render(); });
+})();
+</script>
+
+<!-- TIER ESTIMATOR -->
+<section id="tier-estimator" style="padding:0 2rem 0;max-width:1100px;margin:0 auto">
+  <div class="estimator-box">
+    <div class="eyebrow-chip-row">
+      <div class="eyebrow-chip creator">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="estimator-label" style="margin-bottom:0">Try it now</div>
+    </div>
+    <h3 class="estimator-title">See your estimated tier</h3>
+    <div class="estimator-fields">
+      <div>
+        <label for="est-followers">Followers</label>
+        <input type="number" id="est-followers" value="12000" min="0" step="100" />
+      </div>
+      <div>
+        <label for="est-likes">Avg. likes per post</label>
+        <input type="number" id="est-likes" value="420" min="0" step="10" />
+      </div>
+      <div>
+        <label for="est-comments">Avg. comments per post</label>
+        <input type="number" id="est-comments" value="18" min="0" step="1" />
+      </div>
+    </div>
+
+    <div class="tier-meter">
+      <div class="tier-meter-top">
+        <div class="estimator-result-label" style="margin-bottom:0">Estimated tier</div>
+        <div class="estimator-result-item" style="text-align:right">
+          <div class="estimator-result-value accent" id="est-tier" style="font-size:20px;line-height:1">Silver</div>
+        </div>
+      </div>
+      <div class="tier-meter-track">
+        <div class="tier-meter-fill" id="tier-meter-fill" style="width:0%"></div>
+        <div class="tier-meter-dot" id="tier-meter-dot" style="left:0%"></div>
+      </div>
+      <div class="tier-meter-labels">
+        <span>Unranked</span>
+        <span>Bronze</span>
+        <span>Silver</span>
+        <span>Gold</span>
+      </div>
+    </div>
+
+    <div class="estimator-result">
+      <div class="estimator-live-tag">
+        <span class="estimator-live-dot"></span>
+        Updates as you type
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:24px">
+        <div class="estimator-result-item">
+          <div class="estimator-result-label">Est. Kitscore</div>
+          <div class="estimator-result-value" id="est-score">62</div>
+        </div>
+        <div class="estimator-cta-wrap">
+          <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Claim this score for real →</a>
+          <span class="estimator-microcopy">No signup · 10 seconds</span>
+        </div>
+      </div>
+    </div>
+    <p class="estimator-disclaimer">Rough estimate only, not your official Kitscore. Your real Kitscore is calculated from verified campaign evidence after you claim your profile.</p>
+  </div>
+
+  <div class="hero-divider">
+    <div class="hero-divider-ticker" aria-hidden="true">
+      <div class="hero-divider-track">
+        <span class="hero-divider-item"><strong>91</strong> Trust Score</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>94%</strong> Reliability Score</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>$29</strong> full evaluation</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>500+</strong> verified creators</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>100%</strong> evidence-backed</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>8-point</strong> brand safety check</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>91</strong> Trust Score</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>94%</strong> Reliability Score</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>$29</strong> full evaluation</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>500+</strong> verified creators</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>100%</strong> evidence-backed</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>8-point</strong> brand safety check</span>
+      </div>
+    </div>
+    <a href="#for-sponsors" class="hero-divider-pill">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+      Brought a sponsor instead?
+    </a>
+  </div>
+</section>
+<script>
+(function(){
+  function calcEstimator(){
+    var f = parseFloat(document.getElementById('est-followers').value) || 0;
+    var l = parseFloat(document.getElementById('est-likes').value) || 0;
+    var c = parseFloat(document.getElementById('est-comments').value) || 0;
+    var engagement = f > 0 ? ((l + c) / f) * 100 : 0;
+    var followerPoints = Math.min(40, Math.log10(f + 1) * 8);
+    var engagementPoints = Math.min(45, engagement * 6.5);
+    var score = Math.round(Math.min(97, 15 + followerPoints + engagementPoints));
+    var tier = 'Bronze';
+    if (score >= 85) tier = 'Gold';
+    else if (score >= 65) tier = 'Silver';
+    else if (score < 40) tier = 'Unranked';
+    document.getElementById('est-score').textContent = score;
+    document.getElementById('est-tier').textContent = tier;
+    var pct = Math.max(0, Math.min(100, (score / 97) * 100));
+    document.getElementById('tier-meter-fill').style.width = pct + '%';
+    document.getElementById('tier-meter-dot').style.left = pct + '%';
+  }
+  ['est-followers', 'est-likes', 'est-comments'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calcEstimator);
+  });
+  calcEstimator();
+})();
+</script>
 
 <!-- FOR SPONSORS BAND -->
 <section id="for-sponsors" style="padding:0 2rem 48px;max-width:1100px;margin:0 auto">
   <div class="sponsor-band">
     <div class="sponsor-band-copy">
-      <span class="section-label" style="margin:0 0 8px;display:block">For Sponsors</span>
+      <div class="eyebrow-chip-row">
+        <div class="eyebrow-chip sponsor">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <span class="section-label" style="margin:0">For Sponsors</span>
+      </div>
       <h3>Evaluate creators with proof, not guesswork.</h3>
       <p>See a creator's <strong style="color:var(--text)">Trust Score</strong> and <strong style="color:var(--text)">Reliability Score</strong> instantly. Unlock the full evaluation, risk analysis, and decision memo for <strong style="color:var(--text)">$29</strong>.</p>
     </div>
@@ -1032,7 +1263,7 @@
       <div class="hiw2-card">
         <div class="hiw2-num">03</div>
         <h3>Unlock the Full Evaluation for $29</h3>
-        <p>Score breakdown, risk assessment, audience fit analysis, evidence summary, and a sponsor decision memo PDF — everything to say yes with confidence. Ready to move forward? Post an open brief or draft a contract directly, and pay through Kitscore escrow — funds held until the creator delivers and you approve, no upfront risk.</p>
+        <p>Score breakdown, risk assessment, audience fit, evidence summary, and a sponsor decision memo PDF. Then post a brief or draft a contract and pay through Kitscore escrow — funds held until delivery, no upfront risk.</p>
       </div>
     </div>
     <div style="text-align:center">
@@ -1061,7 +1292,7 @@
       <div class="hiw2-card">
         <div class="hiw2-num">04</div>
         <h3>Close the Deal, Protected</h3>
-        <p>Browse open briefs and apply directly. Sign a contract that's scanned for one-sided terms before you sign, work off a real deliverable checklist so scope is never a guessing game, and get paid through Kitscore Escrow — funds held until you deliver, Kitscore's 10% fee always shown upfront. Every completed campaign becomes a Performance Recap: proof for the next pitch.</p>
+        <p>Browse briefs and apply. Contracts get scanned for one-sided terms, work runs off a real deliverable checklist, and payment goes through Kitscore Escrow — fee always shown upfront. Every campaign becomes proof for the next pitch.</p>
       </div>
     </div>
     <p class="hiw2-bring-deal"><strong>Already have a sponsor?</strong> You don't need an open brief — bring the deal you already struck straight to Kitscore for a contract and escrow protection. Kitscore takes 10%, less than half what Fiverr takes.</p>
@@ -1255,15 +1486,28 @@
   <div style="margin-top:44px;display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start;border-top:0.5px solid var(--border);padding-top:44px">
     <div>
       <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;margin-bottom:14px;color:var(--text)">Built for the people making real decisions.</h3>
-      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:14px">Kitscore was built because sponsorship decisions were being made on the wrong signals. Follower counts, reach screenshots, and self-reported media kits were passing as due diligence.</p>
-      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:24px">We built the infrastructure to change that — verified campaign history, mutual confirmation, sponsor endorsements, reliability scores. A platform where every number comes with proof.</p>
+      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:16px">Sponsorship decisions were being made on follower counts, reach screenshots, and self-reported media kits. We built the infrastructure to change that:</p>
+      <ul style="list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:10px">
+        <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
+          Verified campaign history, not self-reported claims
+        </li>
+        <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
+          Mutual confirmation between creator and sponsor
+        </li>
+        <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
+          Sponsor endorsements and reliability scores — every number comes with proof
+        </li>
+      </ul>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <a href="/app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Evaluate a Creator →</a>
         <a href="/compare.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Kitscore vs. AI Content-Scoring Tools →</a>
         <a href="mailto:hello@kitscore.co" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Contact us</a>
       </div>
     </div>
-    <div style="background:var(--accent-dim);border:0.5px solid #B5D4F4;border-radius:0;padding:18px 20px;border-left:2px solid var(--accent)">
+    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:18px 20px;border-left:2px solid var(--accent);box-shadow:var(--shadow-sm)">
       <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:5px">Our mission</div>
       <div style="font-size:13px;color:var(--text);line-height:1.65">Make sponsorship decisions based on proof, not promises. We're building the reputation infrastructure for the creator economy.</div>
     </div>
@@ -1545,11 +1789,8 @@
   </div>
 </section>
 
-<hr class="section-divider" />
-
 <!-- SPONSOR DECISION MEMO -->
-<div class="band-alt">
-<section id="decision-memo" style="padding:64px 2rem;max-width:960px;margin:0 auto">
+<section id="decision-memo" style="padding:24px 2rem 64px;max-width:960px;margin:0 auto">
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center">
     <div>
       <div class="section-label section-label--pill">Sponsorship Due Diligence</div>
@@ -1612,12 +1853,9 @@
     </div>
   </div>
 </section>
-</div>
-
-<hr class="section-divider" />
 
 <!-- PRICING -->
-<section id="pricing">
+<section id="pricing" style="padding-top:24px">
   <div class="section-label" style="text-align:center">Pricing</div>
   <h2 class="section-h" style="text-align:center">Simple, <strong>transparent pricing.</strong></h2>
   <p class="section-sub" style="text-align:center;margin-left:auto;margin-right:auto">Pay per evaluation or subscribe for ongoing creator pipeline management.</p>

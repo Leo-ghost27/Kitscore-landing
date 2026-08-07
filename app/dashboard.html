@@ -1496,6 +1496,7 @@ function renderToolsTab() {
           </select>
         </div>
       </div>
+      <div id="rc-real-benchmark" style="margin-top:16px;padding-top:14px;border-top:0.5px solid var(--color-border-tertiary)"></div>
     </div>
 
 
@@ -2177,6 +2178,31 @@ function initRateCalc() {
     }
     updateRateCalc(sliderToFollowers(slider.value));
   }
+  loadRealPricingBenchmark();
+}
+
+// Same fn_pricing_benchmark sponsors already see when drafting a contract
+// (app/contracts.html) -- reused as-is, no backend change needed. Compares
+// only real funded contracts in the creator's own niche with a similar
+// trust score (+/-15), and the function itself refuses to return anything
+// below 3 comparable deals (see its own `having count(*) >= 3`), so the
+// honest-empty-state behavior is enforced at the SQL level, not something
+// built here. Deliberately labeled distinctly from the formula estimate
+// above it -- one is a rule-of-thumb, the other is what people actually
+// got paid, and conflating them would overstate the formula's rigor.
+async function loadRealPricingBenchmark() {
+  const el = document.getElementById('rc-real-benchmark');
+  if (!el || !creator?.id) return;
+  const { data: rows, error } = await sb.rpc('fn_pricing_benchmark', { p_creator_id: creator.id });
+  const row = !error && rows && rows[0];
+  if (!row) {
+    el.innerHTML = `<div style="font-size:11px;color:var(--color-text-tertiary)">Not enough funded contracts in your niche yet to show what similar creators actually got paid — check back as more deals close on Kitscore.</div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-tertiary);margin-bottom:4px">Based on real funded deals</div>
+    <div style="font-size:13px;color:var(--ink,#0F1B2E)">Creators similar to you (same niche, similar trust score) were paid <strong>$${(row.min_cents / 100).toFixed(0)}–$${(row.max_cents / 100).toFixed(0)}</strong>, median $${(row.median_cents / 100).toFixed(0)}, based on ${row.sample_size} funded contracts.</div>
+  `;
 }
 
 async function signOut(){

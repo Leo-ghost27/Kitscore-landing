@@ -89,6 +89,15 @@
         <button class="btn-check" id="btn-health-check" onclick="runJob('health-check', 'btn-health-check', 'result-health-check')">Check now</button>
       </div>
       <div id="result-health-check"></div>
+
+      <div class="row-item">
+        <div>
+          <div class="job-name">Escrow stuck-contract nudge</div>
+          <div class="job-desc">Nudges any sponsor sitting on a submitted deliverable 5+ days without releasing or disputing, and sends one digest to admin. Runs daily at 10:00 UTC.</div>
+        </div>
+        <button class="btn-check" id="btn-escrow-stuck-nudge" onclick="runJob('escrow-stuck-nudge', 'btn-escrow-stuck-nudge', 'result-escrow-stuck-nudge')">Check now</button>
+      </div>
+      <div id="result-escrow-stuck-nudge"></div>
     </div>
 
     <div class="card">

@@ -216,6 +216,10 @@ async function openDetail(id) {
     ` : ''}
     <div class="kv"><span class="kv-label">Funded</span><span class="kv-val">${c.funded_at ? new Date(c.funded_at).toLocaleString() : '—'}</span></div>
     <div class="kv"><span class="kv-label">Deliverable submitted</span><span class="kv-val">${c.deliverable_submitted_at ? new Date(c.deliverable_submitted_at).toLocaleString() : '—'}</span></div>
+    ${c.disputed_at ? `<div class="kv" style="align-items:flex-start"><span class="kv-label">Dispute</span><span class="kv-val">
+        ${c.admin_resolved_at ? `Resolved ${new Date(c.admin_resolved_at).toLocaleString()}${c.admin_resolution_note ? ' — ' + escapeHtml(c.admin_resolution_note) : ''}` : `<strong style="color:#B42318">Open since ${new Date(c.disputed_at).toLocaleString()}</strong>`}
+        <br>${escapeHtml(c.dispute_reason || '')}
+      </span></div>` : ''}
     ${items && items.length ? `<div class="kv" style="align-items:flex-start"><span class="kv-label">Checklist</span><span class="kv-val">${items.filter(i=>i.completed_at).length}/${items.length} done<br>
       ${items.map(i => `${i.completed_at ? '✓' : '☐'} ${i.quantity > 1 ? i.quantity + '× ' : ''}${escapeHtml(i.description)}${i.completed_note ? ' — ' + escapeHtml(i.completed_note) : ''}`).join('<br>')}
     </span></div>` : ''}
