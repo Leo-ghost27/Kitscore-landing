@@ -382,11 +382,14 @@ async function draftContract(briefApplicationId, campaignId) {
 
   let milestones = [];
   if (useMilestones) {
-    milestones = milestoneRows
-      .map(r => ({ title: r.title.trim(), amountUsd: Number(r.amountUsd) || 0, dueDate: r.dueDate }))
-      .filter(r => r.title);
+    const rowsWithAmount = milestoneRows.filter(r => (Number(r.amountUsd) || 0) > 0);
+    const missingTitle = rowsWithAmount.filter(r => !r.title.trim());
+    if (missingTitle.length) {
+      msgEl.innerHTML = `<div class="msg error">${missingTitle.length === 1 ? 'One milestone is' : `${missingTitle.length} milestones are`} missing a title — every milestone needs one (e.g. "Draft approved").</div>`;
+      return;
+    }
+    milestones = rowsWithAmount.map(r => ({ title: r.title.trim(), amountUsd: Number(r.amountUsd) || 0, dueDate: r.dueDate }));
     if (milestones.length < 2) { msgEl.innerHTML = '<div class="msg error">Add at least 2 milestones, or turn off milestone mode.</div>'; return; }
-    if (milestones.some(m => m.amountUsd <= 0)) { msgEl.innerHTML = '<div class="msg error">Every milestone needs an amount greater than $0.</div>'; return; }
   }
 
   const usageRights = document.getElementById('ctrUsageRights').value.trim();
