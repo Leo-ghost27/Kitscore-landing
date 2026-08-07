@@ -63,6 +63,23 @@ const VERDICT_STYLE = {
   caution: ['b-amber','ti-alert-triangle','Caution'],
   avoid: ['b-red','ti-circle-x','Avoid']
 };
+const VERIFICATION_LABEL = { oauth: 'OAuth-verified', public_lookup: 'Public API lookup' };
+function provenanceLabel(method) { return VERIFICATION_LABEL[method] || (method ? method : 'Self-reported'); }
+function buildFollowerTrends(history) {
+  const byPlatform = {};
+  (history || []).forEach(h => { if (!byPlatform[h.platform]) byPlatform[h.platform] = []; byPlatform[h.platform].push(h); });
+  const trends = [];
+  Object.entries(byPlatform).forEach(([platform, points]) => {
+    if (points.length < 2) return;
+    const first = points[0], last = points[points.length - 1];
+    const days = (new Date(last.recorded_at) - new Date(first.recorded_at)) / 86400000;
+    if (days < 3 || !first.follower_count) return;
+    const pct = ((last.follower_count - first.follower_count) / first.follower_count) * 100;
+    const direction = pct > 3 ? 'Growing' : pct < -3 ? 'Declining' : 'Stable';
+    trends.push({ platform, pct: Math.round(pct * 10) / 10, days: Math.round(days), direction });
+  });
+  return trends;
+}
 function computeRiskLevel(compRowMap, penaltyTotal) {
   const brandSafety = compRowMap.brand_safety;
   if (penaltyTotal >= 15 || (brandSafety && brandSafety.value < 60)) return { label: 'High', color: '#B42318' };
@@ -149,7 +166,7 @@ async function load() {
     } else if (checkoutState === 'cancelled') {
       document.getElementById('banner').innerHTML = `<div class="banner pending">Checkout cancelled — no charge was made.</div>`;
     }
-  const [{ data: creator }, { data: profileRow }, { data: components }, { data: campaigns }, { data: evalRow }, { data: membership }, { data: sponsorRow }, { data: audience }, { data: safetyAnswers }, { data: penaltyTable }] = await Promise.all([
+  const [{ data: creator }, { data: profileRow }, { data: components }, { data: campaigns }, { data: evalRow }, { data: membership }, { data: sponsorRow }, { data: audience }, { data: safetyAnswers }, { data: penaltyTable }, { data: connections }, { data: followerHistory }] = await Promise.all([
     sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, reliability_score, repeat_sponsor_rate, would_hire_again_pct').eq('id', creatorId).single(),
     sb.from('profiles').select('display_name').eq('id', creatorId).single(),
     sb.from('score_components').select('*').eq('creator_id', creatorId),
@@ -160,6 +177,8 @@ async function load() {
     sb.from('audience_demographics').select('dimension, label, pct').eq('creator_id', creatorId),
     sb.from('brand_safety_answers').select('*').eq('creator_id', creatorId),
     sb.from('brand_safety_penalties').select('*'),
+    sb.from('platform_connections').select('platform, verification_method, follower_count, subscriber_count').eq('creator_id', creatorId),
+    sb.from('platform_follower_history').select('platform, follower_count, recorded_at').eq('creator_id', creatorId).order('recorded_at', { ascending: true }),
   ]);
   // A sponsor can belong to up to 2 teams. maybeSingle() would throw once
   // that's possible, so this resolves the same "active team" the switcher
@@ -309,6 +328,29 @@ async function load() {
       <div class="row"><span style="width:160px;color:var(--color-text-secondary)">Unlocked</span><strong>${escapeHtml(unlockedDate)}</strong></div>
     </div>`;
 
+  const provenanceCard = (connections||[]).length > 0 ? `
+    <div class="card">
+      <div class="sec">Data provenance</div>
+      ${connections.map(c => {
+        const method = provenanceLabel(c.verification_method);
+        const count = c.follower_count || c.subscriber_count;
+        const platformLabel = c.platform.charAt(0).toUpperCase() + c.platform.slice(1);
+        return `<div class="row" style="justify-content:space-between"><span>${escapeHtml(platformLabel)}</span><strong style="color:${method==='OAuth-verified'?'#1C7C3F':'inherit'}">${escapeHtml(method)}</strong><span style="color:var(--color-text-tertiary)">${count?count.toLocaleString()+' followers':''}</span></div>`;
+      }).join('')}
+    </div>` : '';
+
+  const followerTrends = buildFollowerTrends(followerHistory);
+  const followerTrendCard = followerTrends.length > 0 ? `
+    <div class="card">
+      <div class="sec">Follower growth trend</div>
+      ${followerTrends.map(t => {
+        const dirColor = t.direction==='Growing'?'#1C7C3F':t.direction==='Declining'?'#B42318':'var(--color-text-secondary)';
+        const sign = t.pct>0?'+':'';
+        const platformLabel = t.platform.charAt(0).toUpperCase() + t.platform.slice(1);
+        return `<div class="row" style="justify-content:space-between"><span>${escapeHtml(platformLabel)}</span><strong style="color:${dirColor}">${t.direction} (${sign}${t.pct}%)</strong><span style="color:var(--color-text-tertiary)">over ${t.days} days</span></div>`;
+      }).join('')}
+    </div>` : '';
+
   const keyFindingsCard = `
     <div class="card">
       <div class="sec">Key findings</div>
@@ -367,6 +409,8 @@ async function load() {
       <button class="cta" style="background:var(--color-background-secondary);color:var(--color-text-secondary);margin-top:12px;margin-left:8px" onclick="window.location.href='campaigns.html?creator=${creatorId}'"><i class="ti ti-flag"></i>Log a campaign with this creator</button>
     </div>
     ${sponsorContextCard}
+    ${provenanceCard}
+    ${followerTrendCard}
     ${keyFindingsCard}
     ${audienceFitCard}
     <div class="card">
