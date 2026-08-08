@@ -482,19 +482,14 @@
   .hiw2-tab:hover:not(.active) { color: var(--text); }
   .hiw2-panel { display: none; padding-top: 40px; }
   .hiw2-panel.active { display: block; }
-  .hiw2-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
-  .hiw2-card { position: relative; background: var(--bg); border: 0.5px solid var(--border); border-radius:0; padding: 28px 24px; transition: border-color .15s, box-shadow .15s; }
-  .hiw2-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-  .hiw2-card::before { content: ''; position: absolute; top: -1px; left: -1px; width: 18px; height: 3px; background: var(--accent); }
-  .hiw2-card::after { content: ''; position: absolute; top: -1px; left: -1px; width: 3px; height: 18px; background: var(--accent); }
-  .hiw2-num { font-size: 30px; font-weight: 800; color: var(--bg3); line-height: 1; margin-bottom: 18px; letter-spacing: -0.02em; }
-  .hiw2-card h3 { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 10px; line-height: 1.3; }
+  .hiw2-list { max-width: 420px; margin: 0 auto 28px; display: flex; flex-direction: column; gap: 18px; }
+  .hiw2-item { display: flex; align-items: center; gap: 12px; }
+  .hiw2-item svg { width: 20px; height: 20px; color: var(--accent); flex-shrink: 0; }
+  .hiw2-item span { font-size: 14.5px; color: var(--text); }
+  .hiw2-more { display: block; text-align: center; font-size: 13px; margin-top: -6px; margin-bottom: 26px; }
   .hiw2-bring-deal { max-width: 620px; margin: 22px auto 26px; text-align: center; font-size: 13.5px; color: var(--muted); border-top: 0.5px solid var(--border); padding-top: 22px; line-height: 1.6; }
   .hiw2-bring-deal strong { color: var(--text); }
-  .hiw2-card p { font-size: 13px; color: var(--muted); line-height: 1.65; }
-  @media (max-width: 768px) { .hiw2-steps { grid-template-columns: 1fr; } }
-  #tab2-creators .hiw2-steps { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 768px) { #tab2-creators .hiw2-steps { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) { .hiw2-list { max-width: 100%; } }
 
   .creator-tiers { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
   .tier-card {
@@ -810,7 +805,6 @@
   @media (max-width: 640px) {
     #about > div { grid-template-columns: 1fr !important; gap: 28px !important; }
     #methodology-teaser > div { grid-template-columns: 1fr !important; gap: 28px !important; }
-    #decision-memo > div { grid-template-columns: 1fr !important; gap: 28px !important; }
     #reputation > div:nth-child(3) { grid-template-columns: 1fr !important; }
     .vc-block, .pricing-grid, .creator-tiers, .sample-cards { grid-template-columns: 1fr; }
     .flywheel-steps { flex-direction: column; }
@@ -908,7 +902,7 @@
     <a href="#directory" class="nav-link">Directory</a>
     <a href="/for-creators.html" class="nav-link nav-link--audience">For Creators</a>
     <a href="/agencies.html" class="nav-link nav-link--audience">Agencies</a>
-    <a href="#decision-memo" class="nav-link">Decision Memo</a>
+    <a href="/sample-sponsor-decision-memo.html" class="nav-link">Decision Memo</a>
     <a href="/methodology.html" class="nav-link">Methodology</a>
     <a href="#pricing" class="nav-link">Pricing</a>
     <a href="/app/auth.html" class="nav-link">Sign in</a>
@@ -931,6 +925,7 @@
       <h1>Your next <span class="accent">brand</span> deal<br>starts with <span class="accent">proof</span>,<br><em>not promise.</em></h1>
       <p class="hero-sub">Sponsors don't trust follower counts anymore. They trust evidence. Claim your profile, verify your campaigns, and get your Kitscore — the number that gets you hired.</p>
       <p class="hero-no-min">No credit card. No follower minimum. Nano and micro creators welcome.</p>
+      <p class="hero-no-min">Not scraped from your posts — confirmed by the sponsors you worked with.</p>
       <div class="hero-buttons" style="justify-content:flex-start">
         <a href="/for-creators.html" class="btn-primary" style="text-decoration:none">Get Your Next Sponsor — Join Free →</a>
         <a href="#for-sponsors" class="btn-ghost" style="text-decoration:none">I'm a Sponsor →</a>
@@ -1248,53 +1243,42 @@
   </div>
 
   <div id="tab2-sponsors" class="hiw2-panel active">
-    <p style="font-size:13px;color:var(--muted);margin:-8px 0 20px">Already found the creator yourself — a DM, a past relationship, a referral? You don't need to source them through Kitscore. Skip straight to a contract below and get the clause scan and escrow protection either way.</p>
-    <div class="hiw2-steps">
-      <div class="hiw2-card">
-        <div class="hiw2-num">01</div>
-        <h3>Browse the Creator Directory</h3>
-        <p>Find creators by niche, location, or Trust Score. Every profile shows verified campaign history, reliability data, and self-reported audience breakdown — no guesswork.</p>
+    <div class="hiw2-list">
+      <div class="hiw2-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <span>Browse the creator directory</span>
       </div>
-      <div class="hiw2-card">
-        <div class="hiw2-num">02</div>
-        <h3>Receive an Instant Preview</h3>
-        <p>Your free preview includes the Trust Score and Confidence Rating — enough to know if it's worth going deeper.</p>
+      <div class="hiw2-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span>Get an instant preview</span>
       </div>
-      <div class="hiw2-card">
-        <div class="hiw2-num">03</div>
-        <h3>Unlock the Full Evaluation for $29</h3>
-        <p>Score breakdown, risk assessment, audience fit, evidence summary, and a sponsor decision memo PDF. Then post a brief or draft a contract and pay through Kitscore escrow — funds held until delivery, no upfront risk.</p>
+      <div class="hiw2-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="1"/><path d="M8 11V8a4 4 0 0 1 7.6-1.8"/></svg>
+        <span>Unlock the full evaluation</span>
       </div>
     </div>
+    <a href="/agencies.html" class="hiw2-more">See the full sponsor journey →</a>
     <div style="text-align:center">
       <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Evaluate a Creator →</a>
     </div>
   </div>
 
   <div id="tab2-creators" class="hiw2-panel">
-    <p style="font-size:13px;color:var(--muted);margin:-8px 0 20px">Not creator analytics — verified sponsorship infrastructure. The promise: turn proof into paid work.</p>
-    <div class="hiw2-steps">
-      <div class="hiw2-card">
-        <div class="hiw2-num">01</div>
-        <h3>Claim Your Creator Profile</h3>
-        <p>Set up your verified profile across all supported platforms. This is your professional sponsorship identity.</p>
+    <div class="hiw2-list">
+      <div class="hiw2-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a7 7 0 0 1 11.5-5.3"/><path d="m16 17 2 2 4-4"/></svg>
+        <span>Claim your profile</span>
       </div>
-      <div class="hiw2-card">
-        <div class="hiw2-num">02</div>
-        <h3>Upload Evidence & Past Campaigns</h3>
-        <p>Submit campaign screenshots, deliverables, and invite past sponsors to mutually confirm completed work.</p>
+      <div class="hiw2-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+        <span>Upload evidence</span>
       </div>
-      <div class="hiw2-card">
-        <div class="hiw2-num">03</div>
-        <h3>Get Your Verified Media Kit</h3>
-        <p>A free, pitch-ready media kit — bio, rate card, platform stats, and verified highlights — built from your Kitscore data. Send it to brands cold, or share your minimal trust link once you're already in talks.</p>
-      </div>
-      <div class="hiw2-card">
-        <div class="hiw2-num">04</div>
-        <h3>Close the Deal, Protected</h3>
-        <p>Browse briefs and apply. Contracts get scanned for one-sided terms, work runs off a real deliverable checklist, and payment goes through Kitscore Escrow — fee always shown upfront. Every campaign becomes proof for the next pitch.</p>
+      <div class="hiw2-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/><path d="m9 12 2 2 4-4"/></svg>
+        <span>Get hired, protected</span>
       </div>
     </div>
+    <a href="/for-creators.html" class="hiw2-more">See the full creator journey →</a>
     <p class="hiw2-bring-deal"><strong>Already have a sponsor?</strong> You don't need an open brief — bring the deal you already struck straight to Kitscore for a contract and escrow protection. Kitscore takes 10%, less than half what Fiverr takes.</p>
     <div style="text-align:center">
       <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Claim Your Founding Spot →</a>
@@ -1452,19 +1436,6 @@
     </div>
   </div>
 
-  <div class="why2-compare" style="margin-top:24px">
-    <div class="why2-compare-side">
-      <div class="why2-compare-eyebrow accent">Other tools ask</div>
-      <div class="why2-compare-a" style="text-transform:capitalize">How big is this creator's audience?</div>
-      <div class="why2-compare-sub">A single metric, disconnected from any hiring decision.</div>
-    </div>
-    <div class="why2-compare-side">
-      <div class="why2-compare-eyebrow accent">Kitscore answers</div>
-      <div class="why2-compare-a">Should we sponsor this creator?</div>
-      <div class="why2-compare-sub">Every report is built around decision-making, not just analytics.</div>
-    </div>
-  </div>
-
   <div style="margin-top:36px;">
     <p style="font-size:11px; color:var(--muted); margin-bottom:14px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;">Trust, visible in every metric</p>
     <div class="source-labels">
@@ -1486,7 +1457,6 @@
   <div style="margin-top:44px;display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start;border-top:0.5px solid var(--border);padding-top:44px">
     <div>
       <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;margin-bottom:14px;color:var(--text)">Built for the people making real decisions.</h3>
-      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:16px">Sponsorship decisions were being made on follower counts, reach screenshots, and self-reported media kits. We built the infrastructure to change that:</p>
       <ul style="list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:10px">
         <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
@@ -1503,7 +1473,7 @@
       </ul>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <a href="/app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Evaluate a Creator →</a>
-        <a href="/compare.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Kitscore vs. AI Content-Scoring Tools →</a>
+        <a href="/compare.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">See how we compare →</a>
         <a href="mailto:hello@kitscore.co" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Contact us</a>
       </div>
     </div>
@@ -1784,71 +1754,6 @@
           <div style="font-size:11px;color:var(--muted)">FTC disclosure, misinformation, controversy — all scored</div>
         </div>
         <div style="font-size:10px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:0;white-space:nowrap">Compliance</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SPONSOR DECISION MEMO -->
-<section id="decision-memo" style="padding:24px 2rem 64px;max-width:960px;margin:0 auto">
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center">
-    <div>
-      <div class="section-label section-label--pill">Sponsorship Due Diligence</div>
-      <h2 class="section-h" style="margin-bottom:14px">Evidence-first.<br>Sponsor-ready.</h2>
-      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:14px">Every decision memo is built directly from verified evidence — mutually confirmed campaigns, sponsor endorsements, and your specific campaign brief — into a clear recommendation, audience fit read, and risk assessment.</p>
-      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:20px">Unlike platforms that score creators from scraped public data alone, Kitscore's memo is built on top of <strong style="color:var(--text)">mutually confirmed campaigns, sponsor endorsements, and human-verified evidence</strong>. Nothing in it is inferred from a public post — it's either verified, or it isn't in the memo.</p>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:0">
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px">
-          Built entirely from verified data
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px">
-          Campaign-brief aware recommendations
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px">
-          Content risk flag detection
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);border-left:3px solid var(--accent);padding-left:10px">
-          Budget range disclosure
-        </div>
-      </div>
-    </div>
-
-    <!-- Decision memo mock output -->
-    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;overflow:hidden;box-shadow:var(--shadow-md);border-top:2px solid var(--accent)">
-      <div style="background:var(--bg2);padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:7px">
-          <div style="width:7px;height:7px;border-radius:0;background:var(--accent);animation:pulse 2s infinite"></div>
-          <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Sponsorship Due Diligence</span>
-        </div>
-        <span style="font-size:10px;color:var(--muted)">Kitscore Decision Memo</span>
-      </div>
-      <div style="padding:18px">
-        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px">Decision Memo — Sophie Lau × Willow Skincare</div>
-
-        <div style="background:var(--green-bg);border:0.5px solid #A3C68B;border-radius:0;padding:10px 12px;margin-bottom:12px">
-          <div style="font-size:10px;font-weight:600;color:var(--green);margin-bottom:3px">✓ RECOMMENDED TO SPONSOR</div>
-          <div style="font-size:12px;color:var(--text);line-height:1.65">Sophie Lau is a <strong>high-confidence, brand-safe beauty creator</strong> with a verifiable track record. Based on your campaign brief (UK beauty audience, £8K budget, clean-skincare positioning), this creator is a strong fit.</div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
-          <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:0;padding:9px 11px">
-            <div style="font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Audience fit</div>
-            <div style="font-size:12px;color:var(--text)">79% UK audience · 71% in your target 18–34 bracket · Direct category alignment with skincare.</div>
-          </div>
-          <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:0;padding:9px 11px">
-            <div style="font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Risk assessment</div>
-            <div style="font-size:12px;color:var(--text)">Low risk. No brand safety flags across all 8 checks. FTC disclosure consistently applied.</div>
-          </div>
-          <div style="background:var(--bg2);border:0.5px solid var(--border);border-radius:0;padding:9px 11px">
-            <div style="font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Verified reputation</div>
-            <div style="font-size:12px;color:var(--text)">94% Reliability Score · 100% of past sponsors would hire again, based on mutually-confirmed campaigns.</div>
-          </div>
-        </div>
-
-        <div style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Generated from 4 verified campaigns · High confidence (91%)
-        </div>
       </div>
     </div>
   </div>
