@@ -98,7 +98,7 @@ function renderSidebar(role, activeKey, displayName) {
       </div>
     </div>
     <nav class="sb-nav">
-      ${items.map(i => `<a class="sb-item ${i.key === activeKey ? 'active' : ''}" href="${i.href}">${navIcon(i.icon)}${i.label}</a>`).join('')}
+      ${items.map(i => `<a class="sb-item ${i.key === activeKey ? 'active' : ''}" href="${i.href}" data-nav-key="${i.key}">${navIcon(i.icon)}${i.label}<span class="sb-badge" data-badge-for="${i.key}" style="display:none"></span></a>`).join('')}
     </nav>
     <div class="sb-signout-row">
       <a class="sb-item" href="#" id="sb-signout">${navIcon('logout')}Sign out</a>
@@ -109,4 +109,50 @@ function renderSidebar(role, activeKey, displayName) {
     await sb.auth.signOut();
     window.location.href = 'auth.html';
   });
+
+  if (role === 'admin') attachAdminBadges();
+}
+
+// Attention-needed counts on the sidebar, so an admin sees something needs
+// looking at before they click into the page. Scoped to Escrow Oversight
+// for now -- "needs attention" here means the exact same thing
+// admin-escrow.html's own Stuck filter and dispute banner already mean
+// (STUCK_DAYS mirrors that page's constant and cron-escrow-stuck-nudge.js's),
+// just surfaced one level up so it's visible platform-wide, not only after
+// you've already opened the page. Runs after the sidebar's initial render
+// so it never blocks/delays the nav showing up -- badge just pops in a
+// moment later.
+const STUCK_DAYS = 5;
+
+async function attachAdminBadges() {
+  try {
+    const { data: contracts } = await sb.from('contracts')
+      .select('escrow_status, disputed_at, admin_resolved_at, deliverable_submitted_at')
+      .eq('escrow_status', 'held');
+    if (!contracts) return;
+
+    const needsAttention = contracts.filter(c => {
+      const openDispute = c.disputed_at && !c.admin_resolved_at;
+      const stuck = c.deliverable_submitted_at
+        && (Date.now() - new Date(c.deliverable_submitted_at).getTime()) / 86400000 >= STUCK_DAYS;
+      return openDispute || stuck;
+    }).length;
+
+    setBadge('admin-escrow', needsAttention);
+  } catch (err) {
+    // Badge is a nice-to-have on top of the page itself, which shows the
+    // real numbers regardless -- fail silently rather than block the nav.
+    console.error('admin badge fetch error:', err);
+  }
+}
+
+function setBadge(navKey, count) {
+  const el = document.querySelector(`.sb-badge[data-badge-for="${navKey}"]`);
+  if (!el) return;
+  if (count > 0) {
+    el.textContent = count > 99 ? '99+' : String(count);
+    el.style.display = 'inline-flex';
+  } else {
+    el.style.display = 'none';
+  }
 }
