@@ -16,7 +16,7 @@ const handleRelease = require('../lib/handlers/escrow-release');
 const handleReleaseMilestone = require('../lib/handlers/escrow-release-milestone');
 const handleRefund = require('../lib/handlers/escrow-refund');
 const handleDispute = require('../lib/handlers/escrow-dispute');
-const handleBalance = require('../lib/handlers/creator-balance');
+const { handleBalance, handleExpressDashboardLink } = require('../lib/handlers/creator-balance');
 const handleAdminRelease = require('../lib/handlers/escrow-admin-release');
 const handleAdminRefund = require('../lib/handlers/escrow-admin-refund');
 
@@ -42,6 +42,7 @@ module.exports = async (req, res) => {
   if (action === 'refund') return handleRefund(req, res);
   if (action === 'dispute') return handleDispute(req, res);
   if (action === 'balance') return handleBalance(req, res);
+  if (action === 'express-dashboard-link') return handleExpressDashboardLink(req, res);
   if (action === 'admin-release') return handleAdminRelease(req, res);
   if (action === 'admin-refund') return handleAdminRefund(req, res);
 
