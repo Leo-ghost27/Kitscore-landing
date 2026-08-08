@@ -769,7 +769,10 @@ async function loadContracts() {
 
   contracts.forEach(c => ensureClauseScan(c));
 
-  listEl.innerHTML = contracts.map(c => {
+  const activeContracts = contracts.filter(c => !c.archived_at);
+  const archivedContracts = contracts.filter(c => c.archived_at);
+
+  const renderCard = (c) => {
     const counterparty = profile.role === 'sponsor' ? c.creators.profiles.display_name : c.sponsors.company_name;
     const canSignAsSponsor = profile.role === 'sponsor' && !c.sponsor_signed_at && c.status !== 'draft' && c.status !== 'void';
     const canSignAsCreator = profile.role === 'creator' && !c.creator_signed_at && c.status !== 'draft' && c.status !== 'void';
@@ -890,6 +893,8 @@ async function loadContracts() {
         ${canReleaseOrRefund && c.deliverable_submitted_at && !(c.disputed_at && !c.admin_resolved_at) ? `<button class="cta-outline" style="color:#B42318;border-color:#B42318" onclick="disputeEscrow('${c.id}')">Report a problem</button>` : ''}
         ${c.disputed_at && !c.admin_resolved_at ? `<div class="msg" style="background:#FDECEC;color:#B42318;margin-top:8px">Flagged ${new Date(c.disputed_at).toLocaleDateString()} — Kitscore is reviewing. Funds stay held until resolved.</div>` : ''}
         ${canVoid ? `<button class="cta-outline" style="color:#B42318;border-color:#B42318" onclick="voidContract('${c.id}')">Void</button>` : ''}
+        ${canArchive(c) && !c.archived_at ? `<button class="cta-outline" onclick="archiveContract('${c.id}')">Archive</button>` : ''}
+        ${c.archived_at ? `<button class="cta-outline" onclick="unarchiveContract('${c.id}')">Unarchive</button>` : ''}
       </div>
       <div id="deliverable-panel-${c.id}" style="display:${openDeliverablePanels.has(c.id) ? 'block' : 'none'};margin-top:10px">
         ${items.length ? `
@@ -937,9 +942,33 @@ async function loadContracts() {
         <div id="sign-msg-${c.id}"></div>
       </div>
     </div>`;
-  }).join('');
+  };
+
+  const canArchive = (c) => (c.status === 'fully_signed' || c.status === 'void') && (!c.escrow_status || ['not_funded', 'released', 'refunded'].includes(c.escrow_status));
+
+  listEl.innerHTML =
+    (activeContracts.length ? activeContracts.map(renderCard).join('') : `<div class="empty">${profile.role === 'sponsor' ? 'No contracts yet — draft one above.' : 'No contracts yet. A sponsor will draft one once you\'ve agreed on a deal.'}</div>`)
+    + (archivedContracts.length ? `
+      <div style="margin-top:18px">
+        <button onclick="document.getElementById('archivedList').style.display = document.getElementById('archivedList').style.display === 'none' ? 'block' : 'none'"
+          style="font-size:12.5px;font-weight:600;color:var(--ink-soft);background:none;border:none;cursor:pointer;padding:8px 0">
+          Archived (${archivedContracts.length}) ▾
+        </button>
+        <div id="archivedList" style="display:none">${archivedContracts.map(renderCard).join('')}</div>
+      </div>` : '');
 }
 
+async function archiveContract(contractId) {
+  const { error } = await sb.from('contracts').update({ archived_at: new Date().toISOString() }).eq('id', contractId);
+  if (error) { alert('Could not archive: ' + error.message); return; }
+  loadContracts();
+}
+
+async function unarchiveContract(contractId) {
+  const { error } = await sb.from('contracts').update({ archived_at: null }).eq('id', contractId);
+  if (error) { alert('Could not unarchive: ' + error.message); return; }
+  loadContracts();
+}
 function toggleSignPanel(contractId) {
   const el = document.getElementById('sign-panel-' + contractId);
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
