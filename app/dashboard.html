@@ -594,6 +594,7 @@ function switchTab(key) {
     el.classList.toggle('active', el.dataset.tabKey === key);
   });
   if (key === 'profile') renderAudienceCountryRows();
+  if (key === 'tools') initRateCalc();
 }
 
 // In-app replacement for the old email evidence-freshness reminder (removed
@@ -2160,7 +2161,9 @@ function onRateCalcPlatformChange() {
 }
 
 function initRateCalc() {
-  document.getElementById('rc-currency').value = detectCurrency();
+  const currencyEl = document.getElementById('rc-currency');
+  if (!currencyEl) return; // Tools tab isn't the active/rendered tab right now -- nothing to init.
+  currencyEl.value = detectCurrency();
   const sources = rateCalcSources();
   const slider = document.getElementById('rc-followers');
   const note = document.getElementById('rc-source-note');
