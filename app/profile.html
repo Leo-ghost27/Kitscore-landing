@@ -136,6 +136,7 @@ async function load() {
       <div class="psec-title">Payouts</div>
       <div class="psec-sub">Connect a payout account so sponsors can pay you through Kitscore's escrow — funds are held until you deliver and the sponsor approves.</div>
       ${renderPayoutStatus()}
+      ${creator.stripe_connect_payouts_enabled ? '<div id="balanceBox" class="msg" style="margin-top:10px">Loading balance…</div>' : ''}
     </div>
     </div>
 
@@ -302,6 +303,7 @@ async function load() {
   renderAvatarShapePicker();
   renderCoverTagsPicker();
   document.getElementById('coverSpotlightSelect').value = creator.cover_spotlight_stat || '';
+  if (creator.stripe_connect_payouts_enabled) loadBalance();
 }
 
 const MAX_GALLERY = 4;
@@ -764,6 +766,28 @@ function renderPayoutStatus() {
       <button class="btn-secondary" style="margin-top:8px" onclick="connectPayouts()">Check status / continue setup</button>`;
   }
   return `<button class="btn-secondary" style="margin-top:4px" onclick="connectPayouts()">Connect payout account</button>`;
+}
+
+async function loadBalance() {
+  const box = document.getElementById('balanceBox');
+  if (!box) return;
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch('/api/escrow?action=balance', {
+    headers: { 'Authorization': `Bearer ${session?.access_token}` },
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.connected) { box.style.display = 'none'; return; }
+
+  const fmt = (cents) => `$${(cents / 100).toFixed(2)}`;
+  const nextPayout = j.payouts.find(p => p.status === 'pending' || p.status === 'in_transit');
+
+  box.innerHTML = `
+    <div style="display:flex;gap:24px;flex-wrap:wrap">
+      <div><div style="font-size:12px;color:var(--color-text-tertiary)">Available</div><div style="font-size:20px;font-weight:600">${fmt(j.availableCents)}</div></div>
+      <div><div style="font-size:12px;color:var(--color-text-tertiary)">Pending</div><div style="font-size:20px;font-weight:600">${fmt(j.pendingCents)}</div></div>
+    </div>
+    ${nextPayout ? `<div style="margin-top:8px;font-size:13px;color:var(--color-text-secondary)">Next payout: ${fmt(nextPayout.amountCents)} — expected ${new Date(nextPayout.arrivalDate).toLocaleDateString()}</div>` : ''}
+  `;
 }
 
 async function connectPayouts() {
