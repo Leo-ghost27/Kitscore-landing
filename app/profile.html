@@ -787,6 +787,7 @@ async function loadBalance() {
       <div><div style="font-size:12px;color:var(--color-text-tertiary)">Pending</div><div style="font-size:20px;font-weight:600">${fmt(j.pendingCents)}</div></div>
     </div>
     ${nextPayout ? `<div style="margin-top:8px;font-size:13px;color:var(--color-text-secondary)">Next payout: ${fmt(nextPayout.amountCents)} — expected ${new Date(nextPayout.arrivalDate).toLocaleDateString()}</div>` : ''}
+    ${j.pendingCents > 0 ? `<div style="margin-top:10px;font-size:12.5px;color:var(--color-text-tertiary);line-height:1.5">A sponsor releasing your payment moves it here right away, but Stripe holds new payments as "Pending" for a few days before they're payable out — this is standard for every new payout account, not specific to this payment. It'll move to "Available" on its own, no action needed from you.</div>` : ''}
   `;
 }
 
