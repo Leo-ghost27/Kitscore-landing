@@ -567,7 +567,8 @@
   .why-back-list li { display: flex; align-items: flex-start; gap: 9px; font-size: 12.5px; color: var(--text); line-height: 1.5; }
   .why-back-list li svg { width: 13px; height: 13px; color: var(--accent); flex-shrink: 0; margin-top: 2px; }
   .why-mission-text { font-size: 13px; color: var(--text); line-height: 1.7; text-align: center; }
-  @media (max-width: 720px) { .why-grid { grid-template-columns: 1fr; max-width: 420px; } }
+  .why-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 660px; margin: 32px auto 0; perspective: 1400px; }
+  @media (max-width: 720px) { .why-grid { grid-template-columns: 1fr; max-width: 420px; } .why-grid2 { grid-template-columns: 1fr; max-width: 420px; } }
 
   .why2-compare { background: var(--bg); border: 0.5px solid var(--border); border-top: 2px solid var(--accent); border-radius:0; overflow: hidden; margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; box-shadow: var(--shadow-sm); transition: border-color .2s ease, box-shadow .2s ease; }
   .why2-compare:hover { border-color: var(--accent); box-shadow: 0 12px 32px -10px rgba(37,99,235,0.35); }
@@ -1598,8 +1599,58 @@
     wireWhyCard('whyWrapSource', 'whyFlipSource');
     wireWhyCard('whyWrapEvidence', 'whyFlipEvidence');
     wireWhyCard('whyWrapMission', 'whyFlipMission');
+    wireWhyCard('whyWrapROI', 'whyFlipROI');
+    wireWhyCard('whyWrapTrust', 'whyFlipTrust');
   })();
   </script>
+
+  <div class="why-grid2">
+
+    <div class="why-wrap" id="whyWrapROI">
+      <div class="why-flip" id="whyFlipROI">
+        <div class="why-face why-front">
+          <div class="why-top">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
+            <div class="why-badge">ROI-focused</div>
+          </div>
+          <h3>Because guessing costs more</h3>
+          <p>Vetting by hand costs sponsors time and campaign risk. Kitscore turns days of DMs and screenshots into minutes.</p>
+          <div class="why-tap-hint">tap to see why it matters</div>
+        </div>
+        <div class="why-face why-back">
+          <div class="why-eyebrow">Why it matters</div>
+          <ul class="why-back-list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Compare creators on the same evidence, side by side</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Catch brand-safety issues before you pay, not after</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>One report replaces a week of manual vetting</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="why-wrap" id="whyWrapTrust">
+      <div class="why-flip" id="whyFlipTrust">
+        <div class="why-face why-front">
+          <div class="why-top">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h8"/><path d="M12 8v8"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <div class="why-badge">Mutual trust</div>
+          </div>
+          <h3>Confirmed by both sides</h3>
+          <p>Not just a creator's word. Sponsors confirm the same campaign history, so nothing rests on one party's claim.</p>
+          <div class="why-tap-hint">tap to see why it matters</div>
+        </div>
+        <div class="why-face why-back">
+          <div class="why-eyebrow">Why it matters</div>
+          <ul class="why-back-list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Verified campaign history, not self-reported claims</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Mutual confirmation between creator and sponsor</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Sponsor endorsements and reliability scores — every number comes with proof</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
   <div style="margin-top:36px;">
     <p style="font-size:11px; color:var(--muted); margin-bottom:14px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;">Trust, visible in every metric</p>
@@ -1619,22 +1670,7 @@
     </div>
   </div>
 
-  <div style="margin-top:44px;max-width:640px;margin-left:auto;margin-right:auto;text-align:center;border-top:0.5px solid var(--border);padding-top:44px">
-    <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;margin-bottom:14px;color:var(--text)">Built for the people making real decisions.</h3>
-    <ul style="list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:10px;text-align:left;max-width:480px;margin-left:auto;margin-right:auto">
-      <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
-        Verified campaign history, not self-reported claims
-      </li>
-      <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
-        Mutual confirmation between creator and sponsor
-      </li>
-      <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
-        Sponsor endorsements and reliability scores — every number comes with proof
-      </li>
-    </ul>
+  <div style="margin-top:44px;text-align:center;border-top:0.5px solid var(--border);padding-top:36px">
     <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
       <a href="/app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Evaluate a Creator →</a>
       <a href="/compare.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">See how we compare →</a>
