@@ -1037,39 +1037,6 @@
 })();
 </script>
 
-<script>
-(function(){
-  function wireAudCard(wrapId, flipId){
-    var wrap = document.getElementById(wrapId);
-    var flip = document.getElementById(flipId);
-    if (!wrap || !flip) return;
-    var flipped = false, tiltX = 0, tiltY = 0;
-    function render(){
-      var flipDeg = flipped ? 180 : 0;
-      flip.style.transform = 'rotateX(' + tiltX + 'deg) rotateY(' + (flipDeg + tiltY) + 'deg)';
-    }
-    wrap.addEventListener('mousemove', function(e){
-      var r = wrap.getBoundingClientRect();
-      var px = (e.clientX - r.left) / r.width - 0.5;
-      var py = (e.clientY - r.top) / r.height - 0.5;
-      tiltX = py * -8;
-      tiltY = px * 8;
-      render();
-    });
-    wrap.addEventListener('mouseleave', function(){ tiltX = 0; tiltY = 0; render(); });
-    wrap.addEventListener('click', function(e){
-      // Let the back-face CTA links/buttons work normally instead of
-      // re-flipping the card out from under a click meant for them.
-      if (e.target.closest('a, button')) return;
-      flipped = !flipped;
-      render();
-    });
-  }
-  wireAudCard('audWrapSponsor', 'audFlipSponsor');
-  wireAudCard('audWrapCreator', 'audFlipCreator');
-})();
-</script>
-
 <!-- TIER ESTIMATOR -->
 <section id="tier-estimator" style="padding:0 2rem 0;max-width:1100px;margin:0 auto">
   <div class="estimator-box">
@@ -1375,6 +1342,39 @@
   </div>
 </section>
 </div>
+
+<script>
+(function(){
+  function wireAudCard(wrapId, flipId){
+    var wrap = document.getElementById(wrapId);
+    var flip = document.getElementById(flipId);
+    if (!wrap || !flip) return;
+    var flipped = false, tiltX = 0, tiltY = 0;
+    function render(){
+      var flipDeg = flipped ? 180 : 0;
+      flip.style.transform = 'rotateX(' + tiltX + 'deg) rotateY(' + (flipDeg + tiltY) + 'deg)';
+    }
+    wrap.addEventListener('mousemove', function(e){
+      var r = wrap.getBoundingClientRect();
+      var px = (e.clientX - r.left) / r.width - 0.5;
+      var py = (e.clientY - r.top) / r.height - 0.5;
+      tiltX = py * -8;
+      tiltY = px * 8;
+      render();
+    });
+    wrap.addEventListener('mouseleave', function(){ tiltX = 0; tiltY = 0; render(); });
+    wrap.addEventListener('click', function(e){
+      // Let the back-face CTA links/buttons work normally instead of
+      // re-flipping the card out from under a click meant for them.
+      if (e.target.closest('a, button')) return;
+      flipped = !flipped;
+      render();
+    });
+  }
+  wireAudCard('audWrapSponsor', 'audFlipSponsor');
+  wireAudCard('audWrapCreator', 'audFlipCreator');
+})();
+</script>
 
 <hr class="section-divider" />
 
