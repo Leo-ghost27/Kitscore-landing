@@ -1014,70 +1014,8 @@
 })();
 </script>
 
-<!-- TIER ESTIMATOR -->
-<section id="tier-estimator" style="padding:0 2rem 0;max-width:1100px;margin:0 auto">
-  <div class="estimator-box">
-    <div class="eyebrow-chip-row">
-      <div class="eyebrow-chip creator">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </div>
-      <div class="estimator-label" style="margin-bottom:0">Try it now</div>
-    </div>
-    <h3 class="estimator-title">See your estimated tier</h3>
-    <div class="estimator-fields">
-      <div>
-        <label for="est-followers">Followers</label>
-        <input type="number" id="est-followers" value="12000" min="0" step="100" />
-      </div>
-      <div>
-        <label for="est-likes">Avg. likes per post</label>
-        <input type="number" id="est-likes" value="420" min="0" step="10" />
-      </div>
-      <div>
-        <label for="est-comments">Avg. comments per post</label>
-        <input type="number" id="est-comments" value="18" min="0" step="1" />
-      </div>
-    </div>
-
-    <div class="tier-meter">
-      <div class="tier-meter-top">
-        <div class="estimator-result-label" style="margin-bottom:0">Estimated tier</div>
-        <div class="estimator-result-item" style="text-align:right">
-          <div class="estimator-result-value accent" id="est-tier" style="font-size:20px;line-height:1">Silver</div>
-        </div>
-      </div>
-      <div class="tier-meter-track">
-        <div class="tier-meter-fill" id="tier-meter-fill" style="width:0%"></div>
-        <div class="tier-meter-dot" id="tier-meter-dot" style="left:0%"></div>
-      </div>
-      <div class="tier-meter-labels">
-        <span>Unranked</span>
-        <span>Bronze</span>
-        <span>Silver</span>
-        <span>Gold</span>
-      </div>
-    </div>
-
-    <div class="estimator-result">
-      <div class="estimator-live-tag">
-        <span class="estimator-live-dot"></span>
-        Updates as you type
-      </div>
-      <div style="display:flex;align-items:flex-end;gap:24px">
-        <div class="estimator-result-item">
-          <div class="estimator-result-label">Est. Kitscore</div>
-          <div class="estimator-result-value" id="est-score">62</div>
-        </div>
-        <div class="estimator-cta-wrap">
-          <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Claim this score for real →</a>
-          <span class="estimator-microcopy">No signup · 10 seconds</span>
-        </div>
-      </div>
-    </div>
-    <p class="estimator-disclaimer">Rough estimate only, not your official Kitscore. Your real Kitscore is calculated from verified campaign evidence after you claim your profile.</p>
-  </div>
-
-  <div class="hero-divider">
+<!-- Tier estimator lives further down, in the creator track of "How it works" -->
+<div class="hero-divider">
     <div class="hero-divider-ticker" aria-hidden="true">
       <div class="hero-divider-track">
         <span class="hero-divider-item"><strong>91</strong> Trust Score</span><span class="hero-divider-sep">·</span>
@@ -1099,33 +1037,6 @@
       Brought a sponsor instead?
     </a>
   </div>
-</section>
-<script>
-(function(){
-  function calcEstimator(){
-    var f = parseFloat(document.getElementById('est-followers').value) || 0;
-    var l = parseFloat(document.getElementById('est-likes').value) || 0;
-    var c = parseFloat(document.getElementById('est-comments').value) || 0;
-    var engagement = f > 0 ? ((l + c) / f) * 100 : 0;
-    var followerPoints = Math.min(40, Math.log10(f + 1) * 8);
-    var engagementPoints = Math.min(45, engagement * 6.5);
-    var score = Math.round(Math.min(97, 15 + followerPoints + engagementPoints));
-    var tier = 'Bronze';
-    if (score >= 85) tier = 'Gold';
-    else if (score >= 65) tier = 'Silver';
-    else if (score < 40) tier = 'Unranked';
-    document.getElementById('est-score').textContent = score;
-    document.getElementById('est-tier').textContent = tier;
-    var pct = Math.max(0, Math.min(100, (score / 97) * 100));
-    document.getElementById('tier-meter-fill').style.width = pct + '%';
-    document.getElementById('tier-meter-dot').style.left = pct + '%';
-  }
-  ['est-followers', 'est-likes', 'est-comments'].forEach(function(id){
-    document.getElementById(id).addEventListener('input', calcEstimator);
-  });
-  calcEstimator();
-})();
-</script>
 
 <hr class="section-divider" />
 
@@ -1263,7 +1174,94 @@
     </div>
 
   </div>
+
+  <div class="estimator-box" style="max-width:640px;margin:44px auto 0">
+    <div class="eyebrow-chip-row">
+      <div class="eyebrow-chip creator">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="estimator-label" style="margin-bottom:0">Try it now</div>
+    </div>
+    <h3 class="estimator-title">See your estimated tier</h3>
+    <div class="estimator-fields">
+      <div>
+        <label for="est-followers">Followers</label>
+        <input type="number" id="est-followers" value="12000" min="0" step="100" />
+      </div>
+      <div>
+        <label for="est-likes">Avg. likes per post</label>
+        <input type="number" id="est-likes" value="420" min="0" step="10" />
+      </div>
+      <div>
+        <label for="est-comments">Avg. comments per post</label>
+        <input type="number" id="est-comments" value="18" min="0" step="1" />
+      </div>
+    </div>
+
+    <div class="tier-meter">
+      <div class="tier-meter-top">
+        <div class="estimator-result-label" style="margin-bottom:0">Estimated tier</div>
+        <div class="estimator-result-item" style="text-align:right">
+          <div class="estimator-result-value accent" id="est-tier" style="font-size:20px;line-height:1">Silver</div>
+        </div>
+      </div>
+      <div class="tier-meter-track">
+        <div class="tier-meter-fill" id="tier-meter-fill" style="width:0%"></div>
+        <div class="tier-meter-dot" id="tier-meter-dot" style="left:0%"></div>
+      </div>
+      <div class="tier-meter-labels">
+        <span>Unranked</span>
+        <span>Bronze</span>
+        <span>Silver</span>
+        <span>Gold</span>
+      </div>
+    </div>
+
+    <div class="estimator-result">
+      <div class="estimator-live-tag">
+        <span class="estimator-live-dot"></span>
+        Updates as you type
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:24px">
+        <div class="estimator-result-item">
+          <div class="estimator-result-label">Est. Kitscore</div>
+          <div class="estimator-result-value" id="est-score">62</div>
+        </div>
+        <div class="estimator-cta-wrap">
+          <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Claim this score for real →</a>
+          <span class="estimator-microcopy">No signup · 10 seconds</span>
+        </div>
+      </div>
+    </div>
+    <p class="estimator-disclaimer">Rough estimate only, not your official Kitscore. Your real Kitscore is calculated from verified campaign evidence after you claim your profile.</p>
+  </div>
 </section>
+<script>
+(function(){
+  function calcEstimator(){
+    var f = parseFloat(document.getElementById('est-followers').value) || 0;
+    var l = parseFloat(document.getElementById('est-likes').value) || 0;
+    var c = parseFloat(document.getElementById('est-comments').value) || 0;
+    var engagement = f > 0 ? ((l + c) / f) * 100 : 0;
+    var followerPoints = Math.min(40, Math.log10(f + 1) * 8);
+    var engagementPoints = Math.min(45, engagement * 6.5);
+    var score = Math.round(Math.min(97, 15 + followerPoints + engagementPoints));
+    var tier = 'Bronze';
+    if (score >= 85) tier = 'Gold';
+    else if (score >= 65) tier = 'Silver';
+    else if (score < 40) tier = 'Unranked';
+    document.getElementById('est-score').textContent = score;
+    document.getElementById('est-tier').textContent = tier;
+    var pct = Math.max(0, Math.min(100, (score / 97) * 100));
+    document.getElementById('tier-meter-fill').style.width = pct + '%';
+    document.getElementById('tier-meter-dot').style.left = pct + '%';
+  }
+  ['est-followers', 'est-likes', 'est-comments'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', calcEstimator);
+  });
+  calcEstimator();
+})();
+</script>
 </div>
 
 <script>
