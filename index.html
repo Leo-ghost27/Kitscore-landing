@@ -548,21 +548,26 @@
   .why-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
   .why-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
-  /* WHY KITSCORE v2 */
-  .why2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 0.5px solid var(--border); border-radius:0; overflow: hidden; box-shadow: var(--shadow-sm); }
-  .why2-card { background: var(--bg); padding: 32px; border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); transition: background 0.15s; }
-  .why2-card:hover { background: var(--bg2); }
-  .why2-card:nth-child(2n) { border-right: none; }
-  .why2-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
-  .why2-icon { width: 22px; height: 22px; color: var(--accent); display: flex; align-items: center; justify-content: center; }
-  .why2-icon svg { width: 100%; height: 100%; }
-  .why2-badge { font-size: 12px; font-weight: 500; color: var(--accent); border: 0.5px solid var(--accent); border-radius:0; padding: 5px 12px; }
-  .why2-card h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
-  .why2-card p { font-size: 14px; color: var(--muted); line-height: 1.65; }
-  @media (max-width: 640px) {
-    .why2-grid { grid-template-columns: 1fr; }
-    .why2-card { border-right: none; }
-  }
+  /* WHY KITSCORE v2 — flip cards */
+  .why-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; max-width: 980px; margin: 0 auto; perspective: 1400px; }
+  .why-wrap { perspective: 1400px; }
+  .why-flip { position: relative; width: 100%; height: 250px; transform-style: preserve-3d; transition: transform .15s ease-out; cursor: pointer; }
+  .why-face { position: absolute; inset: 0; backface-visibility: hidden; overflow: hidden; border-radius: 14px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--bg); padding: 24px 22px; box-sizing: border-box; display: flex; flex-direction: column; transition: box-shadow .2s ease, border-color .2s ease; }
+  .why-wrap:hover .why-face { box-shadow: 0 12px 28px -12px rgba(17, 24, 39, 0.16); border-color: #D7DAE0; }
+  .why-back { background: var(--bg2); transform: rotateY(180deg); justify-content: center; }
+  .why-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .why-icon { width: 20px; height: 20px; color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .why-icon svg { width: 100%; height: 100%; }
+  .why-badge { font-size: 10.5px; font-weight: 600; letter-spacing: 0.02em; color: var(--accent); border: 0.5px solid var(--accent); border-radius: 20px; padding: 4px 11px; }
+  .why-face h3 { font-family: 'Space Grotesk', var(--font-display); font-size: 16.5px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin: 0 0 9px; }
+  .why-face p { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0; }
+  .why-tap-hint { margin-top: auto; text-align: center; font-size: 11px; color: var(--accent); padding-top: 14px; }
+  .why-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; text-align: center; }
+  .why-back-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .why-back-list li { display: flex; align-items: flex-start; gap: 9px; font-size: 12.5px; color: var(--text); line-height: 1.5; }
+  .why-back-list li svg { width: 13px; height: 13px; color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+  .why-mission-text { font-size: 13px; color: var(--text); line-height: 1.7; text-align: center; }
+  @media (max-width: 720px) { .why-grid { grid-template-columns: 1fr; max-width: 420px; } }
 
   .why2-compare { background: var(--bg); border: 0.5px solid var(--border); border-top: 2px solid var(--accent); border-radius:0; overflow: hidden; margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; box-shadow: var(--shadow-sm); transition: border-color .2s ease, box-shadow .2s ease; }
   .why2-compare:hover { border-color: var(--accent); box-shadow: 0 12px 32px -10px rgba(37,99,235,0.35); }
@@ -1498,40 +1503,103 @@
   <h2 class="section-h">This is not another<br><strong>analytics tool.</strong></h2>
   <p class="section-sub">This is a sponsorship due diligence platform. Every evaluation is built around the question that matters: <strong style="color:var(--text)">should we sponsor this creator?</strong></p>
 
-  <div class="why2-grid">
-    <div class="why2-card">
-      <div class="why2-top">
-        <div class="why2-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24L3 3a1 1 0 0 0-1 1l.24 6.59a2 2 0 0 0 .59 1.41l9.58 9.58a2 2 0 0 0 2.83 0l5.34-5.34a2 2 0 0 0 .01-2.83Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div>
-        <div class="why2-badge">Transparency</div>
+  <div class="why-grid">
+
+    <div class="why-wrap" id="whyWrapSource">
+      <div class="why-flip" id="whyFlipSource">
+        <div class="why-face why-front">
+          <div class="why-top">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24L3 3a1 1 0 0 0-1 1l.24 6.59a2 2 0 0 0 .59 1.41l9.58 9.58a2 2 0 0 0 2.83 0l5.34-5.34a2 2 0 0 0 .01-2.83Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div>
+            <div class="why-badge">Transparency</div>
+          </div>
+          <h3>Source labels</h3>
+          <p>Every metric shows whether it's self-reported, evidence-submitted, or live-verified.</p>
+          <div class="why-tap-hint">tap to see why it matters</div>
+        </div>
+        <div class="why-face why-back">
+          <div class="why-eyebrow">Why it matters</div>
+          <ul class="why-back-list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>No mixing guesses with proof</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Confidence ratings show how much evidence backs each number</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>You always know exactly where the data came from</li>
+          </ul>
+        </div>
       </div>
-      <h3>Source Labels</h3>
-      <p>Every metric shows whether it's Self-Reported, Evidence-Submitted, or Live-Verified. You always know where the data comes from.</p>
     </div>
-    <div class="why2-card">
-      <div class="why2-top">
-        <div class="why2-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-        <div class="why2-badge">Accuracy</div>
+
+    <div class="why-wrap" id="whyWrapEvidence">
+      <div class="why-flip" id="whyFlipEvidence">
+        <div class="why-face why-front">
+          <div class="why-top">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
+            <div class="why-badge">Audit-ready</div>
+          </div>
+          <h3>Evidence tracking</h3>
+          <p>Every score component links back to the evidence that produced it — auditable end to end.</p>
+          <div class="why-tap-hint">tap to see why it matters</div>
+        </div>
+        <div class="why-face why-back">
+          <div class="why-eyebrow">Why it matters</div>
+          <ul class="why-back-list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Sponsor-focused recommendations, not vanity metrics</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Every number traces back to a source, first to last</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Built for sponsorship decisions, not follower growth</li>
+          </ul>
+        </div>
       </div>
-      <h3>Confidence Ratings</h3>
-      <p>Not just a score — a confidence percentage that tells you exactly how much evidence backs it up.</p>
     </div>
-    <div class="why2-card">
-      <div class="why2-top">
-        <div class="why2-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
-        <div class="why2-badge">Audit-ready</div>
+
+    <div class="why-wrap" id="whyWrapMission">
+      <div class="why-flip" id="whyFlipMission">
+        <div class="why-face why-front">
+          <div class="why-top">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/></svg></div>
+            <div class="why-badge">Our mission</div>
+          </div>
+          <h3>Proof, not promises</h3>
+          <p>We're building the reputation infrastructure for the creator economy.</p>
+          <div class="why-tap-hint">tap to read our mission</div>
+        </div>
+        <div class="why-face why-back">
+          <div class="why-eyebrow">Our mission</div>
+          <p class="why-mission-text">Make sponsorship decisions based on proof, not promises. We're building the reputation infrastructure for the creator economy.</p>
+        </div>
       </div>
-      <h3>Evidence Tracking</h3>
-      <p>Every score component links back to the evidence that produced it. Fully auditable from first number to last.</p>
     </div>
-    <div class="why2-card">
-      <div class="why2-top">
-        <div class="why2-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></div>
-        <div class="why2-badge">Decision-first</div>
-      </div>
-      <h3>Sponsor-Focused Recommendations</h3>
-      <p>Built for sponsorship decisions, not vanity metrics or follower growth. The question we answer: should you sponsor this creator?</p>
-    </div>
+
   </div>
+
+  <script>
+  (function(){
+    function wireWhyCard(wrapId, flipId){
+      var wrap = document.getElementById(wrapId);
+      var flip = document.getElementById(flipId);
+      if (!wrap || !flip) return;
+      var flipped = false, tiltX = 0, tiltY = 0;
+      function render(){
+        var flipDeg = flipped ? 180 : 0;
+        flip.style.transform = 'rotateX(' + tiltX + 'deg) rotateY(' + (flipDeg + tiltY) + 'deg)';
+      }
+      wrap.addEventListener('mousemove', function(e){
+        var r = wrap.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width - 0.5;
+        var py = (e.clientY - r.top) / r.height - 0.5;
+        tiltX = py * -6;
+        tiltY = px * 6;
+        render();
+      });
+      wrap.addEventListener('mouseleave', function(){ tiltX = 0; tiltY = 0; render(); });
+      wrap.addEventListener('click', function(e){
+        if (e.target.closest('a, button')) return;
+        flipped = !flipped;
+        render();
+      });
+    }
+    wireWhyCard('whyWrapSource', 'whyFlipSource');
+    wireWhyCard('whyWrapEvidence', 'whyFlipEvidence');
+    wireWhyCard('whyWrapMission', 'whyFlipMission');
+  })();
+  </script>
 
   <div style="margin-top:36px;">
     <p style="font-size:11px; color:var(--muted); margin-bottom:14px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;">Trust, visible in every metric</p>
@@ -1551,32 +1619,26 @@
     </div>
   </div>
 
-  <div style="margin-top:44px;display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start;border-top:0.5px solid var(--border);padding-top:44px">
-    <div>
-      <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;margin-bottom:14px;color:var(--text)">Built for the people making real decisions.</h3>
-      <ul style="list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:10px">
-        <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
-          Verified campaign history, not self-reported claims
-        </li>
-        <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
-          Mutual confirmation between creator and sponsor
-        </li>
-        <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
-          Sponsor endorsements and reliability scores — every number comes with proof
-        </li>
-      </ul>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <a href="/app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Evaluate a Creator →</a>
-        <a href="/compare.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">See how we compare →</a>
-        <a href="mailto:hello@kitscore.co" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Contact us</a>
-      </div>
-    </div>
-    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:18px 20px;border-left:2px solid var(--accent);box-shadow:var(--shadow-sm)">
-      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:5px">Our mission</div>
-      <div style="font-size:13px;color:var(--text);line-height:1.65">Make sponsorship decisions based on proof, not promises. We're building the reputation infrastructure for the creator economy.</div>
+  <div style="margin-top:44px;max-width:640px;margin-left:auto;margin-right:auto;text-align:center;border-top:0.5px solid var(--border);padding-top:44px">
+    <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;margin-bottom:14px;color:var(--text)">Built for the people making real decisions.</h3>
+    <ul style="list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:10px;text-align:left;max-width:480px;margin-left:auto;margin-right:auto">
+      <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
+        Verified campaign history, not self-reported claims
+      </li>
+      <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
+        Mutual confirmation between creator and sponsor
+      </li>
+      <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
+        Sponsor endorsements and reliability scores — every number comes with proof
+      </li>
+    </ul>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+      <a href="/app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Evaluate a Creator →</a>
+      <a href="/compare.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">See how we compare →</a>
+      <a href="mailto:hello@kitscore.co" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Contact us</a>
     </div>
   </div>
 </section>
