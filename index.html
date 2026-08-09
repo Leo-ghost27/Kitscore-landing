@@ -218,7 +218,8 @@
   .aud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 780px; margin: 0 auto; }
   .aud-wrap { perspective: 1400px; }
   .aud-flip { position: relative; width: 100%; height: 380px; transform-style: preserve-3d; transition: transform .15s ease-out; cursor: pointer; }
-  .aud-face { position: absolute; inset: 0; backface-visibility: hidden; overflow: hidden; border-radius: 14px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--bg); padding: 26px 24px; box-sizing: border-box; display: flex; flex-direction: column; }
+  .aud-face { position: absolute; inset: 0; backface-visibility: hidden; overflow: hidden; border-radius: 14px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--bg); padding: 26px 24px; box-sizing: border-box; display: flex; flex-direction: column; transition: box-shadow .2s ease, border-color .2s ease; }
+  .aud-wrap:hover .aud-face { box-shadow: 0 12px 28px -12px rgba(17, 24, 39, 0.16); border-color: #D7DAE0; }
   .aud-back { background: var(--bg2); transform: rotateY(180deg); justify-content: center; }
   .aud-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
   .aud-headline { font-family: 'Space Grotesk', var(--font-display); font-size: 19px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin-bottom: 20px; }
@@ -231,9 +232,11 @@
   .aud-stat { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 8px; text-align: center; background: var(--bg); }
   .aud-stat-num { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text); }
   .aud-stat-label { font-size: 9.5px; color: var(--muted2); margin-top: 1px; }
-  .aud-platform-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: var(--bg); }
-  .aud-platform-row svg { width: 15px; height: 15px; color: #16A34A; flex-shrink: 0; }
-  .aud-platform-row span { font-size: 11.5px; color: var(--muted); }
+  .aud-platform-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: var(--bg); }
+  .aud-platform-icons { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+  .aud-platform-icons svg { width: 16px; height: 16px; color: var(--muted2); flex-shrink: 0; }
+  .aud-platform-row span { font-size: 11.5px; color: var(--muted); flex: 1; }
+  .aud-platform-check { width: 16px; height: 16px; color: #16A34A; flex-shrink: 0; }
   .aud-tap-hint { margin-top: auto; text-align: center; font-size: 11px; color: var(--accent); padding-top: 16px; }
   .aud-list { border-top: 0.5px solid var(--border); margin-bottom: 16px; }
   .aud-list-item { display: flex; align-items: flex-start; gap: 11px; padding: 12px 0; border-bottom: 0.5px solid var(--border); }
@@ -1313,8 +1316,13 @@
             <div class="aud-score-ring">91</div>
           </div>
           <div class="aud-platform-row">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+            <div class="aud-platform-icons">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="Instagram"><title>Instagram</title><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" stroke="none"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="TikTok"><title>TikTok</title><path d="M13 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M13 3c.3 2.5 2 4.3 4.5 4.6"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="YouTube"><title>YouTube</title><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/></svg>
+            </div>
             <span>3 platforms verified</span>
+            <svg class="aud-platform-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
           </div>
           <div class="aud-tap-hint">tap to see what's included</div>
         </div>
