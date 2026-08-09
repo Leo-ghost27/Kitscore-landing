@@ -1298,7 +1298,10 @@
     <div class="aud-wrap" id="audWrapSponsor">
       <div class="aud-flip" id="audFlipSponsor">
         <div class="aud-face aud-front">
-          <div class="aud-eyebrow">For sponsors</div>
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <span class="info-pill">For sponsors</span>
+          </div>
           <div class="aud-headline">See a sample evaluation</div>
           <div class="aud-preview-row">
             <div>
@@ -1372,7 +1375,10 @@
     <div class="aud-wrap" id="audWrapCreator">
       <div class="aud-flip" id="audFlipCreator">
         <div class="aud-face aud-front">
-          <div class="aud-eyebrow">For creators</div>
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+            <span class="info-pill">For creators</span>
+          </div>
           <div class="aud-headline">See what sponsors see</div>
           <div class="aud-preview-row">
             <div>
@@ -1672,8 +1678,13 @@
     wireWhyCard('whyWrapSource', 'whyFlipSource');
     wireWhyCard('whyWrapEvidence', 'whyFlipEvidence');
     wireWhyCard('whyWrapMission', 'whyFlipMission');
-    wireWhyCard('whyWrapROI', 'whyFlipROI');
-    wireWhyCard('whyWrapTrust', 'whyFlipTrust');
+    // whyWrapROI/whyWrapTrust live in the second why-grid2 block, further
+    // down the document than this script tag, so wire them once the DOM
+    // has finished parsing rather than immediately.
+    document.addEventListener('DOMContentLoaded', function(){
+      wireWhyCard('whyWrapROI', 'whyFlipROI');
+      wireWhyCard('whyWrapTrust', 'whyFlipTrust');
+    });
   })();
   </script>
 
@@ -2001,7 +2012,10 @@
     <div class="info-wrap" id="methWrapComponents">
       <div class="info-flip" id="methFlipComponents">
         <div class="info-face info-front">
-          <div class="info-top-row"><span class="info-pill">Weighted</span></div>
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="13" width="3" height="5"/><rect x="12" y="9" width="3" height="9"/><rect x="17" y="5" width="3" height="13"/></svg>
+            <span class="info-pill">Weighted</span>
+          </div>
           <div class="info-headline">4 score components</div>
           <p class="info-desc">Audience authenticity, engagement quality, brand safety, content consistency</p>
           <div class="info-tap-hint">tap for detail</div>
@@ -2020,7 +2034,10 @@
     <div class="info-wrap" id="methWrapTiers">
       <div class="info-flip" id="methFlipTiers">
         <div class="info-face info-front">
-          <div class="info-top-row"><span class="info-pill">Transparent</span></div>
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg>
+            <span class="info-pill">Transparent</span>
+          </div>
           <div class="info-headline">3 verification tiers</div>
           <p class="info-desc">Live verified · Evidence submitted · Self-reported</p>
           <div class="info-tap-hint">tap for detail</div>
@@ -2037,7 +2054,10 @@
     <div class="info-wrap" id="methWrapConfidence">
       <div class="info-flip" id="methFlipConfidence">
         <div class="info-face info-front">
-          <div class="info-top-row"><span class="info-pill">Unique</span></div>
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+            <span class="info-pill">Unique</span>
+          </div>
           <div class="info-headline">Confidence rating</div>
           <p class="info-desc">Every score ships with a % showing how much evidence backs it</p>
           <div class="info-tap-hint">tap for detail</div>
@@ -2054,7 +2074,10 @@
     <div class="info-wrap" id="methWrapSafety">
       <div class="info-flip" id="methFlipSafety">
         <div class="info-face info-front">
-          <div class="info-top-row"><span class="info-pill">Compliance</span></div>
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/><path d="m9 12 2 2 4-4"/></svg>
+            <span class="info-pill">Compliance</span>
+          </div>
           <div class="info-headline">8-point brand safety</div>
           <p class="info-desc">FTC disclosure, misinformation, controversy — all scored</p>
           <div class="info-tap-hint">tap for detail</div>
