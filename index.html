@@ -490,6 +490,33 @@
   .hiw2-bring-deal { max-width: 620px; margin: 22px auto 26px; text-align: center; font-size: 13.5px; color: var(--muted); border-top: 0.5px solid var(--border); padding-top: 22px; line-height: 1.6; }
   .hiw2-bring-deal strong { color: var(--text); }
   @media (max-width: 768px) { .hiw2-list { max-width: 100%; } }
+  .hiw3-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 720px; margin: 0 auto; }
+  .hiw3-flip { position: relative; width: 100%; height: 360px; cursor: pointer; }
+  .hiw3-flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.34, 1.2, 0.4, 1); }
+  .hiw3-flip.flipped .hiw3-flip-inner { transform: rotateY(180deg); }
+  .hiw3-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: var(--shadow-md); display: flex; flex-direction: column; padding: 26px 24px; }
+  .hiw3-front { background: #fff; border: 0.5px solid var(--border); color: var(--text); justify-content: center; }
+  .hiw3-back { background: #0F1B2E; border: 1px solid #0F1B2E; color: #fff; transform: rotateY(180deg); }
+  .hiw3-eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .hiw3-back .hiw3-eyebrow { color: #93A3BE; }
+  .hiw3-front h3 { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: var(--text); margin: 0 0 8px; line-height: 1.2; }
+  .hiw3-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .hiw3-spec-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 11px 0; border-top: 0.5px solid #24314A; font-size: 13.5px; }
+  .hiw3-spec-row:last-of-type { border-bottom: 0.5px solid #24314A; margin-bottom: auto; }
+  .hiw3-spec-label { font-weight: 600; color: #fff; white-space: nowrap; }
+  .hiw3-spec-desc { color: #93A3BE; text-align: right; }
+  .hiw3-cta { display: block; text-align: center; background: #fff; color: #0F1B2E; border: none; padding: 13px; font-weight: 600; font-size: 13.5px; text-decoration: none; margin-top: 16px; }
+  .hiw3-preview-box { background: #152238; border-radius: 4px; padding: 14px; display: flex; justify-content: space-between; align-items: center; margin: 14px 0 10px; }
+  .hiw3-preview-name { font-size: 14px; font-weight: 600; }
+  .hiw3-preview-meta { font-size: 11.5px; color: #93A3BE; }
+  .hiw3-score-ring { width: 46px; height: 46px; border-radius: 50%; border: 3px solid var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: #6FA0F5; flex-shrink: 0; }
+  .hiw3-verified-line { font-size: 12px; color: #93A3BE; margin-bottom: auto; }
+  .hiw3-check-list { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .hiw3-check-list li { font-size: 12.5px; color: #D7DEEA; display: flex; gap: 8px; line-height: 1.4; }
+  .hiw3-check-list li::before { content: '✓'; color: #6FA0F5; font-weight: 700; flex-shrink: 0; }
+  .hiw3-note { max-width: 620px; margin: 24px auto 0; text-align: center; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .hiw3-note strong { color: var(--text); }
+  @media (max-width: 640px) { .hiw3-grid { grid-template-columns: 1fr; max-width: 340px; } .hiw3-flip { height: 340px; } }
 
   .creator-tiers { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
   .tier-card {
@@ -1237,53 +1264,55 @@
   <h2 class="section-h">Built for <strong>two audiences.</strong></h2>
   <p class="section-sub">Whether you're evaluating a creator or building your sponsorship credibility, Kitscore gives you the tools to act with confidence.</p>
 
-  <div class="hiw2-tabs">
-    <button class="hiw2-tab active" onclick="showTab2('sponsors',this)">For Sponsors</button>
-    <button class="hiw2-tab" onclick="showTab2('creators',this)">For Creators</button>
+  <div class="hiw3-grid">
+
+    <div class="hiw3-flip" id="hiwSponsorCard" onclick="document.getElementById('hiwSponsorCard').classList.toggle('flipped')">
+      <div class="hiw3-flip-inner">
+        <div class="hiw3-face hiw3-front">
+          <h3>Evaluate before you sponsor.</h3>
+          <div class="hiw3-hint">Tap to see what's included →</div>
+        </div>
+        <div class="hiw3-face hiw3-back">
+          <div class="hiw3-eyebrow">What's Included</div>
+          <div class="hiw3-spec-row"><span class="hiw3-spec-label">Trust score</span><span class="hiw3-spec-desc">audience · engagement · safety</span></div>
+          <div class="hiw3-spec-row"><span class="hiw3-spec-label">Escrow</span><span class="hiw3-spec-desc">held until delivered</span></div>
+          <div class="hiw3-spec-row"><span class="hiw3-spec-label">Contract scan</span><span class="hiw3-spec-desc">flags one-sided terms</span></div>
+          <a href="/app/auth.html" class="hiw3-cta" onclick="event.stopPropagation()">Evaluate a Creator →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="hiw3-flip" id="hiwCreatorCard" onclick="document.getElementById('hiwCreatorCard').classList.toggle('flipped')">
+      <div class="hiw3-flip-inner">
+        <div class="hiw3-face hiw3-front">
+          <div class="hiw3-eyebrow">For Creators</div>
+          <h3>See what sponsors see.</h3>
+          <div class="hiw3-preview-box">
+            <div><div class="hiw3-preview-name">Sophie Lau</div><div class="hiw3-preview-meta">Beauty · Gold</div></div>
+            <div class="hiw3-score-ring">91</div>
+          </div>
+          <div class="hiw3-verified-line">✓ 3 platforms verified</div>
+          <div class="hiw3-hint">Tap to see what gets verified →</div>
+        </div>
+        <div class="hiw3-face hiw3-back">
+          <div class="hiw3-eyebrow">What Gets Verified</div>
+          <ul class="hiw3-check-list">
+            <li>Campaign history, mutually confirmed</li>
+            <li>8-point brand safety check</li>
+            <li>Published, source-labeled formula</li>
+          </ul>
+          <a href="/app/auth.html" class="hiw3-cta" onclick="event.stopPropagation()">Claim Your Founding Spot →</a>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <div id="tab2-sponsors" class="hiw2-panel active">
-    <div class="hiw2-list">
-      <div class="hiw2-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <span>Browse the creator directory</span>
-      </div>
-      <div class="hiw2-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
-        <span>Get an instant preview</span>
-      </div>
-      <div class="hiw2-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="1"/><path d="M8 11V8a4 4 0 0 1 7.6-1.8"/></svg>
-        <span>Unlock the full evaluation</span>
-      </div>
-    </div>
-    <a href="/agencies.html" class="hiw2-more">See the full sponsor journey →</a>
-    <div style="text-align:center">
-      <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Evaluate a Creator →</a>
-    </div>
+  <div style="text-align:center;margin-top:22px;display:flex;gap:24px;justify-content:center;flex-wrap:wrap">
+    <a href="/agencies.html" class="hiw2-more" style="margin:0">See the full sponsor journey →</a>
+    <a href="/for-creators.html" class="hiw2-more" style="margin:0">See the full creator journey →</a>
   </div>
-
-  <div id="tab2-creators" class="hiw2-panel">
-    <div class="hiw2-list">
-      <div class="hiw2-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a7 7 0 0 1 11.5-5.3"/><path d="m16 17 2 2 4-4"/></svg>
-        <span>Claim your profile</span>
-      </div>
-      <div class="hiw2-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
-        <span>Upload evidence</span>
-      </div>
-      <div class="hiw2-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/><path d="m9 12 2 2 4-4"/></svg>
-        <span>Get hired, protected</span>
-      </div>
-    </div>
-    <a href="/for-creators.html" class="hiw2-more">See the full creator journey →</a>
-    <p class="hiw2-bring-deal"><strong>Already have a sponsor?</strong> You don't need an open brief — bring the deal you already struck straight to Kitscore for a contract and escrow protection. Kitscore takes 10%, less than half what Fiverr takes.</p>
-    <div style="text-align:center">
-      <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Claim Your Founding Spot →</a>
-    </div>
-  </div>
+  <p class="hiw3-note"><strong>Already have a sponsor?</strong> Bring the deal to Kitscore for a contract and escrow — 10%, less than half what Fiverr takes.</p>
 </section>
 </div>
 
