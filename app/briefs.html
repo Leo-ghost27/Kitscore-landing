@@ -240,6 +240,7 @@ async function loadSponsorBriefs() {
             <div style="font-size:13px;font-weight:600;color:var(--ink)">${escapeHtml(a.creators.profiles.display_name)}</div>
             ${a.pitch_message ? `<div style="font-size:12.5px;color:var(--ink-soft);margin-top:2px;max-width:520px">${escapeHtml(a.pitch_message)}</div>` : ''}
             ${a.proposed_rate ? `<div style="font-size:11.5px;color:var(--ink-soft);margin-top:2px">Proposed: ${escapeHtml(a.proposed_rate)}</div>` : ''}
+            ${pitchEvidenceBadge(a)}
           </div>
           <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
             <span class="status-tag st-${a.status}">${a.status}</span>
@@ -272,6 +273,49 @@ async function updateApplication(appId, status) {
   loadSponsorBriefs();
 }
 
+// ── Pitch evidence: shared by both the sponsor's applicant list and the
+// creator's "my applications" view. An application only has pitch_hash /
+// pitch_locked_at once the DB trigger in
+// supabase/2026-08-10-pitch-evidence-logging.sql has run on it (i.e. every
+// application from here on) — older rows from before this migration won't
+// have it, hence the guard.
+function pitchEvidenceBadge(app) {
+  if (!app || !app.pitch_locked_at) return '';
+  const when = new Date(app.pitch_locked_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const shortHash = app.pitch_hash ? app.pitch_hash.slice(0, 10) : '';
+  return `
+    <div style="display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px;color:var(--ink-soft)">
+      <span style="display:inline-flex;align-items:center;gap:3px">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        Evidence logged ${escapeHtml(when)} · <span style="font-family:monospace">${escapeHtml(shortHash)}…</span>
+      </span>
+      <button class="toggle-link" style="font-size:11px;padding:0" onclick="downloadPitchEvidence('${app.id}')">Download certificate</button>
+    </div>`;
+}
+
+async function downloadPitchEvidence(applicationId) {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/documents?type=pitch-evidence', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ applicationId }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      try { alert('Could not generate certificate: ' + (JSON.parse(text).error || 'unknown')); }
+      catch { alert('Could not generate certificate (' + res.status + '): ' + text.slice(0, 200)); }
+      return;
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'kitscore-pitch-evidence.pdf';
+    document.body.appendChild(a); a.click(); a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) { alert('Certificate download failed: ' + err.message); }
+}
+
 // ── Creator: browse and apply ──────────────────────────────────────────────
 async function loadOpenBriefs() {
   const listEl = document.getElementById('list');
@@ -298,6 +342,7 @@ async function loadOpenBriefs() {
         </div>
         ${myApp ? `<span class="status-tag st-${myApp.status}">${myApp.status==='pending'?'Applied':myApp.status}</span>` : ''}
       </div>
+      ${myApp ? pitchEvidenceBadge(myApp) : ''}
       <div class="brief-desc">${escapeHtml(b.description)}</div>
       ${b.platforms && b.platforms.length ? `<div class="brief-tags">${b.platforms.map(p=>`<span class="brief-tag">${escapeHtml(p)}</span>`).join('')}</div>` : ''}
       ${b.deliverables ? `<div style="font-size:12px;color:var(--ink-soft);margin-bottom:4px"><b>Deliverables:</b> ${escapeHtml(b.deliverables)}</div>` : ''}
