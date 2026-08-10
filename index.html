@@ -141,21 +141,6 @@
   .hero-unlock strong { color: var(--text); }
   .hero-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 0; }
 
-  /* HERO v2 — 2 column */
-  .hero2 { padding: 80px 2rem 96px; max-width: 1180px; margin: 0 auto; }
-  .hero2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
-  .hero2-left { text-align: left; }
-  .hero2-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: #fff; color: var(--accent); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; border-radius:0; border: 1px solid var(--border); margin-bottom: 22px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-  .hero2-left h1 { font-family: var(--font-display); font-size: clamp(2rem, 4.2vw, 3rem); font-weight: 600; line-height: 1.12; letter-spacing: -0.01em; color: var(--text); margin-bottom: 20px; }
-  .hero2-left h1 .accent { color: var(--accent); }
-  .hero2-left .hero-sub { margin: 0 0 16px; max-width: 100%; }
-  .hero2-left .hero-unlock { margin: 0 0 28px; text-align: left; }
-  .hero2-left .hero-buttons { justify-content: flex-start; margin-bottom: 28px; }
-  .hero2-stats { display: flex; gap: 32px; }
-  .hero2-stat-num { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
-  .hero2-stat-num.accent { color: var(--accent); }
-  .hero2-stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
-
   /* LIVE TICKER */
   .live-ticker { background: var(--accent); overflow: hidden; white-space: nowrap; position: relative; height: 34px; display: flex; align-items: center; }
   .live-ticker-track { display: inline-flex; align-items: center; gap: 40px; animation: liveTickerScroll 70s linear infinite; padding-left: 100%; }
@@ -212,6 +197,71 @@
   .journey-feature-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
   .journey-feature-desc { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
   .journey-back-hint { text-align: center; font-size: 11px; color: var(--accent); margin-top: 22px; }
+
+  /* Two-audience flip cards -- same tilt+flip mechanic as .journey-*, sized
+     for a side-by-side pair instead of one full-width hero card. */
+  .aud-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; max-width: 1120px; margin: 0 auto; }
+  .aud-wrap { perspective: 1400px; }
+  .aud-flip { position: relative; width: 100%; height: 380px; transform-style: preserve-3d; transition: transform .15s ease-out; cursor: pointer; }
+  .aud-face { position: absolute; inset: 0; backface-visibility: hidden; overflow: hidden; border-radius: 14px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--bg); padding: 26px 24px; box-sizing: border-box; display: flex; flex-direction: column; transition: box-shadow .2s ease, border-color .2s ease; }
+  .aud-wrap:hover .aud-face { box-shadow: 0 12px 28px -12px rgba(17, 24, 39, 0.16); border-color: #D7DAE0; }
+  .aud-back { background: var(--bg2); transform: rotateY(180deg); justify-content: center; }
+  .aud-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+  .aud-headline { font-family: 'Space Grotesk', var(--font-display); font-size: 19px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin-bottom: 20px; }
+  .aud-preview-row { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; background: var(--bg2); display: flex; align-items: center; justify-content: space-between; }
+  .aud-front .aud-preview-row { background: var(--bg2); }
+  .aud-preview-name { font-family: var(--font-display); font-size: 13.5px; font-weight: 600; color: var(--text); }
+  .aud-preview-sub { font-size: 11.5px; color: var(--muted2); margin-top: 2px; }
+  .aud-score-ring { width: 46px; height: 46px; border-radius: 50%; border: 3px solid var(--accent); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 15px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+  .aud-preview-stats { display: flex; gap: 8px; margin-top: 12px; }
+  .aud-stat { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 8px; text-align: center; background: var(--bg); }
+  .aud-stat-num { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--text); }
+  .aud-stat-label { font-size: 9.5px; color: var(--muted2); margin-top: 1px; }
+  .aud-platform-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: var(--bg); }
+  .aud-platform-icons { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+  .aud-platform-icons svg { width: 16px; height: 16px; color: var(--muted2); flex-shrink: 0; }
+  .aud-platform-row span { font-size: 11.5px; color: var(--muted); flex: 1; }
+  .aud-platform-check { width: 16px; height: 16px; color: #16A34A; flex-shrink: 0; }
+  .aud-tap-hint { margin-top: auto; text-align: center; font-size: 11px; color: var(--accent); padding-top: 16px; }
+  .aud-list { border-top: 0.5px solid var(--border); margin-bottom: 16px; }
+  .aud-list-item { display: flex; align-items: flex-start; gap: 11px; padding: 12px 0; border-bottom: 0.5px solid var(--border); }
+  .aud-list-item:last-child { border-bottom: none; }
+  .aud-list-item svg { width: 19px; height: 19px; color: var(--accent); flex-shrink: 0; margin-top: 1px; }
+  .aud-list-item strong { display: block; font-size: 13px; font-weight: 600; color: var(--text); }
+  .aud-list-item span { font-size: 11.5px; color: var(--muted); }
+  .aud-cta { width: 100%; justify-content: center; box-sizing: border-box; }
+  .aud-cta-row { display: flex; gap: 8px; }
+  .aud-cta-row .aud-cta { font-size: 12.5px; padding: 12px 14px; }
+  @media (max-width: 900px) { .aud-grid { grid-template-columns: 1fr; max-width: 420px; } }
+
+  /* Small reusable flip card -- icon + pill header, bold headline, description,
+     centered "tap for detail" footer. Same tilt+flip mechanic as .aud-*, used
+     for the reputation and methodology sections. */
+  .info-pill { font-size: 11px; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 20px; padding: 4px 12px; white-space: nowrap; flex-shrink: 0; }
+  .info-icon { color: var(--accent); flex-shrink: 0; }
+  .info-grid { display: grid; gap: 16px; margin-bottom: 28px; }
+  .info-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .info-grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .info-wrap { perspective: 1400px; }
+  .info-flip { position: relative; width: 100%; height: 280px; transform-style: preserve-3d; transition: transform .15s ease-out; cursor: pointer; }
+  .info-face { position: absolute; inset: 0; backface-visibility: hidden; overflow: hidden; border-radius: 14px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--bg); padding: 22px 20px; box-sizing: border-box; display: flex; flex-direction: column; transition: box-shadow .2s ease, border-color .2s ease; }
+  .info-wrap:hover .info-face { box-shadow: 0 12px 28px -12px rgba(17, 24, 39, 0.16); border-color: #D7DAE0; }
+  .info-back { background: var(--bg2); transform: rotateY(180deg); overflow-y: auto; }
+  .info-top-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .info-headline { font-family: 'Space Grotesk', var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); margin-bottom: 10px; }
+  .info-desc { font-size: 12.5px; color: var(--muted); line-height: 1.65; margin: 0; }
+  .info-tap-hint { margin-top: auto; text-align: center; font-size: 11px; color: var(--accent); padding-top: 14px; }
+  .info-back-title { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+  .info-back-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 0.5px solid var(--border); font-size: 12px; }
+  .info-back-row:last-of-type { border-bottom: none; }
+  .info-back-row strong { color: var(--text); font-weight: 600; }
+  .info-back-row span { color: var(--muted); text-align: right; }
+  .info-back-note { font-size: 11.5px; color: var(--muted); line-height: 1.6; margin: 6px 0 0; }
+  .info-quote { border-left: 2px solid var(--accent); padding: 9px 12px; background: var(--accent-dim); font-size: 11.5px; color: var(--text); font-style: italic; line-height: 1.6; margin-top: 8px; }
+  .info-quote-cite { font-size: 10.5px; color: var(--muted); margin-top: 4px; font-style: normal; }
+  .info-more { display: block; margin-top: 10px; font-size: 11.5px; color: var(--accent); font-weight: 600; text-decoration: none; }
+  @media (max-width: 900px) { .info-grid-4 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 640px) { .info-grid-3, .info-grid-4 { grid-template-columns: 1fr; } .info-flip { height: auto; min-height: 240px; } }
 
   .sponsor-band { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg); box-shadow: var(--shadow-sm); display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
   .estimator-box { border: 1px solid var(--border); border-radius: 14px; padding: 32px 36px; background: var(--bg); box-shadow: var(--shadow-sm); }
@@ -277,51 +327,7 @@
     .sponsor-band { flex-direction: column; }
   }
 
-  .dm-wrap { perspective: 1400px; width: 100%; max-width: 380px; height: 460px; margin: 0 auto; }
-  .dm-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; cursor: pointer; transition: transform .15s ease-out; }
-  .dm-face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; transform-style: preserve-3d; }
-  .dm-front { background: var(--bg); border: 1px solid var(--border); box-shadow: var(--shadow-md); }
-  .dm-back { background: #0C1E3D; transform: rotateY(180deg); padding: 26px 24px; }
-  .dm-topbar { display: flex; align-items: center; gap: 8px; padding: 12px 18px; border-bottom: 1px solid var(--border); background: var(--bg2); transform: translateZ(14px); }
-  .dm-topbar span { font-size: 12px; color: var(--muted); }
-  .dm-body { padding: 22px 22px 18px; display: flex; flex-direction: column; flex: 1; position: relative; }
-  .dm-verdict { background: var(--green-bg); border: 1px solid var(--green); border-radius: 0; padding: 13px 15px; margin-bottom: 20px; transform: translateZ(28px); }
-  .dm-verdict-title { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #173404; margin-bottom: 4px; }
-  .dm-verdict p { font-size: 12.5px; color: #27500A; margin: 0; line-height: 1.4; }
-  .dm-rings { display: flex; justify-content: center; gap: 26px; margin: 2px 0 22px; transform: translateZ(36px); }
-  .dm-facts { display: flex; flex-direction: column; gap: 9px; font-size: 12.5px; color: var(--muted); margin-bottom: auto; transform: translateZ(20px); }
-  .dm-facts div { display: flex; justify-content: space-between; }
-  .dm-facts span:last-child { color: var(--text); font-weight: 600; }
-  .dm-fact-good { color: #173404 !important; }
-  .dm-ribbon { display: inline-block; align-self: flex-start; background: #1E3A8A; color: #93C5FD; font-size: 11px; font-weight: 800; letter-spacing: .06em; padding: 6px 14px; border-radius: 6px; margin-bottom: 16px; }
-  .dm-hint { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: var(--muted2); padding-top: 16px; transform: translateZ(14px); }
-  .dm-back-hint { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: #7FA8E0; padding-top: 16px; }
-  .dm-caption { text-align: center; font-size: 12px; color: var(--muted2); margin-top: 16px; }
-
-  .dm-mk-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
-  .dm-mk-label { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted2); }
-  .dm-mk-flag { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; color: #B45309; background: #FEF3E2; padding: 3px 8px; }
-  .dm-mk-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--bg3); color: var(--muted2); font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
-  .dm-mk-name { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
-  .dm-mk-handle { font-size: 12px; color: var(--muted); margin-bottom: 22px; }
-  .dm-mk-stats { display: flex; gap: 26px; margin-bottom: auto; }
-  .dm-mk-num { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--text); line-height: 1; }
-  .dm-mk-statlabel { font-size: 9.5px; color: var(--muted2); text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
-  .dm-mk-caption { font-size: 12px; color: var(--muted2); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 14px; margin-top: 14px; }
-
-  .dm-back-topbar { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; font-size: 11px; color: #7FA8E0; }
-  .dm-verdict-dark { background: rgba(59,109,17,.18); border: 1px solid rgba(97,180,52,.35); padding: 13px 15px; margin-bottom: 20px; }
-  .dm-verdict-dark-title { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #B7E39A; margin-bottom: 4px; }
-  .dm-verdict-dark p { font-size: 12.5px; color: #9FCF7C; margin: 0; line-height: 1.4; }
-  .dm-facts-dark { display: flex; flex-direction: column; gap: 9px; font-size: 12.5px; color: #7FA8E0; margin-bottom: auto; }
-  .dm-facts-dark div { display: flex; justify-content: space-between; }
-  .dm-facts-dark span:last-child { color: #fff; font-weight: 600; }
-  .dm-fact-good-dark { color: #B7E39A !important; }
-  @media (max-width: 1024px) { .dm-wrap { max-width: 320px; height: 420px; } }
   @media (max-width: 900px) {
-    .hero2-grid { grid-template-columns: 1fr; }
-    .hero2-left { text-align: center; }
-    .hero2-left .hero-buttons, .hero2-stats { justify-content: center; }
     .siia-grid { grid-template-columns: 1fr !important; }
   }
 
@@ -475,48 +481,8 @@
   .step-card ul li::before { content: '→ '; color: var(--accent); }
 
   /* HOW IT WORKS v2 — corner-tick steps */
-  .hiw2-tabs { display: flex; gap: 28px; margin-bottom: 0; border-bottom: 0.5px solid var(--border); }
-  .hiw2-tab { background: none; border: none; padding: 0 0 14px; font-size: 15px; font-weight: 600; font-family: var(--font); color: var(--muted); cursor: pointer; position: relative; transition: color 0.15s; }
-  .hiw2-tab.active { color: var(--accent); }
-  .hiw2-tab.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: -0.5px; height: 2px; background: var(--accent); }
-  .hiw2-tab:hover:not(.active) { color: var(--text); }
-  .hiw2-panel { display: none; padding-top: 40px; }
-  .hiw2-panel.active { display: block; }
-  .hiw2-list { max-width: 420px; margin: 0 auto 28px; display: flex; flex-direction: column; gap: 18px; }
-  .hiw2-item { display: flex; align-items: center; gap: 12px; }
-  .hiw2-item svg { width: 20px; height: 20px; color: var(--accent); flex-shrink: 0; }
-  .hiw2-item span { font-size: 14.5px; color: var(--text); }
   .hiw2-more { display: block; text-align: center; font-size: 13px; margin-top: -6px; margin-bottom: 26px; }
-  .hiw2-bring-deal { max-width: 620px; margin: 22px auto 26px; text-align: center; font-size: 13.5px; color: var(--muted); border-top: 0.5px solid var(--border); padding-top: 22px; line-height: 1.6; }
-  .hiw2-bring-deal strong { color: var(--text); }
   @media (max-width: 768px) { .hiw2-list { max-width: 100%; } }
-  .hiw3-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 720px; margin: 0 auto; }
-  .hiw3-flip { position: relative; width: 100%; height: 360px; cursor: pointer; }
-  .hiw3-flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.34, 1.2, 0.4, 1); }
-  .hiw3-flip.flipped .hiw3-flip-inner { transform: rotateY(180deg); }
-  .hiw3-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: var(--shadow-md); display: flex; flex-direction: column; padding: 26px 24px; }
-  .hiw3-front { background: #fff; border: 0.5px solid var(--border); color: var(--text); justify-content: center; }
-  .hiw3-back { background: #0F1B2E; border: 1px solid #0F1B2E; color: #fff; transform: rotateY(180deg); }
-  .hiw3-eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
-  .hiw3-back .hiw3-eyebrow { color: #93A3BE; }
-  .hiw3-front h3 { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: var(--text); margin: 0 0 8px; line-height: 1.2; }
-  .hiw3-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
-  .hiw3-spec-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 11px 0; border-top: 0.5px solid #24314A; font-size: 13.5px; }
-  .hiw3-spec-row:last-of-type { border-bottom: 0.5px solid #24314A; margin-bottom: auto; }
-  .hiw3-spec-label { font-weight: 600; color: #fff; white-space: nowrap; }
-  .hiw3-spec-desc { color: #93A3BE; text-align: right; }
-  .hiw3-cta { display: block; text-align: center; background: #fff; color: #0F1B2E; border: none; padding: 13px; font-weight: 600; font-size: 13.5px; text-decoration: none; margin-top: 16px; }
-  .hiw3-preview-box { background: #152238; border-radius: 4px; padding: 14px; display: flex; justify-content: space-between; align-items: center; margin: 14px 0 10px; }
-  .hiw3-preview-name { font-size: 14px; font-weight: 600; }
-  .hiw3-preview-meta { font-size: 11.5px; color: #93A3BE; }
-  .hiw3-score-ring { width: 46px; height: 46px; border-radius: 50%; border: 3px solid var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: #6FA0F5; flex-shrink: 0; }
-  .hiw3-verified-line { font-size: 12px; color: #93A3BE; margin-bottom: auto; }
-  .hiw3-check-list { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-  .hiw3-check-list li { font-size: 12.5px; color: #D7DEEA; display: flex; gap: 8px; line-height: 1.4; }
-  .hiw3-check-list li::before { content: '✓'; color: #6FA0F5; font-weight: 700; flex-shrink: 0; }
-  .hiw3-note { max-width: 620px; margin: 24px auto 0; text-align: center; font-size: 13px; color: var(--muted); line-height: 1.6; }
-  .hiw3-note strong { color: var(--text); }
-  @media (max-width: 640px) { .hiw3-grid { grid-template-columns: 1fr; max-width: 340px; } .hiw3-flip { height: 340px; } }
 
   .creator-tiers { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
   .tier-card {
@@ -552,21 +518,27 @@
   .why-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
   .why-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
-  /* WHY KITSCORE v2 */
-  .why2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 0.5px solid var(--border); border-radius:0; overflow: hidden; box-shadow: var(--shadow-sm); }
-  .why2-card { background: var(--bg); padding: 32px; border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); transition: background 0.15s; }
-  .why2-card:hover { background: var(--bg2); }
-  .why2-card:nth-child(2n) { border-right: none; }
-  .why2-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
-  .why2-icon { width: 22px; height: 22px; color: var(--accent); display: flex; align-items: center; justify-content: center; }
-  .why2-icon svg { width: 100%; height: 100%; }
-  .why2-badge { font-size: 12px; font-weight: 500; color: var(--accent); border: 0.5px solid var(--accent); border-radius:0; padding: 5px 12px; }
-  .why2-card h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
-  .why2-card p { font-size: 14px; color: var(--muted); line-height: 1.65; }
-  @media (max-width: 640px) {
-    .why2-grid { grid-template-columns: 1fr; }
-    .why2-card { border-right: none; }
-  }
+  /* WHY KITSCORE v2 — flip cards */
+  .why-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; max-width: 980px; margin: 0 auto; perspective: 1400px; }
+  .why-wrap { perspective: 1400px; }
+  .why-flip { position: relative; width: 100%; height: 250px; transform-style: preserve-3d; transition: transform .15s ease-out; cursor: pointer; }
+  .why-face { position: absolute; inset: 0; backface-visibility: hidden; overflow: hidden; border-radius: 14px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--bg); padding: 24px 22px; box-sizing: border-box; display: flex; flex-direction: column; transition: box-shadow .2s ease, border-color .2s ease; }
+  .why-wrap:hover .why-face { box-shadow: 0 12px 28px -12px rgba(17, 24, 39, 0.16); border-color: #D7DAE0; }
+  .why-back { background: var(--bg2); transform: rotateY(180deg); justify-content: center; }
+  .why-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .why-icon { width: 20px; height: 20px; color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .why-icon svg { width: 100%; height: 100%; }
+  .why-badge { font-size: 10.5px; font-weight: 600; letter-spacing: 0.02em; color: var(--accent); border: 0.5px solid var(--accent); border-radius: 20px; padding: 4px 11px; }
+  .why-face h3 { font-family: 'Space Grotesk', var(--font-display); font-size: 16.5px; font-weight: 600; letter-spacing: -0.01em; color: var(--text); margin: 0 0 9px; }
+  .why-face p { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0; }
+  .why-tap-hint { margin-top: auto; text-align: center; font-size: 11px; color: var(--accent); padding-top: 14px; }
+  .why-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; text-align: center; }
+  .why-back-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .why-back-list li { display: flex; align-items: flex-start; gap: 9px; font-size: 12.5px; color: var(--text); line-height: 1.5; }
+  .why-back-list li svg { width: 13px; height: 13px; color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+  .why-mission-text { font-size: 13px; color: var(--text); line-height: 1.7; text-align: center; }
+  .why-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 660px; margin: 32px auto 0; perspective: 1400px; }
+  @media (max-width: 720px) { .why-grid { grid-template-columns: 1fr; max-width: 420px; } .why-grid2 { grid-template-columns: 1fr; max-width: 420px; } }
 
   .why2-compare { background: var(--bg); border: 0.5px solid var(--border); border-top: 2px solid var(--accent); border-radius:0; overflow: hidden; margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; box-shadow: var(--shadow-sm); transition: border-color .2s ease, box-shadow .2s ease; }
   .why2-compare:hover { border-color: var(--accent); box-shadow: 0 12px 32px -10px rgba(37,99,235,0.35); }
@@ -831,8 +803,6 @@
   /* RESPONSIVE */
   @media (max-width: 640px) {
     #about > div { grid-template-columns: 1fr !important; gap: 28px !important; }
-    #methodology-teaser > div { grid-template-columns: 1fr !important; gap: 28px !important; }
-    #reputation > div:nth-child(3) { grid-template-columns: 1fr !important; }
     .vc-block, .pricing-grid, .creator-tiers, .sample-cards { grid-template-columns: 1fr; }
     .flywheel-steps { flex-direction: column; }
     .fw-arrow { transform: rotate(90deg); }
@@ -951,11 +921,11 @@
       </div>
       <h1>Your next <span class="accent">brand</span> deal<br>starts with <span class="accent">proof</span>,<br><em>not promise.</em></h1>
       <p class="hero-sub">Sponsors don't trust follower counts anymore. They trust evidence. Claim your profile, verify your campaigns, and get your Kitscore — the number that gets you hired.</p>
-      <p class="hero-no-min">No credit card. No follower minimum. Nano and micro creators welcome.</p>
+      <p class="hero-no-min" style="margin-bottom:4px">No credit card. No follower minimum. Nano and micro creators welcome.</p>
       <p class="hero-no-min">Not scraped from your posts — confirmed by the sponsors you worked with.</p>
       <div class="hero-buttons" style="justify-content:flex-start">
         <a href="/for-creators.html" class="btn-primary" style="text-decoration:none">Get Your Next Sponsor — Join Free →</a>
-        <a href="#for-sponsors" class="btn-ghost" style="text-decoration:none">I'm a Sponsor →</a>
+        <a href="#how-it-works" class="btn-ghost" style="text-decoration:none">I'm a Sponsor →</a>
       </div>
       <div class="hero3-stats">
         <div><div class="hero3-stat-num">Free</div><div class="hero3-stat-label">To Claim</div></div>
@@ -1044,9 +1014,168 @@
 })();
 </script>
 
-<!-- TIER ESTIMATOR -->
-<section id="tier-estimator" style="padding:0 2rem 0;max-width:1100px;margin:0 auto">
-  <div class="estimator-box">
+<!-- Tier estimator lives further down, in the creator track of "How it works" -->
+<div class="hero-divider">
+    <div class="hero-divider-ticker" aria-hidden="true">
+      <div class="hero-divider-track">
+        <span class="hero-divider-item"><strong>91</strong> Trust Score</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>94%</strong> Reliability Score</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>$29</strong> full evaluation</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>500+</strong> verified creators</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>100%</strong> evidence-backed</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>8-point</strong> brand safety check</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>91</strong> Trust Score</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>94%</strong> Reliability Score</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>$29</strong> full evaluation</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>500+</strong> verified creators</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>100%</strong> evidence-backed</span><span class="hero-divider-sep">·</span>
+        <span class="hero-divider-item"><strong>8-point</strong> brand safety check</span>
+      </div>
+    </div>
+    <a href="#how-it-works" class="hero-divider-pill">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+      Brought a sponsor instead?
+    </a>
+  </div>
+
+<hr class="section-divider" />
+
+<!-- HOW IT WORKS -->
+<div class="band-alt">
+<section id="how-it-works">
+  <div class="section-label">How it works</div>
+  <h2 class="section-h">Built for <strong>two audiences.</strong></h2>
+  <p class="section-sub">Whether you're evaluating a creator or building your sponsorship credibility, Kitscore gives you the tools to act with confidence.</p>
+
+  <div class="aud-grid">
+
+    <div class="aud-wrap" id="audWrapSponsor">
+      <div class="aud-flip" id="audFlipSponsor">
+        <div class="aud-face aud-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <span class="info-pill">For sponsors</span>
+          </div>
+          <div class="aud-headline">See a sample evaluation</div>
+          <div class="aud-preview-row">
+            <div>
+              <div class="aud-preview-name">Marcus Khoury</div>
+              <div class="aud-preview-sub">Fitness · Gold tier</div>
+            </div>
+            <div class="aud-score-ring">87</div>
+          </div>
+          <div class="aud-preview-stats">
+            <div class="aud-stat"><div class="aud-stat-num">91</div><div class="aud-stat-label">Audience</div></div>
+            <div class="aud-stat"><div class="aud-stat-num">88</div><div class="aud-stat-label">Engagement</div></div>
+            <div class="aud-stat"><div class="aud-stat-num">82</div><div class="aud-stat-label">Brand safety</div></div>
+          </div>
+          <div class="aud-tap-hint">tap to see what's included</div>
+        </div>
+        <div class="aud-face aud-back">
+          <div class="aud-eyebrow">What's included</div>
+          <div class="aud-list">
+            <div class="aud-list-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/><path d="m9 12 2 2 4-4"/></svg>
+              <div><strong>Trust score</strong><span>audience · engagement · safety</span></div>
+            </div>
+            <div class="aud-list-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <div><strong>Escrow</strong><span>held until delivered</span></div>
+            </div>
+            <div class="aud-list-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <div><strong>Contract scan</strong><span>flags one-sided terms</span></div>
+            </div>
+          </div>
+          <a href="/agencies.html" class="hiw2-more">See the full sponsor journey →</a>
+          <a href="/app/auth.html" class="btn-primary aud-cta" style="text-decoration:none">Evaluate a creator</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="aud-wrap" id="audWrapAgency">
+      <div class="aud-flip" id="audFlipAgency" style="height:380px">
+        <div class="aud-face aud-front">
+          <div class="info-top-row" style="margin-bottom:18px">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span class="info-pill">For agencies</span>
+          </div>
+          <div class="aud-headline">Manage your whole roster</div>
+          <p class="info-desc">One workspace to track every client's trust score, not a spreadsheet per creator.</p>
+          <div class="aud-tap-hint">tap to see what's included</div>
+        </div>
+        <div class="aud-face aud-back">
+          <div class="aud-eyebrow">What's included</div>
+          <div class="aud-list">
+            <div class="aud-list-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              <div><strong>Multi-client organization</strong><span>every roster kept separate by client</span></div>
+            </div>
+            <div class="aud-list-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/></svg>
+              <div><strong>White-labeled reports</strong><span>sent to clients under your own brand</span></div>
+            </div>
+            <div class="aud-list-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+              <div><strong>Audit trail</strong><span>every evaluation &amp; approval, timestamped</span></div>
+            </div>
+          </div>
+          <a href="/agencies.html" class="hiw2-more">See the full agency workspace →</a>
+          <a href="/app/auth.html" class="btn-primary aud-cta" style="text-decoration:none">Start an agency workspace</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="aud-wrap" id="audWrapCreator">
+      <div class="aud-flip" id="audFlipCreator">
+        <div class="aud-face aud-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+            <span class="info-pill">For creators</span>
+          </div>
+          <div class="aud-headline">See what sponsors see</div>
+          <div class="aud-preview-row">
+            <div>
+              <div class="aud-preview-name">Sophie Lau</div>
+              <div class="aud-preview-sub">Beauty · Founding Creator</div>
+            </div>
+            <div class="aud-score-ring">91</div>
+          </div>
+          <div class="aud-platform-row">
+            <div class="aud-platform-icons">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="Instagram"><title>Instagram</title><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" stroke="none"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="TikTok"><title>TikTok</title><path d="M13 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M13 3c.3 2.5 2 4.3 4.5 4.6"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="YouTube"><title>YouTube</title><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/></svg>
+            </div>
+            <span>3 platforms verified</span>
+            <svg class="aud-platform-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <div class="aud-tap-hint">tap to see what's included</div>
+        </div>
+        <div class="aud-face aud-back">
+          <div class="aud-eyebrow">What's included</div>
+          <div class="aud-list">
+            <div class="aud-list-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5 17 22l-5-3-5 3 1.5-8.5"/></svg>
+              <div><strong>Verified media kit</strong><span>real platform data</span></div>
+            </div>
+            <div class="aud-list-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <div><strong>Escrow</strong><span>no chasing invoices</span></div>
+            </div>
+          </div>
+          <a href="/for-creators.html" class="hiw2-more">See the full creator journey →</a>
+          <div class="aud-cta-row">
+            <a href="/app/auth.html" class="btn-primary aud-cta" style="text-decoration:none">Browse open briefs</a>
+            <a href="/app/auth.html" class="btn-ghost aud-cta" style="text-decoration:none">Already have a sponsor?</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="estimator-box" style="max-width:640px;margin:44px auto 0">
     <div class="eyebrow-chip-row">
       <div class="eyebrow-chip creator">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -1106,29 +1235,6 @@
     </div>
     <p class="estimator-disclaimer">Rough estimate only, not your official Kitscore. Your real Kitscore is calculated from verified campaign evidence after you claim your profile.</p>
   </div>
-
-  <div class="hero-divider">
-    <div class="hero-divider-ticker" aria-hidden="true">
-      <div class="hero-divider-track">
-        <span class="hero-divider-item"><strong>91</strong> Trust Score</span><span class="hero-divider-sep">·</span>
-        <span class="hero-divider-item"><strong>94%</strong> Reliability Score</span><span class="hero-divider-sep">·</span>
-        <span class="hero-divider-item"><strong>$29</strong> full evaluation</span><span class="hero-divider-sep">·</span>
-        <span class="hero-divider-item"><strong>500+</strong> verified creators</span><span class="hero-divider-sep">·</span>
-        <span class="hero-divider-item"><strong>100%</strong> evidence-backed</span><span class="hero-divider-sep">·</span>
-        <span class="hero-divider-item"><strong>8-point</strong> brand safety check</span><span class="hero-divider-sep">·</span>
-        <span class="hero-divider-item"><strong>91</strong> Trust Score</span><span class="hero-divider-sep">·</span>
-        <span class="hero-divider-item"><strong>94%</strong> Reliability Score</span><span class="hero-divider-sep">·</span>
-        <span class="hero-divider-item"><strong>$29</strong> full evaluation</span><span class="hero-divider-sep">·</span>
-        <span class="hero-divider-item"><strong>500+</strong> verified creators</span><span class="hero-divider-sep">·</span>
-        <span class="hero-divider-item"><strong>100%</strong> evidence-backed</span><span class="hero-divider-sep">·</span>
-        <span class="hero-divider-item"><strong>8-point</strong> brand safety check</span>
-      </div>
-    </div>
-    <a href="#for-sponsors" class="hero-divider-pill">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-      Brought a sponsor instead?
-    </a>
-  </div>
 </section>
 <script>
 (function(){
@@ -1156,165 +1262,53 @@
   calcEstimator();
 })();
 </script>
-
-<!-- FOR SPONSORS BAND -->
-<section id="for-sponsors" style="padding:0 2rem 48px;max-width:1100px;margin:0 auto">
-  <div class="sponsor-band">
-    <div class="sponsor-band-copy">
-      <div class="eyebrow-chip-row">
-        <div class="eyebrow-chip sponsor">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/><path d="m9 12 2 2 4-4"/></svg>
-        </div>
-        <span class="section-label" style="margin:0">For Sponsors</span>
-      </div>
-      <h3>Evaluate creators with proof, not guesswork.</h3>
-      <p>See a creator's <strong style="color:var(--text)">Trust Score</strong> and <strong style="color:var(--text)">Reliability Score</strong> instantly. Unlock the full evaluation, risk analysis, and decision memo for <strong style="color:var(--text)">$29</strong>.</p>
-    </div>
-    <div class="sponsor-band-ctas">
-      <a href="/app/auth.html" class="btn-primary" style="text-decoration:none">Evaluate a Creator →</a>
-      <a href="/sample-sponsor-decision-memo.html" target="_blank" class="btn-ghost" style="text-decoration:none">View Sample Report</a>
-    </div>
-  </div>
-</section>
-
-<div class="hero2" style="display:none">
-  <div class="hero2-grid">
-    <div class="dm-col">
-      <div class="dm-wrap" id="dmWrap">
-        <div class="dm-card" id="dmCard">
-
-          <div class="dm-face dm-front">
-            <div class="dm-topbar">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted)"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9 13h6M9 17h6"/></svg>
-              <span>media kit · sophie x willow skincare</span>
-            </div>
-            <div class="dm-body">
-              <div class="dm-mk-row">
-                <span class="dm-mk-label">self-reported</span>
-                <span class="dm-mk-flag">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
-                  unverified
-                </span>
-              </div>
-              <div class="dm-mk-avatar">SL</div>
-              <div class="dm-mk-name">Sophie Lau</div>
-              <div class="dm-mk-handle">@sophielau</div>
-              <div class="dm-mk-stats">
-                <div><div class="dm-mk-num">58.1K</div><div class="dm-mk-statlabel">Followers</div></div>
-                <div><div class="dm-mk-num">4.1%</div><div class="dm-mk-statlabel">Engagement</div></div>
-              </div>
-              <p class="dm-mk-caption">Numbers from her media kit. No way to check if any of it's true.</p>
-              <div class="dm-hint">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
-                tap to see the verified version
-              </div>
-            </div>
-          </div>
-
-          <div class="dm-face dm-back">
-            <div class="dm-ribbon">VERIFIED</div>
-            <div class="dm-back-topbar">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7FA8E0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/><path d="M9 13h6M9 17h6"/></svg>
-              decision memo · sophie x willow skincare
-            </div>
-            <div class="dm-verdict-dark">
-              <div class="dm-verdict-dark-title">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B7E39A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-                recommended to sponsor
-              </div>
-              <p>high-confidence, brand-safe fit for your brief</p>
-            </div>
-            <div class="dm-rings">
-              <svg width="82" height="82" viewBox="0 0 92 92">
-                <circle cx="46" cy="46" r="38" fill="none" stroke="rgba(127,168,224,.25)" stroke-width="7"/>
-                <circle cx="46" cy="46" r="38" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="238.76" transform="rotate(-90 46 46)" id="dmRing1"/>
-                <text x="46" y="42" text-anchor="middle" font-size="19" font-weight="700" fill="#fff" id="dmNum1">0</text>
-                <text x="46" y="59" text-anchor="middle" font-size="9" fill="#7FA8E0">trust</text>
-              </svg>
-              <svg width="82" height="82" viewBox="0 0 92 92">
-                <circle cx="46" cy="46" r="38" fill="none" stroke="rgba(127,168,224,.25)" stroke-width="7"/>
-                <circle cx="46" cy="46" r="38" fill="none" stroke="#8FD65C" stroke-width="7" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="238.76" transform="rotate(-90 46 46)" id="dmRing2"/>
-                <text x="46" y="42" text-anchor="middle" font-size="19" font-weight="700" fill="#fff" id="dmNum2">0</text>
-                <text x="46" y="59" text-anchor="middle" font-size="9" fill="#7FA8E0">confidence</text>
-              </svg>
-            </div>
-            <div class="dm-facts-dark">
-              <div><span>audience fit</span><span>79% UK · 18-34</span></div>
-              <div><span>risk assessment</span><span class="dm-fact-good-dark">low risk</span></div>
-            </div>
-            <div class="dm-back-hint">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v1"/></svg>
-              tap to flip back
-            </div>
-          </div>
-
-        </div>
-      </div>
-      <p class="dm-caption">the sponsor's view · move your cursor, click to flip</p>
-    </div>
-  </div>
 </div>
 
-<hr class="section-divider" />
+<script>
+(function(){
+  function wireAudCard(wrapId, flipId){
+    var wrap = document.getElementById(wrapId);
+    var flip = document.getElementById(flipId);
+    if (!wrap || !flip) return;
+    var flipped = false, tiltX = 0, tiltY = 0;
+    function render(){
+      var flipDeg = flipped ? 180 : 0;
+      flip.style.transform = 'rotateX(' + tiltX + 'deg) rotateY(' + (flipDeg + tiltY) + 'deg)';
+    }
+    wrap.addEventListener('mousemove', function(e){
+      var r = wrap.getBoundingClientRect();
+      var px = (e.clientX - r.left) / r.width - 0.5;
+      var py = (e.clientY - r.top) / r.height - 0.5;
+      tiltX = py * -8;
+      tiltY = px * 8;
+      render();
+    });
+    wrap.addEventListener('mouseleave', function(){ tiltX = 0; tiltY = 0; render(); });
+    wrap.addEventListener('click', function(e){
+      // Let the back-face CTA links/buttons work normally instead of
+      // re-flipping the card out from under a click meant for them.
+      if (e.target.closest('a, button')) return;
+      flipped = !flipped;
+      render();
+    });
+  }
+  wireAudCard('audWrapSponsor', 'audFlipSponsor');
+  wireAudCard('audWrapAgency', 'audFlipAgency');
+  wireAudCard('audWrapCreator', 'audFlipCreator');
 
-<!-- HOW IT WORKS -->
-<div class="band-alt">
-<section id="how-it-works">
-  <div class="section-label">How it works</div>
-  <h2 class="section-h">Built for <strong>two audiences.</strong></h2>
-  <p class="section-sub">Whether you're evaluating a creator or building your sponsorship credibility, Kitscore gives you the tools to act with confidence.</p>
-
-  <div class="hiw3-grid">
-
-    <div class="hiw3-flip" id="hiwSponsorCard" onclick="document.getElementById('hiwSponsorCard').classList.toggle('flipped')">
-      <div class="hiw3-flip-inner">
-        <div class="hiw3-face hiw3-front">
-          <h3>Evaluate before you sponsor.</h3>
-          <div class="hiw3-hint">Tap to see what's included →</div>
-        </div>
-        <div class="hiw3-face hiw3-back">
-          <div class="hiw3-eyebrow">What's Included</div>
-          <div class="hiw3-spec-row"><span class="hiw3-spec-label">Trust score</span><span class="hiw3-spec-desc">audience · engagement · safety</span></div>
-          <div class="hiw3-spec-row"><span class="hiw3-spec-label">Escrow</span><span class="hiw3-spec-desc">held until delivered</span></div>
-          <div class="hiw3-spec-row"><span class="hiw3-spec-label">Contract scan</span><span class="hiw3-spec-desc">flags one-sided terms</span></div>
-          <a href="/app/auth.html" class="hiw3-cta" onclick="event.stopPropagation()">Evaluate a Creator →</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="hiw3-flip" id="hiwCreatorCard" onclick="document.getElementById('hiwCreatorCard').classList.toggle('flipped')">
-      <div class="hiw3-flip-inner">
-        <div class="hiw3-face hiw3-front">
-          <div class="hiw3-eyebrow">For Creators</div>
-          <h3>See what sponsors see.</h3>
-          <div class="hiw3-preview-box">
-            <div><div class="hiw3-preview-name">Sophie Lau</div><div class="hiw3-preview-meta">Beauty · Gold</div></div>
-            <div class="hiw3-score-ring">91</div>
-          </div>
-          <div class="hiw3-verified-line">✓ 3 platforms verified</div>
-          <div class="hiw3-hint">Tap to see what gets verified →</div>
-        </div>
-        <div class="hiw3-face hiw3-back">
-          <div class="hiw3-eyebrow">What Gets Verified</div>
-          <ul class="hiw3-check-list">
-            <li>Campaign history, mutually confirmed</li>
-            <li>8-point brand safety check</li>
-            <li>Published, source-labeled formula</li>
-          </ul>
-          <a href="/app/auth.html" class="hiw3-cta" onclick="event.stopPropagation()">Claim Your Founding Spot →</a>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <div style="text-align:center;margin-top:22px;display:flex;gap:24px;justify-content:center;flex-wrap:wrap">
-    <a href="/agencies.html" class="hiw2-more" style="margin:0">See the full sponsor journey →</a>
-    <a href="/for-creators.html" class="hiw2-more" style="margin:0">See the full creator journey →</a>
-  </div>
-  <p class="hiw3-note"><strong>Already have a sponsor?</strong> Bring the deal to Kitscore for a contract and escrow — 10%, less than half what Fiverr takes.</p>
-</section>
-</div>
+  // The reputation/methodology flip cards live further down the document
+  // (parsed after this script tag runs), so wire them once the DOM is ready.
+  document.addEventListener('DOMContentLoaded', function(){
+    wireAudCard('repWrapReliability', 'repFlipReliability');
+    wireAudCard('repWrapRatings', 'repFlipRatings');
+    wireAudCard('repWrapProcess', 'repFlipProcess');
+    wireAudCard('methWrapComponents', 'methFlipComponents');
+    wireAudCard('methWrapTiers', 'methFlipTiers');
+    wireAudCard('methWrapConfidence', 'methFlipConfidence');
+    wireAudCard('methWrapSafety', 'methFlipSafety');
+  });
+})();
+</script>
 
 <hr class="section-divider" />
 
@@ -1430,39 +1424,157 @@
   <h2 class="section-h">This is not another<br><strong>analytics tool.</strong></h2>
   <p class="section-sub">This is a sponsorship due diligence platform. Every evaluation is built around the question that matters: <strong style="color:var(--text)">should we sponsor this creator?</strong></p>
 
-  <div class="why2-grid">
-    <div class="why2-card">
-      <div class="why2-top">
-        <div class="why2-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24L3 3a1 1 0 0 0-1 1l.24 6.59a2 2 0 0 0 .59 1.41l9.58 9.58a2 2 0 0 0 2.83 0l5.34-5.34a2 2 0 0 0 .01-2.83Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div>
-        <div class="why2-badge">Transparency</div>
+  <div class="why-grid">
+
+    <div class="why-wrap" id="whyWrapSource">
+      <div class="why-flip" id="whyFlipSource">
+        <div class="why-face why-front">
+          <div class="why-top">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24L3 3a1 1 0 0 0-1 1l.24 6.59a2 2 0 0 0 .59 1.41l9.58 9.58a2 2 0 0 0 2.83 0l5.34-5.34a2 2 0 0 0 .01-2.83Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div>
+            <div class="why-badge">Transparency</div>
+          </div>
+          <h3>Source labels</h3>
+          <p>Every metric shows whether it's self-reported, evidence-submitted, or live-verified.</p>
+          <div class="why-tap-hint">tap to see why it matters</div>
+        </div>
+        <div class="why-face why-back">
+          <div class="why-eyebrow">Why it matters</div>
+          <ul class="why-back-list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>No mixing guesses with proof</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Confidence ratings show how much evidence backs each number</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>You always know exactly where the data came from</li>
+          </ul>
+        </div>
       </div>
-      <h3>Source Labels</h3>
-      <p>Every metric shows whether it's Self-Reported, Evidence-Submitted, or Live-Verified. You always know where the data comes from.</p>
     </div>
-    <div class="why2-card">
-      <div class="why2-top">
-        <div class="why2-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-        <div class="why2-badge">Accuracy</div>
+
+    <div class="why-wrap" id="whyWrapEvidence">
+      <div class="why-flip" id="whyFlipEvidence">
+        <div class="why-face why-front">
+          <div class="why-top">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
+            <div class="why-badge">Audit-ready</div>
+          </div>
+          <h3>Evidence tracking</h3>
+          <p>Every score component links back to the evidence that produced it — auditable end to end.</p>
+          <div class="why-tap-hint">tap to see why it matters</div>
+        </div>
+        <div class="why-face why-back">
+          <div class="why-eyebrow">Why it matters</div>
+          <ul class="why-back-list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Sponsor-focused recommendations, not vanity metrics</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Every number traces back to a source, first to last</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Built for sponsorship decisions, not follower growth</li>
+          </ul>
+        </div>
       </div>
-      <h3>Confidence Ratings</h3>
-      <p>Not just a score — a confidence percentage that tells you exactly how much evidence backs it up.</p>
     </div>
-    <div class="why2-card">
-      <div class="why2-top">
-        <div class="why2-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
-        <div class="why2-badge">Audit-ready</div>
+
+    <div class="why-wrap" id="whyWrapMission">
+      <div class="why-flip" id="whyFlipMission">
+        <div class="why-face why-front">
+          <div class="why-top">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/></svg></div>
+            <div class="why-badge">Our mission</div>
+          </div>
+          <h3>Proof, not promises</h3>
+          <p>We're building the reputation infrastructure for the creator economy.</p>
+          <div class="why-tap-hint">tap to read our mission</div>
+        </div>
+        <div class="why-face why-back">
+          <div class="why-eyebrow">Our mission</div>
+          <p class="why-mission-text">Make sponsorship decisions based on proof, not promises. We're building the reputation infrastructure for the creator economy.</p>
+        </div>
       </div>
-      <h3>Evidence Tracking</h3>
-      <p>Every score component links back to the evidence that produced it. Fully auditable from first number to last.</p>
     </div>
-    <div class="why2-card">
-      <div class="why2-top">
-        <div class="why2-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></div>
-        <div class="why2-badge">Decision-first</div>
+
+  </div>
+
+  <script>
+  (function(){
+    function wireWhyCard(wrapId, flipId){
+      var wrap = document.getElementById(wrapId);
+      var flip = document.getElementById(flipId);
+      if (!wrap || !flip) return;
+      var flipped = false, tiltX = 0, tiltY = 0;
+      function render(){
+        var flipDeg = flipped ? 180 : 0;
+        flip.style.transform = 'rotateX(' + tiltX + 'deg) rotateY(' + (flipDeg + tiltY) + 'deg)';
+      }
+      wrap.addEventListener('mousemove', function(e){
+        var r = wrap.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width - 0.5;
+        var py = (e.clientY - r.top) / r.height - 0.5;
+        tiltX = py * -6;
+        tiltY = px * 6;
+        render();
+      });
+      wrap.addEventListener('mouseleave', function(){ tiltX = 0; tiltY = 0; render(); });
+      wrap.addEventListener('click', function(e){
+        if (e.target.closest('a, button')) return;
+        flipped = !flipped;
+        render();
+      });
+    }
+    wireWhyCard('whyWrapSource', 'whyFlipSource');
+    wireWhyCard('whyWrapEvidence', 'whyFlipEvidence');
+    wireWhyCard('whyWrapMission', 'whyFlipMission');
+    // whyWrapROI/whyWrapTrust live in the second why-grid2 block, further
+    // down the document than this script tag, so wire them once the DOM
+    // has finished parsing rather than immediately.
+    document.addEventListener('DOMContentLoaded', function(){
+      wireWhyCard('whyWrapROI', 'whyFlipROI');
+      wireWhyCard('whyWrapTrust', 'whyFlipTrust');
+    });
+  })();
+  </script>
+
+  <div class="why-grid2">
+
+    <div class="why-wrap" id="whyWrapROI">
+      <div class="why-flip" id="whyFlipROI">
+        <div class="why-face why-front">
+          <div class="why-top">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
+            <div class="why-badge">ROI-focused</div>
+          </div>
+          <h3>Because guessing costs more</h3>
+          <p>Vetting by hand costs sponsors time and campaign risk. Kitscore turns days of DMs and screenshots into minutes.</p>
+          <div class="why-tap-hint">tap to see why it matters</div>
+        </div>
+        <div class="why-face why-back">
+          <div class="why-eyebrow">Why it matters</div>
+          <ul class="why-back-list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Compare creators on the same evidence, side by side</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Catch brand-safety issues before you pay, not after</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>One report replaces a week of manual vetting</li>
+          </ul>
+        </div>
       </div>
-      <h3>Sponsor-Focused Recommendations</h3>
-      <p>Built for sponsorship decisions, not vanity metrics or follower growth. The question we answer: should you sponsor this creator?</p>
     </div>
+
+    <div class="why-wrap" id="whyWrapTrust">
+      <div class="why-flip" id="whyFlipTrust">
+        <div class="why-face why-front">
+          <div class="why-top">
+            <div class="why-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h8"/><path d="M12 8v8"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <div class="why-badge">Mutual trust</div>
+          </div>
+          <h3>Confirmed by both sides</h3>
+          <p>Not just a creator's word. Sponsors confirm the same campaign history, so nothing rests on one party's claim.</p>
+          <div class="why-tap-hint">tap to see why it matters</div>
+        </div>
+        <div class="why-face why-back">
+          <div class="why-eyebrow">Why it matters</div>
+          <ul class="why-back-list">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Verified campaign history, not self-reported claims</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Mutual confirmation between creator and sponsor</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Sponsor endorsements and reliability scores — every number comes with proof</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <div style="margin-top:36px;">
@@ -1483,32 +1595,11 @@
     </div>
   </div>
 
-  <div style="margin-top:44px;display:grid;grid-template-columns:1fr 1fr;gap:52px;align-items:start;border-top:0.5px solid var(--border);padding-top:44px">
-    <div>
-      <h3 style="font-size:18px;font-weight:700;letter-spacing:-0.01em;margin-bottom:14px;color:var(--text)">Built for the people making real decisions.</h3>
-      <ul style="list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:10px">
-        <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
-          Verified campaign history, not self-reported claims
-        </li>
-        <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
-          Mutual confirmation between creator and sponsor
-        </li>
-        <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text)">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px"><path d="M20 6 9 17l-5-5"/></svg>
-          Sponsor endorsements and reliability scores — every number comes with proof
-        </li>
-      </ul>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <a href="/app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Evaluate a Creator →</a>
-        <a href="/compare.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">See how we compare →</a>
-        <a href="mailto:hello@kitscore.co" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Contact us</a>
-      </div>
-    </div>
-    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:18px 20px;border-left:2px solid var(--accent);box-shadow:var(--shadow-sm)">
-      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:5px">Our mission</div>
-      <div style="font-size:13px;color:var(--text);line-height:1.65">Make sponsorship decisions based on proof, not promises. We're building the reputation infrastructure for the creator economy.</div>
+  <div style="margin-top:44px;text-align:center;border-top:0.5px solid var(--border);padding-top:36px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+      <a href="/app/auth.html" class="btn-primary" style="text-decoration:none;font-size:13px;padding:10px 20px">Evaluate a Creator →</a>
+      <a href="/compare.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">See how we compare →</a>
+      <a href="mailto:hello@kitscore.co" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:10px 20px">Contact us</a>
     </div>
   </div>
 </section>
@@ -1668,69 +1759,76 @@
   <h2 class="section-h">The strongest signal isn't follower count.<br>It's proven sponsorship history.</h2>
   <p class="section-sub" style="margin-bottom:28px">Built from real campaign data, mutual confirmations, and sponsor endorsements — not self-reported claims. This is the centerpiece of every creator profile.</p>
 
-  <div class="vc-flow" style="margin-bottom:32px">
-    <div class="vc-step"><div class="vc-step-dot"></div>Sponsor evaluates creator</div>
-    <div class="vc-step"><div class="vc-step-dot"></div>Creator receives invitation</div>
-    <div class="vc-step"><div class="vc-step-dot"></div>Creator claims profile</div>
-    <div class="vc-step"><div class="vc-step-dot"></div>Campaign evidence is submitted</div>
-    <div class="vc-step" style="border-color:var(--accent);color:var(--accent);background:var(--accent-dim)">
-      <div class="vc-step-dot" style="background:var(--green)"></div>✓ Verified Campaign confirmed
-    </div>
-  </div>
+  <div class="info-grid info-grid-3">
 
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px">
-    <div style="background:var(--bg);border:0.5px solid var(--border);border-top:2px solid var(--accent);border-radius:0;padding:20px;text-align:center;box-shadow:var(--shadow-sm)">
-      <div style="font-size:34px;font-weight:700;color:var(--text);letter-spacing:-0.02em">93</div>
-      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:4px">Reliability Score</div>
-      <div style="font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-dim);padding:2px 10px;border-radius:0;display:inline-block;margin-top:7px">Excellent</div>
+    <div class="info-wrap" id="repWrapReliability">
+      <div class="info-flip" id="repFlipReliability">
+        <div class="info-face info-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/></svg>
+            <span class="info-pill">Reliability</span>
+          </div>
+          <div class="info-headline">93 · Excellent</div>
+          <p class="info-desc">Built from real campaign outcomes, not follower counts.</p>
+          <div class="info-tap-hint">tap to see the breakdown</div>
+        </div>
+        <div class="info-face info-back">
+          <div class="info-back-title">Reliability breakdown</div>
+          <div class="info-back-row"><strong>Would hire again</strong><span>100% · 5 of 5 sponsors</span></div>
+          <div class="info-back-row"><strong>Repeat sponsor rate</strong><span>75% · 3 of 4 returned</span></div>
+          <p class="info-back-note">Built entirely from mutually-confirmed campaign data — not self-reported claims.</p>
+          <a href="/methodology.html#reliability" class="info-more">Read the full methodology →</a>
+        </div>
+      </div>
     </div>
-    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:20px;text-align:center;box-shadow:var(--shadow-sm)">
-      <div style="font-size:34px;font-weight:700;color:var(--text);letter-spacing:-0.02em">100%</div>
-      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:4px">Would Hire Again</div>
-      <div style="font-size:10px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 10px;border-radius:0;display:inline-block;margin-top:7px">5 of 5 sponsors</div>
-    </div>
-    <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:20px;text-align:center;box-shadow:var(--shadow-sm)">
-      <div style="font-size:34px;font-weight:700;color:var(--text);letter-spacing:-0.02em">75%</div>
-      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;margin-top:4px">Repeat Sponsor Rate</div>
-      <div style="font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-dim);padding:2px 10px;border-radius:0;display:inline-block;margin-top:7px">3 of 4 returned</div>
-    </div>
-  </div>
 
-  <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:24px 28px;margin-bottom:14px;box-shadow:var(--shadow-sm)">
-    <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:16px;padding-bottom:12px;border-bottom:0.5px solid var(--border)">Sponsor endorsement ratings</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
-      <div style="background:var(--bg);border-radius:0;padding:12px;border:0.5px solid var(--border);box-shadow:var(--shadow-sm)">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500">Communication</div>
-        <div style="display:flex;align-items:baseline;gap:5px">
-          <div style="font-size:20px;font-weight:700;color:var(--text)">4.9</div>
-          <div style="font-size:11px;color:var(--amber)">★★★★★</div>
+    <div class="info-wrap" id="repWrapRatings">
+      <div class="info-flip" id="repFlipRatings">
+        <div class="info-face info-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <span class="info-pill">Sponsor ratings</span>
+          </div>
+          <div class="info-headline">4.9 average rating</div>
+          <p class="info-desc">Communication, professionalism, and deliverable quality — rated by sponsors who actually worked with them.</p>
+          <div class="info-tap-hint">tap to read a review</div>
         </div>
-      </div>
-      <div style="background:var(--bg);border-radius:0;padding:12px;border:0.5px solid var(--border);box-shadow:var(--shadow-sm)">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500">Professionalism</div>
-        <div style="display:flex;align-items:baseline;gap:5px">
-          <div style="font-size:20px;font-weight:700;color:var(--text)">4.8</div>
-          <div style="font-size:11px;color:var(--amber)">★★★★★</div>
-        </div>
-      </div>
-      <div style="background:var(--bg);border-radius:0;padding:12px;border:0.5px solid var(--border);box-shadow:var(--shadow-sm)">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500">Deliverable Quality</div>
-        <div style="display:flex;align-items:baseline;gap:5px">
-          <div style="font-size:20px;font-weight:700;color:var(--text)">4.9</div>
-          <div style="font-size:11px;color:var(--amber)">★★★★★</div>
+        <div class="info-face info-back">
+          <div class="info-back-title">From verified sponsors</div>
+          <div class="info-back-row"><strong>Communication</strong><span>4.9 ★★★★★</span></div>
+          <div class="info-back-row"><strong>Professionalism</strong><span>4.8 ★★★★★</span></div>
+          <div class="info-back-row"><strong>Deliverable quality</strong><span>4.9 ★★★★★</span></div>
+          <div class="info-quote">"Delivered exactly what was briefed, ahead of schedule. Would absolutely work with them again."
+            <div class="info-quote-cite">— Verified sponsor · July 2026</div>
+          </div>
         </div>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <div style="border-left:2px solid var(--accent);padding:10px 14px;background:var(--accent-dim);border-radius:0;font-size:13px;color:var(--text);font-style:italic;line-height:1.65">
-        "Delivered exactly what was briefed, ahead of schedule. Would absolutely work with them again."
-        <div style="font-size:11px;color:var(--muted);margin-top:5px;font-style:normal">— Verified sponsor · July 2026</div>
-      </div>
-      <div style="border-left:2px solid var(--border-hover);padding:10px 14px;background:var(--bg2);border-radius:0;font-size:13px;color:var(--text);font-style:italic;line-height:1.65">
-        "Professional, responsive, and the content performed above our benchmarks."
-        <div style="font-size:11px;color:var(--muted);margin-top:5px;font-style:normal">— Verified sponsor · July 2026</div>
+
+    <div class="info-wrap" id="repWrapProcess">
+      <div class="info-flip" id="repFlipProcess">
+        <div class="info-face info-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            <span class="info-pill">Process</span>
+          </div>
+          <div class="info-headline">5 steps to verified</div>
+          <p class="info-desc">From a sponsor's evaluation to a confirmed campaign on the profile.</p>
+          <div class="info-tap-hint">tap to see the steps</div>
+        </div>
+        <div class="info-face info-back">
+          <div class="info-back-title">How verification works</div>
+          <div class="vc-flow" style="flex-direction:column;align-items:stretch;gap:6px">
+            <div class="vc-step" style="font-size:11.5px">1 · Sponsor evaluates creator</div>
+            <div class="vc-step" style="font-size:11.5px">2 · Creator receives invitation</div>
+            <div class="vc-step" style="font-size:11.5px">3 · Creator claims profile</div>
+            <div class="vc-step" style="font-size:11.5px">4 · Campaign evidence submitted</div>
+            <div class="vc-step" style="font-size:11.5px;border-color:var(--accent);color:var(--accent);background:var(--accent-dim)">5 · ✓ Verified Campaign confirmed</div>
+          </div>
+        </div>
       </div>
     </div>
+
   </div>
 
   <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -1744,47 +1842,98 @@
 
 <!-- METHODOLOGY TEASER -->
 <section id="methodology-teaser" style="padding:64px 2rem;max-width:1100px;margin:0 auto">
-  <div style="display:grid;grid-template-columns:1fr 1.1fr;gap:64px;align-items:center">
-    <div>
-      <div class="section-label">Methodology</div>
-      <h2 class="section-h" style="margin-bottom:14px">Every number<br>comes with proof.</h2>
-      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:20px">No black box. Every component, weight, and Confidence Rating is documented — so sponsors know exactly what they're buying.</p>
-      <a href="/methodology.html" class="btn-ghost" style="text-decoration:none;font-size:13px;padding:9px 18px">Read the full methodology →</a>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:14px 18px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-sm)">
-        <div style="width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(37,99,235,0.15)">01</div>
-        <div style="flex:1">
-          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">4 score components</div>
-          <div style="font-size:11px;color:var(--muted)">Audience authenticity, engagement quality, brand safety, content consistency</div>
+  <div style="text-align:center;margin-bottom:36px">
+    <div class="section-label">Methodology</div>
+    <h2 class="section-h" style="margin-bottom:14px">Every number<br>comes with proof.</h2>
+    <p class="section-sub" style="margin-bottom:0">No black box. Every component, weight, and Confidence Rating is documented — so sponsors know exactly what they're buying.</p>
+  </div>
+
+  <div class="info-grid info-grid-4">
+
+    <div class="info-wrap" id="methWrapComponents">
+      <div class="info-flip" id="methFlipComponents">
+        <div class="info-face info-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="13" width="3" height="5"/><rect x="12" y="9" width="3" height="9"/><rect x="17" y="5" width="3" height="13"/></svg>
+            <span class="info-pill">Weighted</span>
+          </div>
+          <div class="info-headline">4 score components</div>
+          <p class="info-desc">Audience authenticity, engagement quality, brand safety, content consistency</p>
+          <div class="info-tap-hint">tap for detail</div>
         </div>
-        <div style="font-size:10px;font-weight:600;color:var(--amber);background:var(--amber-bg);padding:2px 8px;border-radius:0;white-space:nowrap">Weighted</div>
-      </div>
-      <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:14px 18px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-sm)">
-        <div style="width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(37,99,235,0.15)">02</div>
-        <div style="flex:1">
-          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">3 verification tiers</div>
-          <div style="font-size:11px;color:var(--muted)">Live verified · Evidence submitted · Self-reported</div>
+        <div class="info-face info-back">
+          <div class="info-back-title">Component weights</div>
+          <div class="info-back-row"><strong>Audience authenticity</strong><span>30%</span></div>
+          <div class="info-back-row"><strong>Engagement quality</strong><span>30%</span></div>
+          <div class="info-back-row"><strong>Brand safety</strong><span>25%</span></div>
+          <div class="info-back-row"><strong>Content consistency</strong><span>15%</span></div>
+          <a href="/methodology.html" class="info-more">Read the full methodology →</a>
         </div>
-        <div style="font-size:10px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:0;white-space:nowrap">Transparent</div>
-      </div>
-      <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:14px 18px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-sm)">
-        <div style="width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(37,99,235,0.15)">03</div>
-        <div style="flex:1">
-          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">Confidence Rating</div>
-          <div style="font-size:11px;color:var(--muted)">Every score ships with a % showing how much data backs it</div>
-        </div>
-        <div style="font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-dim);padding:2px 8px;border-radius:0;white-space:nowrap">Unique</div>
-      </div>
-      <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:0;padding:14px 18px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-sm)">
-        <div style="width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(37,99,235,0.15)">04</div>
-        <div style="flex:1">
-          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">8-point brand safety</div>
-          <div style="font-size:11px;color:var(--muted)">FTC disclosure, misinformation, controversy — all scored</div>
-        </div>
-        <div style="font-size:10px;font-weight:600;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:0;white-space:nowrap">Compliance</div>
       </div>
     </div>
+
+    <div class="info-wrap" id="methWrapTiers">
+      <div class="info-flip" id="methFlipTiers">
+        <div class="info-face info-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg>
+            <span class="info-pill">Transparent</span>
+          </div>
+          <div class="info-headline">3 verification tiers</div>
+          <p class="info-desc">Live verified · Evidence submitted · Self-reported</p>
+          <div class="info-tap-hint">tap for detail</div>
+        </div>
+        <div class="info-face info-back">
+          <div class="info-back-title">Verification tiers</div>
+          <div class="info-back-row" style="display:block"><strong>Live verified</strong><p class="info-back-note" style="margin-top:2px">Pulled directly from platform APIs. Highest confidence.</p></div>
+          <div class="info-back-row" style="display:block"><strong>Evidence submitted</strong><p class="info-back-note" style="margin-top:2px">Screenshots &amp; exports uploaded and reviewed by Kitscore.</p></div>
+          <div class="info-back-row" style="display:block;border-bottom:none"><strong>Self-reported</strong><p class="info-back-note" style="margin-top:2px">Supplied by the creator, unverified. Lowest confidence.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-wrap" id="methWrapConfidence">
+      <div class="info-flip" id="methFlipConfidence">
+        <div class="info-face info-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+            <span class="info-pill">Unique</span>
+          </div>
+          <div class="info-headline">Confidence rating</div>
+          <p class="info-desc">Every score ships with a % showing how much evidence backs it</p>
+          <div class="info-tap-hint">tap for detail</div>
+        </div>
+        <div class="info-face info-back">
+          <div class="info-back-title">What confidence means</div>
+          <p class="info-back-note">A score of 80 with 90% confidence is meaningfully different from a score of 80 with 40% confidence.</p>
+          <p class="info-back-note">It rises as creators upload evidence and get campaigns mutually confirmed by sponsors — and falls when evidence is missing, outdated, or self-reported only.</p>
+          <a href="/methodology.html#confidence" class="info-more">Read the full methodology →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-wrap" id="methWrapSafety">
+      <div class="info-flip" id="methFlipSafety">
+        <div class="info-face info-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/><path d="m9 12 2 2 4-4"/></svg>
+            <span class="info-pill">Compliance</span>
+          </div>
+          <div class="info-headline">8-point brand safety</div>
+          <p class="info-desc">FTC disclosure, misinformation, controversy — all scored</p>
+          <div class="info-tap-hint">tap for detail</div>
+        </div>
+        <div class="info-face info-back">
+          <div class="info-back-title">What we check</div>
+          <div class="info-back-row"><strong>Paid disclosure (FTC)</strong></div>
+          <div class="info-back-row"><strong>Misinformation history</strong></div>
+          <div class="info-back-row"><strong>Controversy history</strong></div>
+          <div class="info-back-row" style="border-bottom:none"><strong>Family safety</strong></div>
+          <a href="/methodology.html#brand-safety" class="info-more">See all 8 points →</a>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -1973,7 +2122,8 @@
         <li>Repeat-sponsor rate, plus your full reputation breakdown always up to date in your dashboard</li>
         <li>Complete score history &amp; trend tracking — show sponsors you're improving, not static</li>
         <li>Evidence-freshness alerts — never let your profile go stale before a pitch</li>
-        <li>Evidence log export with chain of custody — audit-ready for bigger deals</li>
+        <li>Evidence log CSV export with chain-of-custody data — audit-ready for bigger deals</li>
+        <li><strong>Pitch Assistant</strong> — AI-drafted outreach to sponsors, built from your verified data</li>
       </ul>
       <a href="/app/auth.html" class="plan-card2-cta solid">Start Pro</a>
     </div>
@@ -2113,13 +2263,6 @@
     btn.classList.add('active');
   }
 
-  function showTab2(name, btn) {
-    document.querySelectorAll('.hiw2-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.hiw2-tab').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab2-' + name).classList.add('active');
-    btn.classList.add('active');
-  }
-
   function showPricing(name, btn) {
     document.querySelectorAll('.pricing-cols').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.pricing-toggle-btn').forEach(b => b.classList.remove('active'));
@@ -2220,42 +2363,6 @@ async function loadHomeDirectory() {
   }
 }
 loadHomeDirectory();
-</script>
-
-<script>
-(function(){
-  var wrap = document.getElementById('dmWrap');
-  var card = document.getElementById('dmCard');
-  if (!wrap || !card) return;
-  var flipped = false, tiltX = 0, tiltY = 0;
-  function render(){
-    var flipDeg = flipped ? 180 : 0;
-    card.style.transform = 'rotateX(' + tiltX + 'deg) rotateY(' + (flipDeg + tiltY) + 'deg)';
-  }
-  wrap.addEventListener('mousemove', function(e){
-    var r = wrap.getBoundingClientRect();
-    var px = (e.clientX - r.left) / r.width - 0.5;
-    var py = (e.clientY - r.top) / r.height - 0.5;
-    tiltX = py * -12;
-    tiltY = px * 12;
-    render();
-  });
-  wrap.addEventListener('mouseleave', function(){ tiltX = 0; tiltY = 0; render(); });
-  wrap.addEventListener('click', function(){ flipped = !flipped; render(); });
-
-  var dur = 1100, start = null;
-  function step(ts){
-    if (!start) start = ts;
-    var p = Math.min((ts - start) / dur, 1);
-    var e = 1 - Math.pow(1 - p, 3);
-    document.getElementById('dmNum1').textContent = Math.round(87 * e);
-    document.getElementById('dmNum2').textContent = Math.round(91 * e);
-    document.getElementById('dmRing1').setAttribute('stroke-dashoffset', 238.76 * (1 - 0.87 * e));
-    document.getElementById('dmRing2').setAttribute('stroke-dashoffset', 238.76 * (1 - 0.91 * e));
-    if (p < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-})();
 </script>
 
 <script>
