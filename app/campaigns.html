@@ -330,6 +330,54 @@ async function loadSponsorCampaigns() {
 // ── Endorsements (sponsor rates the creator on a verified campaign) ────────
 const endorseState = {}; // { [campaignId]: { overall, comm, prof, quality, wouldHireAgain } }
 
+// ── Sponsor rating (creator rates the sponsor on a verified campaign) ──────
+// Mirrors the endorsement flow above. Deliberately NOT shown to the
+// sponsor being rated -- this exists so OTHER creators can see it
+// before engaging with a sponsor (see briefs.html), which only works
+// as real protection if a sponsor can't see and pressure someone over
+// what they wrote.
+const OUTCOME_LABEL = {
+  paid_on_time: 'Paid on time, as agreed',
+  paid_late: 'Paid, but later than agreed',
+  ghosted_after_delivery: 'Ghosted after I delivered the work',
+  never_booked_after_discussion: 'Discussed the collab in detail, never actually booked me',
+  other: 'Something else',
+};
+const rateSponsorOutcome = {}; // { [campaignId]: outcome }
+
+function toggleRateSponsor(id) {
+  const panel = document.getElementById(`rate-sponsor-panel-${id}`);
+  if (!endorseState[id]) endorseState[id] = { overall: 0, comm: 0, prof: 0, quality: 0, wouldHireAgain: null, sponsorRating: 0 };
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function setOutcome(campaignId, outcome) {
+  rateSponsorOutcome[campaignId] = outcome;
+}
+
+async function submitSponsorRating(id) {
+  const state = endorseState[id] || {};
+  const msgEl = document.getElementById(`rate-sponsor-msg-${id}`);
+  if (!state.sponsorRating) { msgEl.innerHTML = '<div class="msg error">Give an overall rating.</div>'; return; }
+  if (!rateSponsorOutcome[id]) { msgEl.innerHTML = '<div class="msg error">Select what actually happened.</div>'; return; }
+
+  const notes = document.getElementById(`rate-sponsor-notes-${id}`).value.trim();
+
+  // Column-write is also gated server-side by fn_validate_creator_rating:
+  // only the creator on this campaign, on a verified campaign, can set
+  // these -- verified directly against live data before shipping.
+  const { error } = await sb.from('campaigns').update({
+    creator_rating: state.sponsorRating,
+    creator_outcome: rateSponsorOutcome[id],
+    creator_rating_notes: notes || null,
+    creator_rating_submitted_at: new Date().toISOString(),
+  }).eq('id', id);
+
+  if (error) { msgEl.innerHTML = `<div class="msg error">Could not submit: ${escapeHtml(error.message)}</div>`; return; }
+  loadCreatorCampaigns();
+}
+
+
 function renderStarsReadonly(label, value) {
   if (!value) return '';
   const stars = [1,2,3,4,5].map(n => `<span class="star ${n <= value ? 'on' : ''}">★</span>`).join('');
@@ -450,11 +498,43 @@ async function loadCreatorCampaigns() {
             : `<button class="confirm-btn" title="Confirms this happened as logged. It still needs the sponsor's confirmation too before it counts toward your score." onclick="confirmCampaign('${c.id}')">Confirm</button>
                <button class="dispute-btn" title="Say this is wrong or didn't happen. It won't count toward your score until resolved, and the sponsor will see your reason." onclick="toggleDispute('${c.id}')">Dispute</button>`}
         ${c.status === 'verified' ? `<button class="resolve-btn" onclick="toggleRecap('${c.id}')">Performance recap</button>` : ''}
+        ${c.status === 'verified'
+          ? (c.creator_rating_submitted_at
+              ? `<span class="endorsed-tag">${svgIcon('circle-check', {size:12})} Sponsor rated</span>`
+              : `<button class="endorse-btn" onclick="toggleRateSponsor('${c.id}')">Rate this sponsor</button>`)
+          : ''}
       </div>
     </div>
     ${c.status === 'verified' ? `
     <div id="recap-panel-${c.id}" class="dispute-panel" style="display:none">
       <div id="recap-body-${c.id}" style="font-size:11.5px;color:var(--color-text-secondary)">Loading…</div>
+    </div>` : ''}
+    ${c.status === 'verified' && c.creator_rating_submitted_at ? `
+    <div class="endorse-summary">
+      ${renderStarsReadonly('This sponsor', c.creator_rating)}
+      <div style="margin-top:4px">Outcome: <strong>${escapeHtml(OUTCOME_LABEL[c.creator_outcome] || c.creator_outcome || '—')}</strong></div>
+      ${c.creator_rating_notes ? `<div style="margin-top:4px;font-style:italic">"${escapeHtml(c.creator_rating_notes)}"</div>` : ''}
+    </div>` : ''}
+    ${c.status === 'verified' && !c.creator_rating_submitted_at ? `
+    <div id="rate-sponsor-panel-${c.id}" class="endorse-panel" style="display:none">
+      <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:10px">Rate your experience with this sponsor — this only shows to other creators considering working with them, not to the sponsor.</div>
+      ${renderStarInput(c.id, 'sponsorRating', 'Overall')}
+      <div class="field" style="margin-top:6px"><label>What actually happened?</label>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+          ${Object.entries(OUTCOME_LABEL).map(([key, label]) => `
+            <label style="display:flex;align-items:center;gap:6px;font-weight:400;color:var(--color-text-secondary)">
+              <input type="radio" name="outcome-${c.id}" value="${key}" onchange="setOutcome('${c.id}','${key}')"> ${escapeHtml(label)}
+            </label>`).join('')}
+        </div>
+      </div>
+      <div class="field"><label>Notes <span style="color:var(--color-text-tertiary)">(optional, shown to other creators)</span></label>
+        <textarea id="rate-sponsor-notes-${c.id}" placeholder="e.g. Paid on time, easy to work with"></textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="cta" onclick="submitSponsorRating('${c.id}')">Submit rating</button>
+        <button class="endorse-btn" onclick="toggleRateSponsor('${c.id}')">Cancel</button>
+      </div>
+      <div id="rate-sponsor-msg-${c.id}"></div>
     </div>` : ''}
     ${c.status === 'disputed' && c.dispute_reason
       ? `<div class="dispute-reason-note">${svgIcon('alert-triangle', {size:12})} Your reason: ${escapeHtml(c.dispute_reason)}</div>`
