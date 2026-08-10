@@ -9,12 +9,14 @@
 // July 2026 Proof Packet → EveKit rename (see docs/session-handoff-2026-07-13-evekit.md).
 const handleSponsorMemo = require('../lib/handlers/document-sponsor-memo');
 const handleEveKit = require('../lib/handlers/document-evekit');
+const handlePitchEvidence = require('../lib/handlers/document-pitch-evidence');
 
 module.exports = async (req, res) => {
   const type = req.query?.type;
 
   if (type === 'sponsor-memo') return handleSponsorMemo(req, res);
   if (type === 'evekit' || type === 'creator-proof') return handleEveKit(req, res);
+  if (type === 'pitch-evidence') return handlePitchEvidence(req, res);
 
-  return res.status(400).json({ error: 'Unknown or missing type. Use ?type=sponsor-memo or ?type=evekit.' });
+  return res.status(400).json({ error: 'Unknown or missing type. Use ?type=sponsor-memo, ?type=evekit, or ?type=pitch-evidence.' });
 };

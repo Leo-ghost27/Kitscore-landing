@@ -88,7 +88,7 @@
   .nav-links { display: flex; gap: 24px; align-items: center; }
   .nav-link { font-size: 13px; font-weight: 500; color: var(--muted); transition: color 0.15s; }
   .nav-link:hover { color: var(--text); }
-  .nav-link--audience { padding: 5px 10px; border-radius: 4px; background: var(--accent-dim); color: var(--accent) !important; }
+  .nav-link--audience { padding: 5px 10px; border-radius: 0; background: var(--accent-dim); color: var(--accent) !important; }
   .nav-link--audience:hover { background: var(--accent-dim2); color: var(--accent-light) !important; }
   .nav-cta {
     background: var(--accent); color: #fff;
@@ -167,7 +167,7 @@
   .platform-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
   .platform-row-label { font-size: 11px; color: var(--muted); font-weight: 500; }
   .platform-row svg { width: 18px; height: 18px; color: var(--muted); flex-shrink: 0; }
-  .hero-no-min { font-size: 12.5px; color: var(--green, #2E7D32); font-weight: 600; margin: 0 0 22px; }
+  .hero-no-min { font-size: 12.5px; color: var(--muted); font-weight: 400; margin: 0 0 4px; }
 
   .journey-card { background: var(--bg2); border: 1px solid var(--border); padding: 28px 28px 24px; }
   .journey-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 22px; }
@@ -293,7 +293,7 @@
 
   /* SECTION EYEBROW WITH ICON CHIP */
   .eyebrow-chip-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-  .eyebrow-chip { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .eyebrow-chip { width: 22px; height: 22px; border-radius: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .eyebrow-chip.creator { background: var(--accent-dim); }
   .eyebrow-chip.sponsor { background: var(--accent-dim); }
 
@@ -1302,6 +1302,7 @@
     wireAudCard('repWrapReliability', 'repFlipReliability');
     wireAudCard('repWrapRatings', 'repFlipRatings');
     wireAudCard('repWrapProcess', 'repFlipProcess');
+    wireAudCard('repWrapRateBenchmark', 'repFlipRateBenchmark');
     wireAudCard('methWrapComponents', 'methFlipComponents');
     wireAudCard('methWrapTiers', 'methFlipTiers');
     wireAudCard('methWrapConfidence', 'methFlipConfidence');
@@ -1759,7 +1760,7 @@
   <h2 class="section-h">The strongest signal isn't follower count.<br>It's proven sponsorship history.</h2>
   <p class="section-sub" style="margin-bottom:28px">Built from real campaign data, mutual confirmations, and sponsor endorsements — not self-reported claims. This is the centerpiece of every creator profile.</p>
 
-  <div class="info-grid info-grid-3">
+  <div class="info-grid info-grid-4">
 
     <div class="info-wrap" id="repWrapReliability">
       <div class="info-flip" id="repFlipReliability">
@@ -1825,6 +1826,28 @@
             <div class="vc-step" style="font-size:11.5px">4 · Campaign evidence submitted</div>
             <div class="vc-step" style="font-size:11.5px;border-color:var(--accent);color:var(--accent);background:var(--accent-dim)">5 · ✓ Verified Campaign confirmed</div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-wrap" id="repWrapRateBenchmark">
+      <div class="info-flip" id="repFlipRateBenchmark">
+        <div class="info-face info-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2H10a2 2 0 0 0-2 2v16"/></svg>
+            <span class="info-pill">Verified Rate Benchmark</span>
+          </div>
+          <div class="info-headline">What you'd actually get paid</div>
+          <p class="info-desc">Not a formula guess — pulled from real, funded Kitscore Escrow contracts for creators in your niche.</p>
+          <div class="info-tap-hint">tap to see how it works</div>
+        </div>
+        <div class="info-face info-back">
+          <div class="info-back-title">Real deals, not self-reported guesses</div>
+          <div class="info-back-row"><strong>Source</strong><span>Funded Escrow contracts only</span></div>
+          <div class="info-back-row"><strong>Minimum sample</strong><span>3+ comparable deals</span></div>
+          <div class="info-back-row"><strong>Match on</strong><span>Niche + trust score tier</span></div>
+          <p class="info-back-note">Every other rate calculator in this space runs on self-reported or estimated numbers. This one runs on settled transactions.</p>
+          <a href="/app/auth.html" class="info-more">Check your rate →</a>
         </div>
       </div>
     </div>
@@ -1930,6 +1953,28 @@
           <div class="info-back-row"><strong>Controversy history</strong></div>
           <div class="info-back-row" style="border-bottom:none"><strong>Family safety</strong></div>
           <a href="/methodology.html#brand-safety" class="info-more">See all 8 points →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-wrap" id="methWrapPitchGuard">
+      <div class="info-flip" id="methFlipPitchGuard">
+        <div class="info-face info-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span class="info-pill">Pitch protection</span>
+          </div>
+          <div class="info-headline">Proof a brand can't argue with</div>
+          <p class="info-desc">Every pitch you submit is timestamped and hashed the moment you send it</p>
+          <div class="info-tap-hint">tap for detail</div>
+        </div>
+        <div class="info-face info-back">
+          <div class="info-back-title">If a brand ghosts, then reuses your idea</div>
+          <div class="info-back-row"><strong>Locked at</strong><span>the moment you submit</span></div>
+          <div class="info-back-row"><strong>Tamper-evident</strong><span>SHA-256 hash</span></div>
+          <div class="info-back-row"><strong>Editable after</strong><span>never — by either side</span></div>
+          <p class="info-back-note">Download a certificate with the exact pitch text, hash, and locked timestamp — something you can actually point to.</p>
+          <a href="/app/auth.html" class="info-more">See how it works →</a>
         </div>
       </div>
     </div>
@@ -2104,8 +2149,9 @@
         <li>Public profile &amp; sponsor directory listing</li>
         <li>Shareable trust link — quick verification</li>
         <li>Verified Media Kit + free PDF export — the pitch you send cold</li>
-        <li>Rate calculator &amp; score breakdown</li>
+        <li>Verified Rate Benchmark &amp; score breakdown — what similar creators actually got paid, not a formula guess</li>
         <li>Briefs, contracts &amp; <strong>Kitscore Escrow</strong> — apply to open deals, sign terms, get paid safely, all included free</li>
+        <li>Pitch protection — every pitch timestamped, hashed, and locked the moment you submit it</li>
       </ul>
       <a href="/app/auth.html" class="plan-card2-cta outline">Get Started Free</a>
     </div>
