@@ -730,6 +730,20 @@ function renderOverviewTab() {
 
     ${creatorInterestHtml()}
 
+    <!-- ── Verified Rate Benchmark — surfaced here so it's not buried in Tools ── -->
+    <div class="card" style="border:1.5px solid #BFE6CC;background:linear-gradient(135deg,#EFFBF3,#F8FDFA);margin-bottom:0">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:36px;height:36px;background:#1C7C3F;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:6px">
+          ${svgIcon('rosette-discount-check', {size:18, stroke:'#fff'})}
+        </div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;color:#0F172A">Verified Rate Benchmark — what similar creators actually got paid</div>
+          <div style="font-size:11px;color:#4B5563;margin-top:2px">Not a formula guess — real, funded contract amounts from creators in your niche with a similar trust score.</div>
+        </div>
+        <button onclick="switchTab('tools')" style="background:#1C7C3F;color:#fff;border:none;padding:8px 16px;font-size:12px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;white-space:nowrap;border-radius:6px">Check your rate</button>
+      </div>
+    </div>
+
     <!-- ── Cold-start fix: nudge every new creator toward retroactive deal verification ── -->
     ${verifiedCount < 1 ? `
     <div class="card" style="border:1.5px solid #F3D9A8;background:linear-gradient(135deg,#FFF8EC,#FFFCF6);margin-bottom:0">
@@ -1470,7 +1484,12 @@ function renderToolsTab() {
 
     <!-- ── Rate calculator ── -->
     <div class="card">
-      <div class="sec">What should I charge? <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— free tool, not part of your score</span></div>
+      <div class="sec">Verified Rate Benchmark <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— what similar creators actually got paid, not a formula guess</span></div>
+      <div id="rc-real-benchmark" style="margin-bottom:16px">
+        <div style="font-size:12px;color:var(--color-text-tertiary)">Checking real funded deals in your niche…</div>
+      </div>
+      <div style="padding-top:14px;border-top:0.5px solid var(--color-border-tertiary)">
+      <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-tertiary);margin-bottom:10px">Quick estimate by follower count</div>
       ${(function(){
         const sources = rateCalcSources();
         if (sources.length > 1) {
@@ -1497,7 +1516,7 @@ function renderToolsTab() {
           </select>
         </div>
       </div>
-      <div id="rc-real-benchmark" style="margin-top:16px;padding-top:14px;border-top:0.5px solid var(--color-border-tertiary)"></div>
+      </div>
     </div>
 
 
@@ -2199,12 +2218,17 @@ async function loadRealPricingBenchmark() {
   const { data: rows, error } = await sb.rpc('fn_pricing_benchmark', { p_creator_id: creator.id });
   const row = !error && rows && rows[0];
   if (!row) {
-    el.innerHTML = `<div style="font-size:11px;color:var(--color-text-tertiary)">Not enough funded contracts in your niche yet to show what similar creators actually got paid — check back as more deals close on Kitscore.</div>`;
+    el.innerHTML = `<div style="font-size:12px;color:var(--color-text-tertiary)">Not enough funded contracts in your niche yet to show what similar creators actually got paid — check back as more deals close on Kitscore. The quick estimate below still works in the meantime.</div>`;
     return;
   }
   el.innerHTML = `
-    <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-tertiary);margin-bottom:4px">Based on real funded deals</div>
-    <div style="font-size:13px;color:var(--ink,#0F1B2E)">Creators similar to you (same niche, similar trust score) were paid <strong>$${(row.min_cents / 100).toFixed(0)}–$${(row.max_cents / 100).toFixed(0)}</strong>, median $${(row.median_cents / 100).toFixed(0)}, based on ${row.sample_size} funded contracts.</div>
+    <div style="background:#E9F7EE;border:1px solid #BFE6CC;border-radius:10px;padding:14px 16px">
+      <div style="display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#1C7C3F;margin-bottom:8px">
+        ${svgIcon('rosette-discount-check', {size:13, stroke:'#1C7C3F'})} Based on real funded deals
+      </div>
+      <div style="font-size:24px;font-weight:700;color:var(--ink,#0F1B2E)">$${(row.min_cents / 100).toFixed(0)}–$${(row.max_cents / 100).toFixed(0)}</div>
+      <div style="font-size:12.5px;color:var(--ink-soft,#5B6472);margin-top:4px">Median $${(row.median_cents / 100).toFixed(0)}, from ${row.sample_size} funded contracts — creators in your niche with a similar trust score.</div>
+    </div>
   `;
 }
 
