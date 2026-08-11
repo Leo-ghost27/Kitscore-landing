@@ -319,16 +319,28 @@ async function downloadPitchEvidence(applicationId) {
 // ── Creator: browse and apply ──────────────────────────────────────────────
 async function loadOpenBriefs() {
   const listEl = document.getElementById('list');
-  const [{ data: briefs, error }, { data: myApps }] = await Promise.all([
-    sb.from('campaign_briefs').select('*, sponsors!inner(company_name)').eq('status', 'open').order('created_at', { ascending: false }),
+  const [{ data: myApps }, { data: myReports }] = await Promise.all([
     sb.from('brief_applications').select('*').eq('creator_id', profile.id),
+    sb.from('sponsor_reports').select('related_brief_id').eq('creator_id', profile.id),
   ]);
-
-  if (error) { listEl.innerHTML = '<div class="empty">Could not load open briefs.</div>'; return; }
-  if (!briefs || !briefs.length) { listEl.innerHTML = '<div class="empty">No open briefs right now — check back soon.</div>'; return; }
 
   const appByBrief = {};
   (myApps || []).forEach(a => { appByBrief[a.brief_id] = a; });
+  const reportedBriefIds = new Set((myReports || []).map(r => r.related_brief_id));
+
+  // Open briefs, plus any brief the creator has ever applied to regardless
+  // of its current status -- a brief that goes quiet often gets closed by
+  // the sponsor around the same time, and a creator who applied needs to
+  // keep seeing it (evidence certificate, report-an-issue) even after that,
+  // not lose it the moment status leaves 'open'.
+  const appliedBriefIds = Object.keys(appByBrief);
+  const orParts = ['status.eq.open'];
+  if (appliedBriefIds.length) orParts.push(`id.in.(${appliedBriefIds.join(',')})`);
+  const { data: briefs, error } = await sb.from('campaign_briefs')
+    .select('*, sponsors!inner(company_name)').or(orParts.join(',')).order('created_at', { ascending: false });
+
+  if (error) { listEl.innerHTML = '<div class="empty">Could not load open briefs.</div>'; return; }
+  if (!briefs || !briefs.length) { listEl.innerHTML = '<div class="empty">No open briefs right now — check back soon.</div>'; return; }
 
   // Sponsor reliability, from creators who've actually worked with them --
   // shown here specifically so it functions as real protection (seen
@@ -367,6 +379,11 @@ async function loadOpenBriefs() {
       ${b.deliverables ? `<div style="font-size:12px;color:var(--ink-soft);margin-bottom:4px"><b>Deliverables:</b> ${escapeHtml(b.deliverables)}</div>` : ''}
       ${b.min_followers ? `<div style="font-size:12px;color:var(--ink-soft)"><b>Minimum followers:</b> ${Number(b.min_followers).toLocaleString()}</div>` : ''}
       ${!myApp ? `<button class="toggle-link" style="margin-top:8px" onclick="toggleApplyForm('${b.id}')">Apply to this brief</button>` : myApp.status==='pending' ? `<button class="toggle-link" style="margin-top:8px;color:#B42318" onclick="withdrawApplication('${myApp.id}','${b.id}')">Withdraw application</button>` : ''}
+      ${myApp && ['accepted','rejected','withdrawn'].includes(myApp.status) ? (
+        reportedBriefIds.has(b.id)
+          ? `<div style="font-size:11px;color:var(--ink-faint);margin-top:8px">Report submitted — pending review</div>`
+          : `<button class="toggle-link" style="margin-top:8px;color:#B42318" onclick="toggleReportForm('${b.id}')">Report an issue</button>`
+      ) : ''}
     </div>
     <div class="apply-panel" id="apply-panel-${b.id}" style="display:none">
       <div class="field"><label>Your pitch</label>
@@ -381,6 +398,21 @@ async function loadOpenBriefs() {
       </div>
       <button class="cta" onclick="applyToBrief('${b.id}')">Submit application</button>
       <div id="apply-msg-${b.id}"></div>
+    </div>
+    <div class="apply-panel" id="report-panel-${b.id}" style="display:none">
+      <div class="field"><label>What happened?</label>
+        <select id="report-outcome-${b.id}">
+          <option value="never_booked_after_discussion">We discussed this brief but it never turned into a booking</option>
+          <option value="other">Something else (e.g. my pitch/idea was used without me)</option>
+        </select>
+      </div>
+      <div class="field"><label>Details</label>
+        <textarea id="report-notes-${b.id}" placeholder="What happened, and when"></textarea>
+      </div>
+      ${myApp && myApp.pitch_locked_at ? `<div style="font-size:11px;color:var(--ink-soft);margin-bottom:10px">Your locked pitch evidence (${myApp.pitch_hash ? myApp.pitch_hash.slice(0,10)+'…' : ''}, ${new Date(myApp.pitch_locked_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}) will be referenced with this report.</div>` : ''}
+      <div style="font-size:11px;color:var(--ink-faint);margin-bottom:10px">Reports are reviewed by our team before they affect this sponsor's public reliability score — this isn't published immediately.</div>
+      <button class="cta" onclick="submitSponsorReport('${b.id}')">Submit report</button>
+      <div id="report-msg-${b.id}"></div>
     </div>`;
   }).join('');
 }
@@ -388,6 +420,33 @@ async function loadOpenBriefs() {
 function toggleApplyForm(briefId) {
   const el = document.getElementById('apply-panel-' + briefId);
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleReportForm(briefId) {
+  const el = document.getElementById('report-panel-' + briefId);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitSponsorReport(briefId) {
+  const brief = document.getElementById('report-panel-' + briefId);
+  const outcome = document.getElementById('report-outcome-' + briefId).value;
+  const notes = document.getElementById('report-notes-' + briefId).value.trim();
+  const msgEl = document.getElementById('report-msg-' + briefId);
+
+  const { data: briefRow } = await sb.from('campaign_briefs').select('sponsor_id').eq('id', briefId).maybeSingle();
+  if (!briefRow) { msgEl.innerHTML = '<div class="msg error">Could not find this brief.</div>'; return; }
+
+  const { error } = await sb.from('sponsor_reports').insert({
+    creator_id: profile.id,
+    sponsor_id: briefRow.sponsor_id,
+    related_brief_id: briefId,
+    outcome,
+    notes: notes || null,
+  });
+
+  if (error) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  msgEl.innerHTML = '<div class="msg ok">Report submitted — our team will review it.</div>';
+  await loadOpenBriefs();
 }
 
 async function draftPitch(briefId) {
