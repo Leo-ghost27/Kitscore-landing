@@ -777,7 +777,13 @@ async function loadContracts() {
     const canSignAsSponsor = profile.role === 'sponsor' && !c.sponsor_signed_at && c.status !== 'draft' && c.status !== 'void';
     const canSignAsCreator = profile.role === 'creator' && !c.creator_signed_at && c.status !== 'draft' && c.status !== 'void';
     const canSend = profile.role === 'sponsor' && c.status === 'draft';
-    const canVoid = profile.role === 'sponsor' && c.status !== 'fully_signed' && c.status !== 'void';
+    // Mirrors fn_validate_contract_changes exactly -- a fully-signed
+    // contract is only voidable while Kitscore has an active flag on it
+    // (disputed_at set, unresolved) and no escrow funds have moved yet.
+    // Otherwise blocked, same as before, to stop a sponsor backing out
+    // of a completed binding deal at will.
+    const canVoid = profile.role === 'sponsor' && c.status !== 'void' &&
+      (c.status !== 'fully_signed' || (c.disputed_at && !c.admin_resolved_at && c.escrow_status === 'not_funded'));
 
     const hasEscrow = c.escrow_amount_cents != null;
     const escrowDollars = hasEscrow ? (c.escrow_amount_cents / 100).toFixed(2) : null;
