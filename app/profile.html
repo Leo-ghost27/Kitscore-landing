@@ -64,6 +64,10 @@
   .avatar-edit-btn{position:absolute;bottom:-2px;right:-2px;width:24px;height:24px;border-radius:50%;background:#fff;color:#0B2A6B;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #0E3350;font-size:11px;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
   .avatar-edit-btn input{display:none}
   .hero-founding{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#8A5B0A;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);border:0.5px solid #E8CE8F;padding:5px 11px 5px 7px;border-radius:20px}
+  .hero-score{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+  .hero-score-ring{position:relative;width:76px;height:76px}
+  .hero-score-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:#fff}
+  .hero-score-label{font-size:10.5px;font-weight:600;color:#AFC0E6;margin-top:6px;letter-spacing:.03em}
 
   .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
   .gallery-slot{aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;background:var(--color-background-secondary);border:1.5px dashed var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s}
@@ -107,22 +111,24 @@
 <script src="icons.js?v=1"></script>
 <script src="nav.js?v=4"></script>
 <script>
-let profile, creator, collaborations = [], pressMentions = [];
+let profile, creator, collaborations = [], pressMentions = [], platformConnections = [];
 
 async function load() {
   profile = await requireRole('creator');
   if (!profile) return;
   renderSidebar('creator', 'profile');
 
-  const [{ data: c }, { data: email }, { data: collabs }, { data: press }] = await Promise.all([
-    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images, available_for, causes, profile_views, stripe_connect_account_id, stripe_connect_charges_enabled, stripe_connect_payouts_enabled, stripe_connect_details_submitted, cover_pattern, cover_tags, cover_spotlight_stat, avatar_shape').eq('id', profile.id).single(),
+  const [{ data: c }, { data: email }, { data: collabs }, { data: press }, { data: platforms }] = await Promise.all([
+    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images, available_for, causes, profile_views, stripe_connect_account_id, stripe_connect_charges_enabled, stripe_connect_payouts_enabled, stripe_connect_details_submitted, cover_pattern, cover_tags, cover_spotlight_stat, avatar_shape, trust_score, confidence, badge_tier').eq('id', profile.id).single(),
     sb.rpc('fn_get_my_business_email'),
     sb.from('creator_collaborations').select('id, brand_name, logo_url, link').eq('creator_id', profile.id).order('display_order').order('created_at'),
     sb.from('creator_press_mentions').select('id, title, outlet_name, url, mention_date').eq('creator_id', profile.id).order('display_order').order('created_at'),
+    sb.from('platform_connections').select('platform, platform_handle, follower_count, video_count, verification_method, last_synced_at').eq('creator_id', profile.id),
   ]);
   creator = { ...c, business_email: email };
   collaborations = collabs || [];
   pressMentions = press || [];
+  platformConnections = platforms || [];
 
   const initial = (profile.display_name || '?').trim().charAt(0).toUpperCase();
   document.getElementById('formWrap').innerHTML = `
@@ -136,21 +142,52 @@ async function load() {
           <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp" onchange="uploadAvatar(event)">
         </label>
       </div>
-      <div>
+      <div style="flex:1">
         <div style="font-family:'Fraunces',serif;font-size:19px;font-weight:600;color:#fff;margin-bottom:6px">${escapeHtml(profile.display_name || 'Your profile')}</div>
         ${creator.founding_cohort ? `<div class="hero-founding" title="One of Kitscore's first 100 creators"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg>Founding Creator</div>` : ''}
       </div>
+      ${(() => {
+        const score = Math.round(Number(creator.trust_score) || 0);
+        const circumference = 2 * Math.PI * 30;
+        const offset = circumference - (score / 100) * circumference;
+        return `
+        <div class="hero-score">
+          <div class="hero-score-ring">
+            <svg width="76" height="76" viewBox="0 0 76 76">
+              <defs><linearGradient id="heroRingGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#2563EB"/><stop offset="100%" stop-color="#17B8A6"/>
+              </linearGradient></defs>
+              <circle cx="38" cy="38" r="30" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="7"/>
+              <circle cx="38" cy="38" r="30" fill="none" stroke="url(#heroRingGrad)" stroke-width="7" stroke-linecap="round"
+                stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" transform="rotate(-90 38 38)"/>
+            </svg>
+            <div class="hero-score-num">${score}</div>
+          </div>
+          <div class="hero-score-label">Trust Score</div>
+        </div>`;
+      })()}
     </div>
     <div id="avatarMsg"></div>
 
     <div class="ptabs">
       <button class="ptab-btn active" data-tab="account" onclick="switchProfileTab('account')">Account</button>
+      <button class="ptab-btn" data-tab="payout" onclick="switchProfileTab('payout')">Payout</button>
       <button class="ptab-btn" data-tab="mediakit" onclick="switchProfileTab('mediakit')">Verified Media Kit</button>
       <button class="ptab-btn" data-tab="link" onclick="switchProfileTab('link')">Link &amp; sharing</button>
     </div>
 
     <div class="ptab-panel active" data-tab="account">
     <div class="psec" style="margin-top:0;padding-top:0;border-top:none">
+      <div class="psec-title">Get fully verified</div>
+      <div class="psec-sub">Complete these to strengthen your trust link and unlock more from sponsors.</div>
+      <div id="verifyChecklist"></div>
+    </div>
+    <div class="psec">
+      <div class="psec-title">Connected platforms</div>
+      <div class="psec-sub">Kitscore pulls live stats from these to keep your trust score current. Manage connections from your <a href="dashboard.html" style="color:var(--color-accent)">Dashboard</a>.</div>
+      <div id="platformsList"></div>
+    </div>
+    <div class="psec">
       <div class="psec-title">Account</div>
       <div class="psec-sub">Your identity on Kitscore — feeds both your trust link and your Verified Media Kit.</div>
     </div>
@@ -162,7 +199,10 @@ async function load() {
       <div class="field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}"></div>
       <div class="field"><label>Business email</label><input id="businessEmail" value="${escapeHtml(creator.business_email || '')}"></div>
     </div>
-    <div class="psec">
+    </div>
+
+    <div class="ptab-panel" data-tab="payout">
+    <div class="psec" style="margin-top:0;padding-top:0;border-top:none">
       <div class="psec-title">Payouts</div>
       <div class="psec-sub">Connect a payout account so sponsors can pay you through Kitscore's escrow — funds are held until you deliver and the sponsor approves.</div>
       ${renderPayoutStatus()}
@@ -332,6 +372,8 @@ async function load() {
     document.getElementById(id).addEventListener('input', renderStrengthPanel);
   });
   renderStrengthPanel();
+  renderVerifyChecklist();
+  renderPlatformsList();
   renderGallery();
   renderCollaborations();
   renderPressMentions();
@@ -720,12 +762,95 @@ function switchProfileTab(tab) {
   document.querySelectorAll('.ptab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.ptab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === tab));
   // persistentSave's "Save changes" button saves Account/Media Kit fields
-  // only (see save()) -- it has no effect on the Link tab's slug, which
-  // has its own dedicated saveSlug() button right below it. Showing both
-  // on that tab reads as two competing save actions, so hide the generic
-  // one there specifically.
+  // only (see save()) -- it has no effect on the Link tab's slug (own
+  // saveSlug() button) or the Payout tab (own Connect/Stripe flow).
+  // Showing it there reads as a competing, non-functional save action,
+  // so hide the generic one on both.
   const persistentSave = document.getElementById('persistentSave');
-  if (persistentSave) persistentSave.style.display = tab === 'link' ? 'none' : '';
+  if (persistentSave) persistentSave.style.display = (tab === 'link' || tab === 'payout') ? 'none' : '';
+}
+
+// ── Verification checklist (Account tab) — every item reflects a real,
+// checkable signal already on `creator`/`platformConnections`. No item
+// here is decorative; each maps to something the person can actually do.
+function renderVerifyChecklist() {
+  const el = document.getElementById('verifyChecklist');
+  if (!el) return;
+  const profileComplete = !!(profile.display_name && creator.niche && creator.location && creator.business_email);
+  const hasPlatform = platformConnections.length > 0;
+  const hasMediaKitInfo = !!((creator.bio || '').trim() || (creator.gallery_images || []).length || (creator.cover_tags || []).length);
+  const payoutsReady = !!creator.stripe_connect_payouts_enabled;
+
+  const items = [
+    { done: profileComplete, title: 'Profile complete', sub: 'Display name, niche, location, and business email set', cta: null },
+    { done: hasPlatform, title: 'Platform connected', sub: hasPlatform ? `${platformConnections.length} platform${platformConnections.length===1?'':'s'} linked` : 'Link at least one platform to verify your reach', cta: hasPlatform ? null : { label: 'Connect →', href: 'dashboard.html' } },
+    { done: hasMediaKitInfo, title: 'Media kit started', sub: hasMediaKitInfo ? 'Bio or gallery added' : 'Add a bio, photo, or vibe tags to your kit', cta: hasMediaKitInfo ? null : { label: 'Add now →', onclick: "switchProfileTab('mediakit')" } },
+    { done: payoutsReady, title: 'Payouts connected', sub: payoutsReady ? 'Ready to receive escrow releases' : 'Connect a payout account to get paid', cta: payoutsReady ? null : { label: 'Connect →', onclick: "switchProfileTab('payout')" } },
+  ];
+  const doneCount = items.filter(i => i.done).length;
+
+  el.innerHTML = `
+    <div style="height:6px;border-radius:100px;background:var(--color-background-secondary);overflow:hidden;margin:10px 0 14px">
+      <div style="height:100%;border-radius:100px;background:linear-gradient(90deg,var(--color-accent),var(--color-accent-2));width:${(doneCount/items.length)*100}%"></div>
+    </div>
+    <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:12px">${doneCount} of ${items.length} complete</div>
+    ${items.map(i => `
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--color-border-tertiary)">
+        <div style="width:26px;height:26px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+          background:${i.done ? 'rgba(23,184,166,0.12)' : 'var(--color-background-secondary)'};
+          color:${i.done ? '#0F9C8C' : 'var(--color-text-tertiary)'}">
+          <i class="ti ${i.done ? 'ti-check' : 'ti-circle-dashed'}" style="font-size:13px"></i>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--color-text-primary)">${escapeHtml(i.title)}</div>
+          <div style="font-size:11.5px;color:var(--color-text-tertiary)">${escapeHtml(i.sub)}</div>
+        </div>
+        ${i.cta ? (i.cta.href
+          ? `<a href="${i.cta.href}" style="font-size:12px;font-weight:600;color:var(--color-accent);white-space:nowrap">${escapeHtml(i.cta.label)}</a>`
+          : `<a href="#" onclick="${i.cta.onclick};return false" style="font-size:12px;font-weight:600;color:var(--color-accent);white-space:nowrap">${escapeHtml(i.cta.label)}</a>`) : ''}
+      </div>`).join('')}
+  `;
+}
+
+// ── Connected platforms (Account tab) — read-only summary of real rows in
+// platform_connections. Connect/disconnect stays on Dashboard, which owns
+// the OAuth start/callback flow; duplicating that here would give two
+// places to manage the same connections and risk them drifting apart.
+const PLATFORM_META = {
+  youtube:   { label: 'YouTube',   icon: 'ti-brand-youtube',   color: '#FF3B30' },
+  tiktok:    { label: 'TikTok',    icon: 'ti-brand-tiktok',    color: '#111827' },
+  instagram: { label: 'Instagram', icon: 'ti-brand-instagram', color: '#D6249F' },
+  twitch:    { label: 'Twitch',    icon: 'ti-brand-twitch',    color: '#8B5CF6' },
+  discord:   { label: 'Discord',   icon: 'ti-brand-discord',   color: '#5865F2' },
+};
+function fmtFollowers(n) {
+  if (n === null || n === undefined) return null;
+  if (n >= 1000000) return (n/1000000).toFixed(1).replace(/\.0$/,'') + 'M';
+  if (n >= 1000) return (n/1000).toFixed(1).replace(/\.0$/,'') + 'K';
+  return String(n);
+}
+function renderPlatformsList() {
+  const el = document.getElementById('platformsList');
+  if (!el) return;
+  if (!platformConnections.length) {
+    el.innerHTML = `<div style="font-size:12.5px;color:var(--color-text-tertiary);padding:10px 0">No platforms connected yet. <a href="dashboard.html" style="color:var(--color-accent);font-weight:600">Connect one on your Dashboard →</a></div>`;
+    return;
+  }
+  el.innerHTML = platformConnections.map(p => {
+    const meta = PLATFORM_META[p.platform] || { label: p.platform, icon: 'ti-link', color: 'var(--color-text-tertiary)' };
+    const followers = fmtFollowers(p.follower_count);
+    return `
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--color-border-tertiary)">
+      <div style="width:34px;height:34px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:${meta.color};color:#fff">
+        <i class="ti ${meta.icon}" style="font-size:16px"></i>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--color-text-primary)">${escapeHtml(meta.label)}</div>
+        <div style="font-size:11.5px;color:var(--color-text-tertiary)">${p.platform_handle ? escapeHtml(p.platform_handle) : 'Connected'}${followers !== null ? ` · ${followers} followers` : ''}</div>
+      </div>
+      <div style="font-size:11px;font-weight:600;color:#0F9C8C;background:rgba(23,184,166,0.12);padding:4px 10px;border-radius:100px;white-space:nowrap">Connected</div>
+    </div>`;
+  }).join('');
 }
 
 function renderStrengthPanel() {
