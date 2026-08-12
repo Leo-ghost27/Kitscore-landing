@@ -7,15 +7,15 @@
 <title>Profile — Kitscore</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
 <style>
-  :root{ --color-accent:#2563EB; --color-accent-2:#17B8A6; }
-  body{background:#F4F6FA}
-  .app-main{padding:32px 36px 60px}
+  :root{ --color-accent:#2755F0; --color-accent-2:#17B8A6; --color-blue-deep:#0B2A6B; --font-sans:'Space Grotesk',sans-serif; }
+  body{background:#F6F8FB;font-family:'Space Grotesk',sans-serif;}
+  .app-main{padding:36px 44px 80px}
   .ptitle{font-family:'Fraunces',serif;font-size:26px;font-weight:600;letter-spacing:-0.01em;margin-bottom:20px;color:var(--color-text-primary)}
-  .card{border:1px solid var(--color-border-tertiary);border-radius:18px;padding:28px 30px;max-width:none;
-    background:#fff;box-shadow:0 1px 2px rgba(20,25,40,0.03), 0 10px 28px rgba(20,25,40,0.05);}
+  .card{border:1px solid var(--color-border-tertiary);border-radius:16px;padding:24px 26px;max-width:none;
+    background:#fff;box-shadow:0 1px 2px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.06);}
   .side-panel{padding:24px}
   .field{margin-bottom:14px}
   .field label{display:block;font-size:11.5px;font-weight:600;color:var(--color-text-secondary);margin-bottom:5px}
@@ -53,21 +53,21 @@
   @media(max-width:700px){ .profile-layout{grid-template-columns:1fr} }
 
   .profile-hero{
-    display:flex;align-items:center;gap:18px;margin-bottom:26px;
+    display:flex;align-items:center;gap:36px;margin-bottom:26px;
     background:linear-gradient(135deg,#0B2A6B 0%,#142B63 55%,#0E3350 100%);
-    border-radius:16px;padding:22px 26px;position:relative;overflow:hidden;
+    border-radius:20px;padding:34px 38px;position:relative;overflow:hidden;
   }
   .profile-hero::after{content:"";position:absolute;inset:0;background:radial-gradient(480px 200px at 88% -10%, rgba(23,184,166,0.25), transparent 60%);pointer-events:none}
-  .avatar-wrap{position:relative;width:72px;height:72px;flex-shrink:0}
-  .avatar-img{width:72px;height:72px;border-radius:50%;object-fit:cover;display:block;border:3px solid rgba(255,255,255,0.25)}
-  .avatar-placeholder{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--color-accent),var(--color-accent-2));color:#fff;font-size:24px;font-weight:700;font-family:'Fraunces',serif;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,0.25)}
-  .avatar-edit-btn{position:absolute;bottom:-2px;right:-2px;width:24px;height:24px;border-radius:50%;background:#fff;color:#0B2A6B;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #0E3350;font-size:11px;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
+  .avatar-wrap{position:relative;width:96px;height:96px;flex-shrink:0}
+  .avatar-img{width:96px;height:96px;border-radius:50%;object-fit:cover;display:block;border:3px solid rgba(255,255,255,0.25)}
+  .avatar-placeholder{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,var(--color-accent),var(--color-accent-2));color:#fff;font-size:32px;font-weight:700;font-family:'Fraunces',serif;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,0.25)}
+  .avatar-edit-btn{position:absolute;bottom:-2px;right:-2px;width:28px;height:28px;border-radius:50%;background:#fff;color:#0B2A6B;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #0E3350;font-size:13px;box-shadow:0 3px 8px rgba(0,0,0,0.25)}
   .avatar-edit-btn input{display:none}
   .hero-founding{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#8A5B0A;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);border:0.5px solid #E8CE8F;padding:5px 11px 5px 7px;border-radius:20px}
   .hero-score{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
-  .hero-score-ring{position:relative;width:76px;height:76px}
-  .hero-score-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:#fff}
-  .hero-score-label{font-size:10.5px;font-weight:600;color:#AFC0E6;margin-top:6px;letter-spacing:.03em}
+  .hero-score-ring{position:relative;width:118px;height:118px}
+  .hero-score-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:32px;font-weight:700;color:#fff}
+  .hero-score-label{font-size:12px;font-weight:600;color:#AFC0E6;margin-top:8px;letter-spacing:.03em}
 
   .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
   .gallery-slot{aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;background:var(--color-background-secondary);border:1.5px dashed var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s}
@@ -86,8 +86,8 @@
   .pv-stat-card .pv-val{font-family:'Fraunces',serif;font-size:26px;font-weight:600;color:var(--color-text-primary);line-height:1}
   .pv-stat-card .pv-label{font-size:11px;color:var(--color-text-tertiary);margin-top:5px}
 
-  .ptabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--color-border-tertiary)}
-  .ptab-btn{background:none;border:none;padding:12px 4px;margin-right:24px;font-size:13.5px;font-weight:600;color:var(--color-text-tertiary);cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;transition:color .15s}
+  .ptabs{display:flex;gap:4px;margin-bottom:26px;border-bottom:1px solid var(--color-border-tertiary)}
+  .ptab-btn{background:none;border:none;padding:12px 4px;margin-right:22px;font-size:14.5px;font-weight:600;color:var(--color-text-tertiary);cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;transition:color .15s}
   .ptab-btn:hover{color:var(--color-text-primary)}
   .ptab-btn.active{color:var(--color-accent);border-bottom-color:var(--color-accent);font-weight:700}
   .ptab-panel{display:none}
@@ -143,23 +143,23 @@ async function load() {
         </label>
       </div>
       <div style="flex:1">
-        <div style="font-family:'Fraunces',serif;font-size:19px;font-weight:600;color:#fff;margin-bottom:6px">${escapeHtml(profile.display_name || 'Your profile')}</div>
+        <div style="font-family:'Fraunces',serif;font-size:24px;font-weight:600;color:#fff;margin-bottom:6px">${escapeHtml(profile.display_name || 'Your profile')}</div>
         ${creator.founding_cohort ? `<div class="hero-founding" title="One of Kitscore's first 100 creators"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg>Founding Creator</div>` : ''}
       </div>
       ${(() => {
         const score = Math.round(Number(creator.trust_score) || 0);
-        const circumference = 2 * Math.PI * 30;
+        const circumference = 2 * Math.PI * 52;
         const offset = circumference - (score / 100) * circumference;
         return `
         <div class="hero-score">
           <div class="hero-score-ring">
-            <svg width="76" height="76" viewBox="0 0 76 76">
+            <svg width="118" height="118" viewBox="0 0 118 118">
               <defs><linearGradient id="heroRingGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#2563EB"/><stop offset="100%" stop-color="#17B8A6"/>
+                <stop offset="0%" stop-color="#2755F0"/><stop offset="100%" stop-color="#17B8A6"/>
               </linearGradient></defs>
-              <circle cx="38" cy="38" r="30" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="7"/>
-              <circle cx="38" cy="38" r="30" fill="none" stroke="url(#heroRingGrad)" stroke-width="7" stroke-linecap="round"
-                stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" transform="rotate(-90 38 38)"/>
+              <circle cx="59" cy="59" r="52" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="9"/>
+              <circle cx="59" cy="59" r="52" fill="none" stroke="url(#heroRingGrad)" stroke-width="9" stroke-linecap="round"
+                stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" transform="rotate(-90 59 59)"/>
             </svg>
             <div class="hero-score-num">${score}</div>
           </div>
