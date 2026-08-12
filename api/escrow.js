@@ -1,4 +1,4 @@
-// POST /api/escrow?action=connect-onboarding | refresh-connect-status | fund | submit-deliverable | release | release-milestone | refund | dispute | admin-release | admin-refund
+// POST /api/escrow?action=connect-onboarding | refresh-connect-status | fund | submit-deliverable | release | release-milestone | refund | dispute | admin-release | admin-refund | notify-contract-flag
 // GET  /api/escrow?action=fee-info | balance
 //
 // One function slot for the whole escrow feature, same consolidation
@@ -8,6 +8,11 @@
 // escrow -- see app/admin-escrow.html and docs/admin-roadmap.md.
 // dispute moves no money -- it's the sponsor's post-submission
 // alternative to refund, see escrow-dispute.js.
+// notify-contract-flag moves no money either -- it's the email half of
+// admin-contracts.html's "Flag a problem", which itself still saves the
+// flag directly from the browser same as dispute above; this just tells
+// both parties it happened instead of leaving it to a banner they might
+// not see.
 const handleConnectOnboarding = require('../lib/handlers/escrow-connect-onboarding');
 const handleRefreshConnectStatus = require('../lib/handlers/escrow-refresh-connect-status');
 const handleFund = require('../lib/handlers/escrow-fund');
@@ -19,6 +24,7 @@ const handleDispute = require('../lib/handlers/escrow-dispute');
 const { handleBalance, handleExpressDashboardLink } = require('../lib/handlers/creator-balance');
 const handleAdminRelease = require('../lib/handlers/escrow-admin-release');
 const handleAdminRefund = require('../lib/handlers/escrow-admin-refund');
+const handleNotifyContractFlag = require('../lib/handlers/contract-notify-flag');
 
 const DEFAULT_FEE_PCT = 10;
 
@@ -45,6 +51,7 @@ module.exports = async (req, res) => {
   if (action === 'express-dashboard-link') return handleExpressDashboardLink(req, res);
   if (action === 'admin-release') return handleAdminRelease(req, res);
   if (action === 'admin-refund') return handleAdminRefund(req, res);
+  if (action === 'notify-contract-flag') return handleNotifyContractFlag(req, res);
 
   return res.status(400).json({
     error: 'Unknown or missing action. Use ?action=connect-onboarding, refresh-connect-status, fund, submit-deliverable, release, release-milestone, refund, dispute, admin-release, admin-refund, fee-info, or balance.',
