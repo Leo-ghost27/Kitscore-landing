@@ -260,6 +260,7 @@
   .info-quote { border-left: 2px solid var(--accent); padding: 9px 12px; background: var(--accent-dim); font-size: 11.5px; color: var(--text); font-style: italic; line-height: 1.6; margin-top: 8px; }
   .info-quote-cite { font-size: 10.5px; color: var(--muted); margin-top: 4px; font-style: normal; }
   .info-more { display: block; margin-top: 10px; font-size: 11.5px; color: var(--accent); font-weight: 600; text-decoration: none; }
+  @media (min-width: 901px) { .info-grid-4 .row2-col2 { grid-column: 2; } .info-grid-4 .row2-col3 { grid-column: 3; } }
   @media (max-width: 900px) { .info-grid-4 { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 640px) { .info-grid-3, .info-grid-4 { grid-template-columns: 1fr; } .info-flip { height: auto; min-height: 240px; } }
 
@@ -1170,6 +1171,7 @@
             <a href="/app/auth.html" class="btn-primary aud-cta" style="text-decoration:none">Browse open briefs</a>
             <a href="/app/auth.html" class="btn-ghost aud-cta" style="text-decoration:none">Already have a sponsor?</a>
           </div>
+          <p style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">Bring a deal you already have — get the contract, clause scan, and escrow protection on it too, no re-pitching needed</p>
         </div>
       </div>
     </div>
@@ -1309,6 +1311,7 @@
     wireAudCard('methWrapConfidence', 'methFlipConfidence');
     wireAudCard('methWrapSafety', 'methFlipSafety');
     wireAudCard('methWrapPitchGuard', 'methFlipPitchGuard');
+    wireAudCard('methWrapSponsorReports', 'methFlipSponsorReports');
   });
 })();
 </script>
@@ -1955,12 +1958,13 @@
           <div class="info-back-row"><strong>Misinformation history</strong></div>
           <div class="info-back-row"><strong>Controversy history</strong></div>
           <div class="info-back-row" style="border-bottom:none"><strong>Family safety</strong></div>
+          <p class="info-back-note">Beyond the self-assessment, we automatically scan a creator's actual video titles for risk signals — not just their answers.</p>
           <a href="/methodology.html#brand-safety" class="info-more">See all 8 points →</a>
         </div>
       </div>
     </div>
 
-    <div class="info-wrap" id="methWrapPitchGuard">
+    <div class="info-wrap row2-col2" id="methWrapPitchGuard">
       <div class="info-flip" id="methFlipPitchGuard">
         <div class="info-face info-front">
           <div class="info-top-row">
@@ -1982,10 +1986,33 @@
       </div>
     </div>
 
+    <div class="info-wrap row2-col3" id="methWrapSponsorReports">
+      <div class="info-flip" id="methFlipSponsorReports">
+        <div class="info-face info-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            <span class="info-pill">Sponsor accountability</span>
+          </div>
+          <div class="info-headline">If a sponsor goes quiet, it doesn't just disappear</div>
+          <p class="info-desc">Report ghosting or idea theft during brief discussion, free, right from the brief</p>
+          <div class="info-tap-hint">tap for detail</div>
+        </div>
+        <div class="info-face info-back">
+          <div class="info-back-title">How it works</div>
+          <div class="info-back-row"><strong>Cost</strong><span>Free, every creator</span></div>
+          <div class="info-back-row"><strong>Reviewed</strong><span>by our team, before it counts</span></div>
+          <div class="info-back-row"><strong>Feeds</strong><span>that sponsor's public reliability score</span></div>
+          <p class="info-back-note">Other creators see the real picture before they ever apply.</p>
+          <a href="/app/auth.html" class="info-more">See how it works →</a>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
 <!-- PRICING -->
+<div class="band-alt">
 <section id="pricing" style="padding-top:24px">
   <div class="section-label" style="text-align:center">Pricing</div>
   <h2 class="section-h" style="text-align:center">Simple, <strong>transparent pricing.</strong></h2>
@@ -2154,7 +2181,10 @@
         <li>Verified Media Kit + free PDF export — the pitch you send cold</li>
         <li>Verified Rate Benchmark &amp; score breakdown — what similar creators actually got paid, not a formula guess</li>
         <li>Briefs, contracts &amp; <strong>Kitscore Escrow</strong> — apply to open deals, sign terms, get paid safely, all included free</li>
+        <li>Automatic contract clause scan — flags one-sided terms and fake "ambassador program" pay mismatches before you sign</li>
+        <li>Split payment into milestones — get paid in stages instead of waiting on one lump release</li>
         <li>Pitch protection — every pitch timestamped, hashed, and locked the moment you submit it</li>
+        <li>Report ghosting or idea theft — free, reviewed before it affects a sponsor's public score</li>
       </ul>
       <a href="/app/auth.html" class="plan-card2-cta outline">Get Started Free</a>
     </div>
@@ -2178,11 +2208,11 @@
     </div>
   </div>
 </section>
+</div>
 
 <hr class="section-divider" />
 
 <!-- FAQ -->
-<div class="band-alt">
 <section id="faq" style="padding:64px 2rem;max-width:800px;margin:0 auto">
   <div class="section-label" style="text-align:center">FAQ</div>
   <h2 class="section-h" style="text-align:center;margin-bottom:32px">Questions sponsors ask<br>before they buy.</h2>
@@ -2213,7 +2243,6 @@
     </details>
   </div>
 </section>
-</div>
 
 <hr class="section-divider" />
 
