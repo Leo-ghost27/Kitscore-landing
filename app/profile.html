@@ -56,6 +56,13 @@
   .gallery-slot .remove{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer}
   .gallery-slot input{display:none}
   .upload-hint{font-size:10.5px;color:var(--color-text-tertiary);margin-top:6px}
+  .pv-analytics{border:0.5px dashed var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:20px;text-align:center;background:var(--color-background-secondary);margin-top:10px;max-width:340px}
+  .pv-analytics .pv-icon{width:34px;height:34px;border-radius:50%;background:#EBF1FE;color:#2563EB;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:15px}
+  .pv-analytics h4{font-size:13px;font-weight:600;margin:0 0 4px;color:var(--color-text-primary)}
+  .pv-analytics p{font-size:11.5px;color:var(--color-text-secondary);margin:0 0 12px;line-height:1.5}
+  .pv-stat-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px 16px;margin-top:10px;max-width:200px}
+  .pv-stat-card .pv-val{font-size:22px;font-weight:600;color:var(--color-text-primary);line-height:1}
+  .pv-stat-card .pv-label{font-size:10.5px;color:var(--color-text-tertiary);margin-top:4px}
   .ptabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--color-border-tertiary)}
   .ptab-btn{background:none;border:none;padding:10px 4px;margin-right:20px;font-size:12.5px;font-weight:500;color:var(--color-text-tertiary);cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
   .ptab-btn.active{color:#2563EB;border-bottom-color:#2563EB;font-weight:600}
@@ -281,8 +288,16 @@ async function load() {
         <div style="font-size:12px;color:var(--color-text-tertiary)">Your link: <span style="font-family:var(--font-mono,monospace)">${escapeHtml(creator.slug || '')}</span> — <a href="pricing-creator.html" style="color:#2563EB">upgrade to Pro to customize it</a></div>
       `}
       ${creator.plan === 'pro'
-        ? `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:8px">${creator.profile_views||0} view${creator.profile_views===1?'':'s'} so far</div>`
-        : `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:8px">Free for everyone. Pro adds a view counter: <a href="pricing-creator.html" style="color:#2563EB">see who's opened it →</a></div>`}
+        ? `<div class="pv-stat-card">
+             <div class="pv-val">${creator.profile_views||0}</div>
+             <div class="pv-label">view${creator.profile_views===1?'':'s'} so far</div>
+           </div>`
+        : `<div class="pv-analytics">
+             <div class="pv-icon"><i class="ti ti-lock"></i></div>
+             <h4>Unlock profile analytics</h4>
+             <p>See your total view count and track how sponsors are finding your trust link.</p>
+             <button class="cta" onclick="location.href='pricing-creator.html'">Upgrade to Pro</button>
+           </div>`}
     </div>
     </div>
   `;

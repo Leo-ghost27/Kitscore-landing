@@ -98,6 +98,7 @@ function renderSidebar(role, activeKey, displayName) {
       </div>
     </div>
     <nav class="sb-nav">
+      ${role === 'creator' ? '<div class="sb-section">Workspace</div>' : ''}
       ${items.map(i => `<a class="sb-item ${i.key === activeKey ? 'active' : ''}" href="${i.href}" data-nav-key="${i.key}">${navIcon(i.icon)}${i.label}<span class="sb-badge" data-badge-for="${i.key}" style="display:none"></span></a>`).join('')}
     </nav>
     <div class="sb-signout-row">
