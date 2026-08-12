@@ -106,7 +106,7 @@
   .value-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
   .value-card { background: var(--bg); padding: 22px 20px; border: 0.5px solid var(--border); box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
   .value-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-  .value-card:nth-child(n+4):nth-child(-n+6), .value-card:nth-child(n+10):nth-child(-n+12) { background: var(--bg-alt); }
+  .value-card:nth-child(-n+3), .value-card:nth-child(n+7):nth-child(-n+9), .value-card:nth-child(n+13):nth-child(-n+15) { background: var(--bg-alt); }
   .value-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--accent-dim); color: var(--accent); margin-bottom: 14px; font-size: 15px; font-weight: 700; font-family: var(--font-display); }
   .value-card h3 { font-size: 13.5px; font-weight: 700; margin-bottom: 6px; }
   .value-card p { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
@@ -364,7 +364,6 @@
     </div>
   </section>
 
-<div class="band-alt">
   <section style="padding-top:0">
     <div class="section-label" style="text-align:center">Getting started</div>
     <h2>Three steps to your Kitscore.</h2>
@@ -395,10 +394,10 @@
     </div>
   </section>
 </div>
-</div>
 
 <hr class="divider" />
 
+<div class="band-alt">
 <div class="container">
   <section>
     <div class="section-label" style="text-align:center">FAQ</div>
@@ -426,6 +425,7 @@
       </details>
     </div>
   </section>
+</div>
 </div>
 
 <div class="cta-band">
