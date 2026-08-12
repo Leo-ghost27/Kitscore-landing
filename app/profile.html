@@ -7,65 +7,85 @@
 <title>Profile — Kitscore</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
 <style>
-  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
-  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:16px;max-width:420px}
-  .field{margin-bottom:12px}
-  .field label{display:block;font-size:11px;font-weight:600;color:var(--color-text-secondary);margin-bottom:4px}
-  .field input{width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
-  .psec{margin:26px 0 14px;padding-top:18px;border-top:1px solid var(--color-border-tertiary)}
-  .psec:first-of-type{margin-top:22px;padding-top:0;border-top:none}
-  .psec-title{font-size:13px;font-weight:600;color:var(--color-text-primary)}
-  .psec-sub{font-size:11px;color:var(--color-text-tertiary);margin-top:2px;line-height:1.5}
-  .prow2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  :root{ --color-accent:#2563EB; --color-accent-2:#17B8A6; }
+  body{background:#F4F6FA}
+  .app-main{padding:32px 36px 60px}
+  .ptitle{font-family:'Fraunces',serif;font-size:26px;font-weight:600;letter-spacing:-0.01em;margin-bottom:20px;color:var(--color-text-primary)}
+  .card{border:1px solid var(--color-border-tertiary);border-radius:18px;padding:28px 30px;max-width:none;
+    background:#fff;box-shadow:0 1px 2px rgba(20,25,40,0.03), 0 10px 28px rgba(20,25,40,0.05);}
+  .side-panel{padding:24px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:11.5px;font-weight:600;color:var(--color-text-secondary);margin-bottom:5px}
+  .field input{width:100%;padding:11px 13px;border:1px solid var(--color-border-tertiary);border-radius:11px;font-size:13.5px;transition:border-color .15s, box-shadow .15s}
+  .field input:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px rgba(37,99,235,0.12)}
+  .psec{margin:30px 0 16px;padding-top:22px;border-top:1px solid var(--color-border-tertiary)}
+  .psec:first-of-type{margin-top:24px;padding-top:0;border-top:none}
+  .psec-title{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--color-text-primary)}
+  .psec-sub{font-size:12px;color:var(--color-text-tertiary);margin-top:3px;line-height:1.55}
+  .prow2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media(max-width:520px){.prow2{grid-template-columns:1fr}}
-  .padd summary{cursor:pointer;font-size:12.5px;font-weight:600;color:#2563EB;list-style:none;padding:6px 0;user-select:none}
+  .padd summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--color-accent);list-style:none;padding:6px 0;user-select:none}
   .padd summary::-webkit-details-marker{display:none}
   .padd summary::before{content:'+ ';font-weight:700}
   .padd[open] summary::before{content:'– '}
   .padd[open] summary{margin-bottom:8px}
-  .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:0;font-size:12px;font-weight:500;cursor:pointer}
-  .cta:disabled{opacity:.6}
-  .msg{font-size:11px;margin-top:10px;padding:8px;border-radius:0}
+  .cta{padding:11px 20px;background:linear-gradient(135deg,var(--color-accent),#3E63F5);color:#fff;border:none;border-radius:11px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 6px 16px rgba(37,99,235,0.28);transition:transform .12s ease, box-shadow .12s ease}
+  .cta:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(37,99,235,0.36)}
+  .cta:disabled{opacity:.6;transform:none;box-shadow:none}
+  .btn-secondary{padding:10px 18px;background:#fff;color:var(--color-text-primary);border:1px solid var(--color-border-tertiary);border-radius:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:border-color .15s, box-shadow .15s}
+  .btn-secondary:hover{border-color:var(--color-accent);box-shadow:0 4px 12px rgba(20,25,40,0.06)}
+  .msg{font-size:12px;margin-top:10px;padding:10px 13px;border-radius:10px}
   .msg.error{background:#FDECEC;color:#B42318}
-  .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  .msg.ok{background:rgba(23,184,166,0.12);color:#0F9C8C;font-weight:600}
   .loading{font-size:12px;color:var(--color-text-secondary)}
-  .profile-layout{display:grid;grid-template-columns:1fr 250px;gap:16px;align-items:start}
-  .card{max-width:none}
-  .side-panel{padding:18px}
-  .side-panel-title{font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:10px}
-  .strength-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:0.5px solid var(--color-border-tertiary);font-size:12px;color:var(--color-text-secondary)}
+  .profile-layout{display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start}
+  .side-panel-title{font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--color-text-primary);margin-bottom:12px}
+  .strength-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid var(--color-border-tertiary);font-size:12.5px;color:var(--color-text-secondary)}
   .strength-item:first-child{border-top:none}
-  .strength-dot{width:8px;height:8px;background:var(--color-border-tertiary);flex-shrink:0}
-  .strength-dot.on{background:#2563EB}
-  .side-panel-note{display:flex;gap:10px;margin-top:14px}
+  .strength-dot{width:8px;height:8px;border-radius:50%;background:var(--color-border-tertiary);flex-shrink:0}
+  .strength-dot.on{background:linear-gradient(135deg,var(--color-accent),var(--color-accent-2));box-shadow:0 0 0 3px rgba(37,99,235,0.14)}
+  .side-panel-note{display:flex;gap:10px;margin-top:16px;background:var(--color-background-secondary);border-radius:12px;padding:12px}
   .side-panel-note svg{flex-shrink:0;margin-top:1px}
   .side-panel-note p{font-size:11.5px;color:var(--color-text-secondary);line-height:1.55;margin:0}
   @media(max-width:700px){ .profile-layout{grid-template-columns:1fr} }
-  .avatar-wrap{position:relative;width:64px;height:64px;flex-shrink:0}
-  .avatar-img{width:64px;height:64px;border-radius:50%;object-fit:cover;display:block;border:0.5px solid var(--color-border-tertiary)}
-  .avatar-placeholder{width:64px;height:64px;border-radius:50%;background:#2563EB;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center}
-  .avatar-edit-btn{position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:#1A1A18;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff;font-size:11px}
+
+  .profile-hero{
+    display:flex;align-items:center;gap:18px;margin-bottom:26px;
+    background:linear-gradient(135deg,#0B2A6B 0%,#142B63 55%,#0E3350 100%);
+    border-radius:16px;padding:22px 26px;position:relative;overflow:hidden;
+  }
+  .profile-hero::after{content:"";position:absolute;inset:0;background:radial-gradient(480px 200px at 88% -10%, rgba(23,184,166,0.25), transparent 60%);pointer-events:none}
+  .avatar-wrap{position:relative;width:72px;height:72px;flex-shrink:0}
+  .avatar-img{width:72px;height:72px;border-radius:50%;object-fit:cover;display:block;border:3px solid rgba(255,255,255,0.25)}
+  .avatar-placeholder{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--color-accent),var(--color-accent-2));color:#fff;font-size:24px;font-weight:700;font-family:'Fraunces',serif;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,0.25)}
+  .avatar-edit-btn{position:absolute;bottom:-2px;right:-2px;width:24px;height:24px;border-radius:50%;background:#fff;color:#0B2A6B;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #0E3350;font-size:11px;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
   .avatar-edit-btn input{display:none}
-  .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
-  .gallery-slot{aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative;background:#F9F8F5;border:1px dashed var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .hero-founding{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#8A5B0A;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);border:0.5px solid #E8CE8F;padding:5px 11px 5px 7px;border-radius:20px}
+
+  .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+  .gallery-slot{aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;background:var(--color-background-secondary);border:1.5px dashed var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s}
+  .gallery-slot:hover{border-color:var(--color-accent)}
   .gallery-slot img{width:100%;height:100%;object-fit:cover;display:block}
-  .gallery-slot .add{font-size:22px;color:var(--color-text-tertiary)}
-  .gallery-slot .remove{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer}
+  .gallery-slot .add{font-size:24px;color:var(--color-text-tertiary)}
+  .gallery-slot .remove{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(11,18,32,0.65);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer}
   .gallery-slot input{display:none}
   .upload-hint{font-size:10.5px;color:var(--color-text-tertiary);margin-top:6px}
-  .pv-analytics{border:0.5px dashed var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:20px;text-align:center;background:var(--color-background-secondary);margin-top:10px;max-width:340px}
-  .pv-analytics .pv-icon{width:34px;height:34px;border-radius:50%;background:#EBF1FE;color:#2563EB;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:15px}
-  .pv-analytics h4{font-size:13px;font-weight:600;margin:0 0 4px;color:var(--color-text-primary)}
-  .pv-analytics p{font-size:11.5px;color:var(--color-text-secondary);margin:0 0 12px;line-height:1.5}
-  .pv-stat-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px 16px;margin-top:10px;max-width:200px}
-  .pv-stat-card .pv-val{font-size:22px;font-weight:600;color:var(--color-text-primary);line-height:1}
-  .pv-stat-card .pv-label{font-size:10.5px;color:var(--color-text-tertiary);margin-top:4px}
-  .ptabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--color-border-tertiary)}
-  .ptab-btn{background:none;border:none;padding:10px 4px;margin-right:20px;font-size:12.5px;font-weight:500;color:var(--color-text-tertiary);cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
-  .ptab-btn.active{color:#2563EB;border-bottom-color:#2563EB;font-weight:600}
+
+  .pv-analytics{border:1px solid rgba(37,99,235,0.18);border-radius:16px;padding:24px;text-align:center;background:linear-gradient(180deg,#F5F8FF,#FFFFFF);margin-top:12px;max-width:360px}
+  .pv-analytics .pv-icon{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#0B2A6B,var(--color-accent));color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:16px;box-shadow:0 6px 16px rgba(37,99,235,0.32)}
+  .pv-analytics h4{font-family:'Fraunces',serif;font-size:15px;font-weight:600;margin:0 0 5px;color:var(--color-text-primary)}
+  .pv-analytics p{font-size:12px;color:var(--color-text-secondary);margin:0 0 14px;line-height:1.55}
+  .pv-stat-card{border:1px solid var(--color-border-tertiary);border-radius:14px;padding:16px 18px;margin-top:12px;max-width:220px;box-shadow:0 1px 2px rgba(20,25,40,0.03), 0 8px 20px rgba(20,25,40,0.05)}
+  .pv-stat-card .pv-val{font-family:'Fraunces',serif;font-size:26px;font-weight:600;color:var(--color-text-primary);line-height:1}
+  .pv-stat-card .pv-label{font-size:11px;color:var(--color-text-tertiary);margin-top:5px}
+
+  .ptabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--color-border-tertiary)}
+  .ptab-btn{background:none;border:none;padding:12px 4px;margin-right:24px;font-size:13.5px;font-weight:600;color:var(--color-text-tertiary);cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;transition:color .15s}
+  .ptab-btn:hover{color:var(--color-text-primary)}
+  .ptab-btn.active{color:var(--color-accent);border-bottom-color:var(--color-accent);font-weight:700}
   .ptab-panel{display:none}
   .ptab-panel.active{display:block}
 </style>
@@ -106,7 +126,7 @@ async function load() {
 
   const initial = (profile.display_name || '?').trim().charAt(0).toUpperCase();
   document.getElementById('formWrap').innerHTML = `
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
+    <div class="profile-hero">
       <div class="avatar-wrap">
         ${creator.avatar_url
           ? `<img class="avatar-img" id="avatarImg" src="${escapeHtml(creator.avatar_url)}">`
@@ -116,7 +136,10 @@ async function load() {
           <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp" onchange="uploadAvatar(event)">
         </label>
       </div>
-      ${creator.founding_cohort ? `<div style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#8A5B0A;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);border:0.5px solid #E8CE8F;padding:4px 10px 4px 6px;border-radius:20px" title="One of Kitscore's first 100 creators"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg>Founding Creator</div>` : ''}
+      <div>
+        <div style="font-family:'Fraunces',serif;font-size:19px;font-weight:600;color:#fff;margin-bottom:6px">${escapeHtml(profile.display_name || 'Your profile')}</div>
+        ${creator.founding_cohort ? `<div class="hero-founding" title="One of Kitscore's first 100 creators"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg>Founding Creator</div>` : ''}
+      </div>
     </div>
     <div id="avatarMsg"></div>
 
@@ -436,7 +459,7 @@ function renderCollaborations() {
     <div style="display:flex;align-items:center;gap:8px;border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:6px 10px 6px 6px">
       ${c.logo_url
         ? `<img src="${escapeHtml(c.logo_url)}" style="width:28px;height:28px;object-fit:contain;border-radius:4px">`
-        : `<div style="width:28px;height:28px;border-radius:4px;background:var(--color-bg-secondary,#F2F1EC);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--color-text-secondary)">${escapeHtml((c.brand_name||'?').trim().charAt(0).toUpperCase())}</div>`}
+        : `<div style="width:28px;height:28px;border-radius:4px;background:var(--color-background-secondary,#F2F1EC);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--color-text-secondary)">${escapeHtml((c.brand_name||'?').trim().charAt(0).toUpperCase())}</div>`}
       <span style="font-size:12.5px;color:var(--color-text-primary)">${escapeHtml(c.brand_name)}</span>
       <span onclick="removeCollaboration('${c.id}')" title="Remove" style="cursor:pointer;color:var(--color-text-tertiary);font-size:14px;line-height:1;margin-left:2px">✕</span>
     </div>`).join('')}</div>`;
@@ -573,7 +596,7 @@ function renderTagList(containerId, values, removeFn) {
     return;
   }
   el.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:8px">${values.map((v, i) => `
-    <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;background:var(--color-bg-secondary,#F2F1EC);border-radius:20px;padding:5px 10px 5px 12px">
+    <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;background:var(--color-background-secondary,#F2F1EC);border-radius:20px;padding:5px 10px 5px 12px">
       ${escapeHtml(v)}
       <span onclick="${removeFn}(${i})" title="Remove" style="cursor:pointer;color:var(--color-text-tertiary);font-size:13px;line-height:1">✕</span>
     </span>`).join('')}</div>`;
@@ -797,13 +820,13 @@ async function loadBalance() {
   const nextPayout = j.payouts.find(p => p.status === 'pending' || p.status === 'in_transit');
 
   box.innerHTML = `
-    <div style="display:flex;gap:24px;flex-wrap:wrap">
-      <div><div style="font-size:12px;color:var(--color-text-tertiary)">Available</div><div style="font-size:20px;font-weight:600">${fmt(j.availableCents)}</div></div>
-      <div><div style="font-size:12px;color:var(--color-text-tertiary)">Pending</div><div style="font-size:20px;font-weight:600">${fmt(j.pendingCents)}</div></div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">
+      <div class="pv-stat-card" style="margin-top:0"><div class="pv-val">${fmt(j.availableCents)}</div><div class="pv-label">Available</div></div>
+      <div class="pv-stat-card" style="margin-top:0"><div class="pv-val">${fmt(j.pendingCents)}</div><div class="pv-label">Pending</div></div>
     </div>
-    ${nextPayout ? `<div style="margin-top:8px;font-size:13px;color:var(--color-text-secondary)">Next payout: ${fmt(nextPayout.amountCents)} — expected ${new Date(nextPayout.arrivalDate).toLocaleDateString()}</div>` : ''}
+    ${nextPayout ? `<div style="margin-top:12px;font-size:13px;color:var(--color-text-secondary)">Next payout: <strong style="color:var(--color-text-primary)">${fmt(nextPayout.amountCents)}</strong> — expected ${new Date(nextPayout.arrivalDate).toLocaleDateString()}</div>` : ''}
     ${j.pendingCents > 0 ? `<div style="margin-top:10px;font-size:12.5px;color:var(--color-text-tertiary);line-height:1.5">A sponsor releasing your payment moves it here right away, but Stripe holds new payments as "Pending" for a few days before they're payable out — this is standard for every new payout account, not specific to this payment. It'll move to "Available" on its own, no action needed from you.</div>` : ''}
-    <a href="#" onclick="openExpressDashboard(event, this)" style="display:inline-block;margin-top:10px;font-size:12.5px;color:var(--color-primary,#2563EB)">See your full payout history &amp; schedule in Stripe →</a>
+    <a href="#" onclick="openExpressDashboard(event, this)" style="display:inline-block;margin-top:12px;font-size:12.5px;font-weight:600;color:var(--color-accent)">See your full payout history &amp; schedule in Stripe →</a>
   `;
 }
 
