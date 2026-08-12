@@ -120,7 +120,7 @@ function renderSidebar(role, activeKey, displayName) {
 // not only after you've already opened the page. Runs after the
 // sidebar's initial render so it never blocks/delays the nav showing up
 // -- badges just pop in a moment later, one query per tab, in parallel.
-const STUCK_DAYS = 5;
+const NAV_STUCK_DAYS = 5;
 
 async function attachAdminBadges() {
   await Promise.all([
@@ -141,7 +141,7 @@ async function badgeEscrow() {
     const needsAttention = contracts.filter(c => {
       const openDispute = c.disputed_at && !c.admin_resolved_at;
       const stuck = c.deliverable_submitted_at
-        && (Date.now() - new Date(c.deliverable_submitted_at).getTime()) / 86400000 >= STUCK_DAYS;
+        && (Date.now() - new Date(c.deliverable_submitted_at).getTime()) / 86400000 >= NAV_STUCK_DAYS;
       return openDispute || stuck;
     }).length;
 
