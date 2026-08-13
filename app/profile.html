@@ -571,6 +571,11 @@ async function downloadEveKitPdf() {
 function totalReach() {
   return platforms.reduce((sum, p) => sum + platformFollowerCount(p), 0);
 }
+function avgEngagementQuality() {
+  const rows = scoreComponents.filter(c => c.component_key.startsWith('engagement_quality'));
+  if (!rows.length) return null;
+  return Math.round(rows.reduce((sum, c) => sum + Number(c.value), 0) / rows.length);
+}
 function avgViewsPerPost() {
   const totalViews = platforms.reduce((sum, p) => sum + (p.view_count || 0), 0);
   const totalVideos = platforms.reduce((sum, p) => sum + (p.video_count || 0), 0);
@@ -588,7 +593,7 @@ function renderMediaKitPanel() {
 
     <div class="pf-mk-grid">
       <div class="pf-mk-stat"><div class="val">${fmtCount(totalReach())}</div><div class="lab">Total reach</div></div>
-      <div class="pf-mk-stat"><div class="val">${creator.confidence != null ? Math.round(creator.confidence) + '%' : '—'}</div><div class="lab">Avg. engagement</div></div>
+      <div class="pf-mk-stat"><div class="val">${avgEngagementQuality() != null ? avgEngagementQuality() + '%' : '—'}</div><div class="lab">Avg. engagement</div></div>
       <div class="pf-mk-stat"><div class="val">${avgViewsPerPost() ? fmtCount(avgViewsPerPost()) : '—'}</div><div class="lab">Avg. views / post</div></div>
       <div class="pf-mk-stat"><div class="val">${Math.round(creator.trust_score) || '—'}</div><div class="lab">Trust Score</div></div>
     </div>
@@ -760,7 +765,7 @@ function renderSharePanel() {
 
         <h3 style="margin-top:22px">Embed the verified badge</h3>
         <p class="desc">Paste this on your website or Linktree to show a live trust score.</p>
-        <div class="pf-embed-box">&lt;<span class="tag">iframe</span> <span class="attr">src</span>=<span class="str">"https://kitscore.co/badge/${escapeHtml(creator.slug || '')}"</span><br>&nbsp;&nbsp;<span class="attr">width</span>=<span class="str">"220"</span> <span class="attr">height</span>=<span class="str">"64"</span>&gt;&lt;/<span class="tag">iframe</span>&gt;</div>
+        <div class="pf-embed-box">&lt;<span class="tag">a</span> <span class="attr">href</span>=<span class="str">"https://kitscore.co/p/${escapeHtml(creator.slug || '')}"</span>&gt;<br>&nbsp;&nbsp;&lt;<span class="tag">img</span> <span class="attr">src</span>=<span class="str">"https://kitscore.co/badge/${escapeHtml(creator.slug || '')}"</span> <span class="attr">alt</span>=<span class="str">"Verified by Kitscore"</span>&gt;<br>&lt;/<span class="tag">a</span>&gt;</div>
       </div>
 
       <div class="pf-card">
