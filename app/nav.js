@@ -74,10 +74,12 @@ const NAV = {
 function renderSidebar(role, activeKey, displayName) {
   const mount = document.getElementById('sidebar-mount');
   if (!mount) return;
+  mount.classList.toggle('sidebar-creator', role === 'creator');
   const items = NAV[role] || [];
   const roleLabel = role === 'sponsor' ? 'Sponsor account' : role === 'admin' ? 'Admin account' : 'Creator account';
   const name = displayName || (typeof profile !== 'undefined' && profile ? profile.display_name : '') || '';
   const initial = name ? name.trim().charAt(0).toUpperCase() : (role === 'sponsor' ? 'S' : role === 'admin' ? 'A' : 'C');
+  const logoTextColor = role === 'creator' ? '#EAF0FF' : '#10151F';
 
   mount.innerHTML = `
     <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:8px;text-decoration:none;writing-mode:horizontal-tb;transform:none">
@@ -88,7 +90,7 @@ function renderSidebar(role, activeKey, displayName) {
         <circle cx="23.5" cy="4.5" r="3.5" fill="#2563EB" stroke="#fff" stroke-width="1"/>
         <path d="M21.8 4.5l1.2 1.2L25.1 3.3" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <span style="font-size:16px;font-weight:700;letter-spacing:-0.01em;color:#10151F">Kit<span style="color:#2563EB">score</span></span>
+      <span style="font-size:16px;font-weight:700;letter-spacing:-0.01em;color:${logoTextColor}">Kit<span style="color:#2563EB">score</span></span>
     </a>
     <div class="nav-account">
       <div class="nav-account-avatar">${initial}</div>
