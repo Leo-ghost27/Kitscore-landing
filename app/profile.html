@@ -25,6 +25,8 @@
   .psec:first-of-type{margin-top:24px;padding-top:0;border-top:none}
   .psec-title{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--color-text-primary)}
   .psec-sub{font-size:12px;color:var(--color-text-tertiary);margin-top:3px;line-height:1.55}
+  .subcard{border:1px solid var(--color-border-tertiary);border-radius:14px;padding:20px 22px;margin-bottom:20px;background:#fff;box-shadow:0 1px 2px rgba(20,25,40,0.02)}
+  .subcard .psec-title{font-size:15px}
   .prow2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media(max-width:520px){.prow2{grid-template-columns:1fr}}
   .padd summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--color-accent);list-style:none;padding:6px 0;user-select:none}
@@ -177,17 +179,17 @@ async function load() {
     </div>
 
     <div class="ptab-panel active" data-tab="account">
-    <div class="psec" style="margin-top:0;padding-top:0;border-top:none">
+    <div class="subcard" style="margin-top:0">
       <div class="psec-title">Get fully verified</div>
       <div class="psec-sub">Complete these to strengthen your trust link and unlock more from sponsors.</div>
       <div id="verifyChecklist"></div>
     </div>
-    <div class="psec">
+    <div class="subcard">
       <div class="psec-title">Connected platforms</div>
       <div class="psec-sub">Kitscore pulls live stats from these to keep your trust score current. Manage connections from your <a href="dashboard.html" style="color:var(--color-accent)">Dashboard</a>.</div>
       <div id="platformsList"></div>
     </div>
-    <div class="psec">
+    <div class="psec" style="margin-top:0;padding-top:0;border-top:none">
       <div class="psec-title">Account</div>
       <div class="psec-sub">Your identity on Kitscore — feeds both your trust link and your Verified Media Kit.</div>
     </div>
