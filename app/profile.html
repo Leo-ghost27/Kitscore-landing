@@ -240,14 +240,10 @@
     <div class="pf-tabs" id="tabsRow" style="display:none">
       <button class="pf-tab active" data-tab="account" onclick="switchProfileTab('account')">Account Setup</button>
       <button class="pf-tab" data-tab="payout" onclick="switchProfileTab('payout')">Payout</button>
-      <button class="pf-tab" data-tab="mediakit" onclick="switchProfileTab('mediakit')">Verified Media Kit</button>
-      <button class="pf-tab" data-tab="share" onclick="switchProfileTab('share')">Link &amp; Share</button>
     </div>
 
     <div class="pf-panel active" id="panel-account"></div>
     <div class="pf-panel" id="panel-payout"></div>
-    <div class="pf-panel" id="panel-mediakit"></div>
-    <div class="pf-panel" id="panel-share"></div>
 
   </div>
 </div>
@@ -309,8 +305,6 @@ async function load() {
   renderHero();
   renderAccountPanel();
   renderPayoutPanel();
-  renderMediaKitPanel();
-  renderSharePanel();
   document.getElementById('tabsRow').style.display = '';
 
   if (creator.stripe_connect_payouts_enabled) loadBalance();
@@ -364,6 +358,13 @@ function renderHero() {
 // home, per the dashboard/profile rework blueprint. ──────────────────────
 function renderAccountPanel() {
   document.getElementById('panel-account').innerHTML = `
+    <div class="pf-card" style="background:var(--pf-line, #F6F8FB);border-color:transparent">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <span style="font-size:12.5px;color:var(--pf-ink-soft)">Looking to edit your bio, photos, past brands, press mentions, trust link, or badge?</span>
+        <a href="dashboard.html" style="font-size:12.5px;font-weight:600;color:var(--pf-blue);text-decoration:none;white-space:nowrap">Go to Dashboard →</a>
+      </div>
+    </div>
+
     <div class="pf-card">
       <h3>Profile details</h3>
       <p class="desc">This is how sponsors and Kitscore identify you — it doesn't appear on your public trust link.</p>

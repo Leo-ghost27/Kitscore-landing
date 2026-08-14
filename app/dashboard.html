@@ -869,10 +869,6 @@ function renderOverviewTab() {
         <span class="step-label">Get your next sponsor</span>
       </div>
     </div>
-
-    <!-- ── Sponsor interest -- staying here temporarily until the Link and
-         Share tab exists (blueprint step 6); moves there once built. ── -->
-    ${creatorInterestHtml()}
   `;
 }
 
@@ -1584,26 +1580,13 @@ async function selectCoverSpotlight(value) {
 
 function renderProfileTab() {
   return `
-    <!-- ── Cross-link — this tab is about sharing your links, not editing
-         your bio/photos/brand history. That lives on the "Profile" item
-         in the left sidebar (app/profile.html), a separate page from this
-         dashboard tab. Two different things were both labelled "Profile"
-         with no link between them, so this tab was renamed to "Sharing"
-         and this points to where the actual editing happens. ── -->
-    <div class="card" style="background:var(--color-background-secondary);border-color:var(--color-border-tertiary);padding:12px 16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-        <span style="font-size:12px;color:var(--color-text-secondary)">Looking to edit your bio, photos, past brands, or press mentions?</span>
-        <a href="profile.html" style="font-size:12px;font-weight:600;color:#2563EB;text-decoration:none;white-space:nowrap">Go to Profile →</a>
-      </div>
-    </div>
-
     <!-- ── Verified Media Kit — the pitch-ready media kit ── -->
     <div class="card" style="background:linear-gradient(135deg,#F5F3FF,#F9F8FF);border-color:#DCD6FA">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
         <div>
           <div style="font-size:13.5px;font-weight:600;color:var(--ink,#0F1B2E)">Your Verified Media Kit</div>
           <div id="evekit-link-text" style="font-family:var(--font-mono,monospace);font-size:11px;color:#5B4FCF;margin-top:3px;word-break:break-all">kitscore.co/media-kit/${creator.slug||''}</div>
-          <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Bio, rate card, platform stats, and verified highlights in one page — the asset you send to a brand cold. Free for every creator, PDF included.</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Bio, rate card, platform stats, and verified highlights in one page — the asset you send to a brand cold. Free for every creator, PDF included. Edit it on the <a href="javascript:switchTab('mediakit')" style="color:#5B4FCF;font-weight:600">Verified media kit tab →</a></div>
           ${creator.plan==='pro'
             ? `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">${creator.profile_views||0} view${creator.profile_views===1?'':'s'} so far</div>`
             : `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Free for everyone. Pro adds a view counter: <a href="pricing-creator.html" style="color:#5B4FCF">see who's opened it →</a></div>`}
@@ -1647,6 +1630,8 @@ function renderProfileTab() {
       <div id="badge-copy-msg" style="font-size:11px;margin-top:8px"></div>
     </div>
 
+    <!-- ── Sponsor interest — moved from Overview (docs/dashboard-rework-blueprint-v1.md): who's watchlisted you is a "how you're performing externally" signal, same category as the cards above, not an onboarding-flow card. ── -->
+    ${creatorInterestHtml()}
 
   `;
 }
