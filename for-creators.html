@@ -67,7 +67,7 @@
 
   /* ── Flip card ───────────────────────────────────────────────────────── */
   .hero-visual { perspective: 1600px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .flip-card { position: relative; width: 100%; max-width: 320px; height: 400px; cursor: pointer; transform-style: preserve-3d; }
+  .flip-card { position: relative; width: 100%; max-width: 320px; height: 460px; cursor: pointer; transform-style: preserve-3d; }
   .flip-card-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transform: rotateX(0) rotateY(0); }
   .flip-card-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: var(--shadow-md); display: flex; flex-direction: column; padding: 30px 26px; }
   .flip-card-front { background: #fff; border: 1px solid var(--border); color: var(--text); }
@@ -84,8 +84,8 @@
   .fc-badge-gold { display: inline-block; font-size: 11px; font-weight: 700; color: #8C6C3B; background: #FBF0DA; padding: 4px 10px; margin-top: 10px; }
   .fc-hint { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 20px; }
   .flip-card-back .fc-hint { color: #93A3BE; }
-  .fc-back-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; line-height: 1.25; margin-bottom: 22px; }
-  .fc-check-list { list-style: none; display: flex; flex-direction: column; gap: 16px; margin-bottom: auto; }
+  .fc-back-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; line-height: 1.25; margin-bottom: 14px; }
+  .fc-check-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: auto; }
   .fc-check-list li { display: flex; align-items: flex-start; gap: 10px; }
   .fc-check-box { width: 15px; height: 15px; border: 1.5px solid #4A6389; flex-shrink: 0; margin-top: 2px; }
   .fc-check-title { font-size: 13.5px; font-weight: 600; color: #fff; }
@@ -96,7 +96,7 @@
     .hero-sub { margin-left: auto; margin-right: auto; }
     .counter { margin-left: auto; margin-right: auto; }
     .counter-label, .counter-num { text-align: center; }
-    .flip-card { max-width: 280px; height: 360px; }
+    .flip-card { max-width: 280px; height: 420px; }
   }
 
   section { padding: 56px 0; }
@@ -106,7 +106,6 @@
   .value-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
   .value-card { background: var(--bg); padding: 22px 20px; border: 0.5px solid var(--border); box-shadow: var(--shadow-sm); transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
   .value-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-  .value-card:nth-child(-n+3), .value-card:nth-child(n+7):nth-child(-n+9), .value-card:nth-child(n+13):nth-child(-n+15) { background: var(--bg-alt); }
   .value-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--accent-dim); color: var(--accent); margin-bottom: 14px; font-size: 15px; font-weight: 700; font-family: var(--font-display); }
   .value-card h3 { font-size: 13.5px; font-weight: 700; margin-bottom: 6px; }
   .value-card p { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
@@ -219,7 +218,7 @@
                 <div class="fc-check-box"></div>
                 <div>
                   <div class="fc-check-title">Verified campaign history</div>
-                  <div class="fc-check-desc">Confirmed by both sides, not self-reported</div>
+                  <div class="fc-check-desc">Confirmed by both sides</div>
                 </div>
               </li>
               <li>
@@ -247,14 +246,14 @@
                 <div class="fc-check-box"></div>
                 <div>
                   <div class="fc-check-title">Contract clause scan</div>
-                  <div class="fc-check-desc">Flags one-sided terms and no-pay "ambassador" setups before you sign</div>
+                  <div class="fc-check-desc">Flags one-sided or no-pay "ambassador" terms</div>
                 </div>
               </li>
               <li>
                 <div class="fc-check-box"></div>
                 <div>
-                  <div class="fc-check-title">Payment held safely in Kitscore Escrow</div>
-                  <div class="fc-check-desc">Sponsors fund it upfront — released once you deliver</div>
+                  <div class="fc-check-title">Payment held in escrow</div>
+                  <div class="fc-check-desc">Released once you deliver</div>
                 </div>
               </li>
             </ul>
@@ -279,6 +278,7 @@
 
 <hr class="divider" />
 
+<div class="band-alt">
 <div class="container">
   <section>
     <div class="section-label" style="text-align:center">Why join</div>
@@ -363,8 +363,13 @@
       </div>
     </div>
   </section>
+</div>
+</div>
 
-  <section style="padding-top:0">
+<hr class="divider" />
+
+<div class="container">
+  <section>
     <div class="section-label" style="text-align:center">Getting started</div>
     <h2>Three steps to your Kitscore.</h2>
     <div class="steps">
@@ -382,14 +387,6 @@
         <div class="step-num">03</div>
         <h3>Get your score</h3>
         <p>Share your profile immediately, or leave it to be found — sponsors are browsing the directory now.</p>
-      </div>
-    </div>
-
-    <div class="example-card">
-      <div class="example-avatar">JE</div>
-      <div>
-        <div class="example-name">Jordan Ellis <span>· Founding Creator (example)</span></div>
-        <div class="example-meta">Fitness · Trust score 78 · 5 verified campaigns</div>
       </div>
     </div>
   </section>
