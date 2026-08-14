@@ -51,7 +51,18 @@ self.addEventListener('fetch', (event) => {
     fetch(event.request)
       .then((response) => {
         if (response && response.ok) {
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+          // Clone synchronously, right here, before any async gap. The
+          // previous version cloned response.clone() as an argument
+          // evaluated *inside* the caches.open().then() callback --
+          // meaning the clone only happened after that promise resolved,
+          // by which point `return response` below had already handed
+          // the original off to be consumed, sometimes locking the body
+          // before the clone ran. That's exactly what threw
+          // "Failed to execute 'clone' on 'Response': Response body is
+          // already used" -- a real, reproducible error seen throughout
+          // the Instagram OAuth debugging session, not a one-off.
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
         }
         return response;
       })
