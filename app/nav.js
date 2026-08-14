@@ -74,10 +74,12 @@ const NAV = {
 function renderSidebar(role, activeKey, displayName) {
   const mount = document.getElementById('sidebar-mount');
   if (!mount) return;
+  mount.classList.toggle('sidebar-creator', role === 'creator');
   const items = NAV[role] || [];
   const roleLabel = role === 'sponsor' ? 'Sponsor account' : role === 'admin' ? 'Admin account' : 'Creator account';
   const name = displayName || (typeof profile !== 'undefined' && profile ? profile.display_name : '') || '';
   const initial = name ? name.trim().charAt(0).toUpperCase() : (role === 'sponsor' ? 'S' : role === 'admin' ? 'A' : 'C');
+  const logoTextColor = role === 'creator' ? '#EAF0FF' : '#10151F';
 
   mount.innerHTML = `
     <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:8px;text-decoration:none;writing-mode:horizontal-tb;transform:none">
@@ -88,7 +90,7 @@ function renderSidebar(role, activeKey, displayName) {
         <circle cx="23.5" cy="4.5" r="3.5" fill="#2563EB" stroke="#fff" stroke-width="1"/>
         <path d="M21.8 4.5l1.2 1.2L25.1 3.3" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <span style="font-size:16px;font-weight:700;letter-spacing:-0.01em;color:#10151F">Kit<span style="color:#2563EB">score</span></span>
+      <span style="font-size:16px;font-weight:700;letter-spacing:-0.01em;color:${logoTextColor}">Kit<span style="color:#2563EB">score</span></span>
     </a>
     <div class="nav-account">
       <div class="nav-account-avatar">${initial}</div>
@@ -98,6 +100,7 @@ function renderSidebar(role, activeKey, displayName) {
       </div>
     </div>
     <nav class="sb-nav">
+      ${role === 'creator' ? '<div class="sb-section">Workspace</div>' : ''}
       ${items.map(i => `<a class="sb-item ${i.key === activeKey ? 'active' : ''}" href="${i.href}" data-nav-key="${i.key}">${navIcon(i.icon)}${i.label}<span class="sb-badge" data-badge-for="${i.key}" style="display:none"></span></a>`).join('')}
     </nav>
     <div class="sb-signout-row">
@@ -114,17 +117,24 @@ function renderSidebar(role, activeKey, displayName) {
 }
 
 // Attention-needed counts on the sidebar, so an admin sees something needs
-// looking at before they click into the page. Scoped to Escrow Oversight
-// for now -- "needs attention" here means the exact same thing
-// admin-escrow.html's own Stuck filter and dispute banner already mean
-// (STUCK_DAYS mirrors that page's constant and cron-escrow-stuck-nudge.js's),
-// just surfaced one level up so it's visible platform-wide, not only after
-// you've already opened the page. Runs after the sidebar's initial render
-// so it never blocks/delays the nav showing up -- badge just pops in a
-// moment later.
-const STUCK_DAYS = 5;
+// looking at before they click into the page. "Needs attention" per tab
+// means the same thing that tab's own page already treats as open/urgent
+// -- this just surfaces it one level up so it's visible platform-wide,
+// not only after you've already opened the page. Runs after the
+// sidebar's initial render so it never blocks/delays the nav showing up
+// -- badges just pop in a moment later, one query per tab, in parallel.
+const NAV_STUCK_DAYS = 5;
 
 async function attachAdminBadges() {
+  await Promise.all([
+    badgeEscrow(),
+    badgeDisputes(),
+    badgeContracts(),
+    badgeSupport(),
+  ]);
+}
+
+async function badgeEscrow() {
   try {
     const { data: contracts } = await sb.from('contracts')
       .select('escrow_status, disputed_at, admin_resolved_at, deliverable_submitted_at')
@@ -134,7 +144,7 @@ async function attachAdminBadges() {
     const needsAttention = contracts.filter(c => {
       const openDispute = c.disputed_at && !c.admin_resolved_at;
       const stuck = c.deliverable_submitted_at
-        && (Date.now() - new Date(c.deliverable_submitted_at).getTime()) / 86400000 >= STUCK_DAYS;
+        && (Date.now() - new Date(c.deliverable_submitted_at).getTime()) / 86400000 >= NAV_STUCK_DAYS;
       return openDispute || stuck;
     }).length;
 
@@ -142,7 +152,52 @@ async function attachAdminBadges() {
   } catch (err) {
     // Badge is a nice-to-have on top of the page itself, which shows the
     // real numbers regardless -- fail silently rather than block the nav.
-    console.error('admin badge fetch error:', err);
+    console.error('admin badge fetch error (escrow):', err);
+  }
+}
+
+// Same two queries admin-disputes.html itself runs (open campaigns.status
+// = 'disputed', and pending_review sponsor_reports) -- summed into one
+// badge since that page renders both queues in one view.
+async function badgeDisputes() {
+  try {
+    const [{ count: campaignCount }, { count: reportCount }] = await Promise.all([
+      sb.from('campaigns').select('id', { count: 'exact', head: true }).eq('status', 'disputed'),
+      sb.from('sponsor_reports').select('id', { count: 'exact', head: true }).eq('review_status', 'pending_review'),
+    ]);
+    setBadge('admin-disputes', (campaignCount || 0) + (reportCount || 0));
+  } catch (err) {
+    console.error('admin badge fetch error (disputes):', err);
+  }
+}
+
+// Mirrors admin-contracts.html's own isFlagged (disputed_at set, not yet
+// admin-resolved) OR isLegalRisk (clause scan flagged) -- a contract can
+// match both, so this pulls the rows once and counts distinct ids rather
+// than summing two separate counts.
+async function badgeContracts() {
+  try {
+    const { data: contracts } = await sb.from('contracts')
+      .select('id, disputed_at, admin_resolved_at, clause_scan_flagged');
+    if (!contracts) return;
+
+    const needsAttention = contracts.filter(c =>
+      (c.disputed_at && !c.admin_resolved_at) || c.clause_scan_flagged === true
+    ).length;
+
+    setBadge('admin-contracts', needsAttention);
+  } catch (err) {
+    console.error('admin badge fetch error (contracts):', err);
+  }
+}
+
+// Matches admin-support.html's own default "Open" tab filter.
+async function badgeSupport() {
+  try {
+    const { count } = await sb.from('support_tickets').select('id', { count: 'exact', head: true }).eq('status', 'open');
+    setBadge('admin-support', count || 0);
+  } catch (err) {
+    console.error('admin badge fetch error (support):', err);
   }
 }
 

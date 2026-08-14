@@ -7,172 +7,630 @@
 <title>Profile — Kitscore</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
 <style>
-  .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
-  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:16px;max-width:420px}
-  .field{margin-bottom:12px}
-  .field label{display:block;font-size:11px;font-weight:600;color:var(--color-text-secondary);margin-bottom:4px}
-  .field input{width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px}
-  .psec{margin:26px 0 14px;padding-top:18px;border-top:1px solid var(--color-border-tertiary)}
-  .psec:first-of-type{margin-top:22px;padding-top:0;border-top:none}
-  .psec-title{font-size:13px;font-weight:600;color:var(--color-text-primary)}
-  .psec-sub{font-size:11px;color:var(--color-text-tertiary);margin-top:2px;line-height:1.5}
-  .prow2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media(max-width:520px){.prow2{grid-template-columns:1fr}}
-  .padd summary{cursor:pointer;font-size:12.5px;font-weight:600;color:#2563EB;list-style:none;padding:6px 0;user-select:none}
-  .padd summary::-webkit-details-marker{display:none}
-  .padd summary::before{content:'+ ';font-weight:700}
-  .padd[open] summary::before{content:'– '}
-  .padd[open] summary{margin-bottom:8px}
-  .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:0;font-size:12px;font-weight:500;cursor:pointer}
-  .cta:disabled{opacity:.6}
-  .msg{font-size:11px;margin-top:10px;padding:8px;border-radius:0}
-  .msg.error{background:#FDECEC;color:#B42318}
-  .msg.ok{background:#E9F7EE;color:#1C7C3F}
-  .loading{font-size:12px;color:var(--color-text-secondary)}
-  .profile-layout{display:grid;grid-template-columns:1fr 250px;gap:16px;align-items:start}
-  .card{max-width:none}
-  .side-panel{padding:18px}
-  .side-panel-title{font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:10px}
-  .strength-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:0.5px solid var(--color-border-tertiary);font-size:12px;color:var(--color-text-secondary)}
-  .strength-item:first-child{border-top:none}
-  .strength-dot{width:8px;height:8px;background:var(--color-border-tertiary);flex-shrink:0}
-  .strength-dot.on{background:#2563EB}
-  .side-panel-note{display:flex;gap:10px;margin-top:14px}
-  .side-panel-note svg{flex-shrink:0;margin-top:1px}
-  .side-panel-note p{font-size:11.5px;color:var(--color-text-secondary);line-height:1.55;margin:0}
-  @media(max-width:700px){ .profile-layout{grid-template-columns:1fr} }
-  .avatar-wrap{position:relative;width:64px;height:64px;flex-shrink:0}
-  .avatar-img{width:64px;height:64px;border-radius:50%;object-fit:cover;display:block;border:0.5px solid var(--color-border-tertiary)}
-  .avatar-placeholder{width:64px;height:64px;border-radius:50%;background:#2563EB;color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center}
-  .avatar-edit-btn{position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:#1A1A18;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff;font-size:11px}
-  .avatar-edit-btn input{display:none}
-  .gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
-  .gallery-slot{aspect-ratio:1;border-radius:8px;overflow:hidden;position:relative;background:#F9F8F5;border:1px dashed var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;cursor:pointer}
-  .gallery-slot img{width:100%;height:100%;object-fit:cover;display:block}
-  .gallery-slot .add{font-size:22px;color:var(--color-text-tertiary)}
-  .gallery-slot .remove{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer}
-  .gallery-slot input{display:none}
-  .upload-hint{font-size:10.5px;color:var(--color-text-tertiary);margin-top:6px}
-  .ptabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--color-border-tertiary)}
-  .ptab-btn{background:none;border:none;padding:10px 4px;margin-right:20px;font-size:12.5px;font-weight:500;color:var(--color-text-tertiary);cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
-  .ptab-btn.active{color:#2563EB;border-bottom-color:#2563EB;font-weight:600}
-  .ptab-panel{display:none}
-  .ptab-panel.active{display:block}
+  :root{
+    --pf-blue:#2755F0; --pf-blue-deep:#0B2A6B; --pf-navy:#0A1530; --pf-teal:#17B8A6;
+    --pf-ink:#0B1220; --pf-ink-soft:#5B6472; --pf-ink-faint:#9AA3B2; --pf-line:#E6E9F0;
+    --pf-radius:16px; --pf-shadow:0 1px 2px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.06);
+  }
+  .app-main{max-width:1040px}
+  .pf h1,.pf h2,.pf h3,.pf .display{font-family:'Fraunces',serif;font-weight:600;letter-spacing:-0.01em}
+  .pf{font-family:'Space Grotesk',sans-serif;color:var(--pf-ink)}
+  .pf .eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--pf-ink-faint)}
+  .pf-topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;gap:16px;flex-wrap:wrap}
+  .pf-topbar h1{font-size:23px;margin:0 0 4px}
+  .pf-topbar p{margin:0;color:var(--pf-ink-soft);font-size:13.5px}
+  .pf-top-actions{display:flex;gap:8px;flex-shrink:0}
+  .pf-btn{border:1px solid var(--pf-line);background:#fff;color:var(--pf-ink);padding:9px 14px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;text-decoration:none;cursor:pointer;font-family:inherit}
+  .pf-btn:hover{border-color:#C9D3E6;box-shadow:0 4px 12px rgba(11,18,32,0.06)}
+  .pf-btn-primary{background:linear-gradient(135deg,var(--pf-blue),#3E63F5);border-color:transparent;color:#fff;box-shadow:0 6px 18px rgba(39,85,240,0.28)}
+
+  .pf-hero{background:linear-gradient(135deg,var(--pf-blue-deep) 0%,#142B63 55%,#0E3350 100%);border-radius:20px;padding:28px 30px;display:grid;grid-template-columns:auto 1fr auto;gap:28px;align-items:center;color:#fff;position:relative;overflow:hidden;box-shadow:0 20px 50px -18px rgba(11,42,107,0.55);margin-bottom:22px}
+  .pf-hero::after{content:"";position:absolute;inset:0;background:radial-gradient(600px 240px at 85% -10%, rgba(23,184,166,0.25), transparent 60%);pointer-events:none}
+  .pf-avatar-wrap{position:relative;width:82px;height:82px;flex-shrink:0}
+  .pf-avatar{width:82px;height:82px;border-radius:50%;background:linear-gradient(135deg,#3E63F5,#17B8A6);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:28px;font-weight:600;color:#fff;border:3px solid rgba(255,255,255,0.25);overflow:hidden}
+  .pf-avatar img{width:100%;height:100%;object-fit:cover}
+  .pf-avatar-edit{position:absolute;bottom:-2px;right:-2px;width:26px;height:26px;border-radius:50%;background:#0B1220;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff;font-size:11px}
+  .pf-avatar-edit input{display:none}
+  .pf-name-row{display:flex;align-items:center;gap:9px;margin-bottom:3px;flex-wrap:wrap}
+  .pf-name-row h2{font-size:21px;margin:0;color:#fff}
+  .pf-badge-founding{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#3C2E0A;background:linear-gradient(180deg,#FFE8A3,#F0B429);padding:4px 10px 4px 6px;border-radius:100px}
+  .pf-handle{color:#AFC0E6;font-size:13px;margin-bottom:12px}
+  .pf-platform-row{display:flex;gap:7px;flex-wrap:wrap}
+  .pf-plat-chip{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);padding:5px 10px;border-radius:100px;font-size:12px;color:#EAF0FF;font-weight:500}
+  .pf-plat-chip svg{width:12px;height:12px}
+
+  .pf-score-card{text-align:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);border-radius:16px;padding:16px 22px}
+  .pf-ring-wrap{position:relative;width:98px;height:98px;margin:0 auto 6px}
+  .pf-ring-wrap svg{transform:rotate(-90deg)}
+  .pf-ring-bg{fill:none;stroke:rgba(255,255,255,0.12);stroke-width:8}
+  .pf-ring-fg{fill:none;stroke-width:8;stroke-linecap:round;stroke:url(#pfRingGrad);transition:stroke-dashoffset 1s ease}
+  .pf-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .pf-ring-center .num{font-family:'Fraunces',serif;font-size:27px;font-weight:700;line-height:1;color:#fff}
+  .pf-ring-center .out{font-size:10px;color:#9FB0D6;margin-top:1px}
+  .pf-score-label{font-size:11.5px;color:#AFC0E6;font-weight:600}
+
+  .pf-tabs{display:flex;gap:6px;border-bottom:1px solid var(--pf-line);margin-bottom:22px;flex-wrap:wrap}
+  .pf-tab{padding:11px 4px;margin-right:20px;font-size:13.5px;font-weight:600;color:var(--pf-ink-faint);border:none;background:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
+  .pf-tab:hover{color:var(--pf-ink)}
+  .pf-tab.active{color:var(--pf-blue-deep);border-bottom-color:var(--pf-blue)}
+  .pf-tab .pct{font-size:10.5px;background:#F6F8FB;border:1px solid var(--pf-line);padding:1px 6px;border-radius:100px;color:var(--pf-ink-soft);font-weight:600}
+  .pf-tab.active .pct{background:rgba(39,85,240,0.1);border-color:transparent;color:var(--pf-blue)}
+  .pf-panel{display:none}
+  .pf-panel.active{display:block}
+
+  .pf-grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+  @media(max-width:820px){.pf-grid-2{grid-template-columns:1fr}}
+  .pf-card{background:#fff;border:1px solid var(--pf-line);border-radius:var(--pf-radius);padding:22px 24px;box-shadow:var(--pf-shadow);margin-bottom:18px}
+  .pf-card h3{font-size:15px;margin:0 0 4px}
+  .pf-card .desc{color:var(--pf-ink-soft);font-size:12.5px;margin:0 0 16px}
+
+  .pf-check-item{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--pf-line)}
+  .pf-check-item:last-child{border-bottom:none}
+  .pf-check-icon{width:28px;height:28px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .pf-check-icon.done{background:rgba(23,184,166,0.12);color:var(--pf-teal)}
+  .pf-check-icon.todo{background:#F6F8FB;color:var(--pf-ink-faint);border:1px solid var(--pf-line)}
+  .pf-check-icon svg{width:14px;height:14px}
+  .pf-check-body{flex:1;min-width:0}
+  .pf-check-body .t{font-size:13.5px;font-weight:600}
+  .pf-check-body .s{font-size:12px;color:var(--pf-ink-soft)}
+  .pf-check-cta{font-size:12px;font-weight:600;color:var(--pf-blue);white-space:nowrap;text-decoration:none}
+  .pf-check-cta.done{color:var(--pf-teal)}
+  .pf-progress-track{height:7px;border-radius:100px;background:#F6F8FB;border:1px solid var(--pf-line);overflow:hidden;margin:12px 0 6px}
+  .pf-progress-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--pf-blue),var(--pf-teal))}
+
+  .pf-field{margin-bottom:14px}
+  .pf-field label{display:block;font-size:11.5px;font-weight:600;color:var(--pf-ink);margin-bottom:5px}
+  .pf-field label .opt{font-weight:400;color:var(--pf-ink-faint)}
+  .pf-field input,.pf-field select,.pf-field textarea{font-family:inherit;font-size:13px;padding:10px 12px;border:1px solid var(--pf-line);border-radius:10px;background:#fff;color:var(--pf-ink);width:100%}
+  .pf-field input:focus,.pf-field select:focus,.pf-field textarea:focus{outline:none;border-color:var(--pf-blue);box-shadow:0 0 0 3px rgba(39,85,240,0.12)}
+  .pf-field textarea{resize:vertical;min-height:76px;line-height:1.5}
+  .pf-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:520px){.pf-form-grid{grid-template-columns:1fr}}
+  .pf-char-count{font-size:11px;color:var(--pf-ink-faint);text-align:right;margin-top:-8px;margin-bottom:10px}
+
+  .pf-platform-grid{display:flex;flex-direction:column;gap:10px}
+  .pf-plat-row{display:flex;align-items:center;gap:12px;padding:13px;border:1px solid var(--pf-line);border-radius:12px}
+  .pf-plat-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+  .pf-plat-ico svg{width:17px;height:17px}
+  .pf-plat-info{flex:1;min-width:0}
+  .pf-plat-info .n{font-size:13px;font-weight:600}
+  .pf-plat-info .m{font-size:11.5px;color:var(--pf-ink-soft)}
+  .pf-plat-status{font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:100px;white-space:nowrap}
+  .pf-plat-status.connected{background:rgba(23,184,166,0.12);color:#0F9C8C}
+
+  .pf-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+  @media(max-width:600px){.pf-stat-row{grid-template-columns:1fr}}
+  .pf-stat{background:#fff;border:1px solid var(--pf-line);border-radius:14px;padding:16px 18px;box-shadow:var(--pf-shadow)}
+  .pf-stat .val{font-family:'Fraunces',serif;font-size:23px;font-weight:600}
+  .pf-stripe-card{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#0B1220,#1B2542);border-radius:14px;padding:16px 20px;color:#fff;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+  .pf-stripe-left{display:flex;align-items:center;gap:12px}
+  .pf-stripe-mark{width:32px;height:32px;border-radius:9px;background:#635BFF;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Fraunces',serif;flex-shrink:0}
+  .pf-stripe-badge{background:rgba(23,184,166,0.18);color:#7EEAD9;border:1px solid rgba(23,184,166,0.4);font-size:11px;font-weight:600;padding:4px 9px;border-radius:100px;white-space:nowrap}
+  .pf-earn-spark{background:#F6F8FB;border:1px solid var(--pf-line);border-radius:14px;padding:14px 16px 10px;margin:4px 0 16px}
+  .pf-earn-spark-head{font-size:11.5px;color:var(--pf-ink-soft);font-weight:600;margin-bottom:12px}
+  .pf-spark-bars{display:flex;align-items:flex-end;gap:10px;height:60px}
+  .pf-spark-bar{flex:1;background:linear-gradient(180deg,#C7D4F5,#DCE4F7);border-radius:5px 5px 2px 2px;position:relative;min-height:4px;display:flex;align-items:flex-end;justify-content:center}
+  .pf-spark-bar.highlight{background:linear-gradient(180deg,var(--pf-blue),#3E63F5)}
+  .pf-spark-bar span{position:absolute;bottom:-18px;font-size:10px;color:var(--pf-ink-faint);font-weight:600;white-space:nowrap}
+  .pf-mk-hero{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#F0F4FF,#EAF9F6);border:1px solid var(--pf-line);border-radius:16px;padding:20px 24px;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+  .pf-mk-hero .t{font-size:15px;font-weight:600;font-family:'Fraunces',serif}
+  .pf-mk-hero .s{font-size:12.5px;color:var(--pf-ink-soft);margin-top:3px}
+  .pf-mk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+  @media(max-width:700px){.pf-mk-grid{grid-template-columns:repeat(2,1fr)}}
+  .pf-mk-stat{background:#fff;border:1px solid var(--pf-line);border-radius:14px;padding:14px 16px;box-shadow:var(--pf-shadow)}
+  .pf-mk-stat .val{font-family:'Fraunces',serif;font-size:20px;font-weight:600}
+  .pf-mk-stat .lab{font-size:11.5px;color:var(--pf-ink-soft);margin-top:2px}
+  table.pf-payout-table{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.pf-payout-table th{text-align:left;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--pf-ink-faint);padding:0 8px 8px;font-weight:600}
+  table.pf-payout-table td{padding:11px 8px;border-top:1px solid var(--pf-line)}
+  .pf-pay-status{font-size:11px;font-weight:600;padding:3px 8px;border-radius:100px;white-space:nowrap}
+  .pf-pay-status.paid{background:rgba(23,184,166,0.12);color:#0F9C8C}
+  .pf-pay-status.escrow{background:rgba(39,85,240,0.1);color:var(--pf-blue)}
+
+  .pf-breakdown-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--pf-line)}
+  .pf-breakdown-row:last-child{border-bottom:none}
+  .pf-breakdown-row .lab{width:150px;font-size:12.5px;font-weight:600;flex-shrink:0}
+  .pf-bd-track{flex:1;height:6px;background:#F6F8FB;border-radius:100px;overflow:hidden;border:1px solid var(--pf-line)}
+  .pf-bd-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--pf-blue),var(--pf-teal))}
+  .pf-breakdown-row .sc{width:30px;text-align:right;font-size:12.5px;font-weight:700;color:var(--pf-blue-deep)}
+
+  .pf-gallery-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media(max-width:480px){.pf-gallery-grid{grid-template-columns:repeat(2,1fr)}}
+  .pf-gallery-slot{aspect-ratio:1;border-radius:10px;border:1.5px dashed var(--pf-line);display:flex;align-items:center;justify-content:center;color:var(--pf-ink-faint);position:relative;overflow:hidden;background:#F6F8FB;font-size:20px;cursor:pointer}
+  .pf-gallery-slot.filled{border-style:solid;padding:0}
+  .pf-gallery-slot img{width:100%;height:100%;object-fit:cover;display:block}
+  .pf-gallery-slot input{display:none}
+  .pf-gallery-remove{position:absolute;top:5px;right:5px;width:18px;height:18px;border-radius:50%;background:rgba(11,18,32,0.65);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer}
+
+  .pf-pill-group{display:flex;flex-wrap:wrap;gap:7px}
+  .pf-pill-opt{padding:7px 14px;border-radius:9px;border:1px solid var(--pf-line);font-size:12px;font-weight:600;color:var(--pf-ink-soft);background:#fff;cursor:pointer;font-family:inherit}
+  .pf-pill-opt.selected{background:linear-gradient(135deg,var(--pf-blue),#3E63F5);color:#fff;border-color:transparent}
+  .pf-tag-pill{padding:6px 13px;border-radius:100px;border:1px solid var(--pf-line);font-size:11.5px;font-weight:600;color:var(--pf-ink-soft);background:#fff;cursor:pointer;font-family:inherit}
+  .pf-tag-pill.selected{background:linear-gradient(135deg,var(--pf-blue),#3E63F5);color:#fff;border-color:transparent}
+  .pf-tag-pill:disabled{opacity:.4;cursor:default}
+  .pf-tag-counter{font-size:11px;color:var(--pf-ink-faint);margin-top:8px}
+  .pf-two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  @media(max-width:700px){.pf-two-col{grid-template-columns:1fr}}
+  .pf-section-sub{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--pf-ink-faint);margin:22px 0 10px}
+  .pf-section-sub:first-child{margin-top:0}
+
+  .pf-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 6px 6px 6px;border:1px solid var(--pf-line);border-radius:10px;font-size:12.5px;font-weight:600;margin:0 7px 7px 0;background:#fff}
+  .pf-chip-avatar{width:22px;height:22px;border-radius:6px;background:#F6F8FB;color:var(--pf-ink-soft);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;object-fit:contain}
+  .pf-chip-x{color:var(--pf-ink-faint);font-size:13px;line-height:1;padding:0 4px 0 1px;cursor:pointer}
+  .pf-chip.simple{padding:7px 11px;background:#F6F8FB}
+  .pf-press-item{border:1px solid var(--pf-line);border-radius:11px;padding:11px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .pf-press-item .t{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pf-press-item .s{font-size:11px;color:var(--pf-ink-faint)}
+  .pf-add-input-row{display:flex;gap:8px;margin-top:9px}
+  .pf-add-input-row input{flex:1;font-size:12.5px;padding:9px 12px;border:1px solid var(--pf-line);border-radius:9px;font-family:inherit}
+  .pf-btn-add{padding:9px 16px;border-radius:9px;background:var(--pf-blue-deep);color:#fff;border:none;font-size:12.5px;font-weight:600;white-space:nowrap;cursor:pointer;font-family:inherit}
+  .pf-empty{font-size:12px;color:var(--pf-ink-faint)}
+
+  .pf-padd summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--pf-blue);list-style:none;padding:6px 0;user-select:none}
+  .pf-padd summary::-webkit-details-marker{display:none}
+  .pf-padd summary::before{content:'+ ';font-weight:700}
+  .pf-padd[open] summary::before{content:'– '}
+  .pf-padd[open] summary{margin-bottom:8px}
+
+  .pf-save-row{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid var(--pf-line)}
+  .pf-save-hint{font-size:11.5px;color:var(--pf-ink-faint);margin-right:auto}
+  .pf-btn-save{background:linear-gradient(135deg,var(--pf-blue),#3E63F5);color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:600;font-size:13px;box-shadow:0 6px 18px rgba(39,85,240,0.28);cursor:pointer;font-family:inherit}
+  .pf-btn-save:disabled{opacity:.6}
+
+  .pf-msg{font-size:11.5px;margin-top:8px}
+  .pf-status-banner{display:flex;align-items:center;gap:8px;padding:12px 15px;border-radius:11px;font-size:13px;font-weight:600;margin:14px 0}
+  .pf-status-banner svg{width:15px;height:15px;flex-shrink:0}
+  .pf-status-banner.ready{background:rgba(23,184,166,0.12);color:#0F9C8C;border:1px solid rgba(23,184,166,0.28)}
+  .pf-status-banner.pending{background:#FFF7E6;color:#8A5B0A;border:1px solid #F0DDA8}
+
+  .pf-link-box{display:flex;align-items:center;gap:10px;background:#F6F8FB;border:1px solid var(--pf-line);border-radius:12px;padding:11px 13px;margin-bottom:14px;flex-wrap:wrap}
+  .pf-link-box .url{flex:1;font-size:12.5px;color:var(--pf-ink-soft);font-family:monospace;min-width:180px}
+  .pf-link-box .url b{color:var(--pf-ink);font-family:'Space Grotesk',sans-serif}
+  .pf-copy-btn{font-size:12px;font-weight:600;color:#fff;background:var(--pf-blue-deep);padding:8px 13px;border-radius:8px;border:none;cursor:pointer;font-family:inherit}
+  .pf-embed-box{background:#0B1220;border-radius:12px;padding:14px 16px;color:#8CE0D4;font-family:monospace;font-size:11.5px;line-height:1.7;overflow-x:auto}
+  .pf-embed-box .tag{color:#7FA0FF}
+  .pf-embed-box .attr{color:#5FD6C4}
+  .pf-embed-box .str{color:#8CE0D4}
+  .pf-qr-card{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+  .pf-qr-box{width:140px;height:140px;border-radius:14px;overflow:hidden;background:#0B1220;display:flex;align-items:center;justify-content:center}
+  .pf-qr-box img{width:100%;height:100%;display:block}
+
+  .pf-pro-card{border:1px solid rgba(39,85,240,0.22);background:linear-gradient(180deg,#F5F8FF,#FFFFFF)}
+  .pf-pro-badge{display:inline-flex;align-items:center;background:linear-gradient(135deg,var(--pf-blue-deep),var(--pf-blue));color:#fff;font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:100px;margin-left:8px}
+  .pf-locked-wrap{position:relative}
+  .pf-locked-content{filter:blur(6px);opacity:.55;pointer-events:none;user-select:none}
+  .pf-lock-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:5px;padding:16px}
+  .pf-lock-icon{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--pf-blue-deep),var(--pf-blue));color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+  .pf-lock-icon svg{width:17px;height:17px}
+  .pf-lock-title{font-family:'Fraunces',serif;font-size:16px;font-weight:600}
+  .pf-lock-sub{font-size:12.5px;color:var(--pf-ink-soft);max-width:300px;line-height:1.5;margin-bottom:4px}
+  .pf-btn-upgrade{background:linear-gradient(135deg,var(--pf-blue),#3E63F5);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
+
+  @media (max-width:900px){
+    .pf-hero{grid-template-columns:1fr;text-align:center}
+    .pf-platform-row{justify-content:center}
+  }
 </style>
 </head>
 <body>
-<div class="app-shell">
+<div class="app-shell pf">
   <div class="sidebar" id="sidebar-mount"></div>
   <div class="app-main">
-    <div class="ptitle">Profile</div>
-    <div class="profile-layout">
-      <div class="card" id="formWrap"><div class="loading">Loading…</div></div>
-      <div class="card side-panel" id="strengthPanel"></div>
+
+    <div class="pf-topbar">
+      <div>
+        <div class="eyebrow" style="margin-bottom:5px">Creator Profile</div>
+        <h1>Your public presence, verified.</h1>
+        <p>This is what sponsors see when they evaluate you on Kitscore.</p>
+      </div>
+      <div class="pf-top-actions">
+        <a class="pf-btn" id="previewLink" href="#" target="_blank"><i class="ti ti-eye"></i>Preview public view</a>
+        <button class="pf-btn pf-btn-primary" onclick="copyProfileLink()"><i class="ti ti-share"></i>Share profile</button>
+      </div>
     </div>
+
+    <section class="pf-hero" id="heroSection">
+      <div class="pf-empty" style="color:#AFC0E6">Loading…</div>
+    </section>
+
+    <div class="pf-tabs" id="tabsRow" style="display:none">
+      <button class="pf-tab active" data-tab="account" onclick="switchProfileTab('account')">Account Setup <span class="pct" id="acctPct"></span></button>
+      <button class="pf-tab" data-tab="payout" onclick="switchProfileTab('payout')">Payout</button>
+      <button class="pf-tab" data-tab="mediakit" onclick="switchProfileTab('mediakit')">Verified Media Kit</button>
+      <button class="pf-tab" data-tab="share" onclick="switchProfileTab('share')">Link &amp; Share</button>
+    </div>
+
+    <div class="pf-panel active" id="panel-account"></div>
+    <div class="pf-panel" id="panel-payout"></div>
+    <div class="pf-panel" id="panel-mediakit"></div>
+    <div class="pf-panel" id="panel-share"></div>
+
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
 <script src="icons.js?v=1"></script>
-<script src="nav.js?v=2"></script>
+<script src="nav.js?v=3"></script>
 <script>
-let profile, creator, collaborations = [], pressMentions = [];
+let profile, creator, collaborations = [], pressMentions = [], scoreComponents = [], platforms = [], payoutHistory = [];
+
+const PLATFORM_META = {
+  youtube: { label: 'YouTube', color: '#FF3B30', icon: '<path d="M22 8.4a2.9 2.9 0 0 0-2-2C18.2 6 12 6 12 6s-6.2 0-8 .4a2.9 2.9 0 0 0-2 2A31 31 0 0 0 1.6 12 31 31 0 0 0 2 15.6a2.9 2.9 0 0 0 2 2c1.8.4 8 .4 8 .4s6.2 0 8-.4a2.9 2.9 0 0 0 2-2A31 31 0 0 0 22.4 12 31 31 0 0 0 22 8.4zM9.8 15V9l5.4 3z"/>' },
+  tiktok: { label: 'TikTok', color: '#111827', icon: '<path d="M16.5 2h-3v14a2.7 2.7 0 1 1-2.7-2.7c.3 0 .5 0 .8.1V10a6 6 0 1 0 5 5.9V8.9a7.5 7.5 0 0 0 4.4 1.4V7.2A4.7 4.7 0 0 1 16.5 2z"/>' },
+  instagram: { label: 'Instagram', color: '#E1306C', icon: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/>' },
+  twitch: { label: 'Twitch', color: '#8B5CF6', icon: '<path d="M4 4h6v6.4a5.6 5.6 0 1 1-2-4.4V4H4zm10 0h6v6a6 6 0 0 1-6-6z"/>' },
+  discord: { label: 'Discord', color: '#5865F2', icon: '<path d="M8 12a1.3 1.3 0 1 1 0-2.6A1.3 1.3 0 0 1 8 12zm8 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6zM6 5l-2 3v9l3 2 1-2h8l1 2 3-2V8l-2-3-4-1-1 2h-2L9 4z"/>' },
+};
+
+function platformIcon(key) {
+  const m = PLATFORM_META[key];
+  return `<svg viewBox="0 0 24 24" fill="currentColor">${m ? m.icon : ''}</svg>`;
+}
+
+function platformFollowerCount(p) {
+  return p.subscriber_count || p.follower_count || 0;
+}
+
+function fmtCount(n) {
+  n = Number(n) || 0;
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return String(n);
+}
 
 async function load() {
   profile = await requireRole('creator');
   if (!profile) return;
   renderSidebar('creator', 'profile');
 
-  const [{ data: c }, { data: email }, { data: collabs }, { data: press }] = await Promise.all([
-    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images, available_for, causes, profile_views, stripe_connect_account_id, stripe_connect_charges_enabled, stripe_connect_payouts_enabled, stripe_connect_details_submitted, cover_pattern, cover_tags, cover_spotlight_stat, avatar_shape').eq('id', profile.id).single(),
+  const [{ data: c }, { data: email }, { data: collabs }, { data: press }, { data: comps }, { data: plats }, { data: contracts }] = await Promise.all([
+    sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images, available_for, causes, profile_views, stripe_connect_account_id, stripe_connect_charges_enabled, stripe_connect_payouts_enabled, stripe_connect_details_submitted, cover_pattern, cover_tags, cover_spotlight_stat, avatar_shape, trust_score, confidence').eq('id', profile.id).single(),
     sb.rpc('fn_get_my_business_email'),
     sb.from('creator_collaborations').select('id, brand_name, logo_url, link').eq('creator_id', profile.id).order('display_order').order('created_at'),
     sb.from('creator_press_mentions').select('id, title, outlet_name, url, mention_date').eq('creator_id', profile.id).order('display_order').order('created_at'),
+    sb.from('score_components').select('component_key, label, value, status').eq('creator_id', profile.id).order('value', { ascending: false }),
+    sb.from('platform_connections').select('platform, platform_handle, follower_count, subscriber_count, last_synced_at').eq('creator_id', profile.id),
+    sb.from('contracts').select('id, title, escrow_status, escrow_amount_cents, escrow_released_cents, funded_at, released_at, sponsors(company_name)').eq('creator_id', profile.id).not('escrow_status', 'is', null).order('funded_at', { ascending: false }),
   ]);
   creator = { ...c, business_email: email };
   collaborations = collabs || [];
   pressMentions = press || [];
+  scoreComponents = comps || [];
+  platforms = plats || [];
+  payoutHistory = contracts || [];
 
+  document.getElementById('previewLink').href = creator.slug ? `/p/${creator.slug}` : '#';
+
+  renderHero();
+  renderAccountPanel();
+  renderPayoutPanel();
+  renderMediaKitPanel();
+  renderSharePanel();
+  document.getElementById('tabsRow').style.display = '';
+
+  if (creator.stripe_connect_payouts_enabled) loadBalance();
+}
+
+// ── Hero: avatar, name, platform chips, trust score ring ──────────────────
+function renderHero() {
+  const el = document.getElementById('heroSection');
   const initial = (profile.display_name || '?').trim().charAt(0).toUpperCase();
-  document.getElementById('formWrap').innerHTML = `
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
-      <div class="avatar-wrap">
-        ${creator.avatar_url
-          ? `<img class="avatar-img" id="avatarImg" src="${escapeHtml(creator.avatar_url)}">`
-          : `<div class="avatar-placeholder" id="avatarImg">${escapeHtml(initial)}</div>`}
-        <label class="avatar-edit-btn" title="Change photo">
-          <i class="ti ti-camera"></i>
-          <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp" onchange="uploadAvatar(event)">
-        </label>
+  const score = Math.round(creator.trust_score) || 0;
+  const circumference = 2 * Math.PI * 44;
+  const offset = circumference - (score / 100) * circumference;
+
+  el.innerHTML = `
+    <div class="pf-avatar-wrap">
+      <div class="pf-avatar" id="pfAvatarImg">${creator.avatar_url ? `<img src="${escapeHtml(creator.avatar_url)}">` : escapeHtml(initial)}</div>
+      <label class="pf-avatar-edit" title="Change photo">
+        <i class="ti ti-camera"></i>
+        <input type="file" accept="image/jpeg,image/png,image/webp" onchange="uploadAvatar(event)">
+      </label>
+    </div>
+    <div>
+      <div class="pf-name-row">
+        <h2>${escapeHtml(profile.display_name || 'Your name')}</h2>
+        ${creator.founding_cohort ? `<div class="pf-badge-founding" title="One of Kitscore's first 100 creators"><svg width="13" height="13" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg>Founding Creator</div>` : ''}
       </div>
-      ${creator.founding_cohort ? `<div style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#8A5B0A;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);border:0.5px solid #E8CE8F;padding:4px 10px 4px 6px;border-radius:20px" title="One of Kitscore's first 100 creators"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg>Founding Creator</div>` : ''}
+      <div class="pf-handle">${creator.slug ? '@' + escapeHtml(creator.slug) + ' · ' : ''}${escapeHtml(creator.niche || 'Add your niche')}${creator.location ? ' · ' + escapeHtml(creator.location) : ''}</div>
+      <div class="pf-platform-row">
+        ${platforms.length ? platforms.map(p => `<div class="pf-plat-chip">${platformIcon(p.platform)}${fmtCount(platformFollowerCount(p))}</div>`).join('')
+          : `<a href="dashboard.html" class="pf-plat-chip" style="text-decoration:none">+ Connect a platform</a>`}
+      </div>
     </div>
-    <div id="avatarMsg"></div>
+    <div class="pf-score-card">
+      <div class="pf-ring-wrap">
+        <svg width="98" height="98" viewBox="0 0 98 98">
+          <defs><linearGradient id="pfRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2755F0"/><stop offset="100%" stop-color="#17B8A6"/></linearGradient></defs>
+          <circle class="pf-ring-bg" cx="49" cy="49" r="44"/>
+          <circle class="pf-ring-fg" cx="49" cy="49" r="44" stroke-dasharray="${circumference}" stroke-dashoffset="${score > 0 ? offset : circumference}"/>
+        </svg>
+        <div class="pf-ring-center"><div class="num">${score || '—'}</div><div class="out">/ 100</div></div>
+      </div>
+      <div class="pf-score-label">Trust Score</div>
+    </div>
+  `;
+}
 
-    <div class="ptabs">
-      <button class="ptab-btn active" data-tab="account" onclick="switchProfileTab('account')">Account</button>
-      <button class="ptab-btn" data-tab="mediakit" onclick="switchProfileTab('mediakit')">Verified Media Kit</button>
-      <button class="ptab-btn" data-tab="link" onclick="switchProfileTab('link')">Link &amp; sharing</button>
+// ── Account Setup tab: real checklist + editable identity fields ──────────
+function accountSetupItems() {
+  const detailsFilled = !!(profile.display_name && creator.niche && creator.location && creator.business_email);
+  const kitStarted = !!(creator.avatar_url && creator.bio);
+  return [
+    { done: detailsFilled, title: 'Profile details', sub: 'Display name, niche, location, business email', cta: null },
+    { done: platforms.length > 0, title: 'Platforms connected', sub: platforms.length ? `${platforms.length} platform${platforms.length === 1 ? '' : 's'} linked` : 'Link a platform so sponsors see live stats', cta: platforms.length ? null : { label: 'Connect →', href: 'dashboard.html' } },
+    { done: kitStarted, title: 'Media kit started', sub: 'Avatar and bio set on your Verified Media Kit', cta: kitStarted ? null : { label: 'Add →', onclick: "switchProfileTab('mediakit')" } },
+    { done: !!creator.stripe_connect_payouts_enabled, title: 'Connect Stripe payouts', sub: 'Required to receive escrow releases', cta: creator.stripe_connect_payouts_enabled ? null : { label: 'Connect →', onclick: "switchProfileTab('payout')" } },
+  ];
+}
+
+function renderAccountPanel() {
+  const items = accountSetupItems();
+  const doneCount = items.filter(i => i.done).length;
+  const pct = Math.round((doneCount / items.length) * 100);
+  document.getElementById('acctPct').textContent = `${pct}%`;
+
+  document.getElementById('panel-account').innerHTML = `
+    <div class="pf-card">
+      <h3>Profile details</h3>
+      <p class="desc">This is how sponsors and Kitscore identify you — it doesn't appear on your public trust link.</p>
+      <div class="pf-form-grid">
+        <div class="pf-field"><label>Display name</label><input id="displayName" value="${escapeHtml(profile.display_name || '')}" oninput="renderAccountPanel()"></div>
+        <div class="pf-field"><label>Niche</label><input id="niche" value="${escapeHtml(creator.niche || '')}" oninput="renderAccountPanel()"></div>
+      </div>
+      <div class="pf-form-grid">
+        <div class="pf-field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}" oninput="renderAccountPanel()"></div>
+        <div class="pf-field"><label>Business email <span class="opt">— used for deal notifications</span></label><input id="businessEmail" type="email" value="${escapeHtml(creator.business_email || '')}" oninput="renderAccountPanel()"></div>
+      </div>
+      <div class="pf-save-row">
+        <span class="pf-save-hint">Changes apply to your account, not your public profile.</span>
+        <button class="pf-btn-save" id="saveBtn" onclick="save()">Save changes</button>
+      </div>
+      <div id="msg"></div>
     </div>
 
-    <div class="ptab-panel active" data-tab="account">
-    <div class="psec" style="margin-top:0;padding-top:0;border-top:none">
-      <div class="psec-title">Account</div>
-      <div class="psec-sub">Your identity on Kitscore — feeds both your trust link and your Verified Media Kit.</div>
+    <div class="pf-grid-2">
+      <div class="pf-card">
+        <h3>Get fully verified</h3>
+        <p class="desc">Complete every step to strengthen your profile and unlock deal invites.</p>
+        <div class="pf-progress-track"><div class="pf-progress-fill" style="width:${pct}%"></div></div>
+        <div style="font-size:11.5px;color:var(--pf-ink-soft);margin-bottom:6px">${doneCount} of ${items.length} steps complete</div>
+        <div>
+          ${items.map(i => `
+            <div class="pf-check-item">
+              <div class="pf-check-icon ${i.done ? 'done' : 'todo'}">${i.done ? svgIcon('check', { size: 14 }) : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>'}</div>
+              <div class="pf-check-body"><div class="t">${escapeHtml(i.title)}</div><div class="s">${escapeHtml(i.sub)}</div></div>
+              ${i.done ? '<div class="pf-check-cta done">Done</div>' : i.cta ? (i.cta.href ? `<a class="pf-check-cta" href="${i.cta.href}">${i.cta.label}</a>` : `<a class="pf-check-cta" href="#" onclick="${i.cta.onclick};return false">${i.cta.label}</a>`) : ''}
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="pf-card">
+        <h3>Connected platforms</h3>
+        <p class="desc">Kitscore pulls live stats to keep your score current.</p>
+        <div class="pf-platform-grid">
+          ${platforms.length ? platforms.map(p => {
+            const meta = PLATFORM_META[p.platform] || { label: p.platform, color: '#666' };
+            const synced = p.last_synced_at ? new Date(p.last_synced_at) : null;
+            const syncedAgo = synced ? Math.max(0, Math.round((Date.now() - synced.getTime()) / 3600000)) : null;
+            return `
+            <div class="pf-plat-row">
+              <div class="pf-plat-ico" style="background:${meta.color}">${platformIcon(p.platform)}</div>
+              <div class="pf-plat-info"><div class="n">${escapeHtml(meta.label)}</div><div class="m">${fmtCount(platformFollowerCount(p))} · ${p.platform_handle ? '@' + escapeHtml(p.platform_handle) + ' · ' : ''}${syncedAgo !== null ? `synced ${syncedAgo}h ago` : 'not yet synced'}</div></div>
+              <div class="pf-plat-status connected">Connected</div>
+            </div>`;
+          }).join('') : `<div class="pf-empty">No platforms connected yet. <a href="dashboard.html" style="color:var(--pf-blue)">Connect one →</a></div>`}
+        </div>
+      </div>
     </div>
-    <div class="prow2">
-      <div class="field"><label>Display name</label><input id="displayName" value="${escapeHtml(profile.display_name || '')}"></div>
-      <div class="field"><label>Niche</label><input id="niche" value="${escapeHtml(creator.niche || '')}"></div>
+  `;
+}
+
+// ── Payout tab: real Stripe Connect status + balance + history ────────────
+function renderPayoutStatus() {
+  if (creator.stripe_connect_payouts_enabled) {
+    return `<div class="pf-status-banner ready">${svgIcon('check', { size: 15 })}Payouts ready — sponsors can fund and release escrow to you.</div>`;
+  }
+  if (creator.stripe_connect_details_submitted) {
+    return `
+      <div class="pf-status-banner pending">${svgIcon('clock', { size: 15 })}Stripe is still verifying your details — this can take a little while.</div>
+      <button class="pf-btn" onclick="connectPayouts()">Check status / continue setup</button>`;
+  }
+  return `<button class="pf-btn pf-btn-primary" onclick="connectPayouts()">Connect payout account</button>`;
+}
+
+function renderPayoutHistoryTable() {
+  if (!payoutHistory.length) return `<div class="pf-empty">No escrow activity yet — it'll show up here once a sponsor funds a contract.</div>`;
+  return `
+    <table class="pf-payout-table">
+      <tr><th>Sponsor</th><th>Deal</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+      ${payoutHistory.map(c => {
+        const isReleased = c.escrow_status === 'released' || c.escrow_status === 'partially_released';
+        const cents = isReleased ? (c.escrow_released_cents || c.escrow_amount_cents) : c.escrow_amount_cents;
+        const amount = `$${((cents || 0) / 100).toFixed(2)}`;
+        const date = c.released_at || c.funded_at;
+        return `<tr>
+          <td>${escapeHtml(c.sponsors?.company_name || 'Sponsor')}</td>
+          <td>${escapeHtml(c.title || 'Contract')}</td>
+          <td>${amount}</td>
+          <td><span class="pf-pay-status ${isReleased ? 'paid' : 'escrow'}">${isReleased ? 'Paid' : 'In escrow'}</span></td>
+          <td>${date ? new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</td>
+        </tr>`;
+      }).join('')}
+    </table>
+  `;
+}
+
+function lifetimeEarnedCents() {
+  return payoutHistory.reduce((sum, c) => {
+    if (c.escrow_status === 'released' || c.escrow_status === 'partially_released') {
+      return sum + (c.escrow_released_cents || 0);
+    }
+    return sum;
+  }, 0);
+}
+
+function last6MonthsEarnings() {
+  const months = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString('en-GB', { month: 'short' }), cents: 0 });
+  }
+  const byKey = Object.fromEntries(months.map(m => [m.key, m]));
+  payoutHistory.forEach(c => {
+    if (!c.released_at || !(c.escrow_status === 'released' || c.escrow_status === 'partially_released')) return;
+    const d = new Date(c.released_at);
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    if (byKey[key]) byKey[key].cents += (c.escrow_released_cents || 0);
+  });
+  return months;
+}
+
+function renderEarningsSparkline() {
+  const months = last6MonthsEarnings();
+  const max = Math.max(1, ...months.map(m => m.cents));
+  return `
+    <div class="pf-earn-spark">
+      <div class="pf-earn-spark-head">Earnings, last 6 months</div>
+      <div class="pf-spark-bars">
+        ${months.map((m, i) => `<div class="pf-spark-bar ${i === months.length - 1 ? 'highlight' : ''}" style="height:${Math.max(4, Math.round((m.cents / max) * 100))}%"><span>${m.label}</span></div>`).join('')}
+      </div>
     </div>
-    <div class="prow2">
-      <div class="field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}"></div>
-      <div class="field"><label>Business email</label><input id="businessEmail" value="${escapeHtml(creator.business_email || '')}"></div>
+  `;
+}
+
+function renderPayoutPanel() {
+  const lifetimeCents = lifetimeEarnedCents();
+  document.getElementById('panel-payout').innerHTML = `
+    <div class="pf-stripe-card">
+      <div class="pf-stripe-left">
+        <div class="pf-stripe-mark">S</div>
+        <div><div style="font-size:13.5px;font-weight:600">Stripe Connect</div><div style="font-size:11.5px;color:#9FB0D6">Payouts settle a couple business days after escrow release</div></div>
+      </div>
+      <div class="pf-stripe-badge">${creator.stripe_connect_payouts_enabled ? 'Connected' : 'Not connected'}</div>
     </div>
-    <div class="psec">
-      <div class="psec-title">Payouts</div>
-      <div class="psec-sub">Connect a payout account so sponsors can pay you through Kitscore's escrow — funds are held until you deliver and the sponsor approves.</div>
+
+    <div class="pf-card">
+      <h3>Payouts</h3>
+      <p class="desc" style="margin-bottom:0">Connect a payout account so sponsors can pay you through Kitscore's escrow — funds are held until you deliver and the sponsor approves.</p>
       ${renderPayoutStatus()}
-      ${creator.stripe_connect_payouts_enabled ? '<div id="balanceBox" class="msg" style="margin-top:10px">Loading balance…</div>' : ''}
-    </div>
+      ${creator.stripe_connect_payouts_enabled ? '<div id="balanceBox" class="pf-msg">Loading balance…</div>' : `
+        <div class="pf-stat-row" style="margin-top:14px">
+          <div class="pf-stat"><div class="eyebrow">Available</div><div class="val">$0.00</div></div>
+          <div class="pf-stat"><div class="eyebrow">Pending</div><div class="val">$0.00</div></div>
+          <div class="pf-stat"><div class="eyebrow">Lifetime earned</div><div class="val">$${(lifetimeCents / 100).toFixed(2)}</div></div>
+        </div>
+      `}
+      ${renderEarningsSparkline()}
     </div>
 
-    <div class="ptab-panel" data-tab="mediakit">
-      <div class="psec-title">Your Verified Media Kit</div>
-      <div class="psec-sub">Everything below appears on the Verified Media Kit you send to sponsors — bio, photos, brand history, and more.</div>
-    <div class="field">
-      <label>Bio <span style="color:var(--color-text-tertiary);font-weight:400">— shown on your Verified Media Kit, not your trust link</span></label>
-      <textarea id="bio" maxlength="280" rows="3" placeholder="A couple sentences a brand can read in five seconds — what you make, who watches, and why you're a fit." style="width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px;font-family:inherit;resize:vertical">${escapeHtml(creator.bio || '')}</textarea>
-      <div id="bioCount" style="font-size:10.5px;color:var(--color-text-tertiary);text-align:right;margin-top:2px">${(creator.bio||'').length}/280</div>
+    <div class="pf-card">
+      <h3>Payout history</h3>
+      <p class="desc">Every release is logged with the sponsor deal it came from.</p>
+      ${renderPayoutHistoryTable()}
     </div>
-    <div class="field">
-      <label>Gallery <span style="color:var(--color-text-tertiary);font-weight:400">— optional, up to 4 photos</span></label>
-      <div class="gallery-grid" id="galleryGrid"></div>
-      <div class="upload-hint">JPG, PNG, or WebP · 5MB max per photo</div>
+  `;
+}
+
+async function downloadEveKitPdf() {
+  const btn = document.getElementById('dlBtn');
+  if (!btn) return;
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = 'Generating…';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/documents?type=evekit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      alert('Could not generate Verified Media Kit PDF: ' + (j.error || 'Unknown error'));
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'kitscore-verified-media-kit.pdf'; a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('Error generating Verified Media Kit PDF: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+// ── Verified Media Kit tab ──────────────────────────────────────────────
+function totalReach() {
+  return platforms.reduce((sum, p) => sum + platformFollowerCount(p), 0);
+}
+function avgEngagementQuality() {
+  const rows = scoreComponents.filter(c => c.component_key.startsWith('engagement_quality'));
+  if (!rows.length) return null;
+  return Math.round(rows.reduce((sum, c) => sum + Number(c.value), 0) / rows.length);
+}
+function avgViewsPerPost() {
+  const totalViews = platforms.reduce((sum, p) => sum + (p.view_count || 0), 0);
+  const totalVideos = platforms.reduce((sum, p) => sum + (p.video_count || 0), 0);
+  return totalVideos > 0 ? Math.round(totalViews / totalVideos) : 0;
+}
+function renderMediaKitPanel() {
+  document.getElementById('panel-mediakit').innerHTML = `
+    <div class="pf-mk-hero">
+      <div>
+        <div class="t">Your verified media kit</div>
+        <div class="s">Auto-generated from live platform data — always up to date, never inflated.</div>
+      </div>
+      <button class="pf-btn pf-btn-primary" id="dlBtn" onclick="downloadEveKitPdf()">Download PDF</button>
     </div>
 
-    <div class="field">
-      <label>Cover style <span style="color:var(--color-text-tertiary);font-weight:400">— customize the banner at the top of your kit. Changes save instantly.</span></label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px">
-        <div>
-          <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:6px">Pattern</div>
-          <div id="coverPatternPicker"></div>
-        </div>
-        <div>
-          <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:6px">Avatar shape</div>
-          <div id="avatarShapePicker"></div>
-        </div>
+    <div class="pf-mk-grid">
+      <div class="pf-mk-stat"><div class="val">${fmtCount(totalReach())}</div><div class="lab">Total reach</div></div>
+      <div class="pf-mk-stat"><div class="val">${avgEngagementQuality() != null ? avgEngagementQuality() + '%' : '—'}</div><div class="lab">Avg. engagement</div></div>
+      <div class="pf-mk-stat"><div class="val">${avgViewsPerPost() ? fmtCount(avgViewsPerPost()) : '—'}</div><div class="lab">Avg. views / post</div></div>
+      <div class="pf-mk-stat"><div class="val">${Math.round(creator.trust_score) || '—'}</div><div class="lab">Trust Score</div></div>
+    </div>
+
+    ${scoreComponents.length ? `
+    <div class="pf-card">
+      <h3>Trust Score breakdown</h3>
+      <p class="desc">Weighted components sponsors can inspect line by line.</p>
+      ${scoreComponents.map(c => `<div class="pf-breakdown-row"><div class="lab">${escapeHtml(c.label)}</div><div class="pf-bd-track"><div class="pf-bd-fill" style="width:${Math.max(0, Math.min(100, c.value))}%"></div></div><div class="sc">${Math.round(c.value)}</div></div>`).join('')}
+    </div>` : ''}
+
+    <div class="pf-card">
+      <h3>Edit your Verified Media Kit</h3>
+      <p class="desc">Everything below appears on the Verified Media Kit you send to sponsors — bio, photos, brand history, and more.</p>
+
+      <div class="pf-section-sub">Bio</div>
+      <div class="pf-field">
+        <textarea id="bio" maxlength="280" placeholder="A couple sentences a brand can read in five seconds — what you make, who watches, and why you're a fit.">${escapeHtml(creator.bio || '')}</textarea>
+      </div>
+      <div class="pf-char-count" id="bioCount">${(creator.bio || '').length}/280</div>
+
+      <div class="pf-section-sub">Gallery <span style="text-transform:none;font-weight:400;color:var(--pf-ink-faint)">— optional, up to 4 photos</span></div>
+      <div class="pf-gallery-grid" id="galleryGrid"></div>
+      <div style="font-size:10.5px;color:var(--pf-ink-faint);margin-top:6px">JPG, PNG or WebP · 5MB max per photo</div>
+
+      <div class="pf-section-sub">Cover style <span style="text-transform:none;font-weight:400;color:var(--pf-ink-faint)">— customize the banner at the top of your kit. Changes save instantly.</span></div>
+      <div class="pf-two-col">
+        <div><div style="font-size:10.5px;color:var(--pf-ink-faint);margin-bottom:6px">Pattern</div><div id="coverPatternPicker" class="pf-pill-group"></div></div>
+        <div><div style="font-size:10.5px;color:var(--pf-ink-faint);margin-bottom:6px">Avatar shape</div><div id="avatarShapePicker" class="pf-pill-group"></div></div>
       </div>
       <div style="margin-top:14px">
-        <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:6px"><strong style="color:var(--color-text-secondary)">Vibe tags</strong> <span style="font-weight:400">— up to 3, shown as pills on your cover</span></div>
-        <div id="coverTagsPicker"></div>
+        <div style="font-size:10.5px;color:var(--pf-ink-faint);margin-bottom:6px">Vibe tags <span style="font-weight:400">— up to 3, shown as pills on your cover</span></div>
+        <div id="coverTagsPicker" class="pf-pill-group"></div>
       </div>
-      <div style="margin-top:14px;max-width:280px">
-        <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:6px"><strong style="color:var(--color-text-secondary)">Spotlight stat</strong> <span style="font-weight:400">— the number featured on your cover</span></div>
-        <select id="coverSpotlightSelect" onchange="selectCoverSpotlight(this.value)" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px;font-family:inherit;background:#fff">
+      <div style="margin-top:14px;max-width:280px" class="pf-field">
+        <label style="text-transform:none">Spotlight stat <span class="opt">— the number featured on your cover</span></label>
+        <select id="coverSpotlightSelect" onchange="selectCoverSpotlight(this.value)">
           <option value="">None</option>
           <option value="reach">Total reach</option>
           <option value="engagement">Confidence</option>
@@ -180,120 +638,72 @@ async function load() {
           <option value="trust">Trust score</option>
         </select>
       </div>
-    </div>
 
-    <div class="field">
-      <label>Past collaborations <span style="color:var(--color-text-tertiary);font-weight:400">— brands you've worked with, self-reported (separate from Verified campaigns, which only covers deals run through Kitscore)</span></label>
-      <div id="collabList"></div>
-      <details class="padd">
-        <summary>Add a collaboration</summary>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
-          <div>
-            <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Brand name</label>
-            <input id="collabBrandName" placeholder="e.g. Red Bull" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
-          </div>
-          <div>
-            <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Link (optional)</label>
-            <input id="collabLink" placeholder="https://..." style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
-          </div>
-        </div>
-        <div style="margin-top:8px">
-          <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Logo (optional)</label>
-          <div style="display:flex;align-items:center;gap:10px">
-            <input type="file" id="collabLogoInput" accept="image/jpeg,image/png,image/webp" style="font-size:11.5px;flex:1">
-            <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;white-space:nowrap" onclick="addCollaboration()">+ Add</button>
-          </div>
-        </div>
-        <div class="upload-hint">Leave the logo blank and we'll show your brand name instead. JPG, PNG, or WebP · 5MB max.</div>
-        <div id="collabMsg" style="font-size:11px;margin-top:6px"></div>
-      </details>
-    </div>
+      <div class="pf-two-col" style="margin-top:22px">
+        <div>
+          <div class="pf-section-sub" style="margin-top:0">Past collaborations <span style="text-transform:none;font-weight:400;color:var(--pf-ink-faint)">— brands you've worked with, self-reported</span></div>
+          <div id="collabList"></div>
+          <details class="pf-padd">
+            <summary>Add a collaboration</summary>
+            <div class="pf-form-grid" style="margin-top:4px">
+              <div class="pf-field" style="margin-bottom:8px"><label style="text-transform:none">Brand name</label><input id="collabBrandName" placeholder="e.g. Red Bull"></div>
+              <div class="pf-field" style="margin-bottom:8px"><label style="text-transform:none">Link (optional)</label><input id="collabLink" placeholder="https://..."></div>
+            </div>
+            <div class="pf-field" style="margin-bottom:6px">
+              <label style="text-transform:none">Logo (optional)</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="file" id="collabLogoInput" accept="image/jpeg,image/png,image/webp" style="font-size:11.5px;flex:1;padding:0;border:none">
+                <button type="button" class="pf-btn-add" onclick="addCollaboration()">+ Add</button>
+              </div>
+            </div>
+            <div style="font-size:10.5px;color:var(--pf-ink-faint)">Leave the logo blank and we'll show your brand name instead.</div>
+            <div id="collabMsg" class="pf-msg"></div>
+          </details>
 
-    <div class="field">
-      <label>Press mentions <span style="color:var(--color-text-tertiary);font-weight:400">— coverage of you or your work, self-reported</span></label>
-      <div id="pressList"></div>
-      <details class="padd">
-        <summary>Add a press mention</summary>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
-          <div>
-            <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Title</label>
-            <input id="pressTitle" placeholder="e.g. Why This Creator Is Gaming's Next Big Thing" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
-          </div>
-          <div>
-            <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Outlet (optional)</label>
-            <input id="pressOutlet" placeholder="e.g. IGN" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
+          <div class="pf-section-sub">Available for <span style="text-transform:none;font-weight:400;color:var(--pf-ink-faint)">— kinds of work you're open to</span></div>
+          <div id="availableForTags"></div>
+          <div class="pf-add-input-row">
+            <input id="availableForInput" placeholder="e.g. Sponsored posts" onkeydown="if(event.key==='Enter'){event.preventDefault();addAvailableFor();}">
+            <button type="button" class="pf-btn-add" onclick="addAvailableFor()">+ Add</button>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-          <div>
-            <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Link (optional)</label>
-            <input id="pressUrl" placeholder="https://..." style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
-          </div>
-          <div>
-            <label style="font-size:10.5px;color:var(--color-text-tertiary);display:block;margin-bottom:3px">Date (optional)</label>
-            <input id="pressDate" type="date" style="width:100%;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px">
-          </div>
-        </div>
-        <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;margin-top:8px" onclick="addPressMention()">+ Add</button>
-        <div id="pressMsg" style="font-size:11px;margin-top:6px"></div>
-      </details>
-    </div>
 
-    <div class="prow2">
-      <div class="field">
-        <label>Available for <span style="color:var(--color-text-tertiary);font-weight:400">— kinds of work you're open to</span></label>
-        <div id="availableForTags"></div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <input id="availableForInput" placeholder="e.g. Sponsored posts" style="flex:1;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px" onkeydown="if(event.key==='Enter'){event.preventDefault();addAvailableFor();}">
-          <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;white-space:nowrap" onclick="addAvailableFor()">+ Add</button>
+        <div>
+          <div class="pf-section-sub" style="margin-top:0">Press mentions <span style="text-transform:none;font-weight:400;color:var(--pf-ink-faint)">— coverage of you or your work, self-reported</span></div>
+          <div id="pressList"></div>
+          <details class="pf-padd">
+            <summary>Add a press mention</summary>
+            <div class="pf-form-grid" style="margin-top:4px">
+              <div class="pf-field" style="margin-bottom:8px"><label style="text-transform:none">Title</label><input id="pressTitle" placeholder="e.g. Why This Creator Is..."></div>
+              <div class="pf-field" style="margin-bottom:8px"><label style="text-transform:none">Outlet (optional)</label><input id="pressOutlet" placeholder="e.g. IGN"></div>
+            </div>
+            <div class="pf-form-grid">
+              <div class="pf-field" style="margin-bottom:8px"><label style="text-transform:none">Link (optional)</label><input id="pressUrl" placeholder="https://..."></div>
+              <div class="pf-field" style="margin-bottom:8px"><label style="text-transform:none">Date (optional)</label><input id="pressDate" type="date"></div>
+            </div>
+            <button type="button" class="pf-btn-add" onclick="addPressMention()">+ Add</button>
+            <div id="pressMsg" class="pf-msg"></div>
+          </details>
+
+          <div class="pf-section-sub">Causes I support <span style="text-transform:none;font-weight:400;color:var(--pf-ink-faint)">— optional, helps ESG-conscious sponsors</span></div>
+          <div id="causesTags"></div>
+          <div class="pf-add-input-row">
+            <input id="causesInput" placeholder="e.g. Mental health awareness" onkeydown="if(event.key==='Enter'){event.preventDefault();addCause();}">
+            <button type="button" class="pf-btn-add" onclick="addCause()">+ Add</button>
+          </div>
         </div>
       </div>
-      <div class="field">
-        <label>Causes I support <span style="color:var(--color-text-tertiary);font-weight:400">— optional, helps ESG-conscious sponsors</span></label>
-        <div id="causesTags"></div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <input id="causesInput" placeholder="e.g. Mental health awareness" style="flex:1;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:6px;font-size:12.5px" onkeydown="if(event.key==='Enter'){event.preventDefault();addCause();}">
-          <button type="button" class="cta" style="padding:8px 16px;font-size:12.5px;white-space:nowrap" onclick="addCause()">+ Add</button>
-        </div>
+
+      <div class="pf-save-row">
+        <span class="pf-save-hint">Sponsors see these updates the next time they view your kit.</span>
+        <button class="pf-btn-save" onclick="save()">Save changes</button>
       </div>
-    </div>
-    </div>
-
-    <div id="persistentSave" style="margin-top:20px;padding-top:18px;border-top:1px solid var(--color-border-tertiary)">
-      <button class="cta" id="saveBtn" onclick="save()">Save changes</button>
-      <div id="msg"></div>
-    </div>
-
-    <div class="ptab-panel" data-tab="link">
-    <div class="psec">
-      <div class="psec-title">Link settings</div>
-    </div>
-    <div>
-      <label style="display:block;font-size:11px;color:var(--color-text-secondary);margin-bottom:4px">Custom link <span style="color:var(--color-text-tertiary)">— used for both your Verified Media Kit and trust link</span></label>
-      ${creator.plan === 'pro' ? `
-        <div style="display:flex;gap:8px;align-items:center">
-          <span style="font-size:12px;color:var(--color-text-tertiary)">kitscore.co/p/</span>
-          <input id="customSlug" value="${escapeHtml(creator.slug || '')}" style="flex:1;padding:8px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:12.5px;font-family:var(--font-mono,monospace)">
-          <button class="cta" style="padding:8px 14px" onclick="saveSlug()">Save</button>
-        </div>
-        <div id="slugMsg" style="font-size:11px;margin-top:6px"></div>
-      ` : `
-        <div style="font-size:12px;color:var(--color-text-tertiary)">Your link: <span style="font-family:var(--font-mono,monospace)">${escapeHtml(creator.slug || '')}</span> — <a href="pricing-creator.html" style="color:#2563EB">upgrade to Pro to customize it</a></div>
-      `}
-      ${creator.plan === 'pro'
-        ? `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:8px">${creator.profile_views||0} view${creator.profile_views===1?'':'s'} so far</div>`
-        : `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:8px">Free for everyone. Pro adds a view counter: <a href="pricing-creator.html" style="color:#2563EB">see who's opened it →</a></div>`}
-    </div>
     </div>
   `;
 
   document.getElementById('bio').addEventListener('input', (e) => {
     document.getElementById('bioCount').textContent = `${e.target.value.length}/280`;
   });
-  ['displayName', 'niche', 'location', 'businessEmail'].forEach(id => {
-    document.getElementById(id).addEventListener('input', renderStrengthPanel);
-  });
-  renderStrengthPanel();
   renderGallery();
   renderCollaborations();
   renderPressMentions();
@@ -303,31 +713,146 @@ async function load() {
   renderAvatarShapePicker();
   renderCoverTagsPicker();
   document.getElementById('coverSpotlightSelect').value = creator.cover_spotlight_stat || '';
-  if (creator.stripe_connect_payouts_enabled) loadBalance();
 }
 
+// ── Link & Share tab ────────────────────────────────────────────────────
+function renderSharePanel() {
+  const url = `kitscore.co/p/${creator.slug || ''}`;
+  const qrData = encodeURIComponent(`https://${url}`);
+  document.getElementById('panel-share').innerHTML = `
+    <div class="pf-card pf-pro-card">
+      <h3 style="display:flex;align-items:center">Profile analytics ${creator.plan === 'pro' ? '' : '<span class="pf-pro-badge">PRO</span>'}</h3>
+      <p class="desc" style="margin-bottom:0">See how many people have viewed your profile.</p>
+      ${creator.plan === 'pro' ? `
+        <div class="pf-stat-row" style="margin-top:16px">
+          <div class="pf-stat"><div class="eyebrow">Total views</div><div class="val">${creator.profile_views || 0}</div></div>
+        </div>
+        <div style="font-size:11.5px;color:var(--pf-ink-faint)">Per-visit and sponsor-level detail isn't tracked yet — this is a running total.</div>
+      ` : `
+        <div class="pf-locked-wrap">
+          <div class="pf-locked-content">
+            <div class="pf-stat-row" style="margin-top:16px"><div class="pf-stat"><div class="eyebrow">Total views</div><div class="val">${creator.profile_views || 0}</div></div></div>
+          </div>
+          <div class="pf-lock-overlay">
+            <div class="pf-lock-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div class="pf-lock-title">Unlock profile analytics</div>
+            <div class="pf-lock-sub">See your total view count with Kitscore Pro.</div>
+            <a href="pricing-creator.html" class="pf-btn-upgrade">Upgrade to Pro</a>
+          </div>
+        </div>
+      `}
+    </div>
+
+    <div class="pf-grid-2">
+      <div class="pf-card">
+        <h3>Your public profile</h3>
+        <p class="desc">Send this straight to a sponsor, or drop it in your bio.</p>
+        <div class="pf-link-box">
+          <div class="url">kitscore.co/p/<b>${escapeHtml(creator.slug || '')}</b></div>
+          <button class="pf-copy-btn" onclick="copyProfileLink()">Copy link</button>
+        </div>
+        ${creator.plan === 'pro' ? `
+          <div class="pf-field" style="max-width:400px">
+            <label>Custom link</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="font-size:12px;color:var(--pf-ink-faint)">kitscore.co/p/</span>
+              <input id="customSlug" value="${escapeHtml(creator.slug || '')}" style="flex:1;font-family:monospace">
+              <button class="pf-btn" onclick="saveSlug()">Save</button>
+            </div>
+            <div id="slugMsg" class="pf-msg"></div>
+          </div>
+        ` : `<div style="font-size:11.5px;color:var(--pf-ink-faint);margin-bottom:14px">Want a custom link instead of a random one? <a href="pricing-creator.html" style="color:var(--pf-blue)">Upgrade to Pro →</a></div>`}
+
+        <h3 style="margin-top:22px">Embed the verified badge</h3>
+        <p class="desc">Paste this on your website or Linktree to show a live trust score.</p>
+        <div class="pf-embed-box">&lt;<span class="tag">a</span> <span class="attr">href</span>=<span class="str">"https://kitscore.co/p/${escapeHtml(creator.slug || '')}"</span>&gt;<br>&nbsp;&nbsp;&lt;<span class="tag">img</span> <span class="attr">src</span>=<span class="str">"https://kitscore.co/badge/${escapeHtml(creator.slug || '')}"</span> <span class="attr">alt</span>=<span class="str">"Verified by Kitscore"</span>&gt;<br>&lt;/<span class="tag">a</span>&gt;</div>
+      </div>
+
+      <div class="pf-card">
+        <div class="pf-qr-card">
+          <h3 style="margin-bottom:0">Scan to view</h3>
+          <div class="pf-qr-box"><img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&bgcolor=0B1220&color=EAF0FF&data=${qrData}" alt="QR code to your Kitscore profile"></div>
+          <p class="desc" style="margin:0">${url}</p>
+          <a class="pf-btn" style="width:100%;justify-content:center" href="https://api.qrserver.com/v1/create-qr-code/?size=600x600&bgcolor=0B1220&color=EAF0FF&data=${qrData}" download="kitscore-qr.png">Download QR</a>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function switchProfileTab(tab) {
+  document.querySelectorAll('.pf-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.pf-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+}
+
+async function copyProfileLink() {
+  const url = `https://kitscore.co/p/${creator.slug || ''}`;
+  try {
+    await navigator.clipboard.writeText(url);
+    alert('Link copied.');
+  } catch {
+    prompt('Copy your profile link:', url);
+  }
+}
+
+// ── Save (Account + Media Kit fields) ──────────────────────────────────
+async function save() {
+  const btn = document.getElementById('saveBtn');
+  if (btn) btn.disabled = true;
+
+  const displayName = document.getElementById('displayName').value.trim();
+  const niche = document.getElementById('niche').value.trim();
+  const location = document.getElementById('location').value.trim();
+  const businessEmail = document.getElementById('businessEmail').value.trim();
+  const bioEl = document.getElementById('bio');
+  const bio = bioEl ? bioEl.value.trim() : creator.bio;
+
+  const [{ error: pErr }, { error: cErr }] = await Promise.all([
+    sb.from('profiles').update({ display_name: displayName }).eq('id', profile.id),
+    sb.from('creators').update({ niche, location, business_email: businessEmail, bio }).eq('id', profile.id),
+  ]);
+
+  profile.display_name = displayName;
+  creator.niche = niche;
+  creator.location = location;
+  creator.business_email = businessEmail;
+  creator.bio = bio;
+
+  const msg = document.getElementById('msg');
+  if (pErr || cErr) {
+    if (msg) msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Could not save: ${escapeHtml((pErr || cErr).message)}</div>`;
+  } else {
+    if (msg) msg.innerHTML = `<div class="pf-msg" style="color:#1C7C3F">Saved.</div>`;
+    renderHero();
+  }
+  if (btn) btn.disabled = false;
+}
+
+async function saveSlug() {
+  const input = document.getElementById('customSlug');
+  const msg = document.getElementById('slugMsg');
+  const val = input.value.trim();
+  msg.innerHTML = '';
+  const { data, error } = await sb.rpc('fn_set_evekit_slug', { p_slug: val });
+  if (error) {
+    msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Could not save: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  if (!data || !data.ok) {
+    msg.innerHTML = `<div class="pf-msg" style="color:#B42318">${escapeHtml(data?.error || 'Could not save that link.')}</div>`;
+    return;
+  }
+  creator.slug = data.slug;
+  input.value = data.slug;
+  msg.innerHTML = `<div class="pf-msg" style="color:#1C7C3F">Saved — your Verified Media Kit and trust link now use this URL.</div>`;
+  renderHero();
+  renderSharePanel();
+}
+
+// ── Avatar / gallery uploads ────────────────────────────────────────────
 const MAX_GALLERY = 4;
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-
-function renderGallery() {
-  const grid = document.getElementById('galleryGrid');
-  if (!grid) return;
-  const images = creator.gallery_images || [];
-  let html = images.map((url, i) => `
-    <div class="gallery-slot">
-      <img src="${escapeHtml(url)}">
-      <div class="remove" onclick="removeGalleryImage(${i})" title="Remove">✕</div>
-    </div>`).join('');
-  if (images.length < MAX_GALLERY) {
-    html += `
-      <label class="gallery-slot">
-        <span class="add">+</span>
-        <input type="file" accept="image/jpeg,image/png,image/webp" onchange="uploadGalleryImage(event)">
-      </label>`;
-  }
-  grid.innerHTML = html;
-}
 
 function extFor(file) {
   return (file.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
@@ -336,94 +861,74 @@ function extFor(file) {
 async function uploadAvatar(event) {
   const file = event.target.files[0];
   if (!file) return;
-  const msg = document.getElementById('avatarMsg');
-  msg.innerHTML = '';
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    msg.innerHTML = `<div class="msg error">Please upload a JPG, PNG, or WebP image.</div>`;
-    return;
-  }
-  if (file.size > MAX_UPLOAD_BYTES) {
-    msg.innerHTML = `<div class="msg error">That photo is over 5MB — try a smaller file.</div>`;
-    return;
-  }
+  if (!ALLOWED_TYPES.includes(file.type)) { alert('Please upload a JPG, PNG, or WebP image.'); return; }
+  if (file.size > MAX_UPLOAD_BYTES) { alert('That photo is over 5MB — try a smaller file.'); return; }
   const path = `${profile.id}/avatar-${Date.now()}.${extFor(file)}`;
   const { error: upErr } = await sb.storage.from('creator-media').upload(path, file, { upsert: true });
-  if (upErr) {
-    msg.innerHTML = `<div class="msg error">Upload failed: ${escapeHtml(upErr.message)}</div>`;
-    return;
-  }
+  if (upErr) { alert('Upload failed: ' + upErr.message); return; }
   const { data: pub } = sb.storage.from('creator-media').getPublicUrl(path);
   const { error: dbErr } = await sb.from('creators').update({ avatar_url: pub.publicUrl }).eq('id', profile.id);
-  if (dbErr) {
-    msg.innerHTML = `<div class="msg error">Saved the photo but couldn't update your profile: ${escapeHtml(dbErr.message)}</div>`;
-    return;
-  }
+  if (dbErr) { alert("Saved the photo but couldn't update your profile: " + dbErr.message); return; }
   creator.avatar_url = pub.publicUrl;
-  const imgEl = document.getElementById('avatarImg');
-  imgEl.outerHTML = `<img class="avatar-img" id="avatarImg" src="${escapeHtml(pub.publicUrl)}">`;
-  msg.innerHTML = `<div class="msg ok">Photo updated.</div>`;
+  renderHero();
+}
+
+function renderGallery() {
+  const grid = document.getElementById('galleryGrid');
+  if (!grid) return;
+  const images = creator.gallery_images || [];
+  let html = images.map((url, i) => `
+    <div class="pf-gallery-slot filled">
+      <img src="${escapeHtml(url)}">
+      <div class="pf-gallery-remove" onclick="removeGalleryImage(${i})" title="Remove">✕</div>
+    </div>`).join('');
+  if (images.length < MAX_GALLERY) {
+    html += `
+      <label class="pf-gallery-slot">
+        <span>+</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp" onchange="uploadGalleryImage(event)">
+      </label>`;
+  }
+  grid.innerHTML = html;
 }
 
 async function uploadGalleryImage(event) {
   const file = event.target.files[0];
   if (!file) return;
-  const msg = document.getElementById('msg');
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    msg.innerHTML = `<div class="msg error">Please upload a JPG, PNG, or WebP image.</div>`;
-    return;
-  }
-  if (file.size > MAX_UPLOAD_BYTES) {
-    msg.innerHTML = `<div class="msg error">That photo is over 5MB — try a smaller file.</div>`;
-    return;
-  }
+  if (!ALLOWED_TYPES.includes(file.type)) { alert('Please upload a JPG, PNG, or WebP image.'); return; }
+  if (file.size > MAX_UPLOAD_BYTES) { alert('That photo is over 5MB — try a smaller file.'); return; }
   const images = creator.gallery_images || [];
   if (images.length >= MAX_GALLERY) return;
   const path = `${profile.id}/gallery-${Date.now()}.${extFor(file)}`;
   const { error: upErr } = await sb.storage.from('creator-media').upload(path, file, { upsert: true });
-  if (upErr) {
-    msg.innerHTML = `<div class="msg error">Upload failed: ${escapeHtml(upErr.message)}</div>`;
-    return;
-  }
+  if (upErr) { alert('Upload failed: ' + upErr.message); return; }
   const { data: pub } = sb.storage.from('creator-media').getPublicUrl(path);
   const updated = [...images, pub.publicUrl];
   const { error: dbErr } = await sb.from('creators').update({ gallery_images: updated }).eq('id', profile.id);
-  if (dbErr) {
-    msg.innerHTML = `<div class="msg error">Saved the photo but couldn't update your gallery: ${escapeHtml(dbErr.message)}</div>`;
-    return;
-  }
+  if (dbErr) { alert("Saved the photo but couldn't update your gallery: " + dbErr.message); return; }
   creator.gallery_images = updated;
   renderGallery();
-  msg.innerHTML = `<div class="msg ok">Photo added.</div>`;
 }
 
 async function removeGalleryImage(index) {
   const images = [...(creator.gallery_images || [])];
   images.splice(index, 1);
   const { error } = await sb.from('creators').update({ gallery_images: images }).eq('id', profile.id);
-  const msg = document.getElementById('msg');
-  if (error) {
-    msg.innerHTML = `<div class="msg error">Could not remove photo: ${escapeHtml(error.message)}</div>`;
-    return;
-  }
+  if (error) { alert('Could not remove photo: ' + error.message); return; }
   creator.gallery_images = images;
   renderGallery();
 }
 
-// ── Past collaborations (self-reported brand history, pre-Kitscore) ──────
+// ── Past collaborations ──────────────────────────────────────────────
 function renderCollaborations() {
   const list = document.getElementById('collabList');
   if (!list) return;
-  if (!collaborations.length) {
-    list.innerHTML = `<div style="font-size:12px;color:var(--color-text-tertiary)">No collaborations added yet.</div>`;
-    return;
-  }
-  list.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:10px">${collaborations.map(c => `
-    <div style="display:flex;align-items:center;gap:8px;border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:6px 10px 6px 6px">
-      ${c.logo_url
-        ? `<img src="${escapeHtml(c.logo_url)}" style="width:28px;height:28px;object-fit:contain;border-radius:4px">`
-        : `<div style="width:28px;height:28px;border-radius:4px;background:var(--color-bg-secondary,#F2F1EC);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--color-text-secondary)">${escapeHtml((c.brand_name||'?').trim().charAt(0).toUpperCase())}</div>`}
-      <span style="font-size:12.5px;color:var(--color-text-primary)">${escapeHtml(c.brand_name)}</span>
-      <span onclick="removeCollaboration('${c.id}')" title="Remove" style="cursor:pointer;color:var(--color-text-tertiary);font-size:14px;line-height:1;margin-left:2px">✕</span>
+  if (!collaborations.length) { list.innerHTML = `<div class="pf-empty">No collaborations added yet.</div>`; return; }
+  list.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:0">${collaborations.map(c => `
+    <div class="pf-chip">
+      ${c.logo_url ? `<img src="${escapeHtml(c.logo_url)}" class="pf-chip-avatar">` : `<div class="pf-chip-avatar">${escapeHtml((c.brand_name || '?').trim().charAt(0).toUpperCase())}</div>`}
+      <span>${escapeHtml(c.brand_name)}</span>
+      <span class="pf-chip-x" onclick="removeCollaboration('${c.id}')" title="Remove">✕</span>
     </div>`).join('')}</div>`;
 }
 
@@ -435,75 +940,52 @@ async function addCollaboration() {
   const fileInput = document.getElementById('collabLogoInput');
   const file = fileInput.files[0];
 
-  if (!brandName) {
-    msg.innerHTML = `<div class="msg error">Brand name is required.</div>`;
-    return;
-  }
+  if (!brandName) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Brand name is required.</div>`; return; }
   if (file) {
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      msg.innerHTML = `<div class="msg error">Please upload a JPG, PNG, or WebP logo.</div>`;
-      return;
-    }
-    if (file.size > MAX_UPLOAD_BYTES) {
-      msg.innerHTML = `<div class="msg error">That logo is over 5MB — try a smaller file.</div>`;
-      return;
-    }
+    if (!ALLOWED_TYPES.includes(file.type)) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Please upload a JPG, PNG, or WebP logo.</div>`; return; }
+    if (file.size > MAX_UPLOAD_BYTES) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">That logo is over 5MB — try a smaller file.</div>`; return; }
   }
 
   let logoUrl = null;
   if (file) {
     const path = `${profile.id}/logo-${Date.now()}.${extFor(file)}`;
     const { error: upErr } = await sb.storage.from('creator-media').upload(path, file, { upsert: true });
-    if (upErr) {
-      msg.innerHTML = `<div class="msg error">Logo upload failed: ${escapeHtml(upErr.message)}</div>`;
-      return;
-    }
+    if (upErr) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Logo upload failed: ${escapeHtml(upErr.message)}</div>`; return; }
     logoUrl = sb.storage.from('creator-media').getPublicUrl(path).data.publicUrl;
   }
 
   const { data, error } = await sb.from('creator_collaborations')
     .insert({ creator_id: profile.id, brand_name: brandName, logo_url: logoUrl, link: link || null, display_order: collaborations.length })
-    .select('id, brand_name, logo_url, link')
-    .single();
-  if (error) {
-    msg.innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`;
-    return;
-  }
+    .select('id, brand_name, logo_url, link').single();
+  if (error) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Could not save: ${escapeHtml(error.message)}</div>`; return; }
 
   collaborations.push(data);
   document.getElementById('collabBrandName').value = '';
   document.getElementById('collabLink').value = '';
   fileInput.value = '';
   renderCollaborations();
-  msg.innerHTML = `<div class="msg ok">Added.</div>`;
+  msg.innerHTML = `<div class="pf-msg" style="color:#1C7C3F">Added.</div>`;
 }
 
 async function removeCollaboration(id) {
   const { error } = await sb.from('creator_collaborations').delete().eq('id', id);
-  const msg = document.getElementById('collabMsg');
-  if (error) {
-    msg.innerHTML = `<div class="msg error">Could not remove: ${escapeHtml(error.message)}</div>`;
-    return;
-  }
+  if (error) { alert('Could not remove: ' + error.message); return; }
   collaborations = collaborations.filter(c => c.id !== id);
   renderCollaborations();
 }
 
-// ── Press mentions (self-reported coverage) ───────────────────────────────
+// ── Press mentions ────────────────────────────────────────────────────
 function renderPressMentions() {
   const list = document.getElementById('pressList');
   if (!list) return;
-  if (!pressMentions.length) {
-    list.innerHTML = `<div style="font-size:12px;color:var(--color-text-tertiary)">No press mentions added yet.</div>`;
-    return;
-  }
+  if (!pressMentions.length) { list.innerHTML = `<div class="pf-empty">No press mentions added yet.</div>`; return; }
   list.innerHTML = pressMentions.map(p => `
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:8px 10px;margin-bottom:6px">
+    <div class="pf-press-item">
       <div style="min-width:0">
-        <div style="font-size:12.5px;color:var(--color-text-primary);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(p.title)}</div>
-        <div style="font-size:11px;color:var(--color-text-tertiary)">${[p.outlet_name, p.mention_date].filter(Boolean).map(escapeHtml).join(' · ')}</div>
+        <div class="t">${escapeHtml(p.title)}</div>
+        <div class="s">${[p.outlet_name, p.mention_date].filter(Boolean).map(escapeHtml).join(' · ')}</div>
       </div>
-      <span onclick="removePressMention('${p.id}')" title="Remove" style="cursor:pointer;color:var(--color-text-tertiary);font-size:14px;line-height:1;flex-shrink:0">✕</span>
+      <span class="pf-chip-x" onclick="removePressMention('${p.id}')" title="Remove">✕</span>
     </div>`).join('');
 }
 
@@ -514,20 +996,12 @@ async function addPressMention() {
   const outlet_name = document.getElementById('pressOutlet').value.trim() || null;
   const url = document.getElementById('pressUrl').value.trim() || null;
   const mention_date = document.getElementById('pressDate').value || null;
-
-  if (!title) {
-    msg.innerHTML = `<div class="msg error">Title is required.</div>`;
-    return;
-  }
+  if (!title) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Title is required.</div>`; return; }
 
   const { data, error } = await sb.from('creator_press_mentions')
     .insert({ creator_id: profile.id, title, outlet_name, url, mention_date, display_order: pressMentions.length })
-    .select('id, title, outlet_name, url, mention_date')
-    .single();
-  if (error) {
-    msg.innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`;
-    return;
-  }
+    .select('id, title, outlet_name, url, mention_date').single();
+  if (error) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Could not save: ${escapeHtml(error.message)}</div>`; return; }
 
   pressMentions.push(data);
   document.getElementById('pressTitle').value = '';
@@ -535,54 +1009,72 @@ async function addPressMention() {
   document.getElementById('pressUrl').value = '';
   document.getElementById('pressDate').value = '';
   renderPressMentions();
-  msg.innerHTML = `<div class="msg ok">Added.</div>`;
+  msg.innerHTML = `<div class="pf-msg" style="color:#1C7C3F">Added.</div>`;
 }
 
 async function removePressMention(id) {
   const { error } = await sb.from('creator_press_mentions').delete().eq('id', id);
-  const msg = document.getElementById('pressMsg');
-  if (error) {
-    msg.innerHTML = `<div class="msg error">Could not remove: ${escapeHtml(error.message)}</div>`;
-    return;
-  }
+  if (error) { alert('Could not remove: ' + error.message); return; }
   pressMentions = pressMentions.filter(p => p.id !== id);
   renderPressMentions();
 }
 
-// ── Available for / Causes (self-reported tag lists on creators) ─────────
+// ── Available for / Causes ──────────────────────────────────────────
 function renderTagList(containerId, values, removeFn) {
   const el = document.getElementById(containerId);
   if (!el) return;
-  if (!values.length) {
-    el.innerHTML = `<div style="font-size:12px;color:var(--color-text-tertiary)">None added yet.</div>`;
-    return;
-  }
-  el.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:8px">${values.map((v, i) => `
-    <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;background:var(--color-bg-secondary,#F2F1EC);border-radius:20px;padding:5px 10px 5px 12px">
-      ${escapeHtml(v)}
-      <span onclick="${removeFn}(${i})" title="Remove" style="cursor:pointer;color:var(--color-text-tertiary);font-size:13px;line-height:1">✕</span>
-    </span>`).join('')}</div>`;
+  if (!values.length) { el.innerHTML = `<div class="pf-empty">None added yet.</div>`; return; }
+  el.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:0">${values.map((v, i) => `
+    <span class="pf-chip simple">${escapeHtml(v)}<span class="pf-chip-x" onclick="${removeFn}(${i})" title="Remove">✕</span></span>`).join('')}</div>`;
 }
-
 function renderAvailableFor() { renderTagList('availableForTags', creator.available_for || [], 'removeAvailableFor'); }
 function renderCauses() { renderTagList('causesTags', creator.causes || [], 'removeCauses'); }
 
-// ── Cover customization (phase 2) ── all four write straight to
-// Supabase on click/change, same instant-preview-no-save-button pattern
-// as selectEkTheme in evekit.html. Bounded choice sets (not free text)
-// so nothing here can render badly on the public kit.
-const COVER_PATTERN_OPTIONS = [
-  ['none', 'None'], ['dots', 'Dots'], ['lines', 'Lines'], ['waves', 'Waves'],
-];
+async function addAvailableFor() {
+  const input = document.getElementById('availableForInput');
+  const val = input.value.trim();
+  if (!val) return;
+  const updated = [...(creator.available_for || []), val];
+  const { error } = await sb.from('creators').update({ available_for: updated }).eq('id', profile.id);
+  if (error) { alert('Could not save: ' + error.message); return; }
+  creator.available_for = updated;
+  input.value = '';
+  renderAvailableFor();
+}
+async function removeAvailableFor(index) {
+  const updated = [...(creator.available_for || [])];
+  updated.splice(index, 1);
+  const { error } = await sb.from('creators').update({ available_for: updated }).eq('id', profile.id);
+  if (error) { alert('Could not save: ' + error.message); return; }
+  creator.available_for = updated;
+  renderAvailableFor();
+}
+async function addCause() {
+  const input = document.getElementById('causesInput');
+  const val = input.value.trim();
+  if (!val) return;
+  const updated = [...(creator.causes || []), val];
+  const { error } = await sb.from('creators').update({ causes: updated }).eq('id', profile.id);
+  if (error) { alert('Could not save: ' + error.message); return; }
+  creator.causes = updated;
+  input.value = '';
+  renderCauses();
+}
+async function removeCauses(index) {
+  const updated = [...(creator.causes || [])];
+  updated.splice(index, 1);
+  const { error } = await sb.from('creators').update({ causes: updated }).eq('id', profile.id);
+  if (error) { alert('Could not save: ' + error.message); return; }
+  creator.causes = updated;
+  renderCauses();
+}
+
+// ── Cover customization ───────────────────────────────────────────────
+const COVER_PATTERN_OPTIONS = [['none', 'None'], ['dots', 'Dots'], ['lines', 'Lines'], ['waves', 'Waves']];
 function renderCoverPatternPicker() {
   const current = creator.cover_pattern || 'none';
-  document.getElementById('coverPatternPicker').innerHTML = COVER_PATTERN_OPTIONS.map(([key, label]) => `
-    <button type="button" onclick="selectCoverPattern('${key}')"
-      style="padding:6px 12px;margin:0 6px 6px 0;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;
-        border:1px solid ${key === current ? 'var(--color-accent, #5B4FCF)' : 'var(--color-border-tertiary)'};
-        background:${key === current ? 'var(--color-accent, #5B4FCF)' : '#fff'};
-        color:${key === current ? '#fff' : 'inherit'}">${escapeHtml(label)}</button>
-  `).join('');
+  document.getElementById('coverPatternPicker').innerHTML = COVER_PATTERN_OPTIONS.map(([key, label]) =>
+    `<button type="button" class="pf-pill-opt ${key === current ? 'selected' : ''}" onclick="selectCoverPattern('${key}')">${escapeHtml(label)}</button>`).join('');
 }
 async function selectCoverPattern(key) {
   creator.cover_pattern = key;
@@ -593,13 +1085,8 @@ async function selectCoverPattern(key) {
 const AVATAR_SHAPE_OPTIONS = [['circle', 'Circle'], ['rounded', 'Rounded square']];
 function renderAvatarShapePicker() {
   const current = creator.avatar_shape || 'circle';
-  document.getElementById('avatarShapePicker').innerHTML = AVATAR_SHAPE_OPTIONS.map(([key, label]) => `
-    <button type="button" onclick="selectAvatarShape('${key}')"
-      style="padding:6px 12px;margin:0 6px 6px 0;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;
-        border:1px solid ${key === current ? 'var(--color-accent, #5B4FCF)' : 'var(--color-border-tertiary)'};
-        background:${key === current ? 'var(--color-accent, #5B4FCF)' : '#fff'};
-        color:${key === current ? '#fff' : 'inherit'}">${escapeHtml(label)}</button>
-  `).join('');
+  document.getElementById('avatarShapePicker').innerHTML = AVATAR_SHAPE_OPTIONS.map(([key, label]) =>
+    `<button type="button" class="pf-pill-opt ${key === current ? 'selected' : ''}" onclick="selectAvatarShape('${key}')">${escapeHtml(label)}</button>`).join('');
 }
 async function selectAvatarShape(key) {
   creator.avatar_shape = key;
@@ -607,174 +1094,33 @@ async function selectAvatarShape(key) {
   await sb.from('creators').update({ avatar_shape: key }).eq('id', profile.id);
 }
 
-const COVER_TAG_OPTIONS = ['cozycore','lifestyle','outdoorsy','comedy','beauty','fitness','gaming','food','travel','tech','music','fashion','parenting','wellness','diy'];
+const COVER_TAG_OPTIONS = ['cozycore', 'lifestyle', 'outdoorsy', 'comedy', 'beauty', 'fitness', 'gaming', 'food', 'travel', 'tech', 'music', 'fashion', 'parenting', 'wellness', 'diy'];
 function renderCoverTagsPicker() {
   const selected = creator.cover_tags || [];
   document.getElementById('coverTagsPicker').innerHTML = COVER_TAG_OPTIONS.map(tag => {
     const on = selected.includes(tag);
     const disabled = !on && selected.length >= 3;
-    return `<button type="button" ${disabled ? 'disabled' : ''} onclick="toggleCoverTag('${tag}')"
-      style="padding:5px 11px;margin:0 5px 5px 0;border-radius:20px;font-size:11.5px;font-family:inherit;
-        cursor:${disabled ? 'default' : 'pointer'};opacity:${disabled ? '.4' : '1'};
-        border:1px solid ${on ? 'var(--color-accent, #5B4FCF)' : 'var(--color-border-tertiary)'};
-        background:${on ? 'var(--color-accent, #5B4FCF)' : '#fff'};
-        color:${on ? '#fff' : 'inherit'}">#${escapeHtml(tag)}</button>`;
-  }).join('') + `<div style="font-size:10.5px;color:var(--color-text-tertiary);margin-top:4px">${selected.length}/3 selected</div>`;
+    return `<button type="button" class="pf-tag-pill ${on ? 'selected' : ''}" ${disabled ? 'disabled' : ''} onclick="toggleCoverTag('${tag}')">#${escapeHtml(tag)}</button>`;
+  }).join('') + `<div class="pf-tag-counter">${selected.length}/3 selected</div>`;
 }
 async function toggleCoverTag(tag) {
   const current = creator.cover_tags || [];
-  const updated = current.includes(tag)
-    ? current.filter(t => t !== tag)
-    : (current.length >= 3 ? current : [...current, tag]);
+  const updated = current.includes(tag) ? current.filter(t => t !== tag) : (current.length >= 3 ? current : [...current, tag]);
   creator.cover_tags = updated;
   renderCoverTagsPicker();
   await sb.from('creators').update({ cover_tags: updated }).eq('id', profile.id);
 }
-
 async function selectCoverSpotlight(value) {
   creator.cover_spotlight_stat = value || null;
   await sb.from('creators').update({ cover_spotlight_stat: value || null }).eq('id', profile.id);
 }
 
-async function addAvailableFor() {
-  const input = document.getElementById('availableForInput');
-  const val = input.value.trim();
-  if (!val) return;
-  const updated = [...(creator.available_for || []), val];
-  const { error } = await sb.from('creators').update({ available_for: updated }).eq('id', profile.id);
-  if (error) { document.getElementById('msg').innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`; return; }
-  creator.available_for = updated;
-  input.value = '';
-  renderAvailableFor();
-}
-
-async function removeAvailableFor(index) {
-  const updated = [...(creator.available_for || [])];
-  updated.splice(index, 1);
-  const { error } = await sb.from('creators').update({ available_for: updated }).eq('id', profile.id);
-  if (error) { document.getElementById('msg').innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`; return; }
-  creator.available_for = updated;
-  renderAvailableFor();
-}
-
-async function addCause() {
-  const input = document.getElementById('causesInput');
-  const val = input.value.trim();
-  if (!val) return;
-  const updated = [...(creator.causes || []), val];
-  const { error } = await sb.from('creators').update({ causes: updated }).eq('id', profile.id);
-  if (error) { document.getElementById('msg').innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`; return; }
-  creator.causes = updated;
-  input.value = '';
-  renderCauses();
-}
-
-async function removeCauses(index) {
-  const updated = [...(creator.causes || [])];
-  updated.splice(index, 1);
-  const { error } = await sb.from('creators').update({ causes: updated }).eq('id', profile.id);
-  if (error) { document.getElementById('msg').innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`; return; }
-  creator.causes = updated;
-  renderCauses();
-}
-
-function switchProfileTab(tab) {
-  document.querySelectorAll('.ptab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  document.querySelectorAll('.ptab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === tab));
-  // persistentSave's "Save changes" button saves Account/Media Kit fields
-  // only (see save()) -- it has no effect on the Link tab's slug, which
-  // has its own dedicated saveSlug() button right below it. Showing both
-  // on that tab reads as two competing save actions, so hide the generic
-  // one there specifically.
-  const persistentSave = document.getElementById('persistentSave');
-  if (persistentSave) persistentSave.style.display = tab === 'link' ? 'none' : '';
-}
-
-function renderStrengthPanel() {
-  const fields = [
-    { label: 'Display name', id: 'displayName' },
-    { label: 'Niche', id: 'niche' },
-    { label: 'Location', id: 'location' },
-    { label: 'Business email', id: 'businessEmail' },
-  ];
-  const panel = document.getElementById('strengthPanel');
-  if (!panel) return;
-  panel.innerHTML = `
-    <div class="side-panel-title">Profile strength</div>
-    ${fields.map(f => {
-      const el = document.getElementById(f.id);
-      const filled = !!(el && el.value.trim());
-      return `<div class="strength-item"><span>${f.label}</span><div class="strength-dot ${filled ? 'on' : ''}"></div></div>`;
-    }).join('')}
-    <div class="side-panel-note">
-      ${svgIcon('info-circle', {size:16, stroke:'#2563EB'})}
-      <p>A complete profile is required before your first campaign can be verified.</p>
-    </div>
-  `;
-}
-
-async function save() {
-  const btn = document.getElementById('saveBtn');
-  btn.disabled = true;
-
-  const displayName = document.getElementById('displayName').value.trim();
-  const niche = document.getElementById('niche').value.trim();
-  const location = document.getElementById('location').value.trim();
-  const businessEmail = document.getElementById('businessEmail').value.trim();
-  const bio = document.getElementById('bio').value.trim();
-
-  const [{ error: pErr }, { error: cErr }] = await Promise.all([
-    sb.from('profiles').update({ display_name: displayName }).eq('id', profile.id),
-    sb.from('creators').update({ niche, location, business_email: businessEmail, bio }).eq('id', profile.id),
-  ]);
-
-  const msg = document.getElementById('msg');
-  if (pErr || cErr) {
-    msg.innerHTML = `<div class="msg error">Could not save: ${escapeHtml((pErr || cErr).message)}</div>`;
-  } else {
-    msg.innerHTML = `<div class="msg ok">Saved.</div>`;
-  }
-  btn.disabled = false;
-}
-
-async function saveSlug() {
-  const input = document.getElementById('customSlug');
-  const msg = document.getElementById('slugMsg');
-  const val = input.value.trim();
-  msg.innerHTML = '';
-  const { data, error } = await sb.rpc('fn_set_evekit_slug', { p_slug: val });
-  if (error) {
-    msg.innerHTML = `<div class="msg error">Could not save: ${escapeHtml(error.message)}</div>`;
-    return;
-  }
-  if (!data || !data.ok) {
-    msg.innerHTML = `<div class="msg error">${escapeHtml(data?.error || 'Could not save that link.')}</div>`;
-    return;
-  }
-  creator.slug = data.slug;
-  input.value = data.slug;
-  msg.innerHTML = `<div class="msg ok">Saved — your Verified Media Kit and trust link now use this URL.</div>`;
-}
-
-function renderPayoutStatus() {
-  if (creator.stripe_connect_payouts_enabled) {
-    return `<div class="msg ok" style="margin-top:4px">Payouts ready — sponsors can fund and release escrow to you.</div>`;
-  }
-  if (creator.stripe_connect_details_submitted) {
-    return `
-      <div class="msg" style="margin-top:4px;background:#FFF7E6;color:#8A5B0A">Stripe is still verifying your details — this can take a little while.</div>
-      <button class="btn-secondary" style="margin-top:8px" onclick="connectPayouts()">Check status / continue setup</button>`;
-  }
-  return `<button class="btn-secondary" style="margin-top:4px" onclick="connectPayouts()">Connect payout account</button>`;
-}
-
+// ── Payout: balance + Stripe Connect actions ──────────────────────────
 async function loadBalance() {
   const box = document.getElementById('balanceBox');
   if (!box) return;
   const { data: { session } } = await sb.auth.getSession();
-  const res = await fetch('/api/escrow?action=balance', {
-    headers: { 'Authorization': `Bearer ${session?.access_token}` },
-  });
+  const res = await fetch('/api/escrow?action=balance', { headers: { 'Authorization': `Bearer ${session?.access_token}` } });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.connected) { box.style.display = 'none'; return; }
 
@@ -782,13 +1128,14 @@ async function loadBalance() {
   const nextPayout = j.payouts.find(p => p.status === 'pending' || p.status === 'in_transit');
 
   box.innerHTML = `
-    <div style="display:flex;gap:24px;flex-wrap:wrap">
-      <div><div style="font-size:12px;color:var(--color-text-tertiary)">Available</div><div style="font-size:20px;font-weight:600">${fmt(j.availableCents)}</div></div>
-      <div><div style="font-size:12px;color:var(--color-text-tertiary)">Pending</div><div style="font-size:20px;font-weight:600">${fmt(j.pendingCents)}</div></div>
+    <div class="pf-stat-row" style="margin-top:12px;margin-bottom:6px">
+      <div class="pf-stat"><div class="eyebrow">Available</div><div class="val">${fmt(j.availableCents)}</div></div>
+      <div class="pf-stat"><div class="eyebrow">Pending</div><div class="val">${fmt(j.pendingCents)}</div></div>
+      <div class="pf-stat"><div class="eyebrow">Lifetime earned</div><div class="val">${fmt(lifetimeEarnedCents())}</div></div>
     </div>
-    ${nextPayout ? `<div style="margin-top:8px;font-size:13px;color:var(--color-text-secondary)">Next payout: ${fmt(nextPayout.amountCents)} — expected ${new Date(nextPayout.arrivalDate).toLocaleDateString()}</div>` : ''}
-    ${j.pendingCents > 0 ? `<div style="margin-top:10px;font-size:12.5px;color:var(--color-text-tertiary);line-height:1.5">A sponsor releasing your payment moves it here right away, but Stripe holds new payments as "Pending" for a few days before they're payable out — this is standard for every new payout account, not specific to this payment. It'll move to "Available" on its own, no action needed from you.</div>` : ''}
-    <a href="#" onclick="openExpressDashboard(event, this)" style="display:inline-block;margin-top:10px;font-size:12.5px;color:var(--color-primary,#2563EB)">See your full payout history &amp; schedule in Stripe →</a>
+    ${nextPayout ? `<div style="font-size:12.5px;color:var(--pf-ink-soft)">Next payout: ${fmt(nextPayout.amountCents)} — expected ${new Date(nextPayout.arrivalDate).toLocaleDateString()}</div>` : ''}
+    ${j.pendingCents > 0 ? `<div style="margin-top:8px;font-size:11.5px;color:var(--pf-ink-faint);line-height:1.5">A sponsor releasing your payment moves it here right away, but Stripe holds new payments as "Pending" for a few days before they're payable out. It'll move to "Available" on its own.</div>` : ''}
+    <a href="#" onclick="openExpressDashboard(event, this)" style="display:inline-block;margin-top:10px;font-size:12px;color:var(--pf-blue);font-weight:600">See your full payout history &amp; schedule in Stripe →</a>
   `;
 }
 
@@ -797,10 +1144,7 @@ async function openExpressDashboard(e, linkEl) {
   const original = linkEl.textContent;
   linkEl.textContent = 'Opening…';
   const { data: { session } } = await sb.auth.getSession();
-  const res = await fetch('/api/escrow?action=express-dashboard-link', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${session?.access_token}` },
-  });
+  const res = await fetch('/api/escrow?action=express-dashboard-link', { method: 'POST', headers: { 'Authorization': `Bearer ${session?.access_token}` } });
   const j = await res.json().catch(() => ({}));
   linkEl.textContent = original;
   if (!res.ok) { alert(j.error || 'Could not open Stripe dashboard.'); return; }
@@ -809,10 +1153,7 @@ async function openExpressDashboard(e, linkEl) {
 
 async function connectPayouts() {
   const { data: { session } } = await sb.auth.getSession();
-  const res = await fetch('/api/escrow?action=connect-onboarding', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-  });
+  const res = await fetch('/api/escrow?action=connect-onboarding', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` } });
   const j = await res.json().catch(() => ({}));
   if (!res.ok) { alert(j.error || 'Could not start payout setup.'); return; }
   window.location.href = j.url;
@@ -821,13 +1162,8 @@ async function connectPayouts() {
 async function refreshConnectStatusIfReturning() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('connect') !== 'return' && params.get('connect') !== 'refresh') return;
-
   const { data: { session } } = await sb.auth.getSession();
-  await fetch('/api/escrow?action=refresh-connect-status', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-  }).catch(() => {});
-
+  await fetch('/api/escrow?action=refresh-connect-status', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` } }).catch(() => {});
   window.history.replaceState({}, '', window.location.pathname);
   await load();
 }

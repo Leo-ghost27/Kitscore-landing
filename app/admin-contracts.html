@@ -108,7 +108,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
 <script src="icons.js?v=2"></script>
-<script src="nav.js?v=2"></script>
+<script src="nav.js?v=4"></script>
 <script>
 let profile;
 let contracts = [];
@@ -252,6 +252,7 @@ async function openDetail(id) {
     ` : ''}
 
     <textarea id="admin-note" placeholder="${flagged ? "Required: how was this resolved?" : "Required: what's the problem, and where did it come from (email/call/etc)?"}"></textarea>
+    ${!flagged ? `<div style="font-size:10.5px;color:var(--color-text-tertiary);margin-top:2px">This note, plus any scan-flagged clauses above, gets emailed directly to both the sponsor and ${escapeHtml(c.creators.profiles.display_name || 'the creator')} -- not just left on this page.</div>` : ''}
     <div class="modal-actions">
       ${flagged
         ? `<button class="btn-resolve" onclick="resolveProblem('${c.id}')">Mark resolved</button>`
@@ -298,6 +299,36 @@ async function flagProblem(contractId) {
   msgEl.innerHTML = '<div class="msg ok">Flagged.</div>';
   closeModal();
   load();
+
+  // Best-effort notification to both parties -- the flag itself is
+  // already saved above, so a failure here shouldn't block or alarm the
+  // admin. Same "save first, notify best-effort with retries" split as
+  // submitDispute() in app/campaigns.html. Resend-side failures (vs.
+  // network failures) are queued server-side in notification_failures
+  // for scripts/retry-failed-notifications.js to pick up -- no need to
+  // hammer this endpoint again for those.
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    await fetchWithRetry('/api/escrow?action=notify-contract-flag', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ contractId }),
+    }, 2, 600);
+  } catch (err) {
+    console.error('notify-contract-flag error (all retries exhausted):', err);
+  }
+}
+
+async function fetchWithRetry(url, options, retries, delayMs) {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok && retries > 0) throw new Error(`HTTP ${res.status}`);
+    return res;
+  } catch (err) {
+    if (retries <= 0) throw err;
+    await new Promise(r => setTimeout(r, delayMs));
+    return fetchWithRetry(url, options, retries - 1, delayMs * 2);
+  }
 }
 
 async function resolveProblem(contractId) {

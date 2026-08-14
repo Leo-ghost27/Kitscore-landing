@@ -56,7 +56,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
-<script src="nav.js?v=2"></script>
+<script src="nav.js?v=4"></script>
 <script>
 const VERDICT_STYLE = {
   approve: ['b-green','ti-circle-check','Approve'],
@@ -189,17 +189,21 @@ async function load() {
   isTeamOwner = activeMembership?.role === 'owner';
   myTeamId = activeMembership?.team_id || null;
 
-  // Starter sponsors get their first 25 unlocks/period free, then $12 each
-  // (see lib/handlers/billing-checkout.js). Compute what this specific
-  // click will actually cost so the button doesn't just say a flat "$29"
-  // for every sponsor regardless of plan/usage.
+  // Starter/Team sponsors get included unlocks per period, then a
+  // discounted overage rate (see lib/handlers/billing-checkout.js).
+  // Compute what this specific click will actually cost so the button
+  // doesn't just say a flat "$29" for every sponsor regardless of
+  // plan/usage -- was previously Starter-only, leaving Team sponsors
+  // shown the wrong price for what should be a free, included unlock.
+  const PLAN_QUOTA = { starter: 25, team: 150 };
   let unlockLabel = 'Unlock full evaluation — $29';
   let unlockLabelShort = 'Unlock full report — $29';
-  if (sponsorRow?.plan === 'starter') {
+  const quota = PLAN_QUOTA[sponsorRow?.plan];
+  if (quota) {
     const used = sponsorRow.evals_used_this_period || 0;
-    if (used < 25) {
-      unlockLabel = `Unlock full evaluation — free (${used + 1}/25 this period)`;
-      unlockLabelShort = `Unlock full report — free (${used + 1}/25 this period)`;
+    if (used < quota) {
+      unlockLabel = `Unlock full evaluation — free (${used + 1}/${quota} this period)`;
+      unlockLabelShort = `Unlock full report — free (${used + 1}/${quota} this period)`;
     } else {
       unlockLabel = 'Unlock full evaluation — $12';
       unlockLabelShort = 'Unlock full report — $12';
@@ -300,7 +304,7 @@ async function load() {
       </div>
       <div class="paywall-box">
         <h3>${unlockLabel.replace('Unlock full evaluation', 'Unlock the full evaluation')}</h3>
-        <p>${sponsorRow?.plan === 'starter' ? 'Included in your Starter plan allowance, or $12 once you\'ve used all 25 for this period.' : 'One-time payment.'} Includes recommendation, risk assessment, audience fit, evidence summary, and PDF download.</p>
+        <p>${quota ? `Included in your plan's allowance, or $12 once you've used all ${quota} for this period.` : 'One-time payment.'} Includes recommendation, risk assessment, audience fit, evidence summary, and PDF download.</p>
         <button class="cta" onclick="unlock()"><i class="ti ti-lock-open"></i>${unlockLabelShort}</button>
       </div>`;
     return;

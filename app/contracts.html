@@ -92,7 +92,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
 <script src="icons.js?v=1"></script>
-<script src="nav.js?v=2"></script>
+<script src="nav.js?v=4"></script>
 <script>
 let profile;
 let isTeamPlan = false;
@@ -686,18 +686,18 @@ function clauseScanHtml(c) {
   if (c.status === 'draft' || c.status === 'void') return '';
 
   if (!c.clause_scanned_at) {
-    return `<div id="clause-scan-${c.id}" style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Checking contract terms for one-sided liability language…</div>`;
+    return `<div id="clause-scan-${c.id}" style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Checking contract terms for one-sided language and pay/scope mismatches…</div>`;
   }
   if (c.clause_scan_flagged) {
     return `
       <div id="clause-scan-${c.id}" class="msg error" style="margin-top:8px">
-        <div style="font-weight:600;margin-bottom:4px">⚠ This contract may shift extra legal risk onto you</div>
+        <div style="font-weight:600;margin-bottom:4px">⚠ This contract has something worth reviewing before you sign</div>
         <div style="margin-bottom:6px">${escapeHtml(c.clause_scan_rationale || '')}</div>
         ${(c.clause_scan_concerns||[]).map(t => `<div style="font-style:italic;font-size:11px;padding:4px 8px;background:rgba(255,255,255,.5);margin-bottom:4px">"${escapeHtml(t)}"</div>`).join('')}
         <div style="font-size:10.5px;margin-top:4px">This isn't legal advice — it's a pattern flag worth having a lawyer look at, especially before signing.</div>
       </div>`;
   }
-  return `<div id="clause-scan-${c.id}" style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">✓ No one-sided indemnification language found in this contract's terms (automated check, not legal advice)</div>`;
+  return `<div id="clause-scan-${c.id}" style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">✓ No one-sided liability language or pay/scope mismatch found in this contract's terms (automated check, not legal advice)</div>`;
 }
 
 async function ensureClauseScan(contract) {
@@ -777,7 +777,13 @@ async function loadContracts() {
     const canSignAsSponsor = profile.role === 'sponsor' && !c.sponsor_signed_at && c.status !== 'draft' && c.status !== 'void';
     const canSignAsCreator = profile.role === 'creator' && !c.creator_signed_at && c.status !== 'draft' && c.status !== 'void';
     const canSend = profile.role === 'sponsor' && c.status === 'draft';
-    const canVoid = profile.role === 'sponsor' && c.status !== 'fully_signed' && c.status !== 'void';
+    // Mirrors fn_validate_contract_changes exactly -- a fully-signed
+    // contract is only voidable while Kitscore has an active flag on it
+    // (disputed_at set, unresolved) and no escrow funds have moved yet.
+    // Otherwise blocked, same as before, to stop a sponsor backing out
+    // of a completed binding deal at will.
+    const canVoid = profile.role === 'sponsor' && c.status !== 'void' &&
+      (c.status !== 'fully_signed' || (c.disputed_at && !c.admin_resolved_at && c.escrow_status === 'not_funded'));
 
     const hasEscrow = c.escrow_amount_cents != null;
     const escrowDollars = hasEscrow ? (c.escrow_amount_cents / 100).toFixed(2) : null;

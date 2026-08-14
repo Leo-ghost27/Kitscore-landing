@@ -88,7 +88,7 @@
   .nav-links { display: flex; gap: 24px; align-items: center; }
   .nav-link { font-size: 13px; font-weight: 500; color: var(--muted); transition: color 0.15s; }
   .nav-link:hover { color: var(--text); }
-  .nav-link--audience { padding: 5px 10px; border-radius: 4px; background: var(--accent-dim); color: var(--accent) !important; }
+  .nav-link--audience { padding: 5px 10px; border-radius: 0; background: var(--accent-dim); color: var(--accent) !important; }
   .nav-link--audience:hover { background: var(--accent-dim2); color: var(--accent-light) !important; }
   .nav-cta {
     background: var(--accent); color: #fff;
@@ -167,7 +167,7 @@
   .platform-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
   .platform-row-label { font-size: 11px; color: var(--muted); font-weight: 500; }
   .platform-row svg { width: 18px; height: 18px; color: var(--muted); flex-shrink: 0; }
-  .hero-no-min { font-size: 12.5px; color: var(--green, #2E7D32); font-weight: 600; margin: 0 0 22px; }
+  .hero-no-min { font-size: 12.5px; color: var(--muted); font-weight: 400; margin: 0 0 4px; }
 
   .journey-card { background: var(--bg2); border: 1px solid var(--border); padding: 28px 28px 24px; }
   .journey-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 22px; }
@@ -260,6 +260,7 @@
   .info-quote { border-left: 2px solid var(--accent); padding: 9px 12px; background: var(--accent-dim); font-size: 11.5px; color: var(--text); font-style: italic; line-height: 1.6; margin-top: 8px; }
   .info-quote-cite { font-size: 10.5px; color: var(--muted); margin-top: 4px; font-style: normal; }
   .info-more { display: block; margin-top: 10px; font-size: 11.5px; color: var(--accent); font-weight: 600; text-decoration: none; }
+  @media (min-width: 901px) { .info-grid-4 .row2-col2 { grid-column: 2; } .info-grid-4 .row2-col3 { grid-column: 3; } }
   @media (max-width: 900px) { .info-grid-4 { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 640px) { .info-grid-3, .info-grid-4 { grid-template-columns: 1fr; } .info-flip { height: auto; min-height: 240px; } }
 
@@ -293,7 +294,7 @@
 
   /* SECTION EYEBROW WITH ICON CHIP */
   .eyebrow-chip-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-  .eyebrow-chip { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .eyebrow-chip { width: 22px; height: 22px; border-radius: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .eyebrow-chip.creator { background: var(--accent-dim); }
   .eyebrow-chip.sponsor { background: var(--accent-dim); }
 
@@ -918,8 +919,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="Discord"><title>Discord</title><path d="M7 8.5C9 7 15 7 17 8.5"/><path d="M6 9c-2 3-2.5 6-2 8 2 1.5 4 2 4 2l1-2"/><path d="M18 9c2 3 2.5 6 2 8-2 1.5-4 2-4 2l-1-2"/><circle cx="9" cy="13" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="13" r="1.1" fill="currentColor" stroke="none"/></svg>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="TikTok"><title>TikTok</title><path d="M13 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M13 3c.3 2.5 2 4.3 4.5 4.6"/></svg>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="YouTube"><title>YouTube</title><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="Instagram"><title>Instagram</title><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
       </div>
-      <h1>Your next <span class="accent">brand</span> deal<br>starts with <span class="accent">proof</span>,<br><em>not promise.</em></h1>
+      <h1>Your next <span class="accent">brand</span> deal<br>starts with <span class="accent">proof</span>,<br><em>not promises.</em></h1>
       <p class="hero-sub">Sponsors don't trust follower counts anymore. They trust evidence. Claim your profile, verify your campaigns, and get your Kitscore — the number that gets you hired.</p>
       <p class="hero-no-min" style="margin-bottom:4px">No credit card. No follower minimum. Nano and micro creators welcome.</p>
       <p class="hero-no-min">Not scraped from your posts — confirmed by the sponsors you worked with.</p>
@@ -1084,7 +1086,7 @@
             </div>
             <div class="aud-list-item">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-              <div><strong>Contract scan</strong><span>flags one-sided terms</span></div>
+              <div><strong>Contract scan</strong><span>flags one-sided or no-pay terms</span></div>
             </div>
           </div>
           <a href="/agencies.html" class="hiw2-more">See the full sponsor journey →</a>
@@ -1169,6 +1171,7 @@
             <a href="/app/auth.html" class="btn-primary aud-cta" style="text-decoration:none">Browse open briefs</a>
             <a href="/app/auth.html" class="btn-ghost aud-cta" style="text-decoration:none">Already have a sponsor?</a>
           </div>
+          <p style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">Bring a deal you already have — get the contract, clause scan, and escrow protection on it too, no re-pitching needed</p>
         </div>
       </div>
     </div>
@@ -1302,10 +1305,13 @@
     wireAudCard('repWrapReliability', 'repFlipReliability');
     wireAudCard('repWrapRatings', 'repFlipRatings');
     wireAudCard('repWrapProcess', 'repFlipProcess');
+    wireAudCard('repWrapRateBenchmark', 'repFlipRateBenchmark');
     wireAudCard('methWrapComponents', 'methFlipComponents');
     wireAudCard('methWrapTiers', 'methFlipTiers');
     wireAudCard('methWrapConfidence', 'methFlipConfidence');
     wireAudCard('methWrapSafety', 'methFlipSafety');
+    wireAudCard('methWrapPitchGuard', 'methFlipPitchGuard');
+    wireAudCard('methWrapSponsorReports', 'methFlipSponsorReports');
   });
 })();
 </script>
@@ -1570,6 +1576,7 @@
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Verified campaign history, not self-reported claims</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Mutual confirmation between creator and sponsor</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Sponsor endorsements and reliability scores — every number comes with proof</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Runs the other way too — creators rate sponsors, visible on every open brief before anyone applies</li>
           </ul>
         </div>
       </div>
@@ -1759,7 +1766,7 @@
   <h2 class="section-h">The strongest signal isn't follower count.<br>It's proven sponsorship history.</h2>
   <p class="section-sub" style="margin-bottom:28px">Built from real campaign data, mutual confirmations, and sponsor endorsements — not self-reported claims. This is the centerpiece of every creator profile.</p>
 
-  <div class="info-grid info-grid-3">
+  <div class="info-grid info-grid-4">
 
     <div class="info-wrap" id="repWrapReliability">
       <div class="info-flip" id="repFlipReliability">
@@ -1825,6 +1832,28 @@
             <div class="vc-step" style="font-size:11.5px">4 · Campaign evidence submitted</div>
             <div class="vc-step" style="font-size:11.5px;border-color:var(--accent);color:var(--accent);background:var(--accent-dim)">5 · ✓ Verified Campaign confirmed</div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-wrap" id="repWrapRateBenchmark">
+      <div class="info-flip" id="repFlipRateBenchmark">
+        <div class="info-face info-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2H10a2 2 0 0 0-2 2v16"/></svg>
+            <span class="info-pill">Verified Rate Benchmark</span>
+          </div>
+          <div class="info-headline">What you'd actually get paid</div>
+          <p class="info-desc">Not a formula guess — pulled from real, funded Kitscore Escrow contracts for creators in your niche.</p>
+          <div class="info-tap-hint">tap to see how it works</div>
+        </div>
+        <div class="info-face info-back">
+          <div class="info-back-title">Real deals, not self-reported guesses</div>
+          <div class="info-back-row"><strong>Source</strong><span>Funded Escrow contracts only</span></div>
+          <div class="info-back-row"><strong>Minimum sample</strong><span>3+ comparable deals</span></div>
+          <div class="info-back-row"><strong>Match on</strong><span>Niche + trust score tier</span></div>
+          <p class="info-back-note">Every other rate calculator in this space runs on self-reported or estimated numbers. This one runs on settled transactions — and it's a growing dataset, so early creators help build it, not just use it.</p>
+          <a href="/app/auth.html" class="info-more">Check your rate →</a>
         </div>
       </div>
     </div>
@@ -1929,7 +1958,52 @@
           <div class="info-back-row"><strong>Misinformation history</strong></div>
           <div class="info-back-row"><strong>Controversy history</strong></div>
           <div class="info-back-row" style="border-bottom:none"><strong>Family safety</strong></div>
+          <p class="info-back-note">Beyond the self-assessment, we automatically scan a creator's actual video titles for risk signals — not just their answers.</p>
           <a href="/methodology.html#brand-safety" class="info-more">See all 8 points →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-wrap row2-col2" id="methWrapPitchGuard">
+      <div class="info-flip" id="methFlipPitchGuard">
+        <div class="info-face info-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span class="info-pill">Pitch protection</span>
+          </div>
+          <div class="info-headline">Proof a brand can't argue with</div>
+          <p class="info-desc">Every pitch you submit is timestamped and hashed the moment you send it</p>
+          <div class="info-tap-hint">tap for detail</div>
+        </div>
+        <div class="info-face info-back">
+          <div class="info-back-title">If a brand ghosts, then reuses your idea</div>
+          <div class="info-back-row"><strong>Locked at</strong><span>the moment you submit</span></div>
+          <div class="info-back-row"><strong>Tamper-evident</strong><span>SHA-256 hash</span></div>
+          <div class="info-back-row"><strong>Editable after</strong><span>never — by either side</span></div>
+          <p class="info-back-note">Download a certificate with the exact pitch text, hash, and locked timestamp — something you can actually point to.</p>
+          <a href="/app/auth.html" class="info-more">See how it works →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-wrap row2-col3" id="methWrapSponsorReports">
+      <div class="info-flip" id="methFlipSponsorReports">
+        <div class="info-face info-front">
+          <div class="info-top-row">
+            <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            <span class="info-pill">Sponsor accountability</span>
+          </div>
+          <div class="info-headline">If a sponsor goes quiet, it doesn't just disappear</div>
+          <p class="info-desc">Report ghosting or idea theft during brief discussion, free, right from the brief</p>
+          <div class="info-tap-hint">tap for detail</div>
+        </div>
+        <div class="info-face info-back">
+          <div class="info-back-title">How it works</div>
+          <div class="info-back-row"><strong>Cost</strong><span>Free, every creator</span></div>
+          <div class="info-back-row"><strong>Reviewed</strong><span>by our team, before it counts</span></div>
+          <div class="info-back-row"><strong>Feeds</strong><span>that sponsor's public reliability score</span></div>
+          <p class="info-back-note">Other creators see the real picture before they ever apply.</p>
+          <a href="/app/auth.html" class="info-more">See how it works →</a>
         </div>
       </div>
     </div>
@@ -1938,6 +2012,7 @@
 </section>
 
 <!-- PRICING -->
+<div class="band-alt">
 <section id="pricing" style="padding-top:24px">
   <div class="section-label" style="text-align:center">Pricing</div>
   <h2 class="section-h" style="text-align:center">Simple, <strong>transparent pricing.</strong></h2>
@@ -2104,8 +2179,12 @@
         <li>Public profile &amp; sponsor directory listing</li>
         <li>Shareable trust link — quick verification</li>
         <li>Verified Media Kit + free PDF export — the pitch you send cold</li>
-        <li>Rate calculator &amp; score breakdown</li>
+        <li>Verified Rate Benchmark &amp; score breakdown — what similar creators actually got paid, not a formula guess</li>
         <li>Briefs, contracts &amp; <strong>Kitscore Escrow</strong> — apply to open deals, sign terms, get paid safely, all included free</li>
+        <li>Automatic contract clause scan — flags one-sided terms and fake "ambassador program" pay mismatches before you sign</li>
+        <li>Split payment into milestones — get paid in stages instead of waiting on one lump release</li>
+        <li>Pitch protection — every pitch timestamped, hashed, and locked the moment you submit it</li>
+        <li>Report ghosting or idea theft — free, reviewed before it affects a sponsor's public score</li>
       </ul>
       <a href="/app/auth.html" class="plan-card2-cta outline">Get Started Free</a>
     </div>
@@ -2129,11 +2208,11 @@
     </div>
   </div>
 </section>
+</div>
 
 <hr class="section-divider" />
 
 <!-- FAQ -->
-<div class="band-alt">
 <section id="faq" style="padding:64px 2rem;max-width:800px;margin:0 auto">
   <div class="section-label" style="text-align:center">FAQ</div>
   <h2 class="section-h" style="text-align:center;margin-bottom:32px">Questions sponsors ask<br>before they buy.</h2>
@@ -2164,7 +2243,6 @@
     </details>
   </div>
 </section>
-</div>
 
 <hr class="section-divider" />
 

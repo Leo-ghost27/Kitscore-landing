@@ -32,6 +32,8 @@
   .msg.error{background:#FDECEC;color:#B42318}
   .msg.ok{background:#E9F7EE;color:#1C7C3F}
   .age-tag{font-size:10px;color:var(--color-text-tertiary)}
+  .outcome-tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;background:var(--color-background-secondary);color:var(--color-text-secondary);white-space:nowrap}
+  .btn-reject{font-size:11px;padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);background:#fff;color:#B42318;cursor:pointer}
 </style>
 </head>
 <body>
@@ -40,10 +42,15 @@
   <div class="app-main">
     <div class="ptitle">Dispute Arbitration</div>
     <div class="card" style="background:var(--color-background-secondary);border:none">
-      <div style="font-size:11.5px;color:var(--color-text-secondary)">Campaigns a creator has disputed. Left alone, resolution only lets the same two parties bounce it back to <code>pending</code> — if they can't agree, it loops forever. Arbitrating here either upholds it (<code>verified</code>, bypassing the normal mutual-confirmation requirement) or closes it out for good (<code>cancelled</code>). Both are logged to <code>admin_actions</code>.</div>
+      <div style="font-size:11.5px;color:var(--color-text-secondary)">Two separate queues, kept apart because they're different problems. <strong>Campaign disputes</strong>: campaigns a creator has disputed post-hoc. Left alone, resolution only lets the same two parties bounce it back to <code>pending</code> — if they can't agree, it loops forever. Arbitrating here either upholds it (<code>verified</code>, bypassing the normal mutual-confirmation requirement) or closes it out for good (<code>cancelled</code>). <strong>Sponsor reports</strong>: a creator reported being ghosted or having an idea used without a real booking, via <code>sponsor_reports</code> (see app/briefs.html) — no campaign or contract exists for these, so there's nothing to verify/cancel. Approving one counts it toward that sponsor's public reliability score (<code>fn_sponsor_reliability</code>) automatically; rejecting one doesn't. Both queues log to <code>admin_actions</code>.</div>
     </div>
     <div class="card">
+      <div class="sec">Campaign disputes</div>
       <div id="list" class="loading">Loading…</div>
+    </div>
+    <div class="card">
+      <div class="sec">Sponsor reports</div>
+      <div id="report-list" class="loading">Loading…</div>
     </div>
   </div>
 </div>
@@ -51,7 +58,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
 <script src="icons.js?v=2"></script>
-<script src="nav.js?v=2"></script>
+<script src="nav.js?v=4"></script>
 <script>
 let profile;
 let campaigns = [];
@@ -75,6 +82,7 @@ async function load() {
 
   campaigns = data || [];
   render();
+  loadReports();
 }
 
 async function render() {
@@ -145,6 +153,100 @@ async function resolve(id, outcome) {
   msgEl.innerHTML = '<div class="msg ok">Resolved.</div>';
   campaigns = campaigns.filter(c => c.id !== id);
   render();
+}
+
+const OUTCOME_LABEL = {
+  never_booked_after_discussion: 'Ghosted before booking',
+  ghosted_after_delivery: 'Ghosted after delivery',
+  paid_late: 'Paid late',
+  other: 'Other',
+};
+
+let reports = [];
+
+async function loadReports() {
+  const listEl = document.getElementById('report-list');
+  const { data, error } = await sb.from('sponsor_reports')
+    .select('*, sponsors!inner(company_name), creators!inner(id, profiles!inner(display_name)), campaign_briefs(title)')
+    .eq('review_status', 'pending_review')
+    .order('created_at', { ascending: true });
+
+  if (error) { listEl.textContent = 'Could not load: ' + error.message; return; }
+  reports = data || [];
+  renderReports();
+}
+
+function renderReports() {
+  const listEl = document.getElementById('report-list');
+  if (!reports.length) {
+    listEl.innerHTML = '<div class="empty">No pending reports.</div>';
+    return;
+  }
+
+  listEl.innerHTML = reports.map(r => {
+    const age = daysSince(r.created_at);
+    return `
+    <div class="row-item">
+      <div class="row-top">
+        <div class="row-main">
+          <span class="fname">${escapeHtml(r.sponsors?.company_name || 'Unknown sponsor')}</span>
+          <span class="row-meta">Reported by ${escapeHtml(r.creators?.profiles?.display_name || 'Unknown creator')}${r.campaign_briefs?.title ? ' · re: ' + escapeHtml(r.campaign_briefs.title) : ''}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="outcome-tag">${OUTCOME_LABEL[r.outcome] || r.outcome}</span>
+          <span class="age-tag">${age !== null ? age + 'd old' : ''}</span>
+          <button class="btn-toggle" onclick="toggleReportArb('${r.id}')">Review</button>
+        </div>
+      </div>
+      ${r.notes ? `<div class="dispute-reason-note">${svgIcon('alert-triangle',{size:12})} Creator's account: ${escapeHtml(r.notes)}</div>` : ''}
+      <div class="arb-panel" id="report-arb-${r.id}">
+        <textarea id="report-note-${r.id}" placeholder="Required: reasoning for this decision (logged permanently)"></textarea>
+        <div class="arb-actions">
+          <button class="btn-verify" onclick="resolveReport('${r.id}','approved')">Approve — counts toward sponsor's score</button>
+          <button class="btn-reject" onclick="resolveReport('${r.id}','rejected')">Reject</button>
+        </div>
+        <div id="report-msg-${r.id}"></div>
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+function toggleReportArb(id) {
+  document.getElementById(`report-arb-${id}`).classList.toggle('open');
+}
+
+async function resolveReport(id, outcome) {
+  const note = document.getElementById(`report-note-${id}`).value.trim();
+  const msgEl = document.getElementById(`report-msg-${id}`);
+  if (!note) { msgEl.innerHTML = '<div class="msg error">Give a reason for this decision.</div>'; return; }
+
+  // fn_validate_sponsor_report only lets fn_is_admin() touch review_status
+  // / reviewed_at / reviewer_id / reviewer_note -- everything else on a
+  // submitted report is locked, including for admins. Approving one feeds
+  // trg_sponsor_reliability_on_report_review, which recalculates the
+  // sponsor's persisted reliability_score/payment_reliability
+  // automatically -- no separate recalc call needed here.
+  const { error } = await sb.from('sponsor_reports').update({
+    review_status: outcome,
+    reviewed_at: new Date().toISOString(),
+    reviewer_id: profile.id,
+    reviewer_note: note,
+  }).eq('id', id);
+  if (error) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+
+  const { error: logError } = await sb.from('admin_actions').insert({
+    admin_id: profile.id,
+    action_type: outcome === 'approved' ? 'sponsor_report_approved' : 'sponsor_report_rejected',
+    target_table: 'sponsor_reports',
+    target_id: id,
+    note,
+  });
+  if (logError) console.error('admin_actions log failed:', logError.message);
+
+  msgEl.innerHTML = '<div class="msg ok">Resolved.</div>';
+  reports = reports.filter(r => r.id !== id);
+  renderReports();
 }
 
 load();

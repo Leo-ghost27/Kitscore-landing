@@ -97,7 +97,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
 <script src="icons.js?v=1"></script>
-<script src="nav.js?v=2"></script>
+<script src="nav.js?v=4"></script>
 <script>
 let profile;
 let isCreatorPro = false;
@@ -240,6 +240,7 @@ async function loadSponsorBriefs() {
             <div style="font-size:13px;font-weight:600;color:var(--ink)">${escapeHtml(a.creators.profiles.display_name)}</div>
             ${a.pitch_message ? `<div style="font-size:12.5px;color:var(--ink-soft);margin-top:2px;max-width:520px">${escapeHtml(a.pitch_message)}</div>` : ''}
             ${a.proposed_rate ? `<div style="font-size:11.5px;color:var(--ink-soft);margin-top:2px">Proposed: ${escapeHtml(a.proposed_rate)}</div>` : ''}
+            ${pitchEvidenceBadge(a)}
           </div>
           <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
             <span class="status-tag st-${a.status}">${a.status}</span>
@@ -272,37 +273,117 @@ async function updateApplication(appId, status) {
   loadSponsorBriefs();
 }
 
+// ── Pitch evidence: shared by both the sponsor's applicant list and the
+// creator's "my applications" view. An application only has pitch_hash /
+// pitch_locked_at once the DB trigger in
+// supabase/2026-08-10-pitch-evidence-logging.sql has run on it (i.e. every
+// application from here on) — older rows from before this migration won't
+// have it, hence the guard.
+function pitchEvidenceBadge(app) {
+  if (!app || !app.pitch_locked_at) return '';
+  const when = new Date(app.pitch_locked_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const shortHash = app.pitch_hash ? app.pitch_hash.slice(0, 10) : '';
+  return `
+    <div style="display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px;color:var(--ink-soft)">
+      <span style="display:inline-flex;align-items:center;gap:3px">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        Evidence logged ${escapeHtml(when)} · <span style="font-family:monospace">${escapeHtml(shortHash)}…</span>
+      </span>
+      <button class="toggle-link" style="font-size:11px;padding:0" onclick="downloadPitchEvidence('${app.id}')">Download certificate</button>
+    </div>`;
+}
+
+async function downloadPitchEvidence(applicationId) {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/documents?type=pitch-evidence', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ applicationId }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      try { alert('Could not generate certificate: ' + (JSON.parse(text).error || 'unknown')); }
+      catch { alert('Could not generate certificate (' + res.status + '): ' + text.slice(0, 200)); }
+      return;
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'kitscore-pitch-evidence.pdf';
+    document.body.appendChild(a); a.click(); a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) { alert('Certificate download failed: ' + err.message); }
+}
+
 // ── Creator: browse and apply ──────────────────────────────────────────────
 async function loadOpenBriefs() {
   const listEl = document.getElementById('list');
-  const [{ data: briefs, error }, { data: myApps }] = await Promise.all([
-    sb.from('campaign_briefs').select('*, sponsors!inner(company_name)').eq('status', 'open').order('created_at', { ascending: false }),
+  const [{ data: myApps }, { data: myReports }] = await Promise.all([
     sb.from('brief_applications').select('*').eq('creator_id', profile.id),
+    sb.from('sponsor_reports').select('related_brief_id').eq('creator_id', profile.id),
   ]);
+
+  const appByBrief = {};
+  (myApps || []).forEach(a => { appByBrief[a.brief_id] = a; });
+  const reportedBriefIds = new Set((myReports || []).map(r => r.related_brief_id));
+
+  // Open briefs, plus any brief the creator has ever applied to regardless
+  // of its current status -- a brief that goes quiet often gets closed by
+  // the sponsor around the same time, and a creator who applied needs to
+  // keep seeing it (evidence certificate, report-an-issue) even after that,
+  // not lose it the moment status leaves 'open'.
+  const appliedBriefIds = Object.keys(appByBrief);
+  const orParts = ['status.eq.open'];
+  if (appliedBriefIds.length) orParts.push(`id.in.(${appliedBriefIds.join(',')})`);
+  const { data: briefs, error } = await sb.from('campaign_briefs')
+    .select('*, sponsors!inner(company_name)').or(orParts.join(',')).order('created_at', { ascending: false });
 
   if (error) { listEl.innerHTML = '<div class="empty">Could not load open briefs.</div>'; return; }
   if (!briefs || !briefs.length) { listEl.innerHTML = '<div class="empty">No open briefs right now — check back soon.</div>'; return; }
 
-  const appByBrief = {};
-  (myApps || []).forEach(a => { appByBrief[a.brief_id] = a; });
+  // Sponsor reliability, from creators who've actually worked with them --
+  // shown here specifically so it functions as real protection (seen
+  // before applying), not just a retrospective log buried on a profile
+  // nobody visits.
+  const uniqueSponsorIds = [...new Set(briefs.map(b => b.sponsor_id))];
+  const reliabilityEntries = await Promise.all(
+    uniqueSponsorIds.map(async id => [id, (await sb.rpc('fn_sponsor_reliability', { p_sponsor_id: id })).data?.[0] || null])
+  );
+  const reliabilityBySponsor = Object.fromEntries(reliabilityEntries);
 
   listEl.innerHTML = briefs.map(b => {
     const myApp = appByBrief[b.id];
     const deadlineStr = b.application_deadline ? new Date(b.application_deadline).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : null;
+    const rel = reliabilityBySponsor[b.sponsor_id];
+    const warningCount = rel ? (rel.ghosted_count || 0) + (rel.never_booked_count || 0) : 0;
+    const reliabilityHtml = rel
+      ? `<div style="font-size:11.5px;margin-top:2px">
+          <span style="color:var(--ink-soft)">★ ${rel.avg_rating} sponsor rating (${rel.sample_size} creator${rel.sample_size === 1 ? '' : 's'})</span>
+          ${warningCount ? ` <span style="color:#B42318;font-weight:600">· ${warningCount} report${warningCount === 1 ? '' : 's'} of ghosting or not booking after discussion</span>` : ''}
+        </div>`
+      : `<div style="font-size:11.5px;color:var(--ink-faint);margin-top:2px">New sponsor — no creator ratings yet</div>`;
     return `
     <div class="row-item">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
         <div>
           <div class="brief-title">${escapeHtml(b.title)}</div>
           <div class="brief-meta">${escapeHtml(b.sponsors.company_name)}${b.budget_range ? ' · ' + escapeHtml(b.budget_range) : ''}${deadlineStr ? ' · Apply by ' + deadlineStr : ''}</div>
+          ${reliabilityHtml}
         </div>
         ${myApp ? `<span class="status-tag st-${myApp.status}">${myApp.status==='pending'?'Applied':myApp.status}</span>` : ''}
       </div>
+      ${myApp ? pitchEvidenceBadge(myApp) : ''}
       <div class="brief-desc">${escapeHtml(b.description)}</div>
       ${b.platforms && b.platforms.length ? `<div class="brief-tags">${b.platforms.map(p=>`<span class="brief-tag">${escapeHtml(p)}</span>`).join('')}</div>` : ''}
       ${b.deliverables ? `<div style="font-size:12px;color:var(--ink-soft);margin-bottom:4px"><b>Deliverables:</b> ${escapeHtml(b.deliverables)}</div>` : ''}
       ${b.min_followers ? `<div style="font-size:12px;color:var(--ink-soft)"><b>Minimum followers:</b> ${Number(b.min_followers).toLocaleString()}</div>` : ''}
       ${!myApp ? `<button class="toggle-link" style="margin-top:8px" onclick="toggleApplyForm('${b.id}')">Apply to this brief</button>` : myApp.status==='pending' ? `<button class="toggle-link" style="margin-top:8px;color:#B42318" onclick="withdrawApplication('${myApp.id}','${b.id}')">Withdraw application</button>` : ''}
+      ${myApp && ['accepted','rejected','withdrawn'].includes(myApp.status) ? (
+        reportedBriefIds.has(b.id)
+          ? `<div style="font-size:11px;color:var(--ink-faint);margin-top:8px">Report submitted — pending review</div>`
+          : `<button class="toggle-link" style="margin-top:8px;color:#B42318" onclick="toggleReportForm('${b.id}')">Report an issue</button>`
+      ) : ''}
     </div>
     <div class="apply-panel" id="apply-panel-${b.id}" style="display:none">
       <div class="field"><label>Your pitch</label>
@@ -317,6 +398,21 @@ async function loadOpenBriefs() {
       </div>
       <button class="cta" onclick="applyToBrief('${b.id}')">Submit application</button>
       <div id="apply-msg-${b.id}"></div>
+    </div>
+    <div class="apply-panel" id="report-panel-${b.id}" style="display:none">
+      <div class="field"><label>What happened?</label>
+        <select id="report-outcome-${b.id}">
+          <option value="never_booked_after_discussion">We discussed this brief but it never turned into a booking</option>
+          <option value="other">Something else (e.g. my pitch/idea was used without me)</option>
+        </select>
+      </div>
+      <div class="field"><label>Details</label>
+        <textarea id="report-notes-${b.id}" placeholder="What happened, and when"></textarea>
+      </div>
+      ${myApp && myApp.pitch_locked_at ? `<div style="font-size:11px;color:var(--ink-soft);margin-bottom:10px">Your locked pitch evidence (${myApp.pitch_hash ? myApp.pitch_hash.slice(0,10)+'…' : ''}, ${new Date(myApp.pitch_locked_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}) will be referenced with this report.</div>` : ''}
+      <div style="font-size:11px;color:var(--ink-faint);margin-bottom:10px">Reports are reviewed by our team before they affect this sponsor's public reliability score — this isn't published immediately.</div>
+      <button class="cta" onclick="submitSponsorReport('${b.id}')">Submit report</button>
+      <div id="report-msg-${b.id}"></div>
     </div>`;
   }).join('');
 }
@@ -324,6 +420,33 @@ async function loadOpenBriefs() {
 function toggleApplyForm(briefId) {
   const el = document.getElementById('apply-panel-' + briefId);
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleReportForm(briefId) {
+  const el = document.getElementById('report-panel-' + briefId);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitSponsorReport(briefId) {
+  const brief = document.getElementById('report-panel-' + briefId);
+  const outcome = document.getElementById('report-outcome-' + briefId).value;
+  const notes = document.getElementById('report-notes-' + briefId).value.trim();
+  const msgEl = document.getElementById('report-msg-' + briefId);
+
+  const { data: briefRow } = await sb.from('campaign_briefs').select('sponsor_id').eq('id', briefId).maybeSingle();
+  if (!briefRow) { msgEl.innerHTML = '<div class="msg error">Could not find this brief.</div>'; return; }
+
+  const { error } = await sb.from('sponsor_reports').insert({
+    creator_id: profile.id,
+    sponsor_id: briefRow.sponsor_id,
+    related_brief_id: briefId,
+    outcome,
+    notes: notes || null,
+  });
+
+  if (error) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  msgEl.innerHTML = '<div class="msg ok">Report submitted — our team will review it.</div>';
+  await loadOpenBriefs();
 }
 
 async function draftPitch(briefId) {
