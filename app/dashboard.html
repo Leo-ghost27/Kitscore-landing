@@ -303,6 +303,23 @@
   .pf-gallery-grid{grid-template-columns:repeat(2,1fr)}
   .pf-two-col{grid-template-columns:1fr}
 }
+
+/* ── Visual system pass (blueprint step 7): apply the Media Kit tab's
+   Fraunces/Space Grotesk look to the rest of Dashboard's chrome. CSS-only --
+   no tab's HTML structure changes, so this is scoped to visual risk only. ── */
+body{font-family:'Space Grotesk',sans-serif}
+.card{background:#fff;border:1px solid var(--pf-line);border-radius:var(--pf-radius);padding:22px 24px;box-shadow:var(--pf-shadow);margin-bottom:18px}
+.sec{font-family:'Fraunces',serif;font-size:15px;font-weight:600;letter-spacing:normal;text-transform:none;color:var(--pf-ink);margin-bottom:10px}
+.dash-tab{border-radius:14px;box-shadow:var(--pf-shadow)}
+.dash-tab.active{border-color:var(--pf-blue);background:linear-gradient(135deg,#F0F4FF,#EAF9F6)}
+.dash-tab.active .dash-tab-icon{color:var(--pf-blue)}
+.dash-tab.active .dash-tab-label{color:var(--pf-blue-deep)}
+.progress-fill{background:linear-gradient(90deg,var(--pf-blue),var(--pf-teal))}
+.step-dot.dot-done{background:var(--pf-blue)}
+.step-dot.dot-current{border-color:var(--pf-blue)}
+.step-dot.dot-current::after{background:var(--pf-blue)}
+.step-row .step-next{color:var(--pf-blue)}
+.ms-bar-fill{background:linear-gradient(90deg,var(--pf-blue),var(--pf-teal))}
 </style>
 </head>
 <body>
