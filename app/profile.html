@@ -240,10 +240,14 @@
     <div class="pf-tabs" id="tabsRow" style="display:none">
       <button class="pf-tab active" data-tab="account" onclick="switchProfileTab('account')">Account Setup</button>
       <button class="pf-tab" data-tab="payout" onclick="switchProfileTab('payout')">Payout</button>
+      <button class="pf-tab" data-tab="mediakit" onclick="switchProfileTab('mediakit')">Verified Media Kit</button>
+      <button class="pf-tab" data-tab="share" onclick="switchProfileTab('share')">Link &amp; Share</button>
     </div>
 
     <div class="pf-panel active" id="panel-account"></div>
     <div class="pf-panel" id="panel-payout"></div>
+    <div class="pf-panel" id="panel-mediakit"></div>
+    <div class="pf-panel" id="panel-share"></div>
 
   </div>
 </div>
@@ -305,6 +309,8 @@ async function load() {
   renderHero();
   renderAccountPanel();
   renderPayoutPanel();
+  renderMediaKitPanel();
+  renderSharePanel();
   document.getElementById('tabsRow').style.display = '';
 
   if (creator.stripe_connect_payouts_enabled) loadBalance();
@@ -484,6 +490,536 @@ function renderPayoutPanel() {
     </div>
   `;
 }
+
+function renderMediaKitPanel() {
+  document.getElementById('panel-mediakit').innerHTML = `
+    <div class="pf-mk-hero">
+      <div>
+        <div class="t">Your verified media kit</div>
+        <div class="s">Auto-generated from live platform data — always up to date, never inflated.</div>
+      </div>
+      <button class="pf-btn pf-btn-primary" id="dlBtn" onclick="downloadEveKitPdf()">Download PDF</button>
+    </div>
+
+    <div class="pf-mk-grid">
+      <div class="pf-mk-stat"><div class="val">${fmtCount(totalReach())}</div><div class="lab">Total reach</div></div>
+      <div class="pf-mk-stat"><div class="val">${avgEngagementQuality() != null ? avgEngagementQuality() + '%' : '—'}</div><div class="lab">Avg. engagement</div></div>
+      <div class="pf-mk-stat"><div class="val">${avgViewsPerPost() ? fmtCount(avgViewsPerPost()) : '—'}</div><div class="lab">Avg. views / post</div></div>
+      <div class="pf-mk-stat"><div class="val">${Math.round(creator.trust_score) || '—'}</div><div class="lab">Trust Score</div></div>
+    </div>
+
+    ${scoreComponents.length ? `
+    <div class="pf-card">
+      <h3>Trust Score breakdown</h3>
+      <p class="desc">Weighted components sponsors can inspect line by line.</p>
+      ${scoreComponents.map(c => `<div class="pf-breakdown-row"><div class="lab">${escapeHtml(c.label)}</div><div class="pf-bd-track"><div class="pf-bd-fill" style="width:${Math.max(0, Math.min(100, c.value))}%"></div></div><div class="sc">${Math.round(c.value)}</div></div>`).join('')}
+    </div>` : ''}
+
+    <div class="pf-card">
+      <h3>Edit your Verified Media Kit</h3>
+      <p class="desc">Everything below appears on the Verified Media Kit you send to sponsors — bio, photos, brand history, and more.</p>
+
+      <div class="pf-section-sub">Bio</div>
+      <div class="pf-field">
+        <textarea id="bio" maxlength="280" placeholder="A couple sentences a brand can read in five seconds — what you make, who watches, and why you're a fit.">${escapeHtml(creator.bio || '')}</textarea>
+      </div>
+      <div class="pf-char-count" id="bioCount">${(creator.bio || '').length}/280</div>
+
+      <div class="pf-section-sub">Gallery <span style="text-transform:none;font-weight:400;color:var(--pf-ink-faint)">— optional, up to 4 photos</span></div>
+      <div class="pf-gallery-grid" id="galleryGrid"></div>
+      <div style="font-size:10.5px;color:var(--pf-ink-faint);margin-top:6px">JPG, PNG or WebP · 5MB max per photo</div>
+
+      <div class="pf-section-sub">Cover style <span style="text-transform:none;font-weight:400;color:var(--pf-ink-faint)">— customize the banner at the top of your kit. Changes save instantly.</span></div>
+      <div class="pf-two-col">
+        <div><div style="font-size:10.5px;color:var(--pf-ink-faint);margin-bottom:6px">Pattern</div><div id="coverPatternPicker" class="pf-pill-group"></div></div>
+        <div><div style="font-size:10.5px;color:var(--pf-ink-faint);margin-bottom:6px">Avatar shape</div><div id="avatarShapePicker" class="pf-pill-group"></div></div>
+      </div>
+      <div style="margin-top:14px">
+        <div style="font-size:10.5px;color:var(--pf-ink-faint);margin-bottom:6px">Vibe tags <span style="font-weight:400">— up to 3, shown as pills on your cover</span></div>
+        <div id="coverTagsPicker" class="pf-pill-group"></div>
+      </div>
+      <div style="margin-top:14px;max-width:280px" class="pf-field">
+        <label style="text-transform:none">Spotlight stat <span class="opt">— the number featured on your cover</span></label>
+        <select id="coverSpotlightSelect" onchange="selectCoverSpotlight(this.value)">
+          <option value="">None</option>
+          <option value="reach">Total reach</option>
+          <option value="engagement">Confidence</option>
+          <option value="campaigns">Verified campaigns</option>
+          <option value="trust">Trust score</option>
+        </select>
+      </div>
+
+      <div class="pf-two-col" style="margin-top:22px">
+        <div>
+          <div class="pf-section-sub" style="margin-top:0">Past collaborations <span style="text-transform:none;font-weight:400;color:var(--pf-ink-faint)">— brands you've worked with, self-reported</span></div>
+          <div id="collabList"></div>
+          <details class="pf-padd">
+            <summary>Add a collaboration</summary>
+            <div class="pf-form-grid" style="margin-top:4px">
+              <div class="pf-field" style="margin-bottom:8px"><label style="text-transform:none">Brand name</label><input id="collabBrandName" placeholder="e.g. Red Bull"></div>
+              <div class="pf-field" style="margin-bottom:8px"><label style="text-transform:none">Link (optional)</label><input id="collabLink" placeholder="https://..."></div>
+            </div>
+            <div class="pf-field" style="margin-bottom:6px">
+              <label style="text-transform:none">Logo (optional)</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="file" id="collabLogoInput" accept="image/jpeg,image/png,image/webp" style="font-size:11.5px;flex:1;padding:0;border:none">
+                <button type="button" class="pf-btn-add" onclick="addCollaboration()">+ Add</button>
+              </div>
+            </div>
+            <div style="font-size:10.5px;color:var(--pf-ink-faint)">Leave the logo blank and we'll show your brand name instead.</div>
+            <div id="collabMsg" class="pf-msg"></div>
+          </details>
+
+          <div class="pf-section-sub">Available for <span style="text-transform:none;font-weight:400;color:var(--pf-ink-faint)">— kinds of work you're open to</span></div>
+          <div id="availableForTags"></div>
+          <div class="pf-add-input-row">
+            <input id="availableForInput" placeholder="e.g. Sponsored posts" onkeydown="if(event.key==='Enter'){event.preventDefault();addAvailableFor();}">
+            <button type="button" class="pf-btn-add" onclick="addAvailableFor()">+ Add</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="pf-section-sub" style="margin-top:0">Press mentions <span style="text-transform:none;font-weight:400;color:var(--pf-ink-faint)">— coverage of you or your work, self-reported</span></div>
+          <div id="pressList"></div>
+          <details class="pf-padd">
+            <summary>Add a press mention</summary>
+            <div class="pf-form-grid" style="margin-top:4px">
+              <div class="pf-field" style="margin-bottom:8px"><label style="text-transform:none">Title</label><input id="pressTitle" placeholder="e.g. Why This Creator Is..."></div>
+              <div class="pf-field" style="margin-bottom:8px"><label style="text-transform:none">Outlet (optional)</label><input id="pressOutlet" placeholder="e.g. IGN"></div>
+            </div>
+            <div class="pf-form-grid">
+              <div class="pf-field" style="margin-bottom:8px"><label style="text-transform:none">Link (optional)</label><input id="pressUrl" placeholder="https://..."></div>
+              <div class="pf-field" style="margin-bottom:8px"><label style="text-transform:none">Date (optional)</label><input id="pressDate" type="date"></div>
+            </div>
+            <button type="button" class="pf-btn-add" onclick="addPressMention()">+ Add</button>
+            <div id="pressMsg" class="pf-msg"></div>
+          </details>
+
+          <div class="pf-section-sub">Causes I support <span style="text-transform:none;font-weight:400;color:var(--pf-ink-faint)">— optional, helps ESG-conscious sponsors</span></div>
+          <div id="causesTags"></div>
+          <div class="pf-add-input-row">
+            <input id="causesInput" placeholder="e.g. Mental health awareness" onkeydown="if(event.key==='Enter'){event.preventDefault();addCause();}">
+            <button type="button" class="pf-btn-add" onclick="addCause()">+ Add</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pf-save-row">
+        <span class="pf-save-hint">Sponsors see these updates the next time they view your kit.</span>
+        <button class="pf-btn-save" onclick="save()">Save changes</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('bio').addEventListener('input', (e) => {
+    document.getElementById('bioCount').textContent = `${e.target.value.length}/280`;
+  });
+  renderGallery();
+  renderCollaborations();
+  renderPressMentions();
+  renderAvailableFor();
+  renderCauses();
+  renderCoverPatternPicker();
+  renderAvatarShapePicker();
+  renderCoverTagsPicker();
+  document.getElementById('coverSpotlightSelect').value = creator.cover_spotlight_stat || '';
+}
+
+// ── Link & Share tab ────────────────────────────────────────────────────
+function renderSharePanel() {
+  const url = `kitscore.co/p/${creator.slug || ''}`;
+  const qrData = encodeURIComponent(`https://${url}`);
+  document.getElementById('panel-share').innerHTML = `
+    <div class="pf-card pf-pro-card">
+      <h3 style="display:flex;align-items:center">Profile analytics ${creator.plan === 'pro' ? '' : '<span class="pf-pro-badge">PRO</span>'}</h3>
+      <p class="desc" style="margin-bottom:0">See how many people have viewed your profile.</p>
+      ${creator.plan === 'pro' ? `
+        <div class="pf-stat-row" style="margin-top:16px">
+          <div class="pf-stat"><div class="eyebrow">Total views</div><div class="val">${creator.profile_views || 0}</div></div>
+        </div>
+        <div style="font-size:11.5px;color:var(--pf-ink-faint)">Per-visit and sponsor-level detail isn't tracked yet — this is a running total.</div>
+      ` : `
+        <div class="pf-locked-wrap">
+          <div class="pf-locked-content">
+            <div class="pf-stat-row" style="margin-top:16px"><div class="pf-stat"><div class="eyebrow">Total views</div><div class="val">${creator.profile_views || 0}</div></div></div>
+          </div>
+          <div class="pf-lock-overlay">
+            <div class="pf-lock-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div class="pf-lock-title">Unlock profile analytics</div>
+            <div class="pf-lock-sub">See your total view count with Kitscore Pro.</div>
+            <a href="pricing-creator.html" class="pf-btn-upgrade">Upgrade to Pro</a>
+          </div>
+        </div>
+      `}
+    </div>
+
+    <div class="pf-grid-2">
+      <div class="pf-card">
+        <h3>Your public profile</h3>
+        <p class="desc">Send this straight to a sponsor, or drop it in your bio.</p>
+        <div class="pf-link-box">
+          <div class="url">kitscore.co/p/<b>${escapeHtml(creator.slug || '')}</b></div>
+          <button class="pf-copy-btn" onclick="copyProfileLink()">Copy link</button>
+        </div>
+        ${creator.plan === 'pro' ? `
+          <div class="pf-field" style="max-width:400px">
+            <label>Custom link</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="font-size:12px;color:var(--pf-ink-faint)">kitscore.co/p/</span>
+              <input id="customSlug" value="${escapeHtml(creator.slug || '')}" style="flex:1;font-family:monospace">
+              <button class="pf-btn" onclick="saveSlug()">Save</button>
+            </div>
+            <div id="slugMsg" class="pf-msg"></div>
+          </div>
+        ` : `<div style="font-size:11.5px;color:var(--pf-ink-faint);margin-bottom:14px">Want a custom link instead of a random one? <a href="pricing-creator.html" style="color:var(--pf-blue)">Upgrade to Pro →</a></div>`}
+
+        <h3 style="margin-top:22px">Embed the verified badge</h3>
+        <p class="desc">Paste this on your website or Linktree to show a live trust score.</p>
+        <div class="pf-embed-box">&lt;<span class="tag">a</span> <span class="attr">href</span>=<span class="str">"https://kitscore.co/p/${escapeHtml(creator.slug || '')}"</span>&gt;<br>&nbsp;&nbsp;&lt;<span class="tag">img</span> <span class="attr">src</span>=<span class="str">"https://kitscore.co/badge/${escapeHtml(creator.slug || '')}"</span> <span class="attr">alt</span>=<span class="str">"Verified by Kitscore"</span>&gt;<br>&lt;/<span class="tag">a</span>&gt;</div>
+      </div>
+
+      <div class="pf-card">
+        <div class="pf-qr-card">
+          <h3 style="margin-bottom:0">Scan to view</h3>
+          <div class="pf-qr-box"><img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&bgcolor=0B1220&color=EAF0FF&data=${qrData}" alt="QR code to your Kitscore profile"></div>
+          <p class="desc" style="margin:0">${url}</p>
+          <a class="pf-btn" style="width:100%;justify-content:center" href="https://api.qrserver.com/v1/create-qr-code/?size=600x600&bgcolor=0B1220&color=EAF0FF&data=${qrData}" download="kitscore-qr.png">Download QR</a>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function switchProfileTab(tab) {
+  document.querySelectorAll('.pf-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.pf-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+}
+
+async function copyProfileLink() {
+  const url = `https://kitscore.co/p/${creator.slug || ''}`;
+  try {
+    await navigator.clipboard.writeText(url);
+    alert('Link copied.');
+  } catch {
+    prompt('Copy your profile link:', url);
+  }
+}
+
+// ── Save (Account + Media Kit fields) ──────────────────────────────────
+async function save() {
+  const btn = document.getElementById('saveBtn');
+  if (btn) btn.disabled = true;
+
+  const displayName = document.getElementById('displayName').value.trim();
+  const niche = document.getElementById('niche').value.trim();
+  const location = document.getElementById('location').value.trim();
+  const businessEmail = document.getElementById('businessEmail').value.trim();
+  const bioEl = document.getElementById('bio');
+  const bio = bioEl ? bioEl.value.trim() : creator.bio;
+
+  const [{ error: pErr }, { error: cErr }] = await Promise.all([
+    sb.from('profiles').update({ display_name: displayName }).eq('id', profile.id),
+    sb.from('creators').update({ niche, location, business_email: businessEmail, bio }).eq('id', profile.id),
+  ]);
+
+  profile.display_name = displayName;
+  creator.niche = niche;
+  creator.location = location;
+  creator.business_email = businessEmail;
+  creator.bio = bio;
+
+  const msg = document.getElementById('msg');
+  if (pErr || cErr) {
+    if (msg) msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Could not save: ${escapeHtml((pErr || cErr).message)}</div>`;
+  } else {
+    if (msg) msg.innerHTML = `<div class="pf-msg" style="color:#1C7C3F">Saved.</div>`;
+    renderHero();
+  }
+  if (btn) btn.disabled = false;
+}
+
+async function saveSlug() {
+  const input = document.getElementById('customSlug');
+  const msg = document.getElementById('slugMsg');
+  const val = input.value.trim();
+  msg.innerHTML = '';
+  const { data, error } = await sb.rpc('fn_set_evekit_slug', { p_slug: val });
+  if (error) {
+    msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Could not save: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  if (!data || !data.ok) {
+    msg.innerHTML = `<div class="pf-msg" style="color:#B42318">${escapeHtml(data?.error || 'Could not save that link.')}</div>`;
+    return;
+  }
+  creator.slug = data.slug;
+  input.value = data.slug;
+  msg.innerHTML = `<div class="pf-msg" style="color:#1C7C3F">Saved — your Verified Media Kit and trust link now use this URL.</div>`;
+  renderHero();
+  renderSharePanel();
+}
+
+// ── Avatar / gallery uploads ────────────────────────────────────────────
+const MAX_GALLERY = 4;
+
+async function uploadAvatar(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!ALLOWED_TYPES.includes(file.type)) { alert('Please upload a JPG, PNG, or WebP image.'); return; }
+  if (file.size > MAX_UPLOAD_BYTES) { alert('That photo is over 5MB — try a smaller file.'); return; }
+  const path = `${profile.id}/avatar-${Date.now()}.${extFor(file)}`;
+  const { error: upErr } = await sb.storage.from('creator-media').upload(path, file, { upsert: true });
+  if (upErr) { alert('Upload failed: ' + upErr.message); return; }
+  const { data: pub } = sb.storage.from('creator-media').getPublicUrl(path);
+  const { error: dbErr } = await sb.from('creators').update({ avatar_url: pub.publicUrl }).eq('id', profile.id);
+  if (dbErr) { alert("Saved the photo but couldn't update your profile: " + dbErr.message); return; }
+  creator.avatar_url = pub.publicUrl;
+  renderHero();
+}
+
+function renderGallery() {
+  const grid = document.getElementById('galleryGrid');
+  if (!grid) return;
+  const images = creator.gallery_images || [];
+  let html = images.map((url, i) => `
+    <div class="pf-gallery-slot filled">
+      <img src="${escapeHtml(url)}">
+      <div class="pf-gallery-remove" onclick="removeGalleryImage(${i})" title="Remove">✕</div>
+    </div>`).join('');
+  if (images.length < MAX_GALLERY) {
+    html += `
+      <label class="pf-gallery-slot">
+        <span>+</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp" onchange="uploadGalleryImage(event)">
+      </label>`;
+  }
+  grid.innerHTML = html;
+}
+
+async function uploadGalleryImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!ALLOWED_TYPES.includes(file.type)) { alert('Please upload a JPG, PNG, or WebP image.'); return; }
+  if (file.size > MAX_UPLOAD_BYTES) { alert('That photo is over 5MB — try a smaller file.'); return; }
+  const images = creator.gallery_images || [];
+  if (images.length >= MAX_GALLERY) return;
+  const path = `${profile.id}/gallery-${Date.now()}.${extFor(file)}`;
+  const { error: upErr } = await sb.storage.from('creator-media').upload(path, file, { upsert: true });
+  if (upErr) { alert('Upload failed: ' + upErr.message); return; }
+  const { data: pub } = sb.storage.from('creator-media').getPublicUrl(path);
+  const updated = [...images, pub.publicUrl];
+  const { error: dbErr } = await sb.from('creators').update({ gallery_images: updated }).eq('id', profile.id);
+  if (dbErr) { alert("Saved the photo but couldn't update your gallery: " + dbErr.message); return; }
+  creator.gallery_images = updated;
+  renderGallery();
+}
+
+async function removeGalleryImage(index) {
+  const images = [...(creator.gallery_images || [])];
+  images.splice(index, 1);
+  const { error } = await sb.from('creators').update({ gallery_images: images }).eq('id', profile.id);
+  if (error) { alert('Could not remove photo: ' + error.message); return; }
+  creator.gallery_images = images;
+  renderGallery();
+}
+
+// ── Past collaborations ──────────────────────────────────────────────
+function renderCollaborations() {
+  const list = document.getElementById('collabList');
+  if (!list) return;
+  if (!collaborations.length) { list.innerHTML = `<div class="pf-empty">No collaborations added yet.</div>`; return; }
+  list.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:0">${collaborations.map(c => `
+    <div class="pf-chip">
+      ${c.logo_url ? `<img src="${escapeHtml(c.logo_url)}" class="pf-chip-avatar">` : `<div class="pf-chip-avatar">${escapeHtml((c.brand_name || '?').trim().charAt(0).toUpperCase())}</div>`}
+      <span>${escapeHtml(c.brand_name)}</span>
+      <span class="pf-chip-x" onclick="removeCollaboration('${c.id}')" title="Remove">✕</span>
+    </div>`).join('')}</div>`;
+}
+
+async function addCollaboration() {
+  const msg = document.getElementById('collabMsg');
+  msg.innerHTML = '';
+  const brandName = document.getElementById('collabBrandName').value.trim();
+  const link = document.getElementById('collabLink').value.trim();
+  const fileInput = document.getElementById('collabLogoInput');
+  const file = fileInput.files[0];
+
+  if (!brandName) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Brand name is required.</div>`; return; }
+  if (file) {
+    if (!ALLOWED_TYPES.includes(file.type)) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Please upload a JPG, PNG, or WebP logo.</div>`; return; }
+    if (file.size > MAX_UPLOAD_BYTES) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">That logo is over 5MB — try a smaller file.</div>`; return; }
+  }
+
+  let logoUrl = null;
+  if (file) {
+    const path = `${profile.id}/logo-${Date.now()}.${extFor(file)}`;
+    const { error: upErr } = await sb.storage.from('creator-media').upload(path, file, { upsert: true });
+    if (upErr) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Logo upload failed: ${escapeHtml(upErr.message)}</div>`; return; }
+    logoUrl = sb.storage.from('creator-media').getPublicUrl(path).data.publicUrl;
+  }
+
+  const { data, error } = await sb.from('creator_collaborations')
+    .insert({ creator_id: profile.id, brand_name: brandName, logo_url: logoUrl, link: link || null, display_order: collaborations.length })
+    .select('id, brand_name, logo_url, link').single();
+  if (error) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Could not save: ${escapeHtml(error.message)}</div>`; return; }
+
+  collaborations.push(data);
+  document.getElementById('collabBrandName').value = '';
+  document.getElementById('collabLink').value = '';
+  fileInput.value = '';
+  renderCollaborations();
+  msg.innerHTML = `<div class="pf-msg" style="color:#1C7C3F">Added.</div>`;
+}
+
+async function removeCollaboration(id) {
+  const { error } = await sb.from('creator_collaborations').delete().eq('id', id);
+  if (error) { alert('Could not remove: ' + error.message); return; }
+  collaborations = collaborations.filter(c => c.id !== id);
+  renderCollaborations();
+}
+
+// ── Press mentions ────────────────────────────────────────────────────
+function renderPressMentions() {
+  const list = document.getElementById('pressList');
+  if (!list) return;
+  if (!pressMentions.length) { list.innerHTML = `<div class="pf-empty">No press mentions added yet.</div>`; return; }
+  list.innerHTML = pressMentions.map(p => `
+    <div class="pf-press-item">
+      <div style="min-width:0">
+        <div class="t">${escapeHtml(p.title)}</div>
+        <div class="s">${[p.outlet_name, p.mention_date].filter(Boolean).map(escapeHtml).join(' · ')}</div>
+      </div>
+      <span class="pf-chip-x" onclick="removePressMention('${p.id}')" title="Remove">✕</span>
+    </div>`).join('');
+}
+
+async function addPressMention() {
+  const msg = document.getElementById('pressMsg');
+  msg.innerHTML = '';
+  const title = document.getElementById('pressTitle').value.trim();
+  const outlet_name = document.getElementById('pressOutlet').value.trim() || null;
+  const url = document.getElementById('pressUrl').value.trim() || null;
+  const mention_date = document.getElementById('pressDate').value || null;
+  if (!title) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Title is required.</div>`; return; }
+
+  const { data, error } = await sb.from('creator_press_mentions')
+    .insert({ creator_id: profile.id, title, outlet_name, url, mention_date, display_order: pressMentions.length })
+    .select('id, title, outlet_name, url, mention_date').single();
+  if (error) { msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Could not save: ${escapeHtml(error.message)}</div>`; return; }
+
+  pressMentions.push(data);
+  document.getElementById('pressTitle').value = '';
+  document.getElementById('pressOutlet').value = '';
+  document.getElementById('pressUrl').value = '';
+  document.getElementById('pressDate').value = '';
+  renderPressMentions();
+  msg.innerHTML = `<div class="pf-msg" style="color:#1C7C3F">Added.</div>`;
+}
+
+async function removePressMention(id) {
+  const { error } = await sb.from('creator_press_mentions').delete().eq('id', id);
+  if (error) { alert('Could not remove: ' + error.message); return; }
+  pressMentions = pressMentions.filter(p => p.id !== id);
+  renderPressMentions();
+}
+
+// ── Available for / Causes ──────────────────────────────────────────
+function renderTagList(containerId, values, removeFn) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!values.length) { el.innerHTML = `<div class="pf-empty">None added yet.</div>`; return; }
+  el.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:0">${values.map((v, i) => `
+    <span class="pf-chip simple">${escapeHtml(v)}<span class="pf-chip-x" onclick="${removeFn}(${i})" title="Remove">✕</span></span>`).join('')}</div>`;
+}
+function renderAvailableFor() { renderTagList('availableForTags', creator.available_for || [], 'removeAvailableFor'); }
+function renderCauses() { renderTagList('causesTags', creator.causes || [], 'removeCauses'); }
+
+async function addAvailableFor() {
+  const input = document.getElementById('availableForInput');
+  const val = input.value.trim();
+  if (!val) return;
+  const updated = [...(creator.available_for || []), val];
+  const { error } = await sb.from('creators').update({ available_for: updated }).eq('id', profile.id);
+  if (error) { alert('Could not save: ' + error.message); return; }
+  creator.available_for = updated;
+  input.value = '';
+  renderAvailableFor();
+}
+async function removeAvailableFor(index) {
+  const updated = [...(creator.available_for || [])];
+  updated.splice(index, 1);
+  const { error } = await sb.from('creators').update({ available_for: updated }).eq('id', profile.id);
+  if (error) { alert('Could not save: ' + error.message); return; }
+  creator.available_for = updated;
+  renderAvailableFor();
+}
+async function addCause() {
+  const input = document.getElementById('causesInput');
+  const val = input.value.trim();
+  if (!val) return;
+  const updated = [...(creator.causes || []), val];
+  const { error } = await sb.from('creators').update({ causes: updated }).eq('id', profile.id);
+  if (error) { alert('Could not save: ' + error.message); return; }
+  creator.causes = updated;
+  input.value = '';
+  renderCauses();
+}
+async function removeCauses(index) {
+  const updated = [...(creator.causes || [])];
+  updated.splice(index, 1);
+  const { error } = await sb.from('creators').update({ causes: updated }).eq('id', profile.id);
+  if (error) { alert('Could not save: ' + error.message); return; }
+  creator.causes = updated;
+  renderCauses();
+}
+
+// ── Cover customization ───────────────────────────────────────────────
+const COVER_PATTERN_OPTIONS = [['none', 'None'], ['dots', 'Dots'], ['lines', 'Lines'], ['waves', 'Waves']];
+function renderCoverPatternPicker() {
+  const current = creator.cover_pattern || 'none';
+  document.getElementById('coverPatternPicker').innerHTML = COVER_PATTERN_OPTIONS.map(([key, label]) =>
+    `<button type="button" class="pf-pill-opt ${key === current ? 'selected' : ''}" onclick="selectCoverPattern('${key}')">${escapeHtml(label)}</button>`).join('');
+}
+async function selectCoverPattern(key) {
+  creator.cover_pattern = key;
+  renderCoverPatternPicker();
+  await sb.from('creators').update({ cover_pattern: key }).eq('id', profile.id);
+}
+
+const AVATAR_SHAPE_OPTIONS = [['circle', 'Circle'], ['rounded', 'Rounded square']];
+function renderAvatarShapePicker() {
+  const current = creator.avatar_shape || 'circle';
+  document.getElementById('avatarShapePicker').innerHTML = AVATAR_SHAPE_OPTIONS.map(([key, label]) =>
+    `<button type="button" class="pf-pill-opt ${key === current ? 'selected' : ''}" onclick="selectAvatarShape('${key}')">${escapeHtml(label)}</button>`).join('');
+}
+async function selectAvatarShape(key) {
+  creator.avatar_shape = key;
+  renderAvatarShapePicker();
+  await sb.from('creators').update({ avatar_shape: key }).eq('id', profile.id);
+}
+
+const COVER_TAG_OPTIONS = ['cozycore', 'lifestyle', 'outdoorsy', 'comedy', 'beauty', 'fitness', 'gaming', 'food', 'travel', 'tech', 'music', 'fashion', 'parenting', 'wellness', 'diy'];
+function renderCoverTagsPicker() {
+  const selected = creator.cover_tags || [];
+  document.getElementById('coverTagsPicker').innerHTML = COVER_TAG_OPTIONS.map(tag => {
+    const on = selected.includes(tag);
+    const disabled = !on && selected.length >= 3;
+    return `<button type="button" class="pf-tag-pill ${on ? 'selected' : ''}" ${disabled ? 'disabled' : ''} onclick="toggleCoverTag('${tag}')">#${escapeHtml(tag)}</button>`;
+  }).join('') + `<div class="pf-tag-counter">${selected.length}/3 selected</div>`;
+}
+async function toggleCoverTag(tag) {
+  const current = creator.cover_tags || [];
+  const updated = current.includes(tag) ? current.filter(t => t !== tag) : (current.length >= 3 ? current : [...current, tag]);
+  creator.cover_tags = updated;
+  renderCoverTagsPicker();
+  await sb.from('creators').update({ cover_tags: updated }).eq('id', profile.id);
+}
+async function selectCoverSpotlight(value) {
+  creator.cover_spotlight_stat = value || null;
+  await sb.from('creators').update({ cover_spotlight_stat: value || null }).eq('id', profile.id);
+}
+
+// ── Payout: balance + Stripe Connect actions ──────────────────────────
 
 // ── Payout: balance + Stripe Connect actions ──────────────────────────
 async function loadBalance() {
