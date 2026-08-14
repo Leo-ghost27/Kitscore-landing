@@ -32,13 +32,13 @@ function navIcon(name) {
 
 const NAV = {
   creator: [
+    { key: 'profile', href: 'profile.html', icon: 'profile', label: 'Profile' },
     { key: 'dashboard', href: 'dashboard.html', icon: 'dashboard', label: 'Dashboard' },
+    { key: 'evidence', href: 'evidence.html', icon: 'evidence', label: 'Evidence' },
     { key: 'campaigns', href: 'campaigns.html', icon: 'campaigns', label: 'Campaigns' },
     { key: 'briefs', href: 'briefs.html', icon: 'briefs', label: 'Briefs' },
     { key: 'contracts', href: 'contracts.html', icon: 'contracts', label: 'Contracts' },
-    { key: 'evidence', href: 'evidence.html', icon: 'evidence', label: 'Evidence' },
     { key: 'support', href: 'support.html', icon: 'inbox', label: 'Support' },
-    { key: 'profile', href: 'profile.html', icon: 'profile', label: 'Profile' },
     { key: 'pricing-creator', href: 'pricing-creator.html', icon: 'upgrade', label: 'Upgrade' },
   ],
   sponsor: [
