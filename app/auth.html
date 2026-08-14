@@ -334,6 +334,11 @@ async function submitForm() {
   const role = document.getElementById('role').value;
   const displayName = document.getElementById('displayName').value.trim();
   if (!displayName) { showMsg('Name / company is required.', 'error'); btn.disabled = false; return; }
+  // Same 8-character minimum already enforced on the reset-password flow --
+  // matched here for consistency. Only checked on signup, not login: an
+  // existing user's password predates this check and must still be able
+  // to sign in even if it's shorter.
+  if (password.length < 8) { showMsg('Password must be at least 8 characters.', 'error'); btn.disabled = false; return; }
 
   const { data, error } = await sb.auth.signUp({
     email, password,
