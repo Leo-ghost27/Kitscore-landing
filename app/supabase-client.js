@@ -7,6 +7,16 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Shared image-upload constants/helper -- used by avatar uploads (profile.html,
+// dashboard.html hero) and by the Verified Media Kit gallery/collaboration-logo
+// uploads (dashboard.html). Previously defined separately in profile.html only;
+// moved here so dashboard.html doesn't need its own copy.
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+function extFor(file) {
+  return (file.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+}
+
 // Escapes user-controlled text before it's interpolated into an innerHTML
 // template literal (display names, campaign names, filenames, etc. all
 // come from creator/sponsor input and are not safe to inject raw).
@@ -95,6 +105,25 @@ async function ensureProfile(user) {
   if (!role || !displayName) return PROFILE_INCOMPLETE;
 
   return createProfile(user, role, displayName);
+}
+
+// Earliest connected_at among a creator's currently-connected OAuth-verified
+// platforms -- "continuously verified since," not "first ever verified"
+// (if a platform is disconnected and reconnected, this correctly moves
+// forward). Mirrors fn_get_evekit_profile's verified_since exactly.
+// Shared here (moved from evekit.html, which had its own copy) so
+// profile.html and dashboard.html can both surface it in the hero
+// without duplicating the calc. Expects rows shaped like
+// fn_creator_platform_summary's output: { verification_method, connected_at }.
+function computeVerifiedSince(platformConnections) {
+  const oauthConnectedDates = (platformConnections || [])
+    .filter(p => p.verification_method === 'oauth' && p.connected_at)
+    .map(p => p.connected_at);
+  return oauthConnectedDates.length ? oauthConnectedDates.sort()[0] : null;
+}
+
+function formatVerifiedSince(verifiedSince) {
+  return verifiedSince ? new Date(verifiedSince).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : null;
 }
 
 // Redirects to auth.html if nobody is signed in, or to the wrong dashboard

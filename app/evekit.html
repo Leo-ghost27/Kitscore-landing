@@ -755,14 +755,11 @@ async function loadOwnerKit(profile) {
   };
   const platforms = (platformConnections||[]).filter(p=>p.follower_count!=null).sort((a,b)=>b.follower_count-a.follower_count);
   const audByDim = (dim) => (audience||[]).filter(r=>r.dimension===dim).sort((a,b)=>b.pct-a.pct).map(r=>({label:r.label,pct:r.pct}));
-  // Earliest connected_at among currently-connected OAuth platforms --
-  // mirrors fn_get_evekit_profile's verified_since exactly, computed
-  // client-side here since owner-mode already has this data from
-  // fn_creator_platform_summary and doesn't need a second query.
-  const oauthConnectedDates = (platformConnections||[])
-    .filter(p=>p.verification_method==='oauth' && p.connected_at)
-    .map(p=>p.connected_at);
-  const verifiedSince = oauthConnectedDates.length ? oauthConnectedDates.sort()[0] : null;
+  // computeVerifiedSince (supabase-client.js) -- shared with profile.html
+  // and dashboard.html so the calc isn't duplicated per page. Owner-mode
+  // already has this data from fn_creator_platform_summary and doesn't
+  // need a second query.
+  const verifiedSince = computeVerifiedSince(platformConnections);
 
   const kit = {
     displayName: profile.display_name, bio: c.bio, niche: c.niche, location: c.location,
