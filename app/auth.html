@@ -312,7 +312,10 @@ async function finishProfile() {
     btn.innerHTML = '<i class="ti ti-arrow-right"></i>Continue';
     return;
   }
-  window.location.href = profile.role === 'creator' ? 'dashboard.html' : 'directory.html';
+  // Creators land on Profile first (account setup + payout), not Dashboard --
+  // see docs/dashboard-rework-blueprint-v1.md. Sponsors still land on the
+  // directory, unaffected by this change.
+  window.location.href = profile.role === 'creator' ? 'profile.html' : 'directory.html';
 }
 
 async function submitForm() {
@@ -362,7 +365,8 @@ async function submitForm() {
 async function routeToDashboard() {
   const profile = await getCurrentProfile();
   if (!profile) { showMsg('Signed in, but no profile found.', 'error'); return; }
-  window.location.href = profile.role === 'creator' ? 'dashboard.html' : 'directory.html';
+  // Creators land on Profile first -- see docs/dashboard-rework-blueprint-v1.md.
+  window.location.href = profile.role === 'creator' ? 'profile.html' : 'directory.html';
 }
 
 (async () => {
