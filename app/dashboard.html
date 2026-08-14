@@ -348,7 +348,7 @@ const CREATOR_TABS = [
   ['overview', 'layout', 'Overview'],
   ['score', 'circle-check', 'Score'],
   ['profile', 'link', 'Sharing'],
-  ['evidence', 'file-check', 'Inputs'],
+  ['evidence', 'shield-half', 'Signals'],
   ['tools', 'bolt', 'Tools'],
 ];
 
@@ -1292,27 +1292,9 @@ function renderEvidenceTab() {
     <div id="discordStatusBanner"></div>
 
 
-    <!-- ── Evidence ── -->
-    <div class="card">
-      <div class="sec">Evidence uploads</div>
-      ${!unlimitedPlatforms ? `
-      <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:10px;background:var(--color-background-secondary);border-radius:6px;padding:8px 10px">
-        Free plan is limited to one OAuth-verified platform${usedPlatforms.length?` (currently ${escapeHtml(usedPlatforms[0])})`:''}. Linked (handle-only) platforms and evidence uploads are always unlimited. <a href="pricing-creator.html" style="color:#2563EB;font-weight:600;text-decoration:none">Upgrade to Pro</a> for unlimited OAuth-verified platforms — founding creators get this free.
-      </div>`:''}
-      ${(evidence||[]).length?(evidence||[]).map(e=>`
-        <div class="ev-row">
-          <span class="ev-name">${escapeHtml(e.file_name)}</span>
-          <span class="ev-plat">${escapeHtml(e.platform||'')}</span>
-          <span class="ev-status st-${e.status?.replace('_verified','verified').replace('under_','')}">${(e.status||'').replace(/_/g,' ')}</span>
-        </div>`).join(''):`
-      <div class="empty-state">
-        <div class="es-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></div>
-        <div class="es-title">No evidence uploaded yet</div>
-        <div class="es-body">Upload audience screenshots, campaign briefs, or analytics exports to verify your score components and raise your confidence rating.</div>
-        <a href="evidence.html">Upload your first piece of evidence →</a>
-      </div>`}
-      ${(evidence||[]).length?`<div style="margin-top:10px"><a href="evidence.html" style="font-size:12px;font-weight:500;color:#2563EB;text-decoration:none">Manage evidence →</a></div>`:''}
-    </div>
+    <!-- ── Evidence uploads live solely on evidence.html now -- this card
+         used to duplicate that page's dropzone/list. See
+         docs/dashboard-rework-blueprint-v1.md. ── -->
 
 
     <!-- ── Brand safety ── -->
@@ -1324,6 +1306,9 @@ function renderEvidenceTab() {
           <span class="opts">${q.opts.map(o=>`<button class="${answerMap[q.key]===o?'sel':''}" onclick="answerQuestion('${q.key}','${o}')">${o}</button>`).join('')}</span>
         </div>`).join('')}
     </div>
+
+    <!-- ── Audience demographics (moved from Tools tab) ── -->
+    ${renderAuthenticityTab()}
 
   `;
 }
@@ -1469,7 +1454,7 @@ function renderFollowerGrowthCard() {
 
 function renderToolsTab() {
   return `
-    ${renderAuthenticityTab()}
+    <!-- ── Audience demographics moved to Signals tab (docs/dashboard-rework-blueprint-v1.md) ── -->
     ${renderFollowerGrowthCard()}
 
     <!-- ── Rate calculator ── -->
