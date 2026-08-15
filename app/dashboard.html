@@ -752,8 +752,8 @@ function renderDashboardShell() {
          shared shell chrome above every tab, not Overview-specific. ── -->
     <div style="position:relative;background:linear-gradient(135deg,#0B2A6B 0%,#142B63 55%,#0E3350 100%);border-radius:20px;padding:32px 36px;margin-bottom:18px;color:#fff;overflow:hidden" class="hero-dark">
       <svg width="100%" height="100%" style="position:absolute;inset:0;opacity:0.08;pointer-events:none" preserveAspectRatio="none"><circle cx="92%" cy="8%" r="120" fill="#3E63F5"></circle><circle cx="10%" cy="100%" r="90" fill="#17B8A6"></circle></svg>
-      <div class="score-hero" style="color:#fff;position:relative;margin-bottom:24px">
-        <div class="score-left">
+      <div class="score-hero" style="color:#fff;position:relative;margin-bottom:24px;display:block">
+        <div class="score-left" style="padding-right:0">
           ${renderRing(score)}
           <div class="score-left-info">
             ${hasScore?`<a href="#score-breakdown" class="why-score-link" style="color:#9DB4F0" onclick="switchTab('score');setTimeout(()=>document.getElementById('score-breakdown')?.scrollIntoView({behavior:'smooth',block:'start'}),50)">Why is my score ${score}?</a>`:''}
@@ -764,16 +764,13 @@ function renderDashboardShell() {
               </div>
               ${creator.founding_cohort ? `<div class="founding-badge" title="One of Kitscore's first 100 creators">${FOUNDING_SEAL}Founding</div>` : ''}
               <div class="${'plan-chip plan-'+(creator.plan||'free')}">${(creator.plan||'free').toUpperCase()}</div>
+              <div class="verified-badge" style="background:rgba(255,255,255,0.12);color:#fff;margin:0">${svgIcon('rosette-discount-check', {size:12})}${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
             </div>
+            <p class="encourage" style="color:#C7D2E8;margin-top:8px">${verifiedCount>=1
+              ? `Confidence reflects your verified components and ${verifiedCount} confirmed campaign${verifiedCount===1?'':'s'}.`
+              : `Confidence today is based on your verified components alone. Confirming your first campaign raises it further.`}</p>
             ${creator.plan==='free'?`<a href="pricing-creator.html" class="upgrade-link" style="color:#9DB4F0">Upgrade to Pro →</a>`:''}
           </div>
-        </div>
-        <div class="score-divider" style="border-color:rgba(255,255,255,0.15)"></div>
-        <div class="score-right">
-          <div class="verified-badge" style="background:rgba(255,255,255,0.12);color:#fff">${svgIcon('rosette-discount-check', {size:12})}${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
-          <p class="encourage" style="color:#C7D2E8">${verifiedCount>=1
-            ? `Confidence reflects your verified components and ${verifiedCount} confirmed campaign${verifiedCount===1?'':'s'}.`
-            : `Confidence today is based on your verified components alone. Confirming your first campaign raises it further.`}</p>
         </div>
       </div>
 
