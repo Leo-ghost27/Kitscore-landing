@@ -825,7 +825,7 @@ function renderTabPanel(key) {
 }
 
 function renderOverviewTab() {
-  const { steps, doneCount, verifiedCount, hasScore, evidence, campaigns, pct } = dash;
+  const { steps, doneCount, verifiedCount, hasScore } = dash;
   // Journey stages group the 4 flat onboarding steps into the marketing
   // narrative (Claim -> Verify -> Score -> Get hired). See
   // docs/dashboard-rework-blueprint-v1.md for the mapping rationale.
@@ -843,25 +843,6 @@ function renderOverviewTab() {
   const journeyPct = hasScore ? 100 : Math.round((stageDoneCount/(stages.length+1))*100);
 
   return `
-    <!-- ── Stat strip (restored -- flagged as missing) ── -->
-    <div class="g3">
-      <div class="stat-box">
-        <div class="stat-icon">${svgIcon('file-check', {size:16, stroke:'#2755F0'})}</div>
-        <div class="mv">${(evidence||[]).length||0}</div>
-        <div class="ml">Evidence items</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-icon">${svgIcon('briefcase', {size:16, stroke:'#2755F0'})}</div>
-        <div class="mv">${(campaigns||[]).length||0}</div>
-        <div class="ml">Campaigns</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-icon">${svgIcon('user-circle', {size:16, stroke:'#2755F0'})}</div>
-        <div class="mv">${pct}%</div>
-        <div class="ml">Profile complete</div>
-      </div>
-    </div>
-
     <!-- ── Kitscore journey ── -->
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
