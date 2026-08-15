@@ -1715,8 +1715,31 @@ function renderEvidenceTab() {
   const ig = (platformConnections||[]).find(p=>p.platform==='instagram');
   const dc = (platformConnections||[]).find(p=>p.platform==='discord');
   return `
+    <!-- ── Signals summary strip (blueprint step 7 -- was placeholder text
+         in the mockup, now real status computed from actual data) ── -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">
+      <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('connect-platforms').scrollIntoView({behavior:'smooth',block:'start'})">
+        <div style="width:32px;height:32px;border-radius:8px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;margin-bottom:10px"><i class="ti ti-plug-connected" style="font-size:16px;color:#2755F0" aria-hidden="true"></i></div>
+        <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Platforms</div>
+        <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">YouTube, TikTok, Twitch, Instagram</div>
+        <div style="font-size:11px;font-weight:600;color:${(platformConnections||[]).length?'#1C7C3F':'#92600A'}">${(platformConnections||[]).length} connected</div>
+      </div>
+      <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('brand-safety').scrollIntoView({behavior:'smooth',block:'start'})">
+        <div style="width:32px;height:32px;border-radius:8px;background:#FFF8EC;display:flex;align-items:center;justify-content:center;margin-bottom:10px"><i class="ti ti-shield-check" style="font-size:16px;color:#B8860B" aria-hidden="true"></i></div>
+        <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Brand safety</div>
+        <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">${QUESTIONS.length}-question self report</div>
+        <div style="font-size:11px;font-weight:600;color:${Object.keys(answerMap||{}).length>=QUESTIONS.length?'#1C7C3F':Object.keys(answerMap||{}).length>0?'#2755F0':'#92600A'}">${Object.keys(answerMap||{}).length>=QUESTIONS.length?'Complete':Object.keys(answerMap||{}).length>0?`${Object.keys(answerMap||{}).length} of ${QUESTIONS.length} answered`:'Not started'}</div>
+      </div>
+      <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('audience-demographics').scrollIntoView({behavior:'smooth',block:'start'})">
+        <div style="width:32px;height:32px;border-radius:8px;background:#F5F3FF;display:flex;align-items:center;justify-content:center;margin-bottom:10px"><i class="ti ti-chart-pie" style="font-size:16px;color:#5B4FCF" aria-hidden="true"></i></div>
+        <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Audience demographics</div>
+        <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">Age, gender, geography</div>
+        <div style="font-size:11px;font-weight:600;color:${(audienceData.countries.length||Object.keys(audienceData.genders).length||Object.keys(audienceData.ages).length)?'#2755F0':'#92600A'}">${(audienceData.countries.length||Object.keys(audienceData.genders).length||Object.keys(audienceData.ages).length)?'Self-reported':'Not started'}</div>
+      </div>
+    </div>
+
     <!-- ── Connect platforms ── -->
-    <div class="card">
+    <div class="card" id="connect-platforms">
       <div class="sec" style="display:flex;align-items:center;gap:8px">
         <svg width="20" height="14" viewBox="0 0 28 20" style="flex-shrink:0"><path d="M27.4 3.1a3.5 3.5 0 0 0-2.5-2.5C22.7 0 14 0 14 0S5.3 0 3.1.6A3.5 3.5 0 0 0 .6 3.1 36.6 36.6 0 0 0 0 10a36.6 36.6 0 0 0 .6 6.9 3.5 3.5 0 0 0 2.5 2.5C5.3 20 14 20 14 20s8.7 0 10.9-.6a3.5 3.5 0 0 0 2.5-2.5A36.6 36.6 0 0 0 28 10a36.6 36.6 0 0 0-.6-6.9Z" fill="#FF0000"/><path d="M11.2 14.3 18.5 10l-7.3-4.3v8.6Z" fill="#fff"/></svg>
         Connect platforms
