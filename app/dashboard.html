@@ -1579,7 +1579,43 @@ async function selectCoverSpotlight(value) {
 }
 
 function renderProfileTab() {
+  const url = `kitscore.co/p/${creator.slug || ''}`;
+  const qrData = encodeURIComponent(`https://${url}`);
   return `
+    <!-- ── Profile analytics — restored, was on profile.html's old
+         Link & Share tab, dropped when that tab's content moved here. ── -->
+    <div class="card">
+      <div class="sec" style="display:flex;align-items:center;gap:8px">Profile analytics ${creator.plan==='pro'?'':'<span style="font-size:9.5px;font-weight:700;color:#5B4FCF;background:#F0EDFF;padding:2px 7px;border-radius:10px;letter-spacing:.03em">PRO</span>'}</div>
+      <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:${creator.plan==='pro'?'0':'14px'}">See how many people have viewed your profile.</div>
+      ${creator.plan==='pro' ? `
+        <div style="margin-top:14px">
+          <div style="font-size:10.5px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em">Total views</div>
+          <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:600;color:var(--color-text-primary)">${creator.profile_views||0}</div>
+        </div>
+        <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Per-visit and sponsor-level detail isn't tracked yet — this is a running total.</div>
+      ` : `
+        <div style="position:relative;padding:16px;background:var(--color-background-secondary);border-radius:10px;text-align:center">
+          <div style="filter:blur(4px);opacity:.5;pointer-events:none">
+            <div style="font-size:10.5px;color:var(--color-text-tertiary);text-transform:uppercase">Total views</div>
+            <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:600">${creator.profile_views||0}</div>
+          </div>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+            <div style="font-size:12.5px;font-weight:600;color:var(--color-text-primary)">Unlock profile analytics</div>
+            <div style="font-size:11px;color:var(--color-text-tertiary);max-width:220px">See your total view count with Kitscore Pro.</div>
+            <a href="pricing-creator.html" style="font-size:11.5px;font-weight:600;color:#5B4FCF;text-decoration:none;margin-top:2px">Upgrade to Pro →</a>
+          </div>
+        </div>
+      `}
+    </div>
+
+    <!-- ── QR code — restored, same source as the analytics card above ── -->
+    <div class="card" style="text-align:center">
+      <div class="sec" style="margin-bottom:2px">Scan to view</div>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&bgcolor=0B1220&color=EAF0FF&data=${qrData}" alt="QR code to your Kitscore profile" style="border-radius:8px;margin:10px 0">
+      <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:10px">${url}</div>
+      <a href="https://api.qrserver.com/v1/create-qr-code/?size=600x600&bgcolor=0B1220&color=EAF0FF&data=${qrData}" download="kitscore-qr.png" style="display:inline-block;font-size:12px;font-weight:600;color:#2563EB;text-decoration:none;border:1px solid var(--pf-line);padding:8px 16px;border-radius:8px">Download QR</a>
+    </div>
+
     <!-- ── Verified Media Kit — the pitch-ready media kit ── -->
     <div class="card" style="background:linear-gradient(135deg,#F5F3FF,#F9F8FF);border-color:#DCD6FA">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
