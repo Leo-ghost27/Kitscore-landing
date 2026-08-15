@@ -320,6 +320,9 @@ body{font-family:'Space Grotesk',sans-serif}
 .step-dot.dot-current::after{background:var(--pf-blue)}
 .step-row .step-next{color:var(--pf-blue)}
 .ms-bar-fill{background:linear-gradient(90deg,var(--pf-blue),var(--pf-teal))}
+.hero-dark .ring-track{stroke:rgba(255,255,255,0.18)}
+.hero-dark .ring-num{color:#fff}
+.hero-dark .ring-label{color:#C7D2E8}
 </style>
 </head>
 <body>
@@ -741,34 +744,36 @@ function renderDashboardShell() {
 
     ${staleEvidenceBannerHtml()}
 
-    <!-- ── Score hero ── -->
-    <div class="card">
-      <div class="score-hero">
+    <!-- ── Score hero — visual system pass (blueprint step 7): navy/Fraunces
+         treatment matching the Media Kit tab, applied here since this is
+         shared shell chrome above every tab, not Overview-specific. ── -->
+    <div style="background:linear-gradient(135deg,#0B2A6B 0%,#142B63 55%,#0E3350 100%);border-radius:20px;padding:22px 26px;margin-bottom:18px;color:#fff" class="hero-dark">
+      <div class="score-hero" style="color:#fff">
         <div class="score-left">
           ${renderRing(score)}
           <div class="score-left-info">
-            ${hasScore?`<a href="#score-breakdown" class="why-score-link" onclick="switchTab('score');setTimeout(()=>document.getElementById('score-breakdown')?.scrollIntoView({behavior:'smooth',block:'start'}),50)">Why is my score ${score}?</a>`:''}
+            ${hasScore?`<a href="#score-breakdown" class="why-score-link" style="color:#9DB4F0" onclick="switchTab('score');setTimeout(()=>document.getElementById('score-breakdown')?.scrollIntoView({behavior:'smooth',block:'start'}),50)">Why is my score ${score}?</a>`:''}
             <div class="score-badges">
-              <div class="badge-pill">
+              <div class="badge-pill" style="background:rgba(255,255,255,0.12);color:#fff">
                 <span>${BADGE_SVG[creator.badge_tier]}</span>
                 ${BADGE_LABEL[creator.badge_tier]}
               </div>
               ${creator.founding_cohort ? `<div class="founding-badge" title="One of Kitscore's first 100 creators">${FOUNDING_SEAL}Founding</div>` : ''}
               <div class="${'plan-chip plan-'+(creator.plan||'free')}">${(creator.plan||'free').toUpperCase()}</div>
             </div>
-            ${creator.plan==='free'?`<a href="pricing-creator.html" class="upgrade-link">Upgrade to Pro →</a>`:''}
+            ${creator.plan==='free'?`<a href="pricing-creator.html" class="upgrade-link" style="color:#9DB4F0">Upgrade to Pro →</a>`:''}
           </div>
         </div>
-        <div class="score-divider"></div>
+        <div class="score-divider" style="border-color:rgba(255,255,255,0.15)"></div>
         <div class="score-right">
           ${hasScore?`
           <div class="conf-row">
-            <span class="conf-label">Confidence</span>
-            <div class="conf-bar"><div class="conf-fill" id="conf-fill" style="width:0%"></div></div>
-            <span class="conf-pct">${conf}%</span>
+            <span class="conf-label" style="color:#C7D2E8">Confidence</span>
+            <div class="conf-bar" style="background:rgba(255,255,255,0.12)"><div class="conf-fill" id="conf-fill" style="width:0%"></div></div>
+            <span class="conf-pct" style="color:#fff">${conf}%</span>
           </div>`:''}
-          <div class="verified-badge">${svgIcon('rosette-discount-check', {size:12})}${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
-          <p class="encourage">${verifiedCount>=1
+          <div class="verified-badge" style="background:rgba(255,255,255,0.12);color:#fff">${svgIcon('rosette-discount-check', {size:12})}${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
+          <p class="encourage" style="color:#C7D2E8">${verifiedCount>=1
             ? `Confidence reflects your verified components and ${verifiedCount} confirmed campaign${verifiedCount===1?'':'s'}.`
             : `Confidence today is based on your verified components alone. Confirming your first campaign raises it further.`}</p>
         </div>
@@ -799,7 +804,7 @@ function renderTabPanel(key) {
 }
 
 function renderOverviewTab() {
-  const { steps, doneCount, verifiedCount, hasScore } = dash;
+  const { steps, doneCount, verifiedCount, hasScore, evidence, campaigns, pct } = dash;
   // Journey stages group the 4 flat onboarding steps into the marketing
   // narrative (Claim -> Verify -> Score -> Get hired). See
   // docs/dashboard-rework-blueprint-v1.md for the mapping rationale.
@@ -817,6 +822,25 @@ function renderOverviewTab() {
   const journeyPct = hasScore ? 100 : Math.round((stageDoneCount/(stages.length+1))*100);
 
   return `
+    <!-- ── Stat strip (restored -- flagged as missing) ── -->
+    <div class="g3">
+      <div class="stat-box">
+        <div class="stat-icon">${svgIcon('file-check', {size:16, stroke:'#2755F0'})}</div>
+        <div class="mv">${(evidence||[]).length||0}</div>
+        <div class="ml">Evidence items</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-icon">${svgIcon('briefcase', {size:16, stroke:'#2755F0'})}</div>
+        <div class="mv">${(campaigns||[]).length||0}</div>
+        <div class="ml">Campaigns</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-icon">${svgIcon('user-circle', {size:16, stroke:'#2755F0'})}</div>
+        <div class="mv">${pct}%</div>
+        <div class="ml">Profile complete</div>
+      </div>
+    </div>
+
     <!-- ── Kitscore journey ── -->
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
@@ -864,9 +888,10 @@ function renderOverviewTab() {
         </div>`;
       }).join('')}
 
-      <div class="step-row ${hasScore?'done':'pending'}" style="padding:6px 0;${hasScore?'':'opacity:0.55'}">
+      <div class="step-row ${hasScore?'done':'pending'}" style="padding:6px 0;${hasScore?'':'opacity:0.55'}${hasScore?';cursor:pointer':''}" ${hasScore?`onclick="window.location.href='briefs.html'"`:''}>
         <div class="step-dot ${hasScore?'dot-done':'dot-pending'}">${hasScore?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'}</div>
         <span class="step-label">Get your next sponsor</span>
+        ${hasScore?'<span class="step-next">Browse briefs ↗</span>':''}
       </div>
     </div>
   `;
