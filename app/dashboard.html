@@ -1633,6 +1633,9 @@ function renderProfileTab() {
       `}
     </div>
 
+    <!-- ── Sponsor interest — moved from Overview (docs/dashboard-rework-blueprint-v1.md): who's watchlisted you is a "how you're performing externally" signal, same category as the cards on this tab. Placed directly under Profile analytics per follow-up placement request. ── -->
+    ${creatorInterestHtml()}
+
     <!-- ── QR code — restored, same source as the analytics card above ── -->
     <div class="card" style="text-align:center">
       <div class="sec" style="margin-bottom:2px">Scan to view</div>
@@ -1690,9 +1693,6 @@ function renderProfileTab() {
       </div>
       <div id="badge-copy-msg" style="font-size:11px;margin-top:8px"></div>
     </div>
-
-    <!-- ── Sponsor interest — moved from Overview (docs/dashboard-rework-blueprint-v1.md): who's watchlisted you is a "how you're performing externally" signal, same category as the cards above, not an onboarding-flow card. ── -->
-    ${creatorInterestHtml()}
 
   `;
 }
