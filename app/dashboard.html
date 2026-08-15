@@ -46,7 +46,7 @@
   .score-badges{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;align-items:center}
   .score-divider{width:1px;align-self:stretch;background:var(--color-border-tertiary);margin:0 24px}
   .score-right{display:flex;flex-direction:column;gap:10px;padding-left:24px;justify-content:center}
-  .ring-wrap{position:relative;width:130px;height:130px;flex-shrink:0}
+  .ring-wrap{position:relative;width:150px;height:150px;flex-shrink:0}
   .ring-wrap svg{width:130px;height:130px;transform:rotate(-90deg)}
   .ring-track{fill:none;stroke:var(--color-border-tertiary);stroke-width:10}
   .ring-fill{fill:none;stroke:#2563EB;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)}
@@ -57,7 +57,7 @@
   .conf-row{display:flex;align-items:center;gap:8px}
   .conf-label{font-size:11px;color:var(--color-text-secondary);width:90px;flex-shrink:0}
   .conf-bar{flex:1;height:5px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
-  .conf-fill{height:100%;background:#1D9E75;border-radius:3px;transition:width 1s ease}
+  .conf-fill{height:100%;background:linear-gradient(90deg,#5B8DFF,#17B8A6);border-radius:3px;transition:width 1s ease}
   .conf-pct{font-size:11px;font-weight:600;color:var(--color-text-primary);width:32px;text-align:right}
   .plan-chip{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em;width:fit-content}
   .plan-free{background:var(--color-background-secondary);color:var(--color-text-secondary)}
@@ -323,6 +323,10 @@ body{font-family:'Space Grotesk',sans-serif}
 .hero-dark .ring-track{stroke:rgba(255,255,255,0.18)}
 .hero-dark .ring-num{color:#fff}
 .hero-dark .ring-label{color:#C7D2E8}
+.hero-dark .founding-badge{background:rgba(212,175,55,0.18);border-color:rgba(212,175,55,0.4);color:#F0D98C}
+.hero-dark .plan-pro{background:#fff;color:#0B2A6B}
+.hero-dark .plan-free{background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.18)}
+.hero-dark .why-score-link{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2)}
 </style>
 </head>
 <body>
@@ -747,8 +751,9 @@ function renderDashboardShell() {
     <!-- ── Score hero — visual system pass (blueprint step 7): navy/Fraunces
          treatment matching the Media Kit tab, applied here since this is
          shared shell chrome above every tab, not Overview-specific. ── -->
-    <div style="background:linear-gradient(135deg,#0B2A6B 0%,#142B63 55%,#0E3350 100%);border-radius:20px;padding:22px 26px;margin-bottom:18px;color:#fff" class="hero-dark">
-      <div class="score-hero" style="color:#fff">
+    <div style="position:relative;background:linear-gradient(135deg,#0B2A6B 0%,#142B63 55%,#0E3350 100%);border-radius:20px;padding:28px 32px;margin-bottom:18px;color:#fff;overflow:hidden" class="hero-dark">
+      <svg width="100%" height="100%" style="position:absolute;inset:0;opacity:0.08;pointer-events:none" preserveAspectRatio="none"><circle cx="92%" cy="8%" r="120" fill="#3E63F5"></circle><circle cx="10%" cy="100%" r="90" fill="#17B8A6"></circle></svg>
+      <div class="score-hero" style="color:#fff;position:relative">
         <div class="score-left">
           ${renderRing(score)}
           <div class="score-left-info">
