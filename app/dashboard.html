@@ -751,9 +751,9 @@ function renderDashboardShell() {
     <!-- ── Score hero — visual system pass (blueprint step 7): navy/Fraunces
          treatment matching the Media Kit tab, applied here since this is
          shared shell chrome above every tab, not Overview-specific. ── -->
-    <div style="position:relative;background:linear-gradient(135deg,#0B2A6B 0%,#142B63 55%,#0E3350 100%);border-radius:20px;padding:28px 32px;margin-bottom:18px;color:#fff;overflow:hidden" class="hero-dark">
+    <div style="position:relative;background:linear-gradient(135deg,#0B2A6B 0%,#142B63 55%,#0E3350 100%);border-radius:20px;padding:32px 36px;margin-bottom:18px;color:#fff;overflow:hidden" class="hero-dark">
       <svg width="100%" height="100%" style="position:absolute;inset:0;opacity:0.08;pointer-events:none" preserveAspectRatio="none"><circle cx="92%" cy="8%" r="120" fill="#3E63F5"></circle><circle cx="10%" cy="100%" r="90" fill="#17B8A6"></circle></svg>
-      <div class="score-hero" style="color:#fff;position:relative">
+      <div class="score-hero" style="color:#fff;position:relative;margin-bottom:24px">
         <div class="score-left">
           ${renderRing(score)}
           <div class="score-left-info">
@@ -771,16 +771,32 @@ function renderDashboardShell() {
         </div>
         <div class="score-divider" style="border-color:rgba(255,255,255,0.15)"></div>
         <div class="score-right">
-          ${hasScore?`
-          <div class="conf-row">
-            <span class="conf-label" style="color:#C7D2E8">Confidence</span>
-            <div class="conf-bar" style="background:rgba(255,255,255,0.12)"><div class="conf-fill" id="conf-fill" style="width:0%"></div></div>
-            <span class="conf-pct" style="color:#fff">${conf}%</span>
-          </div>`:''}
           <div class="verified-badge" style="background:rgba(255,255,255,0.12);color:#fff">${svgIcon('rosette-discount-check', {size:12})}${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
           <p class="encourage" style="color:#C7D2E8">${verifiedCount>=1
             ? `Confidence reflects your verified components and ${verifiedCount} confirmed campaign${verifiedCount===1?'':'s'}.`
             : `Confidence today is based on your verified components alone. Confirming your first campaign raises it further.`}</p>
+        </div>
+      </div>
+
+      <!-- ── Stat row -- merged in from the Media Kit tab, plus confidence
+           as a number here now that the bar/percentage version above was
+           removed (was redundant with this). ── -->
+      <div style="position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:14px 16px">
+          <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:600">${fmtCount(totalReach())}</div>
+          <div style="font-size:11px;color:#9DB4E8;margin-top:2px">Total reach</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:14px 16px">
+          <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:600">${avgEngagementQuality()!=null?avgEngagementQuality()+'%':'—'}</div>
+          <div style="font-size:11px;color:#9DB4E8;margin-top:2px">Avg. engagement</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:14px 16px">
+          <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:600">${avgViewsPerPost()?fmtCount(avgViewsPerPost()):'—'}</div>
+          <div style="font-size:11px;color:#9DB4E8;margin-top:2px">Avg. views / post</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:14px 16px">
+          <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:600">${hasScore?conf+'%':'—'}</div>
+          <div style="font-size:11px;color:#9DB4E8;margin-top:2px">Confidence</div>
         </div>
       </div>
     </div>
