@@ -926,7 +926,7 @@ function creatorInterestHtml() {
 
   if (interest.totalCount === 0) {
     return `
-    <div class="card" style="margin-bottom:0">
+    <div class="card">
       <div class="sec">Sponsor interest</div>
       <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">No sponsors have added you to their watchlist yet. A complete profile with verified evidence and a shared Media Kit link is what usually gets you found first.</div>
     </div>`;
@@ -936,7 +936,7 @@ function creatorInterestHtml() {
 
   if (interest.isLocked) {
     return `
-    <div class="card" style="margin-bottom:0">
+    <div class="card">
       <div class="sec">Sponsor interest <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— Pro</span></div>
       <div style="font-size:13px;font-weight:600;color:var(--color-text-primary)">${countLine}</div>
       <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">You're not just a data point to them. Pro shows you exactly which companies, so you know who to reach out to first. <a href="pricing-creator.html" class="upgrade-link">Upgrade to Pro →</a></div>
@@ -944,7 +944,7 @@ function creatorInterestHtml() {
   }
 
   return `
-    <div class="card" style="margin-bottom:0">
+    <div class="card">
       <div class="sec">Sponsor interest</div>
       <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:8px">${countLine}</div>
       ${interest.sponsors.map(s => `
