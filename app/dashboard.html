@@ -1210,13 +1210,6 @@ function renderMediaKitTab() {
       <button class="pf-btn pf-btn-primary" id="dlBtn" onclick="downloadEveKitPdf()">Download PDF</button>
     </div>
 
-    <div class="pf-mk-grid">
-      <div class="pf-mk-stat"><div class="val">${fmtCount(totalReach())}</div><div class="lab">Total reach</div></div>
-      <div class="pf-mk-stat"><div class="val">${avgEngagementQuality() != null ? avgEngagementQuality() + '%' : '—'}</div><div class="lab">Avg. engagement</div></div>
-      <div class="pf-mk-stat"><div class="val">${avgViewsPerPost() ? fmtCount(avgViewsPerPost()) : '—'}</div><div class="lab">Avg. views / post</div></div>
-      <div class="pf-mk-stat"><div class="val">${Math.round(creator.trust_score) || '—'}</div><div class="lab">Trust Score</div></div>
-    </div>
-
     <div class="pf-card">
       <h3>Edit your Verified Media Kit</h3>
       <p class="desc">Everything below appears on the Verified Media Kit you send to sponsors — bio, photos, brand history, and more.</p>
