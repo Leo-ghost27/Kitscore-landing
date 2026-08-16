@@ -357,7 +357,7 @@ body{font-family:'Space Grotesk',sans-serif}
 <script src="nav.js?v=4"></script>
 <script>
 const BADGE_SVG = {
-  none:     `<i class="ti ti-seedling" style="font-size:14px"></i>`,
+  none:     `<i class="ti ti-sparkles" style="font-size:14px"></i>`,
   bronze:   `<i class="ti ti-shield-check" style="font-size:14px"></i>`,
   silver:   `<i class="ti ti-shield-check" style="font-size:14px"></i>`,
   gold:     `<i class="ti ti-shield-check" style="font-size:14px"></i>`,
@@ -781,7 +781,7 @@ function renderDashboardShell() {
                 ${BADGE_LABEL[tier]}
               </div>`; })()}
               ${creator.founding_cohort ? `<div class="founding-badge" title="One of Kitscore's first 100 creators"><i class="ti ti-rocket" style="font-size:14px"></i>Founding · First 100</div>` : ''}
-              <div class="${'plan-chip plan-'+(creator.plan||'free')}">${(creator.plan||'free').toUpperCase()}</div>
+              <div class="${'plan-chip plan-'+(creator.plan||'free')}">${creator.plan==='pro'?'<i class="ti ti-bolt" style="font-size:12px;margin-right:3px;vertical-align:-1.5px"></i>':''}${(creator.plan||'free').toUpperCase()}</div>
               <div class="verified-badge" style="background:rgba(95,216,184,0.14);border:1px solid rgba(95,216,184,0.3);color:#B8ECDC;margin:0">${svgIcon('rosette-discount-check', {size:14})}${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
             </div>
             <p class="encourage" style="color:#C7D2E8;margin-top:8px">${verifiedCount>=1
