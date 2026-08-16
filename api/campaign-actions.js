@@ -26,6 +26,15 @@
 // side like draft-pitch, and Pro-gated for the same reason. See
 // lib/handlers/counter-offer-assist.js.
 //
+// scan-exclusivity-conflicts and request-verification added 2026-08-15,
+// same slot reasoning. scan-exclusivity-conflicts is Pro-gated by
+// explicit product decision -- flagged in its own file as inconsistent
+// with scan-contract-clauses' free-for-everyone precedent, since this
+// protects the same kind of real legal exposure. request-verification
+// is free to call (sponsor-initiated, gating it would hurt discovery).
+// See lib/handlers/scan-exclusivity-conflicts.js and
+// lib/handlers/request-verification.js.
+//
 // Frees a Vercel Hobby function slot (was 2 files, now 1) -- see
 // api/billing.js for the full reasoning on why this pattern exists.
 const handleInviteSponsor = require('../lib/handlers/creator-invite-sponsor');
@@ -35,6 +44,8 @@ const handleScanContractClauses = require('../lib/handlers/scan-contract-clauses
 const handleDraftPitch = require('../lib/handlers/draft-pitch');
 const handleInviteSponsorContract = require('../lib/handlers/creator-invite-sponsor-contract');
 const handleCounterOfferAssist = require('../lib/handlers/counter-offer-assist');
+const handleScanExclusivityConflicts = require('../lib/handlers/scan-exclusivity-conflicts');
+const handleRequestVerification = require('../lib/handlers/request-verification');
 
 module.exports = async (req, res) => {
   const action = req.query?.action;
@@ -46,6 +57,8 @@ module.exports = async (req, res) => {
   if (action === 'draft-pitch') return handleDraftPitch(req, res);
   if (action === 'invite-sponsor-contract') return handleInviteSponsorContract(req, res);
   if (action === 'counter-offer-assist') return handleCounterOfferAssist(req, res);
+  if (action === 'scan-exclusivity-conflicts') return handleScanExclusivityConflicts(req, res);
+  if (action === 'request-verification') return handleRequestVerification(req, res);
 
-  return res.status(400).json({ error: 'Unknown or missing action. Use ?action=invite-sponsor, notify-dispute, invite-creator, scan-contract-clauses, draft-pitch, invite-sponsor-contract, or counter-offer-assist.' });
+  return res.status(400).json({ error: 'Unknown or missing action. Use ?action=invite-sponsor, notify-dispute, invite-creator, scan-contract-clauses, draft-pitch, invite-sponsor-contract, counter-offer-assist, scan-exclusivity-conflicts, or request-verification.' });
 };
