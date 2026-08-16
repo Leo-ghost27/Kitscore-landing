@@ -58,13 +58,13 @@
   .ring-center{position:absolute;inset:0}
   .ring-num{position:absolute;top:50%;left:50%;transform:translate(-50%,calc(-50% - 16px));font-size:32px;font-weight:700;color:var(--color-text-primary);line-height:1;white-space:nowrap;text-align:center}
   .ring-label{position:absolute;top:50%;left:50%;transform:translate(-50%,calc(-50% + 14px));font-size:9px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;text-align:center}
-  .badge-pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:var(--color-background-secondary);color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary);width:fit-content}
+  .badge-pill{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:7px 14px;border-radius:20px;background:var(--color-background-secondary);color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary);width:fit-content}
   .conf-row{display:flex;align-items:center;gap:8px}
   .conf-label{font-size:11px;color:var(--color-text-secondary);width:90px;flex-shrink:0}
   .conf-bar{flex:1;height:5px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
   .conf-fill{height:100%;background:linear-gradient(90deg,#5B8DFF,#17B8A6);border-radius:3px;transition:width 1s ease}
   .conf-pct{font-size:11px;font-weight:600;color:var(--color-text-primary);width:32px;text-align:right}
-  .plan-chip{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em;width:fit-content}
+  .plan-chip{font-size:11px;font-weight:700;padding:7px 14px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em;width:fit-content}
   .plan-free{background:var(--color-background-secondary);color:var(--color-text-secondary)}
   .plan-pro{background:#EEF2FF;color:#3730A3}
   .upgrade-link{font-size:11px;color:#2563EB;text-decoration:none;font-weight:500}
@@ -165,9 +165,9 @@
   @media(max-width:560px){ .tips-grid{grid-template-columns:1fr} }
 
   /* ── Verified badge ── */
-  .verified-badge{font-size:10px;background:#E9F7EE;color:#1C7C3F;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px}
+  .verified-badge{font-size:12px;font-weight:600;background:#E9F7EE;color:#1C7C3F;padding:7px 14px;border-radius:20px;display:inline-flex;align-items:center;gap:7px}
   .verified-badge svg{flex-shrink:0}
-  .founding-badge{font-size:10.5px;font-weight:600;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);color:#8A5B0A;padding:4px 10px 4px 6px;border-radius:20px;border:0.5px solid #E8CE8F;display:inline-flex;align-items:center;gap:5px;width:fit-content}
+  .founding-badge{font-size:12px;font-weight:600;background:linear-gradient(180deg,#FFFBF0,#FAEEDA);color:#8A5B0A;padding:7px 14px;border-radius:20px;border:0.5px solid #E8CE8F;display:inline-flex;align-items:center;gap:7px;width:fit-content}
 
   /* ── Mobile ── */
   @media(max-width:560px){
@@ -354,14 +354,23 @@ body{font-family:'Space Grotesk',sans-serif}
 <script src="nav.js?v=4"></script>
 <script>
 const BADGE_SVG = {
-  none:     `<svg width="14" height="14" viewBox="0 0 14 14"><rect width="14" height="14" rx="2" fill="#E5E7EB"/></svg>`,
-  bronze:   `<svg width="14" height="14" viewBox="0 0 14 14"><rect width="14" height="14" rx="2" fill="#CD7F32"/></svg>`,
-  silver:   `<svg width="14" height="14" viewBox="0 0 14 14"><rect width="14" height="14" rx="2" fill="#A8A9AD"/></svg>`,
-  gold:     `<svg width="14" height="14" viewBox="0 0 14 14"><rect width="14" height="14" rx="2" fill="#D4AF37"/></svg>`,
-  platinum: `<svg width="14" height="14" viewBox="0 0 14 14"><rect width="14" height="14" rx="2" fill="#2563EB"/></svg>`,
+  none:     `<i class="ti ti-shield" style="font-size:14px"></i>`,
+  bronze:   `<i class="ti ti-shield-check" style="font-size:14px"></i>`,
+  silver:   `<i class="ti ti-shield-check" style="font-size:14px"></i>`,
+  gold:     `<i class="ti ti-shield-check" style="font-size:14px"></i>`,
+  platinum: `<i class="ti ti-shield-star" style="font-size:14px"></i>`,
 };
 const BADGE_LABEL  = { none:'New creator', bronze:'Bronze', silver:'Silver', gold:'Gold', platinum:'Platinum' };
-const BADGE_COLOR  = { none:'#8A909C', bronze:'#CD7F32', silver:'#A8A9AD', gold:'#D4AF37', platinum:'#2563EB' };
+// Per-tier pill colors, tuned for the navy hero background -- each tier
+// gets a distinct icon/text color and a matching subtle tint, so
+// progression reads at a glance even before you read the label.
+const BADGE_COLOR = {
+  none:     { bg:'rgba(255,255,255,0.1)',  border:'rgba(255,255,255,0.16)', color:'#9DB4E8' },
+  bronze:   { bg:'rgba(205,127,50,0.16)',  border:'rgba(205,127,50,0.35)',  color:'#E3A876' },
+  silver:   { bg:'rgba(200,205,214,0.14)', border:'rgba(200,205,214,0.32)', color:'#D7DCE3' },
+  gold:     { bg:'rgba(212,175,55,0.16)',  border:'rgba(240,217,140,0.4)',  color:'#F0D98C' },
+  platinum: { bg:'rgba(94,150,255,0.14)',  border:'rgba(94,150,255,0.35)',  color:'#A8C8FF' },
+};
 const FOUNDING_SEAL = `<svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg>`;
 const MILESTONES   = [
   { tier:'bronze',   label:'Bronze Trust Badge', threshold:2,  svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#CD7F32"/><path d="M6 10l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
@@ -763,13 +772,14 @@ function renderDashboardShell() {
           <div class="score-left-info">
             ${hasScore?`<a href="#score-breakdown" class="why-score-link" style="color:#9DB4F0" onclick="switchTab('score');setTimeout(()=>document.getElementById('score-breakdown')?.scrollIntoView({behavior:'smooth',block:'start'}),50)">Why is my score ${score}?</a>`:''}
             <div class="score-badges">
-              <div class="badge-pill" style="background:rgba(255,255,255,0.12);color:#fff">
-                <span>${BADGE_SVG[creator.badge_tier]}</span>
-                ${BADGE_LABEL[creator.badge_tier]}
-              </div>
-              ${creator.founding_cohort ? `<div class="founding-badge" title="One of Kitscore's first 100 creators">${FOUNDING_SEAL}Founding</div>` : ''}
+              ${(() => { const tier = BADGE_COLOR[creator.badge_tier] ? creator.badge_tier : 'none'; return `
+              <div class="badge-pill" style="background:${BADGE_COLOR[tier].bg};border:1px solid ${BADGE_COLOR[tier].border};color:${BADGE_COLOR[tier].color}">
+                ${BADGE_SVG[tier]}
+                ${BADGE_LABEL[tier]}
+              </div>`; })()}
+              ${creator.founding_cohort ? `<div class="founding-badge" title="One of Kitscore's first 100 creators"><i class="ti ti-rocket" style="font-size:14px"></i>Founding · First 100</div>` : ''}
               <div class="${'plan-chip plan-'+(creator.plan||'free')}">${(creator.plan||'free').toUpperCase()}</div>
-              <div class="verified-badge" style="background:rgba(255,255,255,0.12);color:#fff;margin:0">${svgIcon('rosette-discount-check', {size:12})}${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
+              <div class="verified-badge" style="background:rgba(95,216,184,0.14);border:1px solid rgba(95,216,184,0.3);color:#B8ECDC;margin:0">${svgIcon('rosette-discount-check', {size:14})}${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
             </div>
             <p class="encourage" style="color:#C7D2E8;margin-top:8px">${verifiedCount>=1
               ? `Confidence reflects your verified components and ${verifiedCount} confirmed campaign${verifiedCount===1?'':'s'}.`
