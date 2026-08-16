@@ -5,7 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Profile — Kitscore</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
@@ -228,8 +227,8 @@
         <p>This is what sponsors see when they evaluate you on Kitscore.</p>
       </div>
       <div class="pf-top-actions">
-        <a class="pf-btn" id="previewLink" href="#" target="_blank"><i class="ti ti-eye"></i>Preview public view</a>
-        <button class="pf-btn pf-btn-primary" onclick="copyProfileLink()"><i class="ti ti-share"></i>Share profile</button>
+        <a class="pf-btn" id="previewLink" href="#" target="_blank">${svgIcon('eye', {size:14, strokeWidth:2.2})}Preview public view</a>
+        <button class="pf-btn pf-btn-primary" onclick="copyProfileLink()">${svgIcon('share', {size:14, stroke:'#fff', strokeWidth:2.2})}Share profile</button>
       </div>
     </div>
 
@@ -250,7 +249,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
-<script src="icons.js?v=1"></script>
+<script src="icons.js?v=2"></script>
 <script src="nav.js?v=3"></script>
 <script>
 let profile, creator, collaborations = [], pressMentions = [], scoreComponents = [], platforms = [], payoutHistory = [];
@@ -322,7 +321,7 @@ function renderHero() {
     <div class="pf-avatar-wrap">
       <div class="pf-avatar" id="pfAvatarImg">${creator.avatar_url ? `<img src="${escapeHtml(creator.avatar_url)}">` : escapeHtml(initial)}</div>
       <label class="pf-avatar-edit" title="Change photo">
-        <i class="ti ti-camera"></i>
+        ${svgIcon('camera', {size:12, stroke:'#fff', strokeWidth:2.2})}
         <input type="file" accept="image/jpeg,image/png,image/webp" onchange="uploadAvatar(event)">
       </label>
     </div>
