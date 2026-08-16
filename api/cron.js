@@ -1,4 +1,4 @@
-// GET /api/cron?job=evidence-nudges | ?job=twitch-validate | ?job=youtube-resync | ?job=tiktok-resync | ?job=discord-poll | ?job=health-check
+// GET /api/cron?job=evidence-nudges | ?job=twitch-validate | ?job=youtube-resync | ?job=tiktok-resync | ?job=discord-poll | ?job=health-check | ?job=escrow-stuck-nudge | ?job=repitch-nudges
 //
 // health-check (added 2026-07-31) closes the "found by accident" gap:
 // aggregates client_failures, notification_failures, and stale (never-
@@ -20,6 +20,11 @@
 // dispatcher), many jobs -- these didn't cost a Vercel Hobby function
 // slot, which matters given the project is at 11/12 as of the
 // "Verified by Kitscore" badge feature.
+//
+// repitch-nudges added 2026-08-15 -- same reasoning, still no free
+// function slot. One-time-per-campaign nudge, weekly sweep is plenty
+// (evidence-nudges' existing Monday 9am slot pattern). See
+// lib/handlers/cron-repitch-nudges.js.
 //
 // Security: Vercel automatically sends `Authorization: Bearer
 // ${CRON_SECRET}` on cron-triggered requests when CRON_SECRET is set in
@@ -43,6 +48,7 @@ const handleTiktokResync = require('../lib/handlers/cron-tiktok-resync');
 const handleDiscordPoll = require('../lib/handlers/cron-discord-poll');
 const handleHealthCheck = require('../lib/handlers/cron-health-check');
 const handleEscrowStuckNudge = require('../lib/handlers/cron-escrow-stuck-nudge');
+const handleRepitchNudges = require('../lib/handlers/cron-repitch-nudges');
 
 module.exports = async (req, res) => {
   const authHeader = req.headers['authorization'] || '';
@@ -62,6 +68,7 @@ module.exports = async (req, res) => {
   if (job === 'discord-poll') return handleDiscordPoll(req, res);
   if (job === 'health-check') return handleHealthCheck(req, res);
   if (job === 'escrow-stuck-nudge') return handleEscrowStuckNudge(req, res);
+  if (job === 'repitch-nudges') return handleRepitchNudges(req, res);
 
-  return res.status(400).json({ error: 'Unknown or missing job. Use ?job=evidence-nudges, ?job=twitch-validate, ?job=youtube-resync, ?job=tiktok-resync, ?job=discord-poll, or ?job=health-check.' });
+  return res.status(400).json({ error: 'Unknown or missing job. Use ?job=evidence-nudges, ?job=twitch-validate, ?job=youtube-resync, ?job=tiktok-resync, ?job=discord-poll, ?job=health-check, ?job=escrow-stuck-nudge, or ?job=repitch-nudges.' });
 };
