@@ -378,7 +378,7 @@ async function loadOpenBriefs() {
       ${b.platforms && b.platforms.length ? `<div class="brief-tags">${b.platforms.map(p=>`<span class="brief-tag">${escapeHtml(p)}</span>`).join('')}</div>` : ''}
       ${b.deliverables ? `<div style="font-size:12px;color:var(--ink-soft);margin-bottom:4px"><b>Deliverables:</b> ${escapeHtml(b.deliverables)}</div>` : ''}
       ${b.min_followers ? `<div style="font-size:12px;color:var(--ink-soft)"><b>Minimum followers:</b> ${Number(b.min_followers).toLocaleString()}</div>` : ''}
-      ${!myApp ? `<button class="toggle-link" style="margin-top:8px" onclick="toggleApplyForm('${b.id}')">Apply to this brief</button>` : myApp.status==='pending' ? `<button class="toggle-link" style="margin-top:8px;color:#B42318" onclick="withdrawApplication('${myApp.id}','${b.id}')">Withdraw application</button>` : ''}
+      ${!myApp ? `<button class="toggle-link" style="margin-top:8px" onclick="toggleApplyForm('${b.id}')">Apply to this brief</button>` : myApp.status==='pending' ? `<button class="toggle-link" style="margin-top:8px;color:#B42318" onclick="withdrawApplication('${myApp.id}','${b.id}')">Withdraw application</button> <button class="toggle-link" style="margin-top:8px" onclick="toggleCounterForm('${b.id}')">Counter this rate</button>` : ''}
       ${myApp && ['accepted','rejected','withdrawn'].includes(myApp.status) ? (
         reportedBriefIds.has(b.id)
           ? `<div style="font-size:11px;color:var(--ink-faint);margin-top:8px">Report submitted — pending review</div>`
@@ -398,6 +398,24 @@ async function loadOpenBriefs() {
       </div>
       <button class="cta" onclick="applyToBrief('${b.id}')">Submit application</button>
       <div id="apply-msg-${b.id}"></div>
+    </div>
+    <div class="apply-panel" id="counter-panel-${b.id}" style="display:none">
+      <div style="font-size:11.5px;color:var(--ink-faint);margin-bottom:10px">Draft a message asking for a different rate — a starting point to edit and send to the sponsor yourself, not an automatic renegotiation. Kitscore doesn't send this for you.</div>
+      <div class="field"><label>Rate you want instead</label>
+        <input id="counter-rate-${b.id}" placeholder="e.g. $600 flat">
+      </div>
+      <div class="field"><label>Why <span style="color:var(--color-text-tertiary)">(optional — used in the draft if given)</span></label>
+        <textarea id="counter-reason-${b.id}" placeholder="e.g. this includes usage rights, or my rates went up since I last worked with a similar brand"></textarea>
+      </div>
+      ${isCreatorPro
+        ? `<button type="button" class="toggle-link" onclick="draftCounterOffer('${myApp?.id||''}','${b.id}')" id="counter-draft-btn-${b.id}">✨ Draft counter-offer with AI</button>`
+        : `<a href="pricing-creator.html" class="toggle-link" style="display:inline-block">✨ Draft counter-offer with AI <span style="font-size:9.5px;font-weight:700;background:#EDE9FE;color:#5B4FCF;padding:1px 6px;border-radius:8px;margin-left:2px;vertical-align:1px">PRO</span></a>`}
+      <div id="counter-msg-${b.id}"></div>
+      <div class="field" id="counter-result-wrap-${b.id}" style="display:none;margin-top:10px">
+        <label>Drafted message</label>
+        <textarea id="counter-result-${b.id}" readonly></textarea>
+        <button type="button" class="toggle-link" style="margin-top:4px" onclick="copyCounterDraft('${b.id}')">Copy</button>
+      </div>
     </div>
     <div class="apply-panel" id="report-panel-${b.id}" style="display:none">
       <div class="field"><label>What happened?</label>
@@ -478,6 +496,61 @@ async function draftPitch(briefId) {
   }
   btn.disabled = false;
   btn.textContent = '✨ Draft with AI';
+}
+
+function toggleCounterForm(briefId) {
+  const el = document.getElementById('counter-panel-' + briefId);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function draftCounterOffer(applicationId, briefId) {
+  const btn = document.getElementById('counter-draft-btn-' + briefId);
+  const msgEl = document.getElementById('counter-msg-' + briefId);
+  const resultWrap = document.getElementById('counter-result-wrap-' + briefId);
+  const targetRate = document.getElementById('counter-rate-' + briefId).value.trim();
+  const reason = document.getElementById('counter-reason-' + briefId).value.trim();
+  msgEl.innerHTML = '';
+
+  if (!applicationId) { msgEl.innerHTML = '<div class="msg error">Could not find your application for this brief.</div>'; return; }
+  if (!targetRate) { msgEl.innerHTML = '<div class="msg error">Enter the rate you want first.</div>'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Drafting…';
+
+  const { data: { session } } = await sb.auth.getSession();
+  try {
+    const res = await fetch('/api/campaign-actions?action=counter-offer-assist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ applicationId, targetRate, reason }),
+    });
+    const result = await res.json();
+
+    if (res.status === 403 && result.upgradeRequired) {
+      msgEl.innerHTML = `<div class="msg" style="font-size:11.5px">Counter-Offer Assist is a Pro feature — <a href="pricing-creator.html" style="color:#2563EB">upgrade to Pro</a> to draft counter-offers with AI.</div>`;
+    } else if (!res.ok || result.notRun) {
+      msgEl.innerHTML = `<div class="msg error">${escapeHtml(result.error || 'Could not draft a counter-offer right now.')}</div>`;
+    } else {
+      document.getElementById('counter-result-' + briefId).value = result.draft;
+      resultWrap.style.display = 'block';
+      msgEl.innerHTML = `<div class="msg" style="font-size:11px;color:var(--color-text-tertiary)">Drafted — edit before you send it. Kitscore doesn't send this for you; copy it to email or however you normally reach the sponsor.</div>`;
+    }
+  } catch (err) {
+    msgEl.innerHTML = `<div class="msg error">${escapeHtml(err.message)}</div>`;
+  }
+  btn.disabled = false;
+  btn.textContent = '✨ Draft counter-offer with AI';
+}
+
+async function copyCounterDraft(briefId) {
+  const text = document.getElementById('counter-result-' + briefId).value;
+  try {
+    await navigator.clipboard.writeText(text);
+    const msgEl = document.getElementById('counter-msg-' + briefId);
+    msgEl.innerHTML = '<div class="msg" style="font-size:11px;color:#1C7C3F">Copied.</div>';
+  } catch {
+    prompt('Copy your drafted counter-offer:', text);
+  }
 }
 
 async function applyToBrief(briefId) {
