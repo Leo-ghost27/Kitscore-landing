@@ -121,15 +121,18 @@
   .tag-pend{background:var(--color-background-secondary);color:var(--color-text-tertiary)}
 
   /* ── Improvement loop ── */
-  .improve-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);padding:12px;margin-bottom:8px}
+  .improve-card{border:0.5px solid var(--color-border-tertiary);border-left:3px solid var(--color-border-tertiary);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:var(--color-background-primary)}
+  .improve-card.ic-score-low{border-left-color:#D97706}
+  .improve-card.ic-score-med{border-left-color:#2563EB}
+  .improve-card.ic-score-hi{border-left-color:#1C7C3F}
   .improve-card .ic-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-  .improve-card .ic-title{font-size:12px;font-weight:500;color:var(--color-text-primary)}
-  .improve-card .ic-score{font-size:12px;font-weight:600;padding:2px 7px;border-radius:10px}
+  .improve-card .ic-title{font-size:13px;font-weight:600;color:var(--color-text-primary)}
+  .improve-card .ic-score{font-size:12px;font-weight:600;padding:3px 9px;border-radius:20px}
   .ic-score-low{background:#FEF3C7;color:#92400E}
   .ic-score-med{background:#DBEAFE;color:#1E40AF}
   .ic-score-hi{background:#D1FAE5;color:#065F46}
-  .improve-card .ic-tip{font-size:11px;color:var(--color-text-secondary);line-height:1.55}
-  .improve-card .ic-cta{font-size:11px;font-weight:500;color:#2563EB;text-decoration:none;margin-top:6px;display:inline-block}
+  .improve-card .ic-tip{font-size:12px;color:var(--color-text-secondary);line-height:1.55}
+  .improve-card .ic-cta{font-size:12px;font-weight:600;color:#2563EB;background:none;border:none;padding:0;cursor:pointer;margin-top:8px;display:inline-block;font-family:inherit}
 
   /* ── Brand safety ── */
   .qrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
@@ -354,7 +357,7 @@ body{font-family:'Space Grotesk',sans-serif}
 <script src="nav.js?v=4"></script>
 <script>
 const BADGE_SVG = {
-  none:     `<i class="ti ti-shield" style="font-size:14px"></i>`,
+  none:     `<i class="ti ti-seedling" style="font-size:14px"></i>`,
   bronze:   `<i class="ti ti-shield-check" style="font-size:14px"></i>`,
   silver:   `<i class="ti ti-shield-check" style="font-size:14px"></i>`,
   gold:     `<i class="ti ti-shield-check" style="font-size:14px"></i>`,
@@ -365,7 +368,7 @@ const BADGE_LABEL  = { none:'New creator', bronze:'Bronze', silver:'Silver', gol
 // gets a distinct icon/text color and a matching subtle tint, so
 // progression reads at a glance even before you read the label.
 const BADGE_COLOR = {
-  none:     { bg:'rgba(255,255,255,0.1)',  border:'rgba(255,255,255,0.16)', color:'#9DB4E8' },
+  none:     { bg:'rgba(95,216,184,0.12)',  border:'rgba(95,216,184,0.28)',  color:'#5FD8B8' },
   bronze:   { bg:'rgba(205,127,50,0.16)',  border:'rgba(205,127,50,0.35)',  color:'#E3A876' },
   silver:   { bg:'rgba(200,205,214,0.14)', border:'rgba(200,205,214,0.32)', color:'#D7DCE3' },
   gold:     { bg:'rgba(212,175,55,0.16)',  border:'rgba(240,217,140,0.4)',  color:'#F0D98C' },
@@ -397,10 +400,10 @@ const MILESTONES   = [
 // this component definition picks them up automatically if either ever
 // gets built, with zero further changes needed here.
 const ALL_COMPONENTS = [
-  { keys:['audience_authenticity'], label:'Audience authenticity', advice:'Connect YouTube, TikTok, Twitch, or Instagram for a live-verified signal — or upload a screenshot of your audience demographics as a starting point.', href:'profile.html' },
-  { keys:['engagement_quality_youtube','engagement_quality_tiktok','engagement_quality_twitch','engagement_quality'], baseLabel:'Engagement quality', advice:'Connect YouTube, TikTok, or Twitch so we can verify your engagement rate directly — or upload evidence for a self-reported starting score.', href:'profile.html' },
-  { keys:['brand_safety'], label:'Brand safety', advice:'Complete the brand safety questionnaire below — sponsors filter heavily on this.', href:'#brand-safety' },
-  { keys:['content_consistency_youtube','content_consistency_tiktok','content_consistency_instagram','content_consistency_twitch','content_consistency'], baseLabel:'Content consistency', advice:'Connect YouTube, Instagram, or Twitch so we can verify your posting cadence directly — or upload evidence for a self-reported starting score.', href:'profile.html' },
+  { keys:['audience_authenticity'], label:'Audience authenticity', advice:'Connect YouTube, TikTok, Twitch, or Instagram for a live-verified signal — or upload a screenshot of your audience demographics as a starting point.', anchor:'connect-platforms' },
+  { keys:['engagement_quality_youtube','engagement_quality_tiktok','engagement_quality_twitch','engagement_quality'], baseLabel:'Engagement quality', advice:'Connect YouTube, TikTok, or Twitch so we can verify your engagement rate directly — or upload evidence for a self-reported starting score.', anchor:'connect-platforms' },
+  { keys:['brand_safety'], label:'Brand safety', advice:'Complete the brand safety questionnaire below — sponsors filter heavily on this.', anchor:'brand-safety' },
+  { keys:['content_consistency_youtube','content_consistency_tiktok','content_consistency_instagram','content_consistency_twitch','content_consistency'], baseLabel:'Content consistency', advice:'Connect YouTube, Instagram, or Twitch so we can verify your posting cadence directly — or upload evidence for a self-reported starting score.', anchor:'connect-platforms' },
 ];
 
 // Finds whichever of a component's possible keys the creator actually
@@ -1128,13 +1131,13 @@ function renderScoreTab() {
         const val=comp.value;
         const cls=val<60?'ic-score-low':val<80?'ic-score-med':'ic-score-hi';
         return `
-        <div class="improve-card">
+        <div class="improve-card ${cls}">
           <div class="ic-head">
             <span class="ic-title">${componentLabel(ac, matchedKey)}</span>
             <span class="ic-score ${cls}">${val}/100</span>
           </div>
           <div class="ic-tip">${ac.advice}</div>
-          <a href="${ac.href}" class="ic-cta">Take action →</a>
+          <button class="ic-cta" onclick="switchTab('evidence');setTimeout(()=>document.getElementById('${ac.anchor}')?.scrollIntoView({behavior:'smooth',block:'start'}),50)">Take action →</button>
         </div>`;
       }).join('')}
     </div>`:''}
