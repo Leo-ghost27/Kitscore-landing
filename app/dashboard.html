@@ -376,10 +376,10 @@ const BADGE_COLOR = {
 };
 const FOUNDING_SEAL = `<svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#C08A1E"/><circle cx="9" cy="9" r="7.4" fill="#F0B429"/><path d="M9 4.2l1.4 2.9 3.1.5-2.3 2.2.6 3.1L9 11.4l-2.8 1.5.6-3.1-2.3-2.2 3.1-.5L9 4.2z" fill="#fff"/></svg>`;
 const MILESTONES   = [
-  { tier:'bronze',   label:'Bronze Trust Badge', threshold:2,  svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#CD7F32"/><path d="M6 10l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
-  { tier:'silver',   label:'Silver Trust Badge',  threshold:5,  svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#A8A9AD"/><path d="M6 10l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
-  { tier:'gold',     label:'Gold Trust Badge',    threshold:10, svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#D4AF37"/><path d="M6 10l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
-  { tier:'platinum', label:'Platinum Badge',      threshold:20, svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#2563EB"/><path d="M6 10l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
+  { tier:'bronze',   label:'Bronze Trust Badge', threshold:2,  svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#CD7F32"/><path d="M10 4.5l1.7 3.4 3.8.5-2.75 2.7.65 3.8L10 13.05l-3.4 1.85.65-3.8L4.5 8.4l3.8-.5L10 4.5z" fill="#fff"/></svg>` },
+  { tier:'silver',   label:'Silver Trust Badge',  threshold:5,  svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#A8A9AD"/><path d="M10 4.5l1.7 3.4 3.8.5-2.75 2.7.65 3.8L10 13.05l-3.4 1.85.65-3.8L4.5 8.4l3.8-.5L10 4.5z" fill="#fff"/></svg>` },
+  { tier:'gold',     label:'Gold Trust Badge',    threshold:10, svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#D4AF37"/><path d="M10 4.5l1.7 3.4 3.8.5-2.75 2.7.65 3.8L10 13.05l-3.4 1.85.65-3.8L4.5 8.4l3.8-.5L10 4.5z" fill="#fff"/></svg>` },
+  { tier:'platinum', label:'Platinum Badge',      threshold:20, svg: `<svg width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" rx="3" fill="#2563EB"/><path d="M10 4.5l1.7 3.4 3.8.5-2.75 2.7.65 3.8L10 13.05l-3.4 1.85.65-3.8L4.5 8.4l3.8-.5L10 4.5z" fill="#fff"/></svg>` },
 ];
 // Engagement quality and content consistency each have up to several
 // possible source keys in score_components, depending on what the
@@ -1344,7 +1344,6 @@ async function saveMediaKitBio() {
   const bioEl = document.getElementById('bio');
   const bio = bioEl ? bioEl.value.trim() : creator.bio;
   const { error } = await sb.from('creators').update({ bio }).eq('id', profile.id);
-  const msg = document.querySelector('#panel-mediakit .pf-msg') || document.createElement('div');
   if (error) {
     creator.bio = creator.bio;
     if (btn) btn.insertAdjacentHTML('afterend', `<span class="pf-msg" style="color:#B42318;margin-left:8px">Could not save: ${escapeHtml(error.message)}</span>`);
