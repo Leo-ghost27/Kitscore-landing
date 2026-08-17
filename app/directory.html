@@ -167,7 +167,6 @@ async function load() {
   watchlisted = new Set((saved || []).map(s => s.creator_id));
 
   creators = rows
-    .filter(r => r.trust_score && r.trust_score >= 10)
     .map(r => ({ ...r, name: r.profiles.display_name, verified: verifiedCounts[r.id] || 0 }));
   renderNichePills();
   await loadSavedSearches();
