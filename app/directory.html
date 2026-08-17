@@ -23,6 +23,21 @@
   .controls input[type=number]{width:120px;padding:11px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:14px;background:#fff;color:var(--ink)}
   .save-search-btn{padding:11px 14px;font-size:13px;font-weight:600;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:0;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px}
   .save-search-btn:hover{border-color:var(--blue);color:var(--blue)}
+  .verify-me-card{margin-bottom:16px}
+  .verify-me-toggle{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--blue);background:#fff;border:1px solid var(--line);padding:10px 14px;cursor:pointer;border-radius:0}
+  .verify-me-toggle:hover{border-color:var(--blue)}
+  .verify-me-panel{background:#fff;border:1px solid var(--line);border-top:none;padding:16px;max-width:460px}
+  .verify-me-panel p{font-size:12px;color:var(--ink-soft);margin:0 0 12px;line-height:1.5}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:11.5px;font-weight:600;color:var(--ink);margin-bottom:4px}
+  .field label .opt{font-weight:400;color:var(--ink-faint)}
+  .field input,.field textarea{width:100%;font-family:inherit;font-size:13px;padding:9px 11px;border:1px solid var(--line);border-radius:0;background:#fff;color:var(--ink)}
+  .field textarea{resize:vertical;min-height:56px}
+  .cta{background:var(--blue);color:#fff;border:none;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;border-radius:0}
+  .cta:disabled{opacity:.6;cursor:default}
+  .msg{font-size:11.5px;margin-top:8px}
+  .msg.ok{color:#1C7C3F}
+  .msg.error{color:#B42318}
   .saved-search-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
   .saved-search-chip{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;padding:6px 8px 6px 12px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer}
   .saved-search-chip:hover{border-color:var(--blue-line);color:var(--blue)}
@@ -91,6 +106,35 @@
     </div>
     <div class="saved-search-row" id="savedSearchRow"></div>
     <div class="filter-pills" id="nichePills"></div>
+
+    <!-- ── Verify Me — sponsor-initiated verification request, free to
+         send (Kitscore gates the CREATOR's response speed, not the
+         sponsor's ability to ask). Not tied to one listed creator's
+         card: it's an email-first invite, same shape as
+         sponsor-invite-creator.js, so it works whether or not the
+         creator is even claimed on Kitscore yet. See
+         lib/handlers/request-verification.js for the full design note,
+         including why "express" doesn't guarantee a faster review yet. ── -->
+    <div class="verify-me-card" id="verifyMeCard">
+      <button type="button" class="verify-me-toggle" onclick="toggleVerifyMe()">
+        ${svgIcon('shield-check', {size:15, stroke:'currentColor', strokeWidth:2})}
+        Know a creator who should be verified?
+      </button>
+      <div class="verify-me-panel" id="verifyMePanel" style="display:none">
+        <p>Ask a creator — on Kitscore already or not — to get verified. They'll get an email; nothing about them changes until they respond.</p>
+        <div class="field">
+          <label>Creator's email</label>
+          <input type="email" id="verifyMeEmail" placeholder="creator@example.com">
+        </div>
+        <div class="field">
+          <label>Context <span class="opt">(optional — shown to the creator)</span></label>
+          <textarea id="verifyMeContext" placeholder="e.g. considering you for our fall campaign"></textarea>
+        </div>
+        <button type="button" class="cta" id="verifyMeBtn" onclick="sendVerificationRequest()">Send verification request</button>
+        <div id="verifyMeMsg"></div>
+      </div>
+    </div>
+
     <div id="content" class="loading">Loading creators from Supabase…</div>
   </div>
 </div>
@@ -296,6 +340,51 @@ function render() {
       </div>
     </div>
   `).join('')}</div>`;
+}
+
+function toggleVerifyMe() {
+  const panel = document.getElementById('verifyMePanel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function sendVerificationRequest() {
+  const emailEl = document.getElementById('verifyMeEmail');
+  const contextEl = document.getElementById('verifyMeContext');
+  const btn = document.getElementById('verifyMeBtn');
+  const msgEl = document.getElementById('verifyMeMsg');
+  const email = emailEl.value.trim();
+  const context = contextEl.value.trim();
+  msgEl.innerHTML = '';
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    msgEl.innerHTML = '<div class="msg error">Enter a valid email first.</div>';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  const { data: { session } } = await sb.auth.getSession();
+  try {
+    const res = await fetch('/api/campaign-actions?action=request-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ targetEmail: email, targetContext: context || null }),
+    });
+    const result = await res.json();
+
+    if (!res.ok) {
+      msgEl.innerHTML = `<div class="msg error">${escapeHtml(result.error || 'Could not send that request.')}</div>`;
+    } else {
+      msgEl.innerHTML = `<div class="msg ok">${escapeHtml(result.message || 'Sent.')}</div>`;
+      emailEl.value = '';
+      contextEl.value = '';
+    }
+  } catch (err) {
+    msgEl.innerHTML = `<div class="msg error">${escapeHtml(err.message)}</div>`;
+  }
+  btn.disabled = false;
+  btn.textContent = 'Send verification request';
 }
 
 async function toggleSave(creatorId) {

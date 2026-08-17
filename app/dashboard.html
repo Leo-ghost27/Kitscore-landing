@@ -1187,6 +1187,36 @@ async function downloadEveKitPdf() {
   }
 }
 
+async function downloadComplianceCertificate() {
+  const btn = document.getElementById('complianceDlBtn');
+  if (!btn) return;
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = 'Generating…';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/documents?type=compliance-certificate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      alert('Could not generate the compliance record: ' + (j.error || 'Unknown error'));
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'kitscore-compliance-record.pdf'; a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('Error generating the compliance record: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
 function platformFollowerCount(p) {
   return p.subscriber_count || p.follower_count || 0;
 }
@@ -1907,6 +1937,22 @@ function renderEvidenceTab() {
           <span style="font-size:12px">${q.label}${q.key==='paid_disclosure' && yt?.verification_method==='oauth' ? '<div style="font-size:10.5px;color:var(--color-text-tertiary);font-weight:400;margin-top:2px">Your YouTube uploads are cross-checked against the paid-promotion setting on YouTube \u2014 this supplements, not replaces, your answer.</div>' : ''}</span>
           <span class="opts">${q.opts.map(o=>`<button class="${answerMap[q.key]===o?'sel':''}" onclick="answerQuestion('${q.key}','${o}')">${o}</button>`).join('')}</span>
         </div>`).join('')}
+    </div>
+
+    <!-- ── Compliance Certificate — a presentation/export layer over the
+         disclosure and brand-safety scans above, which stay free for
+         everyone. This is the export that's Pro-gated, not the checks
+         themselves -- same relationship as the free score vs. the
+         Verified Media Kit PDF. See lib/handlers/document-compliance-
+         certificate.js for the "not a legal certification" framing this
+         card's copy must not drift from. ── -->
+    <div class="card" id="compliance-certificate">
+      <div class="sec">Compliance record <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— export as PDF</span></div>
+      <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:12px;line-height:1.6">A timestamped record of the disclosure and brand-safety checks above, plus any contract clause scans on file — the kind of thing a sponsor's legal or compliance team might ask for. <b>This is not a legal certification</b> that you are FTC compliant, and Kitscore is not a law firm — it's a record of automated checks and their outcomes, not a guarantee.</div>
+      ${creator.plan === 'pro'
+        ? `<button class="confirm-btn" id="complianceDlBtn" style="background:#2563EB;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer" onclick="downloadComplianceCertificate()">Download PDF</button>`
+        : `<a href="pricing-creator.html" class="confirm-btn" style="display:inline-block;text-decoration:none;background:#2563EB;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer">Download PDF <span style="font-size:9.5px;font-weight:700;background:rgba(255,255,255,0.25);padding:1px 6px;border-radius:8px;margin-left:2px;vertical-align:1px">PRO</span></a>`}
+      <div id="complianceMsg" style="font-size:11px;margin-top:8px"></div>
     </div>
 
     <!-- ── Audience demographics (self-reported) — moved here from the old

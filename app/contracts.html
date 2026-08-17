@@ -700,6 +700,85 @@ function clauseScanHtml(c) {
   return `<div id="clause-scan-${c.id}" style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">✓ No one-sided liability language or pay/scope mismatch found in this contract's terms (automated check, not legal advice)</div>`;
 }
 
+// ── Exclusivity Conflict Checker — creator-only, Pro-gated, per-contract,
+//    manually triggered (not auto-run like clauseScanHtml above): same
+//    toggle-panel shape as Counter-Offer Assist in briefs.html, because
+//    unlike the clause scan this costs a real AI call per check and the
+//    creator picks which contract to check against, not every contract
+//    on load. See lib/handlers/scan-exclusivity-conflicts.js for the
+//    Pro-gating rationale and lib/exclusivity-conflict-check.js for why
+//    this is a "worth a human look" flag, not a legal determination. ──
+function exclusivityCheckHtml(c) {
+  if (profile.role !== 'creator') return '';
+  if (c.status === 'draft' || c.status === 'void') return '';
+  if (!c.exclusivity_terms) return '';
+
+  const isPro = c.creators.plan === 'pro';
+  return `
+    <div id="excl-wrap-${c.id}" style="margin-top:8px">
+      ${!c.exclusivity_conflict_scanned_at ? `
+        ${isPro
+          ? `<button type="button" class="toggle-link" onclick="runExclusivityCheck('${c.id}')" id="excl-btn-${c.id}">Check for exclusivity conflicts</button>`
+          : `<a href="pricing-creator.html" class="toggle-link" style="display:inline-block">Check for exclusivity conflicts <span style="font-size:9.5px;font-weight:700;background:#EDE9FE;color:#5B4FCF;padding:1px 6px;border-radius:8px;margin-left:2px;vertical-align:1px">PRO</span></a>`}
+        <div id="excl-msg-${c.id}"></div>
+      ` : exclusivityResultHtml(c)}
+    </div>`;
+}
+
+function exclusivityResultHtml(c) {
+  if (c.exclusivity_conflict_flagged) {
+    return `
+      <div class="msg error">
+        <div style="font-weight:600;margin-bottom:4px">⚠ This may conflict with another signed contract's exclusivity terms</div>
+        <div style="margin-bottom:6px">${escapeHtml(c.exclusivity_conflict_rationale || '')}</div>
+        ${(c.exclusivity_conflict_concerns||[]).map(t => `<div style="font-style:italic;font-size:11px;padding:4px 8px;background:rgba(255,255,255,.5);margin-bottom:4px">"${escapeHtml(t)}"</div>`).join('')}
+        <div style="font-size:10.5px;margin-top:4px">This isn't legal advice — it's a prompt to go re-read the contracts side by side, ideally with a lawyer, before this becomes a problem.</div>
+        <button type="button" class="toggle-link" style="margin-top:6px;font-size:10.5px" onclick="runExclusivityCheck('${c.id}', true)">Re-check</button>
+      </div>`;
+  }
+  return `<div style="font-size:11px;color:var(--color-text-tertiary)">✓ No plausible exclusivity conflict found against your other signed contracts (automated check, not legal advice) <button type="button" class="toggle-link" style="font-size:10.5px" onclick="runExclusivityCheck('${c.id}', true)">Re-check</button></div>`;
+}
+
+async function runExclusivityCheck(contractId, force) {
+  const btn = document.getElementById('excl-btn-' + contractId);
+  const msgEl = document.getElementById('excl-msg-' + contractId);
+  const wrap = document.getElementById('excl-wrap-' + contractId);
+  if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+  if (msgEl) msgEl.innerHTML = '';
+
+  const { data: { session } } = await sb.auth.getSession();
+  try {
+    const res = await fetch('/api/campaign-actions?action=scan-exclusivity-conflicts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token || ''}` },
+      body: JSON.stringify({ contractId, force: !!force }),
+    });
+    const result = await res.json();
+
+    if (res.status === 403 && result.upgradeRequired) {
+      if (msgEl) msgEl.innerHTML = `<div class="msg" style="font-size:11.5px">Exclusivity Conflict Check is a Pro feature — <a href="pricing-creator.html" style="color:#2563EB">upgrade to Pro</a> to check your contracts against each other.</div>`;
+      if (btn) { btn.disabled = false; btn.textContent = 'Check for exclusivity conflicts'; }
+      return;
+    }
+    if (!res.ok || result.notRun) {
+      if (msgEl) msgEl.innerHTML = `<div class="msg error">${escapeHtml(result.error || 'Could not run the exclusivity check right now.')}</div>`;
+      if (btn) { btn.disabled = false; btn.textContent = 'Check for exclusivity conflicts'; }
+      return;
+    }
+    if (wrap) {
+      wrap.innerHTML = exclusivityResultHtml({
+        id: contractId,
+        exclusivity_conflict_flagged: result.flagged,
+        exclusivity_conflict_concerns: result.concerns,
+        exclusivity_conflict_rationale: result.rationale,
+      });
+    }
+  } catch (err) {
+    if (msgEl) msgEl.innerHTML = `<div class="msg error">${escapeHtml(err.message)}</div>`;
+    if (btn) { btn.disabled = false; btn.textContent = 'Check for exclusivity conflicts'; }
+  }
+}
+
 async function ensureClauseScan(contract) {
   if (contract.status === 'draft' || contract.status === 'void') return;
   if (contract.clause_scanned_at) return;
@@ -739,7 +818,7 @@ async function loadContracts() {
   const col = profile.role === 'sponsor' ? 'sponsor_id' : 'creator_id';
   const currentFeePct = await getEscrowFeePct();
   const { data: contracts, error } = await sb.from('contracts')
-    .select('*, sponsors!inner(company_name), creators!inner(id, trust_score, stripe_connect_payouts_enabled, profiles!inner(display_name))')
+    .select('*, sponsors!inner(company_name), creators!inner(id, trust_score, plan, stripe_connect_payouts_enabled, profiles!inner(display_name))')
     .eq(col, profile.id)
     .order('created_at', { ascending: false });
 
@@ -883,6 +962,7 @@ async function loadContracts() {
         <span style="color:var(--ink-faint)">Based on what Kitscore can verify — not a claim about downstream sales or conversions.</span>
       </div>` : ''}
       ${clauseScanHtml(c)}
+      ${exclusivityCheckHtml(c)}
       ${contentReviewHtml(c)}
       ${creatorNotReady ? `<div class="msg error">This creator hasn't finished setting up their payout account yet — funding is disabled until they do.</div>` : ''}
       ${c.deliverable_submitted_at ? `<div class="signed-line">✓ Deliverable submitted ${new Date(c.deliverable_submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}${c.deliverable_notes ? ' — ' + escapeHtml(c.deliverable_notes) : ''}</div>` : ''}
