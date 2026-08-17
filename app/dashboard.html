@@ -1779,7 +1779,7 @@ function renderEvidenceTab() {
   return `
     <!-- ── Signals summary strip (blueprint step 7 -- was placeholder text
          in the mockup, now real status computed from actual data) ── -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px">
       <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('connect-platforms').scrollIntoView({behavior:'smooth',block:'start'})">
         <div style="width:32px;height:32px;border-radius:8px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;margin-bottom:10px">${svgIcon('plug-connected',{size:16,stroke:'#2755F0'})}</div>
         <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Platforms</div>
@@ -1797,6 +1797,12 @@ function renderEvidenceTab() {
         <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Audience demographics</div>
         <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">Age, gender, geography</div>
         <div style="font-size:11px;font-weight:600;color:${(audienceData.countries.length||Object.keys(audienceData.genders).length||Object.keys(audienceData.ages).length)?'#2755F0':'#92600A'}">${(audienceData.countries.length||Object.keys(audienceData.genders).length||Object.keys(audienceData.ages).length)?'Self-reported':'Not started'}</div>
+      </div>
+      <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('compliance-certificate').scrollIntoView({behavior:'smooth',block:'start'})">
+        <div style="width:32px;height:32px;border-radius:8px;background:#EAF7F0;display:flex;align-items:center;justify-content:center;margin-bottom:10px">${svgIcon('file-check',{size:16,stroke:'#1C7C3F'})}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Compliance record</div>
+        <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">Disclosure &amp; scan history, PDF</div>
+        <div style="font-size:11px;font-weight:600;color:${creator.plan==='pro'?'#1C7C3F':'#92600A'}">${creator.plan==='pro'?'Available':'Pro feature'}</div>
       </div>
     </div>
 
