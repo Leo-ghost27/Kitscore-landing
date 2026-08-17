@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agency — Kitscore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  body{background:var(--canvas)}
+  .app-main{max-width:1180px;padding:40px 48px 80px}
+  .ptitle{font-size:24px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
+  .psub{font-size:14px;color:var(--ink-soft);margin-bottom:24px}
+  .card{background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,21,31,.03);padding:26px 28px;margin-bottom:20px}
+  .msg{font-size:12px;margin-top:8px;padding:10px 12px;border-radius:0}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:var(--green-soft,#E9F7EE);color:#137C52}
+  .agency-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:24px}
+  .agency-tab{padding:12px 18px;font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent}
+  .agency-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .roster-card{background:#fff;border:1px solid var(--line);padding:20px}
+  .roster-card-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .roster-avatar{width:38px;height:38px;border-radius:50%;background:var(--blue-soft,#EEF2FF);color:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+  .roster-name{font-size:14.5px;font-weight:600;color:var(--ink)}
+  .roster-niche{font-size:12px;color:var(--ink-soft)}
+  .roster-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:12px;border-top:1px solid var(--line)}
+  .roster-stat-num{font-family:var(--font-mono);font-size:18px;font-weight:600;color:var(--ink)}
+  .roster-stat-label{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--ink-soft)}
+  .empty-state svg{opacity:.3;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div id="sidebar-mount" class="sidebar"></div>
+<main class="app-main">
+  <div id="content">
+    <div class="ptitle">Agency</div>
+    <div class="psub">Loading…</div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="nav.js?v=4"></script>
+<script>
+let profile, roster = [];
+let activeTab = 'roster';
+
+const AGENCY_TABS = [
+  ['roster', 'Roster'],
+];
+
+async function load() {
+  profile = await requireRole('manager');
+  if (!profile) return;
+  renderSidebar('manager', 'agency');
+
+  await loadRoster();
+  render();
+}
+
+async function loadRoster() {
+  const { data: links } = await sb.from('manager_creator_links')
+    .select('creator_id, created_at, creators(niche, trust_score, plan, profiles(display_name))')
+    .eq('manager_id', profile.id)
+    .eq('status', 'active');
+
+  roster = links || [];
+
+  // Pull pipeline counts per creator using the Phase 2 manager SELECT
+  // grants on contracts and brief_applications -- this is the actual
+  // proof those RLS policies work end to end, not just in isolation.
+  await Promise.all(roster.map(async r => {
+    const [{ count: activeContracts }, { count: pendingApplications }] = await Promise.all([
+      sb.from('contracts').select('id', { count: 'exact', head: true }).eq('creator_id', r.creator_id).eq('status', 'fully_signed'),
+      sb.from('brief_applications').select('id', { count: 'exact', head: true }).eq('creator_id', r.creator_id).eq('status', 'pending'),
+    ]);
+    r.activeContracts = activeContracts || 0;
+    r.pendingApplications = pendingApplications || 0;
+  }));
+}
+
+function render() {
+  document.getElementById('content').innerHTML = `
+    <div class="ptitle">Agency</div>
+    <div class="psub">Your linked creators, in one place.</div>
+    <div class="agency-tabs">
+      ${AGENCY_TABS.map(([key, label]) => `<div class="agency-tab ${activeTab === key ? 'active' : ''}" onclick="switchTab('${key}')">${label}</div>`).join('')}
+    </div>
+    <div id="tab-panel">${renderTabPanel(activeTab)}</div>
+  `;
+}
+
+function renderTabPanel(key) {
+  if (key === 'roster') return renderRosterTab();
+  return '';
+}
+
+function renderRosterTab() {
+  if (!roster.length) {
+    return `
+      <div class="card">
+        <div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3.6"/><path d="M2.4 20.5c0-3.6 3-6.1 6.6-6.1s6.6 2.5 6.6 6.1"/></svg>
+          <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:6px">No creators linked yet</div>
+          <div style="font-size:12.5px;max-width:340px;margin:0 auto">Ask a creator to invite you from their Profile page — the Manager section under Account settings.</div>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="roster-grid">
+      ${roster.map(r => {
+        const name = r.creators?.profiles?.display_name || 'Creator';
+        const initial = name.trim().charAt(0).toUpperCase();
+        const score = r.creators?.trust_score;
+        return `
+        <div class="roster-card">
+          <div class="roster-card-top">
+            <div class="roster-avatar">${initial}</div>
+            <div>
+              <div class="roster-name">${escapeHtml(name)}</div>
+              <div class="roster-niche">${escapeHtml(r.creators?.niche || 'No niche set')}${score != null ? ` · Trust Score ${Math.round(score)}` : ''}</div>
+            </div>
+          </div>
+          <div class="roster-stats">
+            <div><div class="roster-stat-num">${r.activeContracts}</div><div class="roster-stat-label">Active contracts</div></div>
+            <div><div class="roster-stat-num">${r.pendingApplications}</div><div class="roster-stat-label">Pending briefs</div></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function switchTab(key) {
+  activeTab = key;
+  render();
+}
+
+load();
+</script>
+</body>
+</html>

@@ -54,6 +54,10 @@ const NAV = {
     { key: 'support', href: 'support.html', icon: 'inbox', label: 'Support' },
     { key: 'pricing', href: 'pricing.html', icon: 'plans', label: 'Plans' },
   ],
+  manager: [
+    { key: 'agency', href: 'agency.html', icon: 'team', label: 'Roster' },
+    { key: 'support', href: 'support.html', icon: 'inbox', label: 'Support' },
+  ],
   admin: [
     { key: 'admin-evidence', href: 'admin-evidence.html', icon: 'shield-check', label: 'Evidence Review' },
     { key: 'admin-brand-safety', href: 'admin-brand-safety.html', icon: 'alert-triangle', label: 'Brand Safety Review' },
@@ -76,9 +80,9 @@ function renderSidebar(role, activeKey, displayName) {
   if (!mount) return;
   mount.classList.toggle('sidebar-creator', role === 'creator');
   const items = NAV[role] || [];
-  const roleLabel = role === 'sponsor' ? 'Sponsor account' : role === 'admin' ? 'Admin account' : 'Creator account';
+  const roleLabel = role === 'sponsor' ? 'Sponsor account' : role === 'admin' ? 'Admin account' : role === 'manager' ? 'Manager account' : 'Creator account';
   const name = displayName || (typeof profile !== 'undefined' && profile ? profile.display_name : '') || '';
-  const initial = name ? name.trim().charAt(0).toUpperCase() : (role === 'sponsor' ? 'S' : role === 'admin' ? 'A' : 'C');
+  const initial = name ? name.trim().charAt(0).toUpperCase() : (role === 'sponsor' ? 'S' : role === 'admin' ? 'A' : role === 'manager' ? 'M' : 'C');
   const logoTextColor = role === 'creator' ? '#EAF0FF' : '#10151F';
 
   mount.innerHTML = `
