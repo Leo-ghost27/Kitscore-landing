@@ -1039,10 +1039,54 @@ function peerPercentileHtml() {
 }
 function renderScoreTab() {
   const { hasScore, compMap, improvements, verifiedCount, history, nextMs, msPct } = dash;
+  const authOverall = compMap['audience_authenticity'];
+  const authTier = authOverall ? authenticityTier(authOverall.value) : null;
   return `
+    <!-- ── Summary grid — jump to any section below, same click-to-scroll
+         pattern as the Signals tab (docs/dashboard-rework-blueprint-v1.md
+         calls for this consistency across tabs). ── -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">
+      <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('score-breakdown').scrollIntoView({behavior:'smooth',block:'start'})">
+        <div style="width:32px;height:32px;border-radius:8px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;margin-bottom:10px">${svgIcon('chart-pie',{size:16,stroke:'#2755F0'})}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Score breakdown</div>
+        <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">Weighted components behind your score</div>
+        <div style="font-size:11px;font-weight:600;color:${hasScore?'#1C7C3F':'#92600A'}">${hasScore?Math.round(creator.trust_score)+' trust score':'Not started'}</div>
+      </div>
+      <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('milestone-card').scrollIntoView({behavior:'smooth',block:'start'})">
+        <div style="width:32px;height:32px;border-radius:8px;background:#FFF8EC;display:flex;align-items:center;justify-content:center;margin-bottom:10px">${svgIcon('rosette-discount-check',{size:16,stroke:'#B8860B'})}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Milestone</div>
+        <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">${nextMs?nextMs.label:'Trust tier progress'}</div>
+        <div style="font-size:11px;font-weight:600;color:${nextMs?'#2755F0':'#1C7C3F'}">${nextMs?`${verifiedCount} of ${nextMs.threshold}`:'Platinum'}</div>
+      </div>
+      <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('audience-authenticity').scrollIntoView({behavior:'smooth',block:'start'})">
+        <div style="width:32px;height:32px;border-radius:8px;background:#F5F3FF;display:flex;align-items:center;justify-content:center;margin-bottom:10px">${svgIcon('shield-check',{size:16,stroke:'#5B4FCF'})}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Audience authenticity</div>
+        <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">Engagement pattern per platform</div>
+        <div style="font-size:11px;font-weight:600;color:${authTier?authTier.color:'#92600A'}">${authTier?authTier.label:'No data yet'}</div>
+      </div>
+      <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('verified-reputation').scrollIntoView({behavior:'smooth',block:'start'})">
+        <div style="width:32px;height:32px;border-radius:8px;background:#E9F7EE;display:flex;align-items:center;justify-content:center;margin-bottom:10px">${svgIcon('shield-star',{size:16,stroke:'#1C7C3F'})}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Verified reputation</div>
+        <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">Reliability from confirmed campaigns</div>
+        <div style="font-size:11px;font-weight:600;color:${verifiedCount>0?(creator.plan==='pro'?'#1C7C3F':'#92600A'):'#92600A'}">${verifiedCount>0?(creator.plan==='pro'?`${creator.reliability_score||0} reliability`:'Pro'):'0 verified campaigns'}</div>
+      </div>
+      <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('improve-score').scrollIntoView({behavior:'smooth',block:'start'})">
+        <div style="width:32px;height:32px;border-radius:8px;background:#FEF2F2;display:flex;align-items:center;justify-content:center;margin-bottom:10px">${svgIcon('bolt',{size:16,stroke:'#DC2626'})}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Improve your score</div>
+        <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">Your lowest components, ranked</div>
+        <div style="font-size:11px;font-weight:600;color:${improvements.length?'#92600A':'#1C7C3F'}">${improvements.length?`${improvements.length} tip${improvements.length===1?'':'s'}`:'All good'}</div>
+      </div>
+      <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('score-history').scrollIntoView({behavior:'smooth',block:'start'})">
+        <div style="width:32px;height:32px;border-radius:8px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;margin-bottom:10px">${svgIcon('clock',{size:16,stroke:'#3730A3'})}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Score history</div>
+        <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">Your trend over time</div>
+        <div style="font-size:11px;font-weight:600;color:${creator.plan==='pro'?'#2755F0':'#92600A'}">${creator.plan==='pro'?'View trend':'Pro'}</div>
+      </div>
+    </div>
+
     <!-- ── Milestone (moved from Overview -- docs/dashboard-rework-blueprint-v1.md) ── -->
     ${nextMs?`
-    <div class="card">
+    <div class="card" id="milestone-card">
       <div class="sec">Next milestone</div>
       <div class="milestone-card">
         <div class="ms-icon">${nextMs.svg}</div>
@@ -1053,7 +1097,7 @@ function renderScoreTab() {
         </div>
       </div>
     </div>`:`
-    <div class="card" style="text-align:center;padding:20px">
+    <div class="card" id="milestone-card" style="text-align:center;padding:20px">
       <div style="margin-bottom:8px"><svg width="28" height="28" viewBox="0 0 28 28"><rect width="28" height="28" rx="4" fill="#2563EB"/><path d="M8 14l5 5 7-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <div style="font-size:13px;font-weight:600;color:var(--color-text-primary)">Platinum achieved</div>
       <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px">You've reached the highest trust tier.</div>
@@ -1072,11 +1116,11 @@ function renderScoreTab() {
     </div>
 
     <!-- ── Audience authenticity / engagement quality breakdown ── -->
-    ${renderAuthenticityTab()}
+    <div id="audience-authenticity">${renderAuthenticityTab()}</div>
 
     <!-- ── Verified Reputation ── -->
     ${(verifiedCount>0)?`
-    <div class="card">
+    <div class="card" id="verified-reputation">
       <div class="sec">Verified Sponsorship Reputation ${creator.plan!=='pro'?'<span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— Pro</span>':''}</div>
       ${creator.plan==='pro' ? `
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
@@ -1149,7 +1193,7 @@ function renderScoreTab() {
 
     <!-- ── Improvement loop ── -->
     ${improvements.length?`
-    <div class="card">
+    <div class="card" id="improve-score">
       <div class="sec">How to improve your score</div>
       ${improvements.map(({ac, comp, matchedKey})=>{
         const val=comp.value;
@@ -1167,7 +1211,7 @@ function renderScoreTab() {
     </div>`:''}
 
     <!-- ── Score history ── -->
-    <div class="card">
+    <div class="card" id="score-history">
       <div class="sec">Score history <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— Pro</span></div>
       ${creator.plan==='pro' ? renderScoreHistory(history) : `
         <div style="position:relative">
