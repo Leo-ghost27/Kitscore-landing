@@ -8,7 +8,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — Kitscore</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <!-- Media Kit tab uses profile.html's richer Fraunces/Space Grotesk visual
@@ -357,11 +356,11 @@ body{font-family:'Space Grotesk',sans-serif}
 <script src="nav.js?v=4"></script>
 <script>
 const BADGE_SVG = {
-  none:     `<i class="ti ti-sparkles" style="font-size:14px"></i>`,
-  bronze:   `<i class="ti ti-shield-check" style="font-size:14px"></i>`,
-  silver:   `<i class="ti ti-shield-check" style="font-size:14px"></i>`,
-  gold:     `<i class="ti ti-shield-check" style="font-size:14px"></i>`,
-  platinum: `<i class="ti ti-shield-star" style="font-size:14px"></i>`,
+  none:     svgIcon('sparkles', {size:14}),
+  bronze:   svgIcon('shield-check', {size:14}),
+  silver:   svgIcon('shield-check', {size:14}),
+  gold:     svgIcon('shield-check', {size:14}),
+  platinum: svgIcon('shield-star', {size:14}),
 };
 const BADGE_LABEL  = { none:'New creator', bronze:'Bronze', silver:'Silver', gold:'Gold', platinum:'Platinum' };
 // Per-tier pill colors, tuned for the navy hero background -- each tier
@@ -780,8 +779,8 @@ function renderDashboardShell() {
                 ${BADGE_SVG[tier]}
                 ${BADGE_LABEL[tier]}
               </div>`; })()}
-              ${creator.founding_cohort ? `<div class="founding-badge" title="One of Kitscore's first 100 creators"><i class="ti ti-rocket" style="font-size:14px"></i>Founding · First 100</div>` : ''}
-              <div class="${'plan-chip plan-'+(creator.plan||'free')}">${creator.plan==='pro'?'<i class="ti ti-bolt" style="font-size:12px;margin-right:3px;vertical-align:-1.5px"></i>':''}${(creator.plan||'free').toUpperCase()}</div>
+              ${creator.founding_cohort ? `<div class="founding-badge" title="One of Kitscore's first 100 creators">${svgIcon('rocket', {size:14})}Founding · First 100</div>` : ''}
+              <div class="${'plan-chip plan-'+(creator.plan||'free')}">${creator.plan==='pro'?svgIcon('bolt',{size:12,style:'margin-right:3px;vertical-align:-1.5px'}):''}${(creator.plan||'free').toUpperCase()}</div>
               <div class="verified-badge" style="background:rgba(95,216,184,0.14);border:1px solid rgba(95,216,184,0.3);color:#B8ECDC;margin:0">${svgIcon('rosette-discount-check', {size:14})}${verifiedCount} verified campaign${verifiedCount===1?'':'s'}</div>
             </div>
             <p class="encourage" style="color:#C7D2E8;margin-top:8px">${verifiedCount>=1
@@ -1727,19 +1726,19 @@ function renderEvidenceTab() {
          in the mockup, now real status computed from actual data) ── -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">
       <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('connect-platforms').scrollIntoView({behavior:'smooth',block:'start'})">
-        <div style="width:32px;height:32px;border-radius:8px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;margin-bottom:10px"><i class="ti ti-plug-connected" style="font-size:16px;color:#2755F0" aria-hidden="true"></i></div>
+        <div style="width:32px;height:32px;border-radius:8px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;margin-bottom:10px">${svgIcon('plug-connected',{size:16,stroke:'#2755F0'})}</div>
         <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Platforms</div>
         <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">YouTube, TikTok, Twitch, Instagram</div>
         <div style="font-size:11px;font-weight:600;color:${(platformConnections||[]).length?'#1C7C3F':'#92600A'}">${(platformConnections||[]).length} connected</div>
       </div>
       <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('brand-safety').scrollIntoView({behavior:'smooth',block:'start'})">
-        <div style="width:32px;height:32px;border-radius:8px;background:#FFF8EC;display:flex;align-items:center;justify-content:center;margin-bottom:10px"><i class="ti ti-shield-check" style="font-size:16px;color:#B8860B" aria-hidden="true"></i></div>
+        <div style="width:32px;height:32px;border-radius:8px;background:#FFF8EC;display:flex;align-items:center;justify-content:center;margin-bottom:10px">${svgIcon('shield-check',{size:16,stroke:'#B8860B'})}</div>
         <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Brand safety</div>
         <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">${QUESTIONS.length}-question self report</div>
         <div style="font-size:11px;font-weight:600;color:${Object.keys(answerMap||{}).length>=QUESTIONS.length?'#1C7C3F':Object.keys(answerMap||{}).length>0?'#2755F0':'#92600A'}">${Object.keys(answerMap||{}).length>=QUESTIONS.length?'Complete':Object.keys(answerMap||{}).length>0?`${Object.keys(answerMap||{}).length} of ${QUESTIONS.length} answered`:'Not started'}</div>
       </div>
       <div class="card" style="cursor:pointer;margin-bottom:0" onclick="document.getElementById('audience-demographics').scrollIntoView({behavior:'smooth',block:'start'})">
-        <div style="width:32px;height:32px;border-radius:8px;background:#F5F3FF;display:flex;align-items:center;justify-content:center;margin-bottom:10px"><i class="ti ti-chart-pie" style="font-size:16px;color:#5B4FCF" aria-hidden="true"></i></div>
+        <div style="width:32px;height:32px;border-radius:8px;background:#F5F3FF;display:flex;align-items:center;justify-content:center;margin-bottom:10px">${svgIcon('chart-pie',{size:16,stroke:'#5B4FCF'})}</div>
         <div style="font-size:13px;font-weight:600;color:var(--color-text-primary);margin-bottom:3px">Audience demographics</div>
         <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px">Age, gender, geography</div>
         <div style="font-size:11px;font-weight:600;color:${(audienceData.countries.length||Object.keys(audienceData.genders).length||Object.keys(audienceData.ages).length)?'#2755F0':'#92600A'}">${(audienceData.countries.length||Object.keys(audienceData.genders).length||Object.keys(audienceData.ages).length)?'Self-reported':'Not started'}</div>
