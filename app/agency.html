@@ -46,11 +46,12 @@
 <script src="supabase-client.js?v=2"></script>
 <script src="nav.js?v=4"></script>
 <script>
-let profile, roster = [];
+let profile, roster = [], staff = [];
 let activeTab = 'roster';
 
 const AGENCY_TABS = [
   ['roster', 'Roster'],
+  ['staff', 'Staff'],
 ];
 
 async function load() {
@@ -59,7 +60,25 @@ async function load() {
   renderSidebar('manager', 'agency');
 
   await loadRoster();
+  await loadStaff();
   render();
+}
+
+async function loadStaff() {
+  const { data: links } = await sb.from('agency_staff')
+    .select('id, status, created_at, profiles!agency_staff_staff_id_fkey(display_name, email)')
+    .eq('owner_id', profile.id)
+    .order('created_at', { ascending: false });
+  staff = (links || []).filter(l => l.status === 'active').map(l => ({
+    linkId: l.id, name: l.profiles?.display_name, email: l.profiles?.email, accepted: true,
+  }));
+
+  const { data: pending } = await sb.from('agency_staff_invites')
+    .select('id, email')
+    .eq('owner_id', profile.id)
+    .is('accepted_at', null)
+    .gt('expires_at', new Date().toISOString());
+  (pending || []).forEach(inv => staff.push({ linkId: null, inviteId: inv.id, email: inv.email, accepted: false }));
 }
 
 async function loadRoster() {
@@ -96,6 +115,7 @@ function render() {
 
 function renderTabPanel(key) {
   if (key === 'roster') return renderRosterTab();
+  if (key === 'staff') return renderStaffTab();
   return '';
 }
 
@@ -175,6 +195,67 @@ async function scanRosterExclusivity() {
     btn.disabled = false;
     btn.textContent = 'Scan roster for exclusivity conflicts';
   }
+}
+
+function renderStaffTab() {
+  const activeStaff = staff.filter(s => s.accepted);
+  const pendingStaff = staff.filter(s => !s.accepted);
+  return `
+    <div class="card">
+      <div style="font-size:14.5px;font-weight:600;margin-bottom:6px">Agency staff</div>
+      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px">Staff you invite get the exact same roster access you have — the same creators, the same permissions. Nothing more, nothing scoped down.</div>
+      <div id="staffList">
+        ${!staff.length ? '<div style="font-size:12.5px;color:var(--ink-soft)">No staff yet.</div>' : staff.map(s => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-top:1px solid var(--line)">
+            <div>
+              <div style="font-size:13px;font-weight:600">${escapeHtml(s.name || s.email)}</div>
+              <div style="font-size:11.5px;color:var(--ink-soft)">${s.accepted ? 'Active' : 'Invite pending'}</div>
+            </div>
+            ${s.accepted ? `<button class="pf-btn" style="padding:5px 10px;font-size:11.5px" onclick="revokeStaff('${s.linkId}')">Revoke</button>` : ''}
+          </div>
+        `).join('')}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <input id="staffEmail" type="email" placeholder="staff@example.com" style="flex:1;padding:9px 10px;border:1px solid var(--line);font-size:13px">
+        <button class="pf-btn-save" style="width:auto;padding:9px 16px" onclick="inviteStaff()">Send invite</button>
+      </div>
+      <div id="staffMsg"></div>
+    </div>`;
+}
+
+async function inviteStaff() {
+  const email = document.getElementById('staffEmail').value.trim();
+  if (!email) { showStaffMsg('Enter an email address.', 'error'); return; }
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch('/api/team?action=invite-staff', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ email }),
+  });
+  const result = await res.json();
+  if (!res.ok) { showStaffMsg(result.error || 'Could not send invite.', 'error'); return; }
+  showStaffMsg(result.message, 'ok');
+  await loadStaff();
+  render();
+}
+
+async function revokeStaff(staffLinkId) {
+  if (!confirm('Revoke this staff member\u2019s access?')) return;
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch('/api/team?action=revoke-staff', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ staffLinkId }),
+  });
+  const result = await res.json();
+  if (!res.ok) { showStaffMsg(result.error || 'Could not revoke access.', 'error'); return; }
+  await loadStaff();
+  render();
+}
+
+function showStaffMsg(text, type) {
+  const el = document.getElementById('staffMsg');
+  if (el) el.innerHTML = `<div class="msg ${type}">${escapeHtml(text)}</div>`;
 }
 
 function switchTab(key) {
