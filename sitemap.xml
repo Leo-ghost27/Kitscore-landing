@@ -6,14 +6,19 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://kitscore.co/about</loc>
+    <loc>https://kitscore.co/for-creators</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kitscore.co/agencies</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kitscore.co/compare</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://kitscore.co/methodology</loc>

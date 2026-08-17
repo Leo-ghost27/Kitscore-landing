@@ -10,7 +10,26 @@
 <title>Kitscore — Verified Sponsorship Reputation</title>
 <meta name="description" content="Kitscore is the verified sponsorship reputation platform. Evaluate creators using verified campaign history, sponsor endorsements, reliability scores, and evidence-backed reports." />
 <link rel="canonical" href="https://kitscore.co/" />
-<!-- <meta name="google-site-verification" content="YOUR_TOKEN_HERE" /> -->
+<!--
+  Google Search Console isn't verified yet -- this is what's actually
+  blocking sitemap submission, indexing visibility, and real search
+  query/impression data. This can't be completed in code alone; it
+  needs a real token from Google, tied to your own Google account:
+
+  1. Go to https://search.google.com/search-console
+  2. Add property -> "URL prefix" -> https://kitscore.co/
+  3. Choose the "HTML tag" verification method
+  4. Copy the real content="..." value Google gives you
+  5. Paste it into the line below, uncommented, then redeploy
+  6. Back in Search Console, click Verify
+  7. Once verified: Sitemaps (left nav) -> submit sitemap.xml
+
+  (Alternative: Search Console also offers DNS TXT record verification,
+  which covers the whole domain rather than just this page and needs no
+  code change at all -- worth it if you'd rather not touch this file
+  again. Either method is fine, DNS is arguably cleaner long-term.)
+-->
+<!-- <meta name="google-site-verification" content="PASTE_REAL_TOKEN_FROM_SEARCH_CONSOLE_HERE" /> -->
 <meta property="og:title" content="Kitscore — Verified Sponsorship Reputation" />
 <meta property="og:description" content="Know Before You Sponsor. Evaluate creators using verified campaign history, sponsor endorsements, reliability scores, and evidence-backed reports." />
 <meta property="og:type" content="website" />
