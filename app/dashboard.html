@@ -457,7 +457,7 @@ const QUESTIONS = [
   {key:'controversy_history',  label:'Any public controversy history?',                     opts:['None','Minor','Major']},
 ];
 
-let profile, creator, audienceData = {countries:[], genders:{}, ages:{}}, platforms = [], collaborations = [], pressMentions = [];
+let profile, creator, audienceData = {countries:[], genders:{}, ages:{}}, platforms = [], collaborations = [], pressMentions = [], pendingVerificationRequests = [];
 const AUD_GENDER_LABELS = [['female','Female'],['male','Male'],['other','Other']];
 const AUD_AGE_BRACKETS = ['13-17','18-24','25-34','35-44','45-54','55-64','65+'];
 let dash = {}; // holds all data computed in load(), read by tab renderers
@@ -589,7 +589,7 @@ async function load() {
   renderSidebar('creator', 'dashboard');
   document.getElementById('whoami').textContent = `${profile.display_name} · ${profile.email||''}`;
 
-  const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns },{ data:businessEmail },{ data:audience },{ data:history },{ data:platformConnections },{ data:followerHistory },{ data:collabs },{ data:press }] = await Promise.all([
+  const [{ data:c },{ data:components },{ data:evidence },{ data:answers },{ data:campaigns },{ data:businessEmail },{ data:audience },{ data:history },{ data:platformConnections },{ data:followerHistory },{ data:collabs },{ data:press },{ data:verificationRequests }] = await Promise.all([
     sb.from('creators').select('id,niche,location,trust_score,confidence,badge_tier,plan,reliability_score,repeat_sponsor_rate,would_hire_again_pct,founding_cohort,slug,bio,profile_views,avatar_url,gallery_images,available_for,causes,cover_pattern,cover_tags,cover_spotlight_stat,avatar_shape').eq('id', profile.id).single(),
     sb.from('score_components').select('*').eq('creator_id', profile.id).order('weight', {ascending:false}),
     sb.from('evidence_uploads').select('*').eq('creator_id', profile.id).order('uploaded_at',{ascending:false}),
@@ -611,11 +611,17 @@ async function load() {
     // coverage, both self-reported.
     sb.from('creator_collaborations').select('id, brand_name, logo_url, link').eq('creator_id', profile.id).order('display_order'),
     sb.from('creator_press_mentions').select('id, title, outlet_name, url, mention_date').eq('creator_id', profile.id).order('mention_date', {ascending:false}),
+    // Verify Me (directory.html) -- sponsor-initiated, creator side is
+    // read-only per verification_requests RLS ("targeted creators can
+    // view requests naming them"). Passive notice only, no action to
+    // take here -- see docs note on this feature for why.
+    sb.from('verification_requests').select('id, status, created_at').eq('target_creator_id', profile.id).eq('status', 'sent').order('created_at', {ascending:false}),
   ]);
   creator = { ...c, business_email: businessEmail };
   platforms = platformConnections || [];
   collaborations = collabs || [];
   pressMentions = press || [];
+  pendingVerificationRequests = verificationRequests || [];
   const audRows = audience || [];
   audienceData = {
     countries: audRows.filter(r=>r.dimension==='country').map(r=>({label:r.label, pct:r.pct})),
@@ -757,11 +763,30 @@ function staleEvidenceBannerHtml() {
     </div>`;
 }
 
+// ── Verify Me (directory.html) passive notice — sponsor-initiated, no
+//    creator action available or expected here. Deliberately read-only:
+//    no dismiss/mark-seen button, since verification_requests.status
+//    transitions (sent -> claimed/verified/expired) come from the
+//    email-link claim flow, not from viewing this banner -- inventing a
+//    "mark as seen" action here would create a status this table was
+//    never designed to hold. Stays visible until the request itself
+//    changes status elsewhere. ──
+function verificationRequestBannerHtml() {
+  const count = (pendingVerificationRequests || []).length;
+  if (!count) return '';
+  return `
+    <div class="card" style="display:flex;align-items:center;gap:10px;padding:12px 16px;margin-bottom:12px;background:#F0F6FF;border:1px solid #C7DBFC">
+      ${svgIcon('shield-check', {size:16, stroke:'#2755F0'})}
+      <div style="flex:1;font-size:12.5px;color:#1E3A8A">${count === 1 ? 'A sponsor asked to verify you.' : `${count} sponsors asked to verify you.`} No action needed — this just means someone's checking you out before reaching out.</div>
+    </div>`;
+}
+
 function renderDashboardShell() {
   const { score, conf, verifiedCount, hasScore } = dash;
   document.getElementById('content').innerHTML = `
 
     ${staleEvidenceBannerHtml()}
+    ${verificationRequestBannerHtml()}
 
     <!-- ── Score hero — visual system pass (blueprint step 7): navy/Fraunces
          treatment matching the Media Kit tab, applied here since this is
