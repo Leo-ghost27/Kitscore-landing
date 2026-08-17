@@ -112,6 +112,10 @@ function renderRosterTab() {
   }
 
   return `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+      <button class="pf-btn-save" id="scanBtn" onclick="scanRosterExclusivity()" style="width:auto;padding:9px 16px">Scan roster for exclusivity conflicts</button>
+    </div>
+    <div id="exclusivityResults"></div>
     <div class="roster-grid">
       ${roster.map(r => {
         const name = r.creators?.profiles?.display_name || 'Creator';
@@ -133,6 +137,44 @@ function renderRosterTab() {
         </div>`;
       }).join('')}
     </div>`;
+}
+
+async function scanRosterExclusivity() {
+  const btn = document.getElementById('scanBtn');
+  btn.disabled = true;
+  btn.textContent = 'Scanning…';
+  const resultsEl = document.getElementById('exclusivityResults');
+  resultsEl.innerHTML = '';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch('/api/team?action=scan-roster-exclusivity', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({}),
+    });
+    const result = await res.json();
+    if (!res.ok) { resultsEl.innerHTML = `<div class="msg error">${escapeHtml(result.error || 'Scan failed.')}</div>`; return; }
+
+    if (!result.results || !result.results.length) {
+      resultsEl.innerHTML = `<div class="msg ok">Scanned ${result.scannedCreators || 0} creator(s) — no exclusivity conflicts found. This checks each creator's own signed contracts against each other, not conflicts between different creators on your roster.</div>`;
+      return;
+    }
+
+    resultsEl.innerHTML = `
+      <div class="card" style="border-color:#F0B429">
+        <div style="font-weight:600;font-size:13.5px;margin-bottom:10px">Possible exclusivity conflicts found — not legal advice, review the actual contracts</div>
+        ${result.results.map(r => `
+          <div style="padding:10px 0;border-top:1px solid var(--line)">
+            <div style="font-weight:600;font-size:13px">${escapeHtml(r.creatorName)}</div>
+            ${r.flags.map(f => `<div style="font-size:12px;color:var(--ink-soft);margin-top:4px">${f.rationale ? escapeHtml(f.rationale) : 'Flagged from a previous scan — open this contract to review.'}</div>`).join('')}
+          </div>
+        `).join('')}
+      </div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Scan roster for exclusivity conflicts';
+  }
 }
 
 function switchTab(key) {
