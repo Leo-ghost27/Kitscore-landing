@@ -172,6 +172,58 @@ function fmtCount(n) {
   return String(n);
 }
 
+function switchProfileTab(tab) {
+  document.querySelectorAll('.pf-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.pf-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+}
+
+// ── Save: Account Setup fields only. Media Kit (and its bio field) no
+// longer lives on this page -- removed by a parallel session's cleanup,
+// confirmed there's no #bio element anywhere in the current markup. ──
+async function save() {
+  const btn = document.getElementById('saveBtn');
+  if (btn) btn.disabled = true;
+
+  const displayName = document.getElementById('displayName').value.trim();
+  const niche = document.getElementById('niche').value.trim();
+  const location = document.getElementById('location').value.trim();
+  const businessEmail = document.getElementById('businessEmail').value.trim();
+
+  const [{ error: pErr }, { error: cErr }] = await Promise.all([
+    sb.from('profiles').update({ display_name: displayName }).eq('id', profile.id),
+    sb.from('creators').update({ niche, location, business_email: businessEmail }).eq('id', profile.id),
+  ]);
+
+  profile.display_name = displayName;
+  creator.niche = niche;
+  creator.location = location;
+  creator.business_email = businessEmail;
+
+  const msg = document.getElementById('msg');
+  if (pErr || cErr) {
+    if (msg) msg.innerHTML = `<div class="pf-msg" style="color:#B42318">Could not save: ${escapeHtml((pErr || cErr).message)}</div>`;
+  } else {
+    if (msg) msg.innerHTML = `<div class="pf-msg" style="color:#1C7C3F">Saved.</div>`;
+    renderHero();
+  }
+  if (btn) btn.disabled = false;
+}
+
+async function uploadAvatar(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!ALLOWED_TYPES.includes(file.type)) { alert('Please upload a JPG, PNG, or WebP image.'); return; }
+  if (file.size > MAX_UPLOAD_BYTES) { alert('That photo is over 5MB — try a smaller file.'); return; }
+  const path = `${profile.id}/avatar-${Date.now()}.${extFor(file)}`;
+  const { error: upErr } = await sb.storage.from('creator-media').upload(path, file, { upsert: true });
+  if (upErr) { alert('Upload failed: ' + upErr.message); return; }
+  const { data: pub } = sb.storage.from('creator-media').getPublicUrl(path);
+  const { error: dbErr } = await sb.from('creators').update({ avatar_url: pub.publicUrl }).eq('id', profile.id);
+  if (dbErr) { alert("Saved the photo but couldn't update your profile: " + dbErr.message); return; }
+  creator.avatar_url = pub.publicUrl;
+  renderHero();
+}
+
 async function load() {
   profile = await requireRole('creator');
   if (!profile) return;
