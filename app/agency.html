@@ -104,13 +104,51 @@ async function loadRoster() {
 
 function render() {
   document.getElementById('content').innerHTML = `
-    <div class="ptitle">Agency</div>
-    <div class="psub">Your linked creators, in one place.</div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div class="ptitle">Agency</div>
+        <div class="psub">Your linked creators, in one place.</div>
+      </div>
+      <button class="pf-btn" style="padding:8px 14px;font-size:12.5px" onclick="exportAuditTrail()">Export audit trail</button>
+    </div>
     <div class="agency-tabs">
       ${AGENCY_TABS.map(([key, label]) => `<div class="agency-tab ${activeTab === key ? 'active' : ''}" onclick="switchTab('${key}')">${label}</div>`).join('')}
     </div>
     <div id="tab-panel">${renderTabPanel(activeTab)}</div>
   `;
+}
+
+function csvEscape(val) {
+  const s = String(val ?? '');
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+async function exportAuditTrail() {
+  const { data: rows, error } = await sb.rpc('fn_manager_audit_trail');
+  if (error) { alert('Could not export audit trail: ' + error.message); return; }
+
+  const csvRows = [['Date', 'Type', 'Actor', 'Subject', 'Detail', 'Status']];
+  (rows || []).forEach(r => {
+    csvRows.push([
+      new Date(r.event_date).toISOString(),
+      r.event_type,
+      r.actor_name || '',
+      r.subject_name || '',
+      r.detail || '',
+      r.status || '',
+    ]);
+  });
+
+  const csv = csvRows.map(r => r.map(csvEscape).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `agency-audit-trail-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function renderTabPanel(key) {
