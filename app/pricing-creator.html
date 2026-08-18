@@ -63,6 +63,7 @@
   .plan-pro .price span{font-family:'Inter',sans-serif;font-size:12px;font-weight:400;color:var(--color-text-secondary)}
   .plan-pro .price-note{font-size:10.5px;color:var(--color-text-tertiary);margin-bottom:22px}
   .plan-pro .divider{height:1px;background:linear-gradient(90deg, rgba(37,99,235,0.3), rgba(37,99,235,0));margin-bottom:20px}
+  .plan-pro .new-ribbon{position:absolute;top:50px;right:-34px;width:130px;padding:4px 0;background:#5B6472;color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-align:center;transform:rotate(45deg);box-shadow:0 2px 6px rgba(0,0,0,0.15);z-index:1}
   .plan-pro ul{list-style:none;font-size:12.5px;color:var(--color-text-primary);margin-bottom:24px;display:flex;flex-direction:column;gap:2px;flex:1}
   .plan-pro ul li{padding:7px 0 7px 14px;position:relative}
   .plan-pro ul li::before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:3px;background:#2563EB}
@@ -133,6 +134,7 @@ let profile, creator;
     </div>
     <div class="plan-pro">
       <div class="banner-pop">Most Popular</div>
+      <div class="new-ribbon">New</div>
       <div class="tier-row">
         <div class="tier-label">Pro</div>
       </div>
@@ -150,6 +152,11 @@ let profile, creator;
         <li>Evidence-freshness alerts — never let your profile go stale before a pitch</li>
         <li>Evidence log CSV export with chain-of-custody data — audit-ready for bigger deals</li>
         <li><strong>Pitch Assistant</strong> — AI-drafted outreach to sponsors, built from your verified data</li>
+        <li><strong>Availability status</strong> — flip to "Open for work" and jump to the top of every sponsor search, get featured in the directory spotlight, and automatically notify sponsors who've already saved you</li>
+        <li><strong>Deal Flow Tracker</strong> — track outreach that isn't a Kitscore contract yet, or ever, in one board</li>
+        <li><strong>Counter-Offer Assist</strong> — AI-drafted counter to push back on a low rate before you accept</li>
+        <li><strong>Exclusivity Conflict Checker</strong> — flags when a new contract's exclusivity terms clash with one you've already signed</li>
+        <li><strong>Compliance record</strong> — a timestamped PDF of every disclosure and brand-safety scan Kitscore has run on your account</li>
       </ul>
       <button id="upgradeBtn" ${isPro ? 'disabled' : ''}>${isPro ? 'Current plan' : 'Upgrade to Pro'}</button>
       <div id="upgradeMsg"></div>
