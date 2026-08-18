@@ -315,6 +315,7 @@ async function saveAvailability() {
   const status = document.getElementById('availStatus').value;
   const until = document.getElementById('availUntil').value;
   const msg = document.getElementById('availMsg');
+  const wasOpen = creator.availability_status === 'open';
   const { error } = await sb.from('creators').update({
     availability_status: status || null,
     availability_until: status && until ? until : null,
@@ -324,6 +325,20 @@ async function saveAvailability() {
   creator.availability_until = status && until ? until : null;
   msg.textContent = 'Saved';
   setTimeout(() => { if (msg) msg.textContent = ''; }, 2000);
+
+  // Only notify on an actual transition INTO open -- not on re-saving an
+  // already-open status, and not on Limited/Booked/cleared.
+  if (!wasOpen && status === 'open') {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      await fetch('/api/campaign-actions?action=notify-watchlist-availability', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session?.access_token || ''}` },
+      });
+    } catch (err) {
+      console.error('Could not notify watchlisting sponsors:', err.message);
+    }
+  }
 }
 
 // ── Account Setup tab: editable identity fields only. The "Get fully
