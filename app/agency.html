@@ -46,11 +46,12 @@
 <script src="supabase-client.js?v=2"></script>
 <script src="nav.js?v=4"></script>
 <script>
-let profile, roster = [], staff = [];
+let profile, roster = [], staff = [], ledger = [];
 let activeTab = 'roster';
 
 const AGENCY_TABS = [
   ['roster', 'Roster'],
+  ['ledger', 'Payout Ledger'],
   ['staff', 'Staff'],
 ];
 
@@ -61,7 +62,13 @@ async function load() {
 
   await loadRoster();
   await loadStaff();
+  await loadLedger();
   render();
+}
+
+async function loadLedger() {
+  const { data, error } = await sb.rpc('fn_manager_payout_ledger');
+  ledger = error ? [] : (data || []);
 }
 
 async function loadStaff() {
@@ -153,6 +160,7 @@ async function exportAuditTrail() {
 
 function renderTabPanel(key) {
   if (key === 'roster') return renderRosterTab();
+  if (key === 'ledger') return renderLedgerTab();
   if (key === 'staff') return renderStaffTab();
   return '';
 }
@@ -233,6 +241,72 @@ async function scanRosterExclusivity() {
     btn.disabled = false;
     btn.textContent = 'Scan roster for exclusivity conflicts';
   }
+}
+
+function fmtMoney(cents) {
+  return '$' + ((cents || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function renderLedgerTab() {
+  const releasedCents = ledger.filter(l => l.escrow_status === 'released' || l.escrow_status === 'settled').reduce((s, l) => s + (l.escrow_amount_cents || 0), 0);
+  const heldCents = ledger.filter(l => l.escrow_status === 'held' || l.escrow_status === 'processing').reduce((s, l) => s + (l.escrow_amount_cents || 0), 0);
+
+  return `
+    <div class="card">
+      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px">Real escrow payout data across your roster — not a commission split. There's no commission-rate field in Kitscore yet, so this shows what each creator was paid, not your cut of it.</div>
+      <div style="display:flex;gap:24px;margin-bottom:20px">
+        <div><div style="font-family:var(--font-mono);font-size:20px;font-weight:600">${fmtMoney(releasedCents)}</div><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase">Released</div></div>
+        <div><div style="font-family:var(--font-mono);font-size:20px;font-weight:600">${fmtMoney(heldCents)}</div><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase">Held in escrow</div></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+        <button class="pf-btn" style="padding:6px 12px;font-size:11.5px" onclick="exportLedger()">Export CSV</button>
+      </div>
+      ${!ledger.length ? '<div style="font-size:12.5px;color:var(--ink-soft)">No contracts on record yet.</div>' : `
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <thead><tr style="text-align:left;border-bottom:1px solid var(--line)">
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Creator</th>
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Sponsor</th>
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Contract</th>
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Amount</th>
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Status</th>
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Date</th>
+        </tr></thead>
+        <tbody>
+          ${ledger.map(l => `
+            <tr style="border-bottom:1px solid var(--line)">
+              <td style="padding:8px 6px">${escapeHtml(l.creator_name || '—')}</td>
+              <td style="padding:8px 6px">${escapeHtml(l.sponsor_name || '—')}</td>
+              <td style="padding:8px 6px">${escapeHtml(l.title || 'Untitled')}</td>
+              <td style="padding:8px 6px">${fmtMoney(l.escrow_amount_cents)}</td>
+              <td style="padding:8px 6px;text-transform:capitalize">${escapeHtml(l.escrow_status || '')}</td>
+              <td style="padding:8px 6px;color:var(--ink-soft)">${l.released_at ? new Date(l.released_at).toLocaleDateString() : new Date(l.created_at).toLocaleDateString()}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`}
+    </div>`;
+}
+
+function exportLedger() {
+  const csvRows = [['Creator', 'Sponsor', 'Contract', 'Amount', 'Status', 'Created', 'Funded', 'Released']];
+  ledger.forEach(l => {
+    csvRows.push([
+      l.creator_name || '', l.sponsor_name || '', l.title || '',
+      ((l.escrow_amount_cents || 0) / 100).toFixed(2), l.escrow_status || '',
+      l.created_at ? new Date(l.created_at).toISOString() : '',
+      l.funded_at ? new Date(l.funded_at).toISOString() : '',
+      l.released_at ? new Date(l.released_at).toISOString() : '',
+    ]);
+  });
+  const csv = csvRows.map(r => r.map(csvEscape).join(',')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `agency-payout-ledger-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function renderStaffTab() {
