@@ -75,3 +75,17 @@ $function$;
 CREATE TRIGGER trg_deal_flow_entries_updated_at
   BEFORE UPDATE ON deal_flow_entries
   FOR EACH ROW EXECUTE FUNCTION fn_deal_flow_entries_touch_updated_at();
+
+-- Missing from the original migration -- RLS policies above are well-formed
+-- but irrelevant without this: Postgres checks base table-level GRANTs
+-- before RLS ever gets evaluated, and this table had none for
+-- `authenticated`, which every real logged-in creator connects as. The
+-- table was created without ever becoming actually readable/writable by
+-- creators -- every load attempt failed with "permission denied for
+-- table deal_flow_entries" (a different, earlier-stage error than an RLS
+-- rejection, which would just return zero rows instead). Matches the
+-- exact grant set already present on other creator-scoped tables (e.g.
+-- evidence_uploads) -- confirmed via information_schema.role_table_grants
+-- before writing this. Applied live via Supabase MCP; this addition
+-- documents that fix in the migration file itself.
+GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRIGGER, TRUNCATE ON deal_flow_entries TO authenticated;
