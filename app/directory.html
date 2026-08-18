@@ -23,6 +23,10 @@
   .controls input[type=number]{width:120px;padding:11px 12px;border:1px solid #D5DAE3;border-radius:0;font-size:14px;background:#fff;color:var(--ink)}
   .save-search-btn{padding:11px 14px;font-size:13px;font-weight:600;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:0;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px}
   .save-search-btn:hover{border-color:var(--blue);color:var(--blue)}
+  .avail-badge{display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:100px;margin-bottom:8px}
+  .avail-open{background:#E9F7EE;color:#1C7C3F}
+  .avail-limited{background:#FEF6E7;color:#92600A}
+  .avail-booked{background:#F4F5F7;color:#5B6472}
   .verify-me-card{margin-bottom:16px}
   .verify-me-toggle{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--blue);background:#fff;border:1px solid var(--line);padding:10px 14px;cursor:pointer;border-radius:0}
   .verify-me-toggle:hover{border-color:var(--blue)}
@@ -156,7 +160,7 @@ async function load() {
   renderSidebar('sponsor', 'directory');
   renderUsageBanner();
 
-  const { data: rows, error } = await sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, updated_at, reliability_score, repeat_sponsor_rate, founding_cohort, profiles!inner(display_name)').eq('is_test', false);
+  const { data: rows, error } = await sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, updated_at, reliability_score, repeat_sponsor_rate, founding_cohort, availability_status, availability_until, profiles!inner(display_name)').eq('is_test', false);
   if (error) { document.getElementById('content').textContent = 'Could not load creators: ' + error.message; return; }
 
   const { data: campaigns } = await sb.from('campaigns').select('creator_id, status').eq('status', 'verified');
@@ -318,6 +322,7 @@ function render() {
         <div class="avatar">${escapeHtml(c.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
         <div><div class="name">${escapeHtml(c.name)}${c.founding_cohort ? ` <span class="founding-tag" title="One of Kitscore's first 100 creators"><svg viewBox="0 0 24 24"><path d="M12 2l3 6 6 1-4.5 4.5L18 21l-6-3-6 3 1.5-6.5L3 9l6-1z"/></svg>Founding</span>` : ''}</div><div class="niche">${escapeHtml(c.niche||'')} · ${escapeHtml(c.location||'')}</div></div>
       </div>
+      ${c.availability_status ? `<div class="avail-badge avail-${c.availability_status}">${c.availability_status==='open'?'Open for work':c.availability_status==='limited'?'Limited availability':'Booked'}${c.availability_until?' · through '+new Date(c.availability_until+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):''}</div>` : ''}
       <div class="cc-score-row"><span>Trust score</span><b>${c.trust_score}</b></div>
       <div class="pbar-track"><div class="pbar-fill" style="width:${c.trust_score}%"></div></div>
       <button class="log-campaign-btn" onclick="event.stopPropagation(); window.location.href='campaigns.html?creator=${c.id}'">${svgIcon('flag', {size:14, stroke:'currentColor', strokeWidth:2})} Log campaign</button>

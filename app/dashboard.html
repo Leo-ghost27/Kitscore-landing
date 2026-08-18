@@ -728,7 +728,7 @@ function switchTab(key) {
   });
   if (key === 'evidence') renderAudienceCountryRows();
   if (key === 'mediakit') initMediaKitTab();
-  if (key === 'tools') initRateCalc();
+  if (key === 'tools') { initRateCalc(); loadDealFlow(); }
 }
 
 // In-app replacement for the old email evidence-freshness reminder (removed
@@ -2264,6 +2264,33 @@ function renderToolsTab() {
     </div>
 
 
+    <!-- ── Deal Flow Tracker — a lightweight personal CRM for outreach
+         that hasn't (and may never) become a formal Kitscore
+         campaign/contract. Entirely creator-owned scratch space, no
+         sponsor visibility. See deal_flow_entries in
+         supabase/2026-08-16c-deal-flow-tracker-and-creator-
+         availability.sql. ── -->
+    <div class="card" id="deal-flow-tracker">
+      <div class="sec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>Deal flow <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— track outreach that isn't a Kitscore contract (yet, or ever)</span></span>
+        <button onclick="toggleDealFlowForm()" style="background:#2563EB;color:#fff;border:none;padding:6px 12px;font-size:11.5px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;border-radius:4px">+ Add</button>
+      </div>
+      <div id="deal-flow-form" style="display:none;background:var(--color-background-secondary);border-radius:8px;padding:14px;margin-bottom:14px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div><label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">Brand name</label><input id="df-brand" placeholder="e.g. Glow Skincare" style="width:100%;padding:8px 10px;font-size:12.5px;border:1px solid var(--color-border-tertiary);border-radius:6px"></div>
+          <div><label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">Contact <span style="color:var(--color-text-tertiary)">(optional)</span></label><input id="df-contact" placeholder="Name or email" style="width:100%;padding:8px 10px;font-size:12.5px;border:1px solid var(--color-border-tertiary);border-radius:6px"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div><label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">Estimated value <span style="color:var(--color-text-tertiary)">(optional)</span></label><input id="df-value" type="number" min="0" placeholder="e.g. 1500" style="width:100%;padding:8px 10px;font-size:12.5px;border:1px solid var(--color-border-tertiary);border-radius:6px"></div>
+          <div><label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">Follow up by <span style="color:var(--color-text-tertiary)">(optional)</span></label><input id="df-followup" type="date" style="width:100%;padding:8px 10px;font-size:12.5px;border:1px solid var(--color-border-tertiary);border-radius:6px"></div>
+        </div>
+        <div style="margin-bottom:10px"><label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">Notes <span style="color:var(--color-text-tertiary)">(optional)</span></label><textarea id="df-notes" placeholder="e.g. Reached out via IG DM, waiting to hear back" style="width:100%;padding:8px 10px;font-size:12.5px;border:1px solid var(--color-border-tertiary);border-radius:6px;min-height:50px;resize:vertical"></textarea></div>
+        <button onclick="addDealFlowEntry()" style="background:#2563EB;color:#fff;border:none;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px">Save</button>
+        <span id="df-msg" style="font-size:11px;margin-left:10px"></span>
+      </div>
+      <div id="deal-flow-board">Loading…</div>
+    </div>
+
     <!-- ── Personalized improvement tips already exist for real on the
          Score tab (id="improve-score", ranked by your actual lowest
          components) -- this card used to duplicate that with 3 static,
@@ -2274,6 +2301,108 @@ function renderToolsTab() {
       <button onclick="switchTab('score');setTimeout(()=>document.getElementById('improve-score')?.scrollIntoView({behavior:'smooth',block:'start'}),50)" style="background:#2563EB;color:#fff;border:none;padding:8px 14px;font-size:12px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;white-space:nowrap;border-radius:6px">See what to improve →</button>
     </div>
   `;
+}
+
+let dealFlowEntries = [];
+const DEAL_FLOW_STAGES = [
+  { key:'reached_out', label:'Reached out' },
+  { key:'responded', label:'Responded' },
+  { key:'negotiating', label:'Negotiating' },
+  { key:'closed_won', label:'Closed — won' },
+  { key:'closed_lost', label:'Closed — lost' },
+];
+
+function toggleDealFlowForm() {
+  const form = document.getElementById('deal-flow-form');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+async function loadDealFlow() {
+  const board = document.getElementById('deal-flow-board');
+  if (!board) return;
+  const { data, error } = await sb.from('deal_flow_entries').select('*').eq('creator_id', profile.id).order('created_at', { ascending: false });
+  if (error) { board.innerHTML = `<div style="font-size:11.5px;color:#B42318">Could not load deal flow: ${escapeHtml(error.message)}</div>`; return; }
+  dealFlowEntries = data || [];
+  renderDealFlowBoard();
+}
+
+function renderDealFlowBoard() {
+  const board = document.getElementById('deal-flow-board');
+  if (!board) return;
+  if (!dealFlowEntries.length) {
+    board.innerHTML = `<div class="empty-state"><div class="es-icon">🤝</div><div class="es-title">No outreach tracked yet</div><div class="es-body">Log a brand you've DM'd or emailed, even before there's a real deal — this is just your own tracker, nothing here is visible to sponsors.</div></div>`;
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  board.innerHTML = DEAL_FLOW_STAGES.map(stage => {
+    const rows = dealFlowEntries.filter(e => e.stage === stage.key);
+    if (!rows.length) return '';
+    return `
+      <div style="margin-bottom:14px">
+        <div style="font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--color-text-tertiary);margin-bottom:6px">${stage.label} (${rows.length})</div>
+        ${rows.map(e => `
+          <div style="border:1px solid var(--color-border-tertiary);border-radius:8px;padding:10px 12px;margin-bottom:6px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+              <div style="min-width:0">
+                <div style="font-size:13px;font-weight:600;color:var(--color-text-primary)">${escapeHtml(e.brand_name)}</div>
+                <div style="font-size:11px;color:var(--color-text-tertiary)">${[e.contact_name, e.estimated_value_cents ? '$' + (e.estimated_value_cents/100).toLocaleString() : null, e.next_follow_up_date ? `follow up ${e.next_follow_up_date}${e.next_follow_up_date < today ? ' — overdue' : ''}` : null].filter(Boolean).map(escapeHtml).join(' · ')}</div>
+                ${e.notes ? `<div style="font-size:11.5px;color:var(--color-text-secondary);margin-top:4px">${escapeHtml(e.notes)}</div>` : ''}
+              </div>
+              <span class="pf-chip-x" style="flex-shrink:0" onclick="removeDealFlowEntry('${e.id}')" title="Delete">✕</span>
+            </div>
+            <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap">
+              ${DEAL_FLOW_STAGES.filter(s => s.key !== e.stage).map(s => `<button onclick="moveDealFlowEntry('${e.id}','${s.key}')" style="font-size:10px;padding:3px 8px;border-radius:100px;border:1px solid var(--color-border-tertiary);background:#fff;cursor:pointer;color:var(--color-text-secondary);font-family:inherit">→ ${s.label}</button>`).join('')}
+            </div>
+          </div>`).join('')}
+      </div>`;
+  }).join('');
+}
+
+async function addDealFlowEntry() {
+  const brand = document.getElementById('df-brand').value.trim();
+  const contact = document.getElementById('df-contact').value.trim();
+  const valueInput = document.getElementById('df-value').value;
+  const followup = document.getElementById('df-followup').value;
+  const notes = document.getElementById('df-notes').value.trim();
+  const msg = document.getElementById('df-msg');
+  msg.textContent = '';
+
+  if (!brand) { msg.style.color = '#B42318'; msg.textContent = 'Brand name is required.'; return; }
+
+  const { data, error } = await sb.from('deal_flow_entries').insert({
+    creator_id: profile.id,
+    brand_name: brand,
+    contact_name: contact || null,
+    estimated_value_cents: valueInput ? Math.round(Number(valueInput) * 100) : null,
+    next_follow_up_date: followup || null,
+    notes: notes || null,
+  }).select('*').single();
+
+  if (error) { msg.style.color = '#B42318'; msg.textContent = 'Could not save: ' + error.message; return; }
+
+  dealFlowEntries.unshift(data);
+  renderDealFlowBoard();
+  document.getElementById('df-brand').value = '';
+  document.getElementById('df-contact').value = '';
+  document.getElementById('df-value').value = '';
+  document.getElementById('df-followup').value = '';
+  document.getElementById('df-notes').value = '';
+  toggleDealFlowForm();
+}
+
+async function moveDealFlowEntry(id, newStage) {
+  const { error } = await sb.from('deal_flow_entries').update({ stage: newStage }).eq('id', id);
+  if (error) { alert('Could not update: ' + error.message); return; }
+  const entry = dealFlowEntries.find(e => e.id === id);
+  if (entry) entry.stage = newStage;
+  renderDealFlowBoard();
+}
+
+async function removeDealFlowEntry(id) {
+  const { error } = await sb.from('deal_flow_entries').delete().eq('id', id);
+  if (error) { alert('Could not delete: ' + error.message); return; }
+  dealFlowEntries = dealFlowEntries.filter(e => e.id !== id);
+  renderDealFlowBoard();
 }
 
 async function disconnectPlatform(platform){
