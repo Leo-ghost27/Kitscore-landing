@@ -279,6 +279,7 @@ function renderHero() {
         ${platforms.length ? platforms.map(p => `<div class="pf-plat-chip">${platformIcon(p.platform)}${fmtCount(platformFollowerCount(p))}</div>`).join('') : ''}
       </div>
       <div class="pf-availability-row">
+        ${creator.plan==='pro' ? `
         <select id="availStatus" onchange="onAvailabilityStatusChange()">
           <option value="" ${!creator.availability_status?'selected':''}>Availability — not set</option>
           <option value="open" ${creator.availability_status==='open'?'selected':''}>Open for work</option>
@@ -287,6 +288,7 @@ function renderHero() {
         </select>
         <input id="availUntil" type="date" value="${creator.availability_until||''}" style="display:${creator.availability_status?'inline-block':'none'}" onchange="saveAvailability()">
         <span id="availMsg"></span>
+        ` : `<a href="pricing-creator.html" style="color:#8FD6C8;font-size:11px;font-weight:600;text-decoration:none">+ Set availability status — Pro</a>`}
       </div>
     </div>
     <div class="pf-score-card">

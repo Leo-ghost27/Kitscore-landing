@@ -2269,12 +2269,13 @@ function renderToolsTab() {
          campaign/contract. Entirely creator-owned scratch space, no
          sponsor visibility. See deal_flow_entries in
          supabase/2026-08-16c-deal-flow-tracker-and-creator-
-         availability.sql. ── -->
+         availability.sql. Pro-gated. ── -->
     <div class="card" id="deal-flow-tracker">
       <div class="sec" style="display:flex;justify-content:space-between;align-items:center">
-        <span>Deal flow <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— track outreach that isn't a Kitscore contract (yet, or ever)</span></span>
-        <button onclick="toggleDealFlowForm()" style="background:#2563EB;color:#fff;border:none;padding:6px 12px;font-size:11.5px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;border-radius:4px">+ Add</button>
+        <span>Deal flow <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— track outreach that isn't a Kitscore contract (yet, or ever)${creator.plan!=='pro'?' — Pro':''}</span></span>
+        ${creator.plan==='pro'?`<button onclick="toggleDealFlowForm()" style="background:#2563EB;color:#fff;border:none;padding:6px 12px;font-size:11.5px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;border-radius:4px">+ Add</button>`:''}
       </div>
+      ${creator.plan==='pro' ? `
       <div id="deal-flow-form" style="display:none;background:var(--color-background-secondary);border-radius:8px;padding:14px;margin-bottom:14px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
           <div><label style="font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:4px">Brand name</label><input id="df-brand" placeholder="e.g. Glow Skincare" style="width:100%;padding:8px 10px;font-size:12.5px;border:1px solid var(--color-border-tertiary);border-radius:6px"></div>
@@ -2289,6 +2290,16 @@ function renderToolsTab() {
         <span id="df-msg" style="font-size:11px;margin-left:10px"></span>
       </div>
       <div id="deal-flow-board">Loading…</div>
+      ` : `
+      <div style="position:relative">
+        <div style="filter:blur(4px);pointer-events:none;user-select:none;padding:10px 0">
+          <div style="border:1px solid var(--color-border-tertiary);border-radius:8px;padding:10px 12px;margin-bottom:6px"><div style="font-size:13px;font-weight:600">Example Brand Co.</div><div style="font-size:11px;color:var(--color-text-tertiary)">Jane · $1,500 · follow up in 3 days</div></div>
+          <div style="border:1px solid var(--color-border-tertiary);border-radius:8px;padding:10px 12px"><div style="font-size:13px;font-weight:600">Another Brand</div><div style="font-size:11px;color:var(--color-text-tertiary)">Negotiating</div></div>
+        </div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+          <a href="pricing-creator.html" class="upgrade-link" style="border:1px solid #D5DAE3;border-radius:4px;padding:6px 12px;background:#fff">Upgrade to Pro to track your outreach →</a>
+        </div>
+      </div>`}
     </div>
 
     <!-- ── Personalized improvement tips already exist for real on the
@@ -2318,6 +2329,7 @@ function toggleDealFlowForm() {
 }
 
 async function loadDealFlow() {
+  if (creator.plan !== 'pro') return;
   const board = document.getElementById('deal-flow-board');
   if (!board) return;
   const { data, error } = await sb.from('deal_flow_entries').select('*').eq('creator_id', profile.id).order('created_at', { ascending: false });
