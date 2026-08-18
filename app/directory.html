@@ -106,10 +106,14 @@
         <option value="trust_score">Sort: highest trust score</option>
         <option value="verified">Sort: most verified campaigns</option>
       </select>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-soft);white-space:nowrap">
+        <input type="checkbox" id="openOnlyFilter" onchange="render()"> Open for work only
+      </label>
       <button class="save-search-btn" onclick="saveCurrentSearch()">Save search</button>
     </div>
     <div class="saved-search-row" id="savedSearchRow"></div>
     <div class="filter-pills" id="nichePills"></div>
+    <div id="spotlightRow"></div>
 
     <!-- ── Verify Me — sponsor-initiated verification request, free to
          send (Kitscore gates the CREATOR's response speed, not the
@@ -294,11 +298,38 @@ function setNiche(n) {
   render();
 }
 
+// Featured strip -- always pulled from the full unfiltered creators list
+// (not the sponsor's current search/filter results), so it stays a
+// consistent "who's available right now" teaser rather than reacting to
+// whatever filter's currently applied.
+function renderSpotlight() {
+  const el = document.getElementById('spotlightRow');
+  const open = creators.filter(c => c.availability_status === 'open')
+    .sort((a, b) => b.trust_score - a.trust_score)
+    .slice(0, 4);
+  if (!open.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div style="margin:16px 0">
+      <div style="font-size:12.5px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Open for work now</div>
+      <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">
+        ${open.map(c => `
+          <div onclick="window.location.href='evaluate.html?creator=${c.id}'" style="cursor:pointer;flex:0 0 200px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px">
+            <div style="font-size:13px;font-weight:600;color:var(--ink)">${escapeHtml(c.name)}</div>
+            <div style="font-size:11.5px;color:var(--ink-faint);margin-bottom:6px">${escapeHtml(c.niche||'')}${c.niche&&c.location?' · ':''}${escapeHtml(c.location||'')}</div>
+            <div class="avail-badge avail-open" style="display:inline-block">Open for work</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
 function render() {
   const sortBy = document.getElementById('sortSel').value;
   const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
   const minTrustRaw = document.getElementById('minTrustInput').value;
   const minTrust = minTrustRaw !== '' ? Number(minTrustRaw) : null;
+  const openOnly = document.getElementById('openOnlyFilter').checked;
+
+  renderSpotlight();
 
   let filtered = activeNiche === 'all' ? creators : creators.filter(c => (c.niche || '') === activeNiche);
   if (q) {
@@ -311,7 +342,19 @@ function render() {
   if (minTrust !== null && !Number.isNaN(minTrust)) {
     filtered = filtered.filter(c => c.trust_score >= minTrust);
   }
-  const sorted = [...filtered].sort((a, b) => sortBy === 'verified' ? b.verified - a.verified : b.trust_score - a.trust_score);
+  if (openOnly) {
+    filtered = filtered.filter(c => c.availability_status === 'open');
+  }
+  // Open-for-work creators sort first regardless of the chosen sort field,
+  // then the chosen field breaks ties within each group -- a real
+  // visibility lift for Pro creators who set their status, not just a
+  // badge nobody's results depend on.
+  const sorted = [...filtered].sort((a, b) => {
+    const aOpen = a.availability_status === 'open' ? 0 : 1;
+    const bOpen = b.availability_status === 'open' ? 0 : 1;
+    if (aOpen !== bOpen) return aOpen - bOpen;
+    return sortBy === 'verified' ? b.verified - a.verified : b.trust_score - a.trust_score;
+  });
   if (!sorted.length) { document.getElementById('content').innerHTML = '<div class="loading">No creators match this filter yet.</div>'; return; }
   document.getElementById('content').innerHTML = `<div class="grid">${sorted.map(c => `
     <div class="ccard" onclick="window.location.href='evaluate.html?creator=${c.id}'">

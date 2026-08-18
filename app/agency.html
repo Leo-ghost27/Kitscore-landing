@@ -46,14 +46,16 @@
 <script src="supabase-client.js?v=2"></script>
 <script src="nav.js?v=4"></script>
 <script>
-let profile, manager, roster = [], staff = [], ledger = [], performance = [], benchmark = [];
+let profile, manager, roster = [], staff = [], ledger = [], performance = [], benchmark = [], trustScore = null;
 let activeTab = 'roster';
 
 const AGENCY_TABS = [
   ['roster', 'Roster'],
+  ['trust', 'Trust Score'],
   ['performance', 'Performance'],
   ['ledger', 'Payout Ledger'],
   ['benchmark', 'Rate Benchmark'],
+  ['branding', 'Branding'],
   ['staff', 'Staff'],
 ];
 
@@ -70,7 +72,13 @@ async function load() {
   await loadLedger();
   await loadPerformance();
   await loadBenchmark();
+  await loadTrustScore();
   render();
+}
+
+async function loadTrustScore() {
+  const { data, error } = await sb.rpc('fn_manager_trust_score');
+  trustScore = error ? null : (data && data[0]) || null;
 }
 
 async function loadPerformance() {
@@ -178,9 +186,11 @@ async function exportAuditTrail() {
 
 function renderTabPanel(key) {
   if (key === 'roster') return renderRosterTab();
+  if (key === 'trust') return renderTrustScoreTab();
   if (key === 'performance') return renderPerformanceTab();
   if (key === 'ledger') return renderLedgerTab();
   if (key === 'benchmark') return renderBenchmarkTab();
+  if (key === 'branding') return renderBrandingTab();
   if (key === 'staff') return renderStaffTab();
   return '';
 }
@@ -329,6 +339,33 @@ function exportLedger() {
   URL.revokeObjectURL(url);
 }
 
+function renderTrustScoreTab() {
+  if (!trustScore || trustScore.roster_size === 0) {
+    return `
+      <div class="card">
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px">Manager Trust Score</div>
+        <div style="font-size:12.5px;color:var(--ink-soft)">Link at least one creator to start building your score.</div>
+      </div>`;
+  }
+
+  const s = trustScore;
+  return `
+    <div class="card">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px">
+        <div style="font-family:var(--font-mono);font-size:40px;font-weight:700;color:var(--blue)">${s.score}</div>
+        <div style="font-size:12.5px;color:var(--ink-soft)">out of 100</div>
+      </div>
+      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:20px">Weighted from your roster's own verified trust scores, real verified deal volume, and how long you've been linked — no self-reported claims factored in, same standard the rest of Kitscore runs on.</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding-top:16px;border-top:1px solid var(--line)">
+        <div><div style="font-family:var(--font-mono);font-size:17px;font-weight:600">${s.roster_size}</div><div style="font-size:10.5px;color:var(--ink-soft);text-transform:uppercase">Roster size</div></div>
+        <div><div style="font-family:var(--font-mono);font-size:17px;font-weight:600">${s.avg_creator_trust_score ?? '—'}</div><div style="font-size:10.5px;color:var(--ink-soft);text-transform:uppercase">Avg. creator score</div></div>
+        <div><div style="font-family:var(--font-mono);font-size:17px;font-weight:600">${s.verified_deals}</div><div style="font-size:10.5px;color:var(--ink-soft);text-transform:uppercase">Verified deals</div></div>
+        <div><div style="font-family:var(--font-mono);font-size:17px;font-weight:600">${s.tenure_months}mo</div><div style="font-size:10.5px;color:var(--ink-soft);text-transform:uppercase">Tenure</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--ink-soft);margin-top:16px;padding-top:12px;border-top:1px solid var(--line)">Formula: 50% average creator trust score + 35% verified deal volume (capped) + 15% tenure (capped at 12 months).</div>
+    </div>`;
+}
+
 function renderPerformanceTab() {
   const totalVerified = performance.reduce((s, p) => s + (p.verified_deals || 0), 0);
   const totalEarned = performance.reduce((s, p) => s + Number(p.total_earned_cents || 0), 0);
@@ -399,6 +436,41 @@ function renderBenchmarkTab() {
         </tbody>
       </table>`}
     </div>`;
+}
+
+function renderBrandingTab() {
+  if (manager.plan !== 'agency') {
+    return `
+      <div class="card">
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px">White-label branding</div>
+        <div style="font-size:12.5px;color:var(--ink-soft)">This is an Agency-plan feature. Add your own logo and name so your managed creators' Verified Media Kits carry your branding instead of Kitscore's.</div>
+      </div>`;
+  }
+  return `
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">White-label branding</div>
+      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px">Applied to your managed creators' Verified Media Kits. Leave blank and they get the normal Kitscore-branded kit — this is opt-in, not required.</div>
+      <div class="pf-form-grid" style="display:flex;flex-direction:column;gap:10px">
+        <div class="pf-field"><label>Agency name</label><input id="brandName" type="text" value="${escapeHtml(manager.agency_name || '')}" placeholder="Your agency name"></div>
+        <div class="pf-field"><label>Logo URL</label><input id="brandLogo" type="url" value="${escapeHtml(manager.logo_url || '')}" placeholder="https://..."></div>
+      </div>
+      <div class="pf-save-row" style="margin-top:14px">
+        <span class="pf-save-hint">Changes apply to future Media Kit downloads.</span>
+        <button class="pf-btn-save" style="width:auto;padding:9px 16px" onclick="saveBranding()">Save</button>
+      </div>
+      <div id="brandingMsg"></div>
+    </div>`;
+}
+
+async function saveBranding() {
+  const agency_name = document.getElementById('brandName').value.trim();
+  const logo_url = document.getElementById('brandLogo').value.trim();
+  const { error } = await sb.from('managers').update({ agency_name, logo_url }).eq('id', manager.id);
+  const el = document.getElementById('brandingMsg');
+  if (error) { el.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  manager.agency_name = agency_name;
+  manager.logo_url = logo_url;
+  el.innerHTML = `<div class="msg ok">Saved.</div>`;
 }
 
 function renderStaffTab() {

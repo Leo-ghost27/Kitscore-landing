@@ -35,6 +35,16 @@
 // See lib/handlers/scan-exclusivity-conflicts.js and
 // lib/handlers/request-verification.js.
 //
+// notify-watchlist-availability added 2026-08-18, same slot reasoning.
+// Directory visibility batch (sort priority + open-only filter + spotlight
+// row are pure frontend; this is the one piece that needed a backend
+// trigger). Fires from app/profile.html's saveAvailability() when a
+// creator's status transitions to 'open', emails every sponsor who has
+// them watchlisted. Free to call -- see
+// lib/handlers/notify-watchlist-availability.js for why gating it would
+// be gating the sponsor's own watchlist relationship, not a creator
+// feature.
+//
 // Frees a Vercel Hobby function slot (was 2 files, now 1) -- see
 // api/billing.js for the full reasoning on why this pattern exists.
 const handleInviteSponsor = require('../lib/handlers/creator-invite-sponsor');
@@ -46,6 +56,7 @@ const handleInviteSponsorContract = require('../lib/handlers/creator-invite-spon
 const handleCounterOfferAssist = require('../lib/handlers/counter-offer-assist');
 const handleScanExclusivityConflicts = require('../lib/handlers/scan-exclusivity-conflicts');
 const handleRequestVerification = require('../lib/handlers/request-verification');
+const handleNotifyWatchlistAvailability = require('../lib/handlers/notify-watchlist-availability');
 
 module.exports = async (req, res) => {
   const action = req.query?.action;
@@ -59,6 +70,7 @@ module.exports = async (req, res) => {
   if (action === 'counter-offer-assist') return handleCounterOfferAssist(req, res);
   if (action === 'scan-exclusivity-conflicts') return handleScanExclusivityConflicts(req, res);
   if (action === 'request-verification') return handleRequestVerification(req, res);
+  if (action === 'notify-watchlist-availability') return handleNotifyWatchlistAvailability(req, res);
 
   return res.status(400).json({ error: 'Unknown or missing action. Use ?action=invite-sponsor, notify-dispute, invite-creator, scan-contract-clauses, draft-pitch, invite-sponsor-contract, counter-offer-assist, scan-exclusivity-conflicts, or request-verification.' });
 };
