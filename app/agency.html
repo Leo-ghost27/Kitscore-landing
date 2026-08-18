@@ -46,12 +46,14 @@
 <script src="supabase-client.js?v=2"></script>
 <script src="nav.js?v=4"></script>
 <script>
-let profile, roster = [], staff = [], ledger = [];
+let profile, manager, roster = [], staff = [], ledger = [], performance = [], benchmark = [];
 let activeTab = 'roster';
 
 const AGENCY_TABS = [
   ['roster', 'Roster'],
+  ['performance', 'Performance'],
   ['ledger', 'Payout Ledger'],
+  ['benchmark', 'Rate Benchmark'],
   ['staff', 'Staff'],
 ];
 
@@ -60,10 +62,26 @@ async function load() {
   if (!profile) return;
   renderSidebar('manager', 'agency');
 
+  const { data: mgrRow } = await sb.rpc('fn_ensure_manager_row');
+  manager = mgrRow || { plan: 'manager', agency_name: null };
+
   await loadRoster();
   await loadStaff();
   await loadLedger();
+  await loadPerformance();
+  await loadBenchmark();
   render();
+}
+
+async function loadPerformance() {
+  const { data, error } = await sb.rpc('fn_manager_performance_report');
+  performance = error ? [] : (data || []);
+}
+
+async function loadBenchmark() {
+  if (manager.plan !== 'agency') { benchmark = null; return; }
+  const { data, error } = await sb.rpc('fn_manager_agency_rate_benchmark');
+  benchmark = error ? [] : (data || []);
 }
 
 async function loadLedger() {
@@ -160,7 +178,9 @@ async function exportAuditTrail() {
 
 function renderTabPanel(key) {
   if (key === 'roster') return renderRosterTab();
+  if (key === 'performance') return renderPerformanceTab();
   if (key === 'ledger') return renderLedgerTab();
+  if (key === 'benchmark') return renderBenchmarkTab();
   if (key === 'staff') return renderStaffTab();
   return '';
 }
@@ -307,6 +327,78 @@ function exportLedger() {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function renderPerformanceTab() {
+  const totalVerified = performance.reduce((s, p) => s + (p.verified_deals || 0), 0);
+  const totalEarned = performance.reduce((s, p) => s + Number(p.total_earned_cents || 0), 0);
+  const totalInProgress = performance.reduce((s, p) => s + Number(p.in_progress_value_cents || 0), 0);
+
+  return `
+    <div class="card">
+      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px">What you've actually delivered for your roster, backed by verified deals and real escrow data — the same proof-over-claims standard the rest of Kitscore runs on.</div>
+      <div style="display:flex;gap:24px;margin-bottom:20px">
+        <div><div style="font-family:var(--font-mono);font-size:20px;font-weight:600">${totalVerified}</div><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase">Verified deals</div></div>
+        <div><div style="font-family:var(--font-mono);font-size:20px;font-weight:600">${fmtMoney(totalEarned)}</div><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase">Earned by roster</div></div>
+        <div><div style="font-family:var(--font-mono);font-size:20px;font-weight:600">${fmtMoney(totalInProgress)}</div><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase">In progress</div></div>
+      </div>
+      ${!performance.length ? '<div style="font-size:12.5px;color:var(--ink-soft)">No creators on your roster yet.</div>' : `
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <thead><tr style="text-align:left;border-bottom:1px solid var(--line)">
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Creator</th>
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Verified deals</th>
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Earned</th>
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">In progress</th>
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Linked since</th>
+        </tr></thead>
+        <tbody>
+          ${performance.map(p => `
+            <tr style="border-bottom:1px solid var(--line)">
+              <td style="padding:8px 6px">${escapeHtml(p.creator_name || '—')}</td>
+              <td style="padding:8px 6px">${p.verified_deals || 0}</td>
+              <td style="padding:8px 6px">${fmtMoney(p.total_earned_cents)}</td>
+              <td style="padding:8px 6px">${p.in_progress_deals || 0} deal(s) · ${fmtMoney(p.in_progress_value_cents)}</td>
+              <td style="padding:8px 6px;color:var(--ink-soft)">${new Date(p.linked_since).toLocaleDateString()}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`}
+    </div>`;
+}
+
+function renderBenchmarkTab() {
+  if (manager.plan !== 'agency') {
+    return `
+      <div class="card">
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px">Agency-level rate benchmark</div>
+        <div style="font-size:12.5px;color:var(--ink-soft)">This is an Agency-plan feature. See what similar deals across your whole roster typically closed for, by niche — built from your own roster's real, released escrow data.</div>
+      </div>`;
+  }
+  if (benchmark === null) return '<div class="card"><div style="font-size:12.5px;color:var(--ink-soft)">Loading…</div></div>';
+
+  return `
+    <div class="card">
+      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px">Built from your own roster's real, released escrow data — not estimates. A niche only shows once at least 3 released deals exist for it, so there's never a benchmark backed by too little data to mean anything.</div>
+      ${!benchmark.length ? '<div style="font-size:12.5px;color:var(--ink-soft)">Not enough released deals yet in any single niche (minimum 3) to show a benchmark.</div>' : `
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <thead><tr style="text-align:left;border-bottom:1px solid var(--line)">
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Niche</th>
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Sample size</th>
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Low</th>
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Median</th>
+          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">High</th>
+        </tr></thead>
+        <tbody>
+          ${benchmark.map(b => `
+            <tr style="border-bottom:1px solid var(--line)">
+              <td style="padding:8px 6px;text-transform:capitalize">${escapeHtml(b.niche || '—')}</td>
+              <td style="padding:8px 6px">${b.sample_size}</td>
+              <td style="padding:8px 6px">${fmtMoney(b.min_cents)}</td>
+              <td style="padding:8px 6px;font-weight:600">${fmtMoney(b.median_cents)}</td>
+              <td style="padding:8px 6px">${fmtMoney(b.max_cents)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`}
+    </div>`;
 }
 
 function renderStaffTab() {
