@@ -57,6 +57,7 @@ const NAV = {
   ],
   manager: [
     { key: 'agency', href: 'agency.html', icon: 'team', label: 'Roster' },
+    { key: 'pipeline', href: 'pipeline.html', icon: 'campaigns', label: 'Pipeline' },
     { key: 'profile-manager', href: 'profile-manager.html', icon: 'profile', label: 'Profile' },
     { key: 'support', href: 'support.html', icon: 'inbox', label: 'Support' },
   ],

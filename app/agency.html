@@ -93,6 +93,7 @@
   .roster-name{font-size:14.5px;font-weight:600}
   .roster-niche{font-size:12px;color:var(--pf-ink-soft)}
   .roster-score-chip{font-size:10.5px;font-weight:700;color:var(--pf-blue-deep);background:#EEF2FF;border-radius:8px;padding:1px 7px;margin-left:4px;font-family:'IBM Plex Mono',monospace}
+  .roster-risk-flag{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#B42318;background:#FDECEC;border-radius:8px;padding:5px 10px;margin-bottom:12px}
   .roster-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:14px;border-top:1px solid var(--pf-line)}
   .roster-stat-num{font-family:'Fraunces',serif;font-size:19px;font-weight:600}
   .roster-stat-label{font-size:10px;color:var(--pf-ink-faint);text-transform:uppercase;letter-spacing:.03em}
@@ -149,6 +150,7 @@
 <script src="nav.js?v=4"></script>
 <script>
 let profile, manager, roster = [], staff = [], ledger = [], performance = [], benchmark = [], trustScore = null;
+let financials = [], sponsorResults = [], sponsorQuery = '', sponsorSearched = false;
 let activeTab = 'roster';
 
 const MGR_ICONS = {
@@ -156,6 +158,8 @@ const MGR_ICONS = {
   trust:'<path d="M12 2.5l7.5 3.5v5.4c0 4.6-3.2 7.5-7.5 9.1-4.3-1.6-7.5-4.5-7.5-9.1V6z"/><path d="M8.7 12l2.4 2.4 4.2-4.6"/>',
   performance:'<path d="M4 20V13"/><path d="M10 20V7"/><path d="M16 20v-9"/><path d="M22 20H2"/>',
   ledger:'<rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="17" cy="15" r="1.5"/>',
+  finances:'<path d="M12 2v20"/><path d="M17 5.5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+  sponsors:'<path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/><path d="M9 9h.01M15 9h.01M9 13h.01M15 13h.01"/>',
   benchmark:'<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 9 9h-9z"/>',
   branding:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>',
   staff:'<circle cx="9" cy="8" r="3.6"/><path d="M2.4 20.5c0-3.6 3-6.1 6.6-6.1s6.6 2.5 6.6 6.1"/><path d="M18.5 8.2h4M20.5 6.2v4"/>',
@@ -169,6 +173,8 @@ const AGENCY_TABS = [
   ['trust', 'Trust Score'],
   ['performance', 'Performance'],
   ['ledger', 'Payout Ledger'],
+  ['finances', 'Finances'],
+  ['sponsors', 'Sponsors'],
   ['benchmark', 'Rate Benchmark'],
   ['branding', 'Branding'],
   ['staff', 'Staff'],
@@ -196,6 +202,20 @@ async function load() {
   await loadPerformance();
   await loadBenchmark();
   await loadTrustScore();
+  await loadFinancials();
+  render();
+}
+
+async function loadFinancials() {
+  const { data, error } = await sb.rpc('fn_manager_deal_financials');
+  financials = error ? [] : (data || []);
+}
+
+async function searchSponsors(query) {
+  sponsorQuery = query;
+  sponsorSearched = true;
+  const { data, error } = await sb.rpc('fn_manager_sponsor_lookup', { p_query: query || null });
+  sponsorResults = error ? [] : (data || []);
   render();
 }
 
@@ -245,17 +265,19 @@ async function loadRoster() {
 
   roster = links || [];
 
-  // Pull pipeline counts per creator using the Phase 2 manager SELECT
-  // grants on contracts and brief_applications -- this is the actual
-  // proof those RLS policies work end to end, not just in isolation.
-  await Promise.all(roster.map(async r => {
-    const [{ count: activeContracts }, { count: pendingApplications }] = await Promise.all([
-      sb.from('contracts').select('id', { count: 'exact', head: true }).eq('creator_id', r.creator_id).eq('status', 'fully_signed'),
-      sb.from('brief_applications').select('id', { count: 'exact', head: true }).eq('creator_id', r.creator_id).eq('status', 'pending'),
-    ]);
-    r.activeContracts = activeContracts || 0;
-    r.pendingApplications = pendingApplications || 0;
-  }));
+  // Command center stats -- one RPC call for the whole roster (deadlines,
+  // overdue deliverables, revenue this month) instead of the old N+1
+  // Promise.all of per-creator count queries.
+  const { data: cc } = await sb.rpc('fn_manager_roster_command_center');
+  const ccByCreator = Object.fromEntries((cc || []).map(row => [row.creator_id, row]));
+  roster.forEach(r => {
+    const c = ccByCreator[r.creator_id];
+    r.activeContracts = c?.active_deals || 0;
+    r.pendingApplications = c?.pending_briefs || 0;
+    r.nextDeadline = c?.next_deadline || null;
+    r.overdueCount = c?.overdue_count || 0;
+    r.revenueThisMonthCents = c?.revenue_this_month_cents || 0;
+  });
 }
 
 function render() {
@@ -364,6 +386,8 @@ function renderTabPanel(key) {
   if (key === 'trust') return renderTrustScoreTab();
   if (key === 'performance') return renderPerformanceTab();
   if (key === 'ledger') return renderLedgerTab();
+  if (key === 'finances') return renderFinancesTab();
+  if (key === 'sponsors') return renderSponsorsTab();
   if (key === 'benchmark') return renderBenchmarkTab();
   if (key === 'branding') return renderBrandingTab();
   if (key === 'staff') return renderStaffTab();
@@ -382,7 +406,16 @@ function renderRosterTab() {
       </div>`;
   }
 
+  const totalOverdue = roster.reduce((s, r) => s + (r.overdueCount || 0), 0);
+  const totalRevenueThisMonth = roster.reduce((s, r) => s + (r.revenueThisMonthCents || 0), 0);
+  const soonestDeadline = roster.map(r => r.nextDeadline).filter(Boolean).sort()[0] || null;
+
   return `
+    <div class="stat-row" style="margin-bottom:16px">
+      <div><div class="v">${fmtMoney(totalRevenueThisMonth)}</div><div class="l">Revenue this month</div></div>
+      <div><div class="v" style="${totalOverdue ? 'color:#B42318' : ''}">${totalOverdue}</div><div class="l">Overdue deliverables</div></div>
+      <div><div class="v">${soonestDeadline ? fmtDeadline(soonestDeadline) : '—'}</div><div class="l">Next deadline</div></div>
+    </div>
     <div class="roster-toolbar">
       <button class="pf-btn-save" id="scanBtn" onclick="scanRosterExclusivity()">Scan roster for exclusivity conflicts</button>
     </div>
@@ -394,8 +427,10 @@ function renderRosterTab() {
         const score = r.creators?.trust_score;
         const slug = r.creators?.slug;
         const kitHref = slug ? `evekit.html?slug=${encodeURIComponent(slug)}` : null;
+        const isOverdue = r.overdueCount > 0;
         return `
         <div class="roster-card">
+          ${isOverdue ? `<div class="roster-risk-flag">${svgIconInline('alert-triangle')} ${r.overdueCount} overdue deliverable${r.overdueCount === 1 ? '' : 's'}</div>` : ''}
           <div class="roster-card-top">
             <div class="roster-avatar">${initial}</div>
             <div>
@@ -404,8 +439,10 @@ function renderRosterTab() {
             </div>
           </div>
           <div class="roster-stats">
-            <div><div class="roster-stat-num">${r.activeContracts}</div><div class="roster-stat-label">Active contracts</div></div>
+            <div><div class="roster-stat-num">${r.activeContracts}</div><div class="roster-stat-label">Active deals</div></div>
             <div><div class="roster-stat-num">${r.pendingApplications}</div><div class="roster-stat-label">Pending briefs</div></div>
+            <div><div class="roster-stat-num" style="font-size:15px">${fmtMoney(r.revenueThisMonthCents)}</div><div class="roster-stat-label">Revenue this month</div></div>
+            <div><div class="roster-stat-num" style="font-size:15px;${isOverdue ? 'color:#B42318' : ''}">${r.nextDeadline ? fmtDeadline(r.nextDeadline) : '—'}</div><div class="roster-stat-label">Next deadline</div></div>
           </div>
           ${kitHref
             ? `<a href="${kitHref}" target="_blank" rel="noopener" class="roster-card-link">View Verified Media Kit →</a>`
@@ -413,6 +450,21 @@ function renderRosterTab() {
         </div>`;
       }).join('')}
     </div>`;
+}
+
+function svgIconInline(name) {
+  const paths = { 'alert-triangle': '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>' };
+  return `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${paths[name] || ''}</svg>`;
+}
+
+function fmtDeadline(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diffDays = Math.round((d - today) / 86400000);
+  const label = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  if (diffDays < 0) return `${label} (${Math.abs(diffDays)}d overdue)`;
+  if (diffDays === 0) return `${label} (today)`;
+  return label;
 }
 
 async function scanRosterExclusivity() {
@@ -517,6 +569,122 @@ function exportLedger() {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function renderFinancesTab() {
+  const now = new Date();
+  const thisMonth = financials.filter(f => f.created_at && new Date(f.created_at).getMonth() === now.getMonth() && new Date(f.created_at).getFullYear() === now.getFullYear());
+  const invoicedCents = financials.filter(f => f.invoice_status === 'invoiced').reduce((s, f) => s + (f.commission_cents || 0), 0);
+  const paidCents = financials.filter(f => f.invoice_status === 'paid').reduce((s, f) => s + (f.commission_cents || 0), 0);
+  const outstandingCents = financials.filter(f => f.invoice_status !== 'paid').reduce((s, f) => s + (f.commission_cents || 0), 0);
+
+  return `
+    <div class="pf-card">
+      <h3>Manager-to-creator split</h3>
+      <div class="desc">Set your commission % and any expenses per deal — the creator's payable amount recalculates automatically. Invoice status here is your own tracking of when you billed and got paid your commission; it's separate from the escrow payout status, which is what the creator actually gets paid through Kitscore.</div>
+      <div class="stat-row">
+        <div><div class="v">${fmtMoney(invoicedCents)}</div><div class="l">Invoiced</div></div>
+        <div><div class="v">${fmtMoney(paidCents)}</div><div class="l">Paid</div></div>
+        <div><div class="v">${fmtMoney(outstandingCents)}</div><div class="l">Outstanding</div></div>
+      </div>
+      ${!financials.length ? '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No fully-signed contracts on your roster yet.</div>' : `
+      <table>
+        <thead><tr>
+          <th>Creator</th>
+          <th>Sponsor</th>
+          <th>Gross fee</th>
+          <th>Commission %</th>
+          <th>Expenses</th>
+          <th>Creator payable</th>
+          <th>Invoice status</th>
+          <th>Escrow status</th>
+        </tr></thead>
+        <tbody>
+          ${financials.map(f => `
+            <tr>
+              <td>${escapeHtml(f.creator_name || '—')}</td>
+              <td>${escapeHtml(f.sponsor_name || '—')}</td>
+              <td>${fmtMoney(f.gross_fee_cents)}</td>
+              <td><input type="number" min="0" max="100" step="0.5" value="${f.commission_pct}" style="width:56px;padding:5px 6px;border:1px solid var(--pf-line);border-radius:6px;font-size:12px" onchange="updateFinancials('${f.contract_id}', 'commission_pct', this.value)"></td>
+              <td><input type="number" min="0" step="1" value="${(f.expenses_cents/100).toFixed(2)}" style="width:70px;padding:5px 6px;border:1px solid var(--pf-line);border-radius:6px;font-size:12px" onchange="updateFinancials('${f.contract_id}', 'expenses_cents', Math.round(this.value*100))"></td>
+              <td style="font-weight:600">${fmtMoney(f.creator_payable_cents)}</td>
+              <td>
+                <select style="padding:5px 6px;border:1px solid var(--pf-line);border-radius:6px;font-size:12px" onchange="updateFinancials('${f.contract_id}', 'invoice_status', this.value)">
+                  ${['not_invoiced','invoiced','paid'].map(s => `<option value="${s}" ${f.invoice_status === s ? 'selected' : ''}>${s === 'not_invoiced' ? 'Not invoiced' : s === 'invoiced' ? 'Invoiced' : 'Paid'}</option>`).join('')}
+                </select>
+              </td>
+              <td style="text-transform:capitalize;color:var(--pf-ink-soft)">${escapeHtml(f.escrow_status || '')}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`}
+      <div id="financeMsg"></div>
+    </div>`;
+}
+
+async function updateFinancials(contractId, field, value) {
+  const payload = { contract_id: contractId, [field]: field === 'commission_pct' ? Number(value) : field === 'expenses_cents' ? Number(value) : value };
+  // Need manager_id + all NOT NULL-safe fields on first insert -- upsert
+  // with onConflict on the unique contract_id column, letting the DB
+  // defaults fill anything not passed here on a fresh row.
+  const existing = financials.find(f => f.contract_id === contractId);
+  const row = {
+    contract_id: contractId,
+    manager_id: manager.id,
+    commission_pct: field === 'commission_pct' ? Number(value) : existing.commission_pct,
+    expenses_cents: field === 'expenses_cents' ? Number(value) : existing.expenses_cents,
+    invoice_status: field === 'invoice_status' ? value : existing.invoice_status,
+  };
+  if (field === 'invoice_status') {
+    if (value === 'invoiced') row.invoice_sent_at = new Date().toISOString();
+    if (value === 'paid') row.invoice_paid_at = new Date().toISOString();
+  }
+  const { error } = await sb.from('manager_deal_financials').upsert(row, { onConflict: 'contract_id' });
+  const el = document.getElementById('financeMsg');
+  if (error) { if (el) el.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  await loadFinancials();
+  render();
+}
+
+function renderSponsorsTab() {
+  return `
+    <div class="pf-card">
+      <h3>Sponsor risk &amp; trust lookup</h3>
+      <div class="desc">Check a sponsor before your roster accepts a deal — account standing, and reliability built from real ratings and outcome reports other creators have left after actually working with them. There's no formal "verified" review process for sponsors on Kitscore today, so this shows account standing and real track record instead of a badge that would overclaim.</div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <input id="sponsorSearchInput" type="text" placeholder="Search by company name…" value="${escapeHtml(sponsorQuery)}" style="flex:1;padding:9px 12px;border:1px solid var(--pf-line);border-radius:10px;font-size:12.5px;font-family:'Inter',sans-serif" onkeydown="if(event.key==='Enter'){searchSponsors(this.value.trim())}">
+        <button class="pf-btn-save" onclick="searchSponsors(document.getElementById('sponsorSearchInput').value.trim())">Search</button>
+      </div>
+      <div id="sponsorResults">${renderSponsorResults()}</div>
+    </div>`;
+}
+
+function renderSponsorResults() {
+  if (!sponsorSearched) return `<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:'Inter',sans-serif">Search for a sponsor by company name, or leave blank and hit Search to browse all.</div>`;
+  if (!sponsorResults.length) return `<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:'Inter',sans-serif">No sponsors found.</div>`;
+
+  return sponsorResults.map(s => {
+    const warningCount = (s.ghosted_count || 0) + (s.never_booked_count || 0);
+    return `
+    <div style="padding:14px 0;border-top:1px solid var(--pf-line);font-family:'Inter',sans-serif">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:14px;font-weight:600">${escapeHtml(s.company_name)}</div>
+          <div style="font-size:11.5px;color:var(--pf-ink-soft);margin-top:2px;text-transform:capitalize">${escapeHtml(s.plan || 'free')} plan</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge-pill" style="${s.account_active ? 'background:#E9F7EE;color:#137C52' : 'background:#FDECEC;color:#B42318'};font-size:11px;padding:4px 10px">${s.account_active ? 'Account active' : 'Restricted'}</span>
+          ${s.sample_size ? `<span class="badge-pill" style="background:#F1F4FA;color:var(--pf-ink);font-size:11px;padding:4px 10px">★ ${s.avg_rating} (${s.sample_size} creator${s.sample_size === 1 ? '' : 's'})</span>` : `<span class="badge-pill" style="background:#F1F4FA;color:var(--pf-ink-faint);font-size:11px;padding:4px 10px">No creator ratings yet</span>`}
+        </div>
+      </div>
+      ${s.restricted && s.restriction_reason ? `<div style="font-size:11.5px;color:#B42318;margin-top:8px">Admin-restricted: ${escapeHtml(s.restriction_reason)}</div>` : ''}
+      ${s.sample_size ? `
+        <div style="display:flex;gap:18px;margin-top:10px;flex-wrap:wrap;font-size:11.5px;color:var(--pf-ink-soft)">
+          <span>${s.paid_on_time_count || 0} paid on time</span>
+          <span>${s.paid_late_count || 0} paid late</span>
+          <span style="${warningCount ? 'color:#B42318;font-weight:600' : ''}">${warningCount} ghosted / never booked after discussion</span>
+        </div>` : ''}
+    </div>`;
+  }).join('');
 }
 
 function renderTrustScoreTab() {
