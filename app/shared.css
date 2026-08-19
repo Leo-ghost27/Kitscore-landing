@@ -52,14 +52,17 @@
 .sb-badge{margin-left:auto;background:#DC2626;color:#fff;font-size:10.5px;font-weight:700;line-height:1;padding:3px 6px;border-radius:9px;min-width:9px;text-align:center;align-items:center;justify-content:center}
 .sb-nav{flex:1;display:flex;flex-direction:column;gap:0}
 
-/* Creator-only sidebar skin -- colors only, scoped via the sidebar-creator
-   class nav.js adds when role === 'creator'. Sponsor and admin sidebars
-   are untouched; every rule above still applies, these just override the
-   CSS variables they already read from. */
-.sidebar.sidebar-creator{--sb-bg:#0A1530;--sb-border:rgba(255,255,255,0.08);--sb-text:#B9C4E0;--sb-text-active:#FFFFFF;--sb-active-bg:rgba(39,85,240,0.16);--sb-active-bar:#17B8A6;--sb-icon:#8CA0CE;--sb-icon-active:#FFFFFF}
-.sidebar.sidebar-creator .nav-account{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08)}
-.sidebar.sidebar-creator .nav-account-role{color:#7C8FBE}
-.sidebar.sidebar-creator .sb-signout-row{border-top-color:rgba(255,255,255,0.08)}
+/* Dark sidebar skin -- colors only, scoped via the sidebar-dark class
+   nav.js adds when role === 'creator' or 'manager'. Sponsor and admin
+   sidebars are untouched; every rule above still applies, these just
+   override the CSS variables they already read from. Originally
+   creator-only; extended to manager pages (agency.html, profile-manager
+   .html) so they match the rest of the app instead of the older
+   plain/light sidebar they'd been left with. */
+.sidebar.sidebar-dark{--sb-bg:#0A1530;--sb-border:rgba(255,255,255,0.08);--sb-text:#B9C4E0;--sb-text-active:#FFFFFF;--sb-active-bg:rgba(39,85,240,0.16);--sb-active-bar:#17B8A6;--sb-icon:#8CA0CE;--sb-icon-active:#FFFFFF}
+.sidebar.sidebar-dark .nav-account{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08)}
+.sidebar.sidebar-dark .nav-account-role{color:#7C8FBE}
+.sidebar.sidebar-dark .sb-signout-row{border-top-color:rgba(255,255,255,0.08)}
 .app-main{flex:1;padding:20px;max-width:780px;margin:0 auto;width:100%}
 body{padding:0!important;max-width:none!important;margin:0!important}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

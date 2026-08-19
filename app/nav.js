@@ -80,12 +80,16 @@ const NAV = {
 function renderSidebar(role, activeKey, displayName) {
   const mount = document.getElementById('sidebar-mount');
   if (!mount) return;
-  mount.classList.toggle('sidebar-creator', role === 'creator');
+  // Dark sidebar skin -- originally creator-only, extended to manager
+  // pages too so agency.html/profile-manager.html match the rest of the
+  // app's current visual language instead of the old plain/light sidebar.
+  // Sponsor and admin keep the light sidebar for now.
+  mount.classList.toggle('sidebar-dark', role === 'creator' || role === 'manager');
   const items = NAV[role] || [];
   const roleLabel = role === 'sponsor' ? 'Sponsor account' : role === 'admin' ? 'Admin account' : role === 'manager' ? 'Manager account' : 'Creator account';
   const name = displayName || (typeof profile !== 'undefined' && profile ? profile.display_name : '') || '';
   const initial = name ? name.trim().charAt(0).toUpperCase() : (role === 'sponsor' ? 'S' : role === 'admin' ? 'A' : role === 'manager' ? 'M' : 'C');
-  const logoTextColor = role === 'creator' ? '#EAF0FF' : '#10151F';
+  const logoTextColor = (role === 'creator' || role === 'manager') ? '#EAF0FF' : '#10151F';
 
   mount.innerHTML = `
     <a href="/" class="nav-logo" style="display:flex;align-items:center;gap:8px;text-decoration:none;writing-mode:horizontal-tb;transform:none">
@@ -106,7 +110,7 @@ function renderSidebar(role, activeKey, displayName) {
       </div>
     </div>
     <nav class="sb-nav">
-      ${role === 'creator' ? '<div class="sb-section">Workspace</div>' : ''}
+      ${(role === 'creator' || role === 'manager') ? '<div class="sb-section">Workspace</div>' : ''}
       ${items.map(i => `<a class="sb-item ${i.key === activeKey ? 'active' : ''}" href="${i.href}" data-nav-key="${i.key}">${navIcon(i.icon)}${i.label}<span class="sb-badge" data-badge-for="${i.key}" style="display:none"></span></a>`).join('')}
     </nav>
     <div class="sb-signout-row">

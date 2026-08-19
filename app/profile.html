@@ -375,47 +375,54 @@ function renderAccountPanel() {
     <div class="pf-card">
       <h3>Manager</h3>
       <p class="desc">Invite your manager or agent to be linked to your account. They'll be able to submit evidence and respond to briefs on your behalf — never change your payout details or sign off on a contract for you.</p>
-      ${renderManagerConnectedBanner()}
       <div id="managerLinksList">${renderManagerLinks()}</div>
-      <div class="pf-form-grid" style="margin-top:12px">
-        <div class="pf-field"><label>Manager's email</label><input id="managerEmail" type="email" placeholder="manager@example.com"></div>
-      </div>
-      <div class="pf-save-row">
-        <span class="pf-save-hint">They'll get an email invite, valid for 14 days.</span>
-        <button class="pf-btn-save" onclick="inviteManager()">Send invite</button>
-      </div>
+      ${renderManagerActionRow()}
       <div id="managerMsg"></div>
     </div>
   `;
 }
 
-function renderManagerConnectedBanner() {
+// Active link and pending invites are rendered separately now: pending
+// invites still show as a list item (there can be more than one
+// outstanding), but an active link gets its own two-button row below
+// instead of also appearing as a list item -- showing "Revoke" in both
+// places was redundant once there's only ever one active manager.
+function renderManagerActionRow() {
   const active = (managerLinks || []).find(l => l.status === 'active');
-  if (!active) return '';
+  if (active) {
+    return `
+      <div class="pf-save-row">
+        <span class="pf-save-hint">You're connected — they can submit evidence and respond to briefs for you.</span>
+        <button class="pf-btn" disabled style="opacity:1;background:var(--pf-green-soft,#E9F7EE);border-color:#BFE6CC;color:#1C7C3F;cursor:default">
+          ${svgIcon('circle-check', { size: 15, stroke: '#1C7C3F', strokeWidth: 2.2 })}
+          ${escapeHtml(active.display_name || active.email || 'Manager')} is linked
+        </button>
+        <button class="pf-btn-save" style="background:#B42318;box-shadow:none" onclick="revokeManager('${active.link_id}')">Revoke access</button>
+      </div>`;
+  }
   return `
-    <div style="display:flex;align-items:center;gap:10px;background:var(--pf-green-soft,#E9F7EE);border:1px solid #BFE6CC;padding:11px 14px;margin-bottom:14px;font-size:12.5px;color:#1C7C3F;font-weight:600">
-      ${svgIcon('circle-check', { size: 16, stroke: '#1C7C3F', strokeWidth: 2 })}
-      <span>You're connected to ${escapeHtml(active.display_name || active.email || 'your manager')}. They can submit evidence and respond to briefs on your behalf.</span>
+    <div class="pf-form-grid" style="margin-top:12px">
+      <div class="pf-field"><label>Manager's email</label><input id="managerEmail" type="email" placeholder="manager@example.com"></div>
+    </div>
+    <div class="pf-save-row">
+      <span class="pf-save-hint">They'll get an email invite, valid for 14 days.</span>
+      <button class="pf-btn-save" onclick="inviteManager()">Send invite</button>
     </div>`;
 }
 
 function renderManagerLinks() {
-  if (!managerLinks || !managerLinks.length) return '<p class="desc" style="margin:0">No manager linked yet.</p>';
-  return managerLinks.map(l => {
-    const label = l.status === 'pending' ? 'Invite pending' : l.status === 'active' ? 'Active' : 'Revoked';
-    const linkedSince = l.status === 'active' && l.created_at
-      ? ` · linked ${new Date(l.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-      : '';
+  const listable = (managerLinks || []).filter(l => l.status !== 'active');
+  if (!listable.length) return '';
+  return listable.map(l => {
+    const label = l.status === 'pending' ? 'Invite pending' : 'Revoked';
     const action = l.status === 'pending'
       ? `<button class="pf-btn" style="padding:5px 10px;font-size:11.5px" onclick="cancelManagerInvite('${l.link_id}')">Cancel invite</button>`
-      : l.status === 'active'
-        ? `<button class="pf-btn" style="padding:5px 10px;font-size:11.5px" onclick="revokeManager('${l.link_id}')">Revoke</button>`
-        : '';
+      : '';
     return `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--pf-line,#EEE)">
       <div>
         <div style="font-size:12.5px;font-weight:600">${escapeHtml(l.display_name || l.email || 'Manager')}</div>
-        <div style="font-size:11px;color:var(--pf-ink-soft)">${label}${linkedSince}</div>
+        <div style="font-size:11px;color:var(--pf-ink-soft)">${label}</div>
       </div>
       ${action}
     </div>
