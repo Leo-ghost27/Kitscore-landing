@@ -61,9 +61,15 @@ async function createProfile(user, role, displayName) {
 
   if (role === 'creator') {
     await sb.from('creators').insert({ id: profile.id });
-  } else {
+  } else if (role === 'sponsor') {
     await sb.from('sponsors').insert({ id: profile.id, company_name: displayName });
   }
+  // Managers (and admins) get a profiles row only -- no creators/sponsors
+  // row. This used to fall into the `else` above and silently try to
+  // insert a bogus sponsors row for every manager, which happened to fail
+  // quietly (no error is checked here) rather than break signup, but it's
+  // wrong data modeling and worth not doing. See accept-manager-invite.html
+  // for the manager-specific accept flow this mirrors.
   return profile;
 }
 
@@ -126,14 +132,28 @@ function formatVerifiedSince(verifiedSince) {
   return verifiedSince ? new Date(verifiedSince).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : null;
 }
 
+// Single source of truth for "where does this role land" -- auth.html's
+// post-login/post-signup redirects used to hardcode
+// `role === 'creator' ? 'profile.html' : 'directory.html'`, which silently
+// sent managers (and admins) to the sponsor directory instead of their own
+// home page. That page's own role check would then bounce them again,
+// which is the "taken to a whole new page" bounce-through-auth.html path
+// managers were hitting on invite acceptance. One helper, used everywhere
+// a role decides a destination, so this can't drift out of sync again.
+function homeForRole(role) {
+  if (role === 'creator') return 'profile.html';
+  if (role === 'manager') return 'agency.html';
+  if (role === 'admin') return 'admin-evidence.html';
+  return 'directory.html';
+}
+
 // Redirects to auth.html if nobody is signed in, or to the wrong dashboard
 // if the signed-in profile's role doesn't match what this page expects.
 async function requireRole(expectedRole) {
   const profile = await getCurrentProfile();
   if (!profile) { window.location.href = 'auth.html'; return null; }
   if (profile.role !== expectedRole) {
-    const home = profile.role === 'creator' ? 'dashboard.html' : profile.role === 'admin' ? 'admin-evidence.html' : profile.role === 'manager' ? 'agency.html' : 'directory.html';
-    window.location.href = home;
+    window.location.href = profile.role === 'creator' ? 'dashboard.html' : homeForRole(profile.role);
     return null;
   }
   return profile;

@@ -315,7 +315,7 @@ async function finishProfile() {
   // Creators land on Profile first (account setup + payout), not Dashboard --
   // see docs/dashboard-rework-blueprint-v1.md. Sponsors still land on the
   // directory, unaffected by this change.
-  window.location.href = profile.role === 'creator' ? 'profile.html' : 'directory.html';
+  window.location.href = homeForRole(profile.role);
 }
 
 async function submitForm() {
@@ -366,7 +366,7 @@ async function routeToDashboard() {
   const profile = await getCurrentProfile();
   if (!profile) { showMsg('Signed in, but no profile found.', 'error'); return; }
   // Creators land on Profile first -- see docs/dashboard-rework-blueprint-v1.md.
-  window.location.href = profile.role === 'creator' ? 'profile.html' : 'directory.html';
+  window.location.href = homeForRole(profile.role);
 }
 
 (async () => {

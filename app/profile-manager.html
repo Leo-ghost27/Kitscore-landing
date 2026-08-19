@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile — Kitscore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:4px}
+  .psub{font-size:12.5px;color:var(--color-text-tertiary);margin-bottom:20px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:20px;max-width:480px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:11px;font-weight:600;color:var(--color-text-secondary);margin-bottom:4px}
+  .field input{width:100%;padding:9px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-sm);font-size:13px;font-family:inherit;box-sizing:border-box}
+  .field-hint{font-size:10.5px;color:var(--color-text-tertiary);margin-top:4px;line-height:1.5}
+  .logo-row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .logo-preview{width:56px;height:56px;border-radius:8px;object-fit:contain;background:#F9F8F5;border:0.5px dashed var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:var(--color-text-tertiary)}
+  .logo-preview img{width:100%;height:100%;object-fit:contain}
+  .cta{padding:9px 16px;background:#2563EB;color:#fff;border:none;border-radius:0;font-size:12px;font-weight:500;cursor:pointer}
+  .cta:disabled{opacity:.6}
+  .msg{font-size:11px;margin-top:10px;padding:8px;border-radius:0}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#1C7C3F}
+  .loading{font-size:12px;color:var(--color-text-secondary)}
+  .psec{margin:22px 0 14px;padding-top:16px;border-top:1px solid var(--color-border-tertiary)}
+  .psec:first-of-type{margin-top:0;padding-top:0;border-top:none}
+  .psec-title{font-size:12.5px;font-weight:600;color:var(--color-text-primary);margin-bottom:2px}
+  .plan-badge{display:inline-block;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;padding:3px 8px;background:#EEF2FF;color:#2563EB;border-radius:3px}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Profile</div>
+    <div class="psub">Your own account — shown to creators on your roster and, on the Agency plan, on their EveKit media kits.</div>
+    <div class="card" id="formWrap"><div class="loading">Loading…</div></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="nav.js?v=4"></script>
+<script>
+let profile, manager;
+
+async function load() {
+  profile = await requireRole('manager');
+  if (!profile) return;
+  renderSidebar('manager', 'profile-manager');
+
+  const { data: m, error } = await sb.rpc('fn_ensure_manager_row');
+  if (error) {
+    document.getElementById('formWrap').innerHTML = `<div class="msg error">Could not load your profile: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  manager = m || { plan: 'manager', agency_name: '', logo_url: '' };
+  render();
+}
+
+function render() {
+  const planLabel = manager.plan === 'agency' ? 'Agency' : 'Manager';
+  document.getElementById('formWrap').innerHTML = `
+    <div class="psec">
+      <div class="psec-title">Account</div>
+    </div>
+    <div class="field">
+      <label>Your name</label>
+      <input id="displayName" value="${escapeHtml(profile.display_name || '')}" placeholder="Your name">
+      <div class="field-hint">Shown in your sidebar and to creators who link to you.</div>
+    </div>
+    <div class="field">
+      <label>Plan</label>
+      <div><span class="plan-badge">${planLabel}</span></div>
+      <div class="field-hint">Upgrades are handled by Kitscore — reach out via Support if you'd like Agency-tier features (Rate Benchmark, white-labeled branding, Staff sub-seats).</div>
+    </div>
+
+    <div class="psec">
+      <div class="psec-title">Agency branding</div>
+    </div>
+    <div class="field">
+      <label>Agency name</label>
+      <input id="agencyName" value="${escapeHtml(manager.agency_name || '')}" placeholder="e.g. Eve Talent Agency">
+      <div class="field-hint">${manager.plan === 'agency' ? 'Used to white-label your managed creators\' EveKit media kits.' : 'Available on the Agency plan — set it now and it\'ll apply once you upgrade.'}</div>
+    </div>
+    <div class="field">
+      <label>Logo</label>
+      <div class="logo-row">
+        <div class="logo-preview" id="logoPreview">${manager.logo_url ? `<img src="${escapeHtml(manager.logo_url)}" onerror="this.parentElement.innerHTML='Broken'">` : 'No logo'}</div>
+        <input id="logoUrl" value="${escapeHtml(manager.logo_url || '')}" placeholder="https://yourdomain.com/logo.png" oninput="previewLogo()" style="flex:1">
+      </div>
+    </div>
+
+    <button class="cta" onclick="save()">Save changes</button>
+    <div id="saveMsg"></div>
+  `;
+}
+
+function previewLogo() {
+  const url = document.getElementById('logoUrl').value.trim();
+  const el = document.getElementById('logoPreview');
+  el.innerHTML = url ? `<img src="${escapeHtml(url)}" onerror="this.parentElement.innerHTML='Broken'">` : 'No logo';
+}
+
+async function save() {
+  const displayName = document.getElementById('displayName').value.trim();
+  const agencyName = document.getElementById('agencyName').value.trim();
+  const logoUrl = document.getElementById('logoUrl').value.trim();
+
+  if (!displayName) { showMsg('Your name is required.', 'error'); return; }
+
+  const { error: profileErr } = await sb.from('profiles').update({ display_name: displayName }).eq('id', profile.id);
+  if (profileErr) { showMsg('Could not save your name: ' + profileErr.message, 'error'); return; }
+  profile.display_name = displayName;
+
+  // plan is intentionally not sent here -- it's column-locked to
+  // service_role only (managers_update_own billing-bypass fix), so
+  // agency_name/logo_url are the only manager-writable columns.
+  const { error: mgrErr } = await sb.from('managers').update({
+    agency_name: agencyName || null,
+    logo_url: logoUrl || null,
+  }).eq('id', profile.id);
+  if (mgrErr) { showMsg('Saved your name, but agency branding could not be saved: ' + mgrErr.message, 'error'); return; }
+
+  manager.agency_name = agencyName;
+  manager.logo_url = logoUrl;
+  renderSidebar('manager', 'profile-manager');
+  showMsg('Saved.', 'ok');
+}
+
+function showMsg(text, type) {
+  document.getElementById('saveMsg').innerHTML = `<div class="msg ${type}">${escapeHtml(text)}</div>`;
+}
+
+load();
+</script>
+</body>
+</html>

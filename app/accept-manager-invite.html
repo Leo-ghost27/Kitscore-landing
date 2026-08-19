@@ -34,12 +34,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
 <script>
-let invite, creatorName;
+let invite, creatorName, inviteToken;
 
 async function init() {
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
   if (!token) { showError('Invalid invite link.'); return; }
+  inviteToken = token;
 
   // Same SECURITY DEFINER RPC pattern as fn_lookup_team_invite -- a plain
   // RLS SELECT-by-token would let anyone enumerate every pending invite.
@@ -56,6 +57,29 @@ async function init() {
   const profile = await getCurrentProfile();
   if (profile) {
     await linkManager(profile);
+    return;
+  }
+
+  // A session can exist here with no profile row yet -- e.g. Supabase has
+  // email confirmation on, the person clicked "Create account and link"
+  // below, and the confirmation email link brought them back to this same
+  // page (see emailRedirectTo in acceptWithSignup). Previously there was
+  // no emailRedirectTo, so this case never happened here -- confirmation
+  // dropped people on auth.html instead, where the generic signup handler
+  // created a manager profile from their metadata but had no idea about
+  // this invite, so manager_creator_links never got a row and the invite
+  // sat accepted_at=null forever ("Roster" -> "No creators linked yet"
+  // even though they'd already signed up). Finish the job here instead of
+  // re-showing the signup form, which would just fail on "already
+  // registered" for a user who already has a session.
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    const displayName = session.user.user_metadata?.display_name || invite.email.split('@')[0];
+    const { data: newProfile, error: profileErr } = await sb.from('profiles')
+      .insert({ auth_user_id: session.user.id, role: 'manager', display_name: displayName, email: session.user.email })
+      .select().single();
+    if (profileErr) { showError('Signed in but profile setup failed: ' + profileErr.message); return; }
+    await linkManager(newProfile);
     return;
   }
 
@@ -90,12 +114,21 @@ async function acceptWithSignup() {
   const password = document.getElementById('password').value;
   if (!displayName || !email || !password) { showMsg('All fields are required.', 'error'); btn.disabled = false; return; }
 
+  const origin = window.location.origin;
   const { data, error } = await sb.auth.signUp({
     email, password,
-    options: { data: { role: 'manager', display_name: displayName } }
+    options: {
+      // Without this, Supabase falls back to the project's default site
+      // URL when confirmation is required -- bouncing the person to
+      // auth.html with no idea they were mid-invite. Sending them back to
+      // this exact URL (token included) means init() picks the invite
+      // back up on return and finishes the link automatically.
+      emailRedirectTo: `${origin}${window.location.pathname}?token=${encodeURIComponent(inviteToken)}`,
+      data: { role: 'manager', display_name: displayName },
+    },
   });
   if (error) { showMsg(error.message, 'error'); btn.disabled = false; return; }
-  if (!data.session) { showMsg('Check your email to confirm, then sign in to accept the invite.', 'ok'); return; }
+  if (!data.session) { showMsg('Check your email to confirm, then click the link there to finish linking your account.', 'ok'); return; }
 
   // Managers get a profiles row only -- no matching creators/sponsors row.
   // Not reusing the shared createProfile() helper here since it assumes

@@ -390,15 +390,26 @@ function renderAccountPanel() {
 
 function renderManagerLinks() {
   if (!managerLinks || !managerLinks.length) return '<p class="desc" style="margin:0">No manager linked yet.</p>';
-  return managerLinks.map(l => `
+  return managerLinks.map(l => {
+    const label = l.status === 'pending' ? 'Invite pending' : l.status === 'active' ? 'Active' : 'Revoked';
+    const linkedSince = l.status === 'active' && l.created_at
+      ? ` · linked ${new Date(l.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+      : '';
+    const action = l.status === 'pending'
+      ? `<button class="pf-btn" style="padding:5px 10px;font-size:11.5px" onclick="cancelManagerInvite('${l.link_id}')">Cancel invite</button>`
+      : l.status === 'active'
+        ? `<button class="pf-btn" style="padding:5px 10px;font-size:11.5px" onclick="revokeManager('${l.link_id}')">Revoke</button>`
+        : '';
+    return `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--pf-line,#EEE)">
       <div>
         <div style="font-size:12.5px;font-weight:600">${escapeHtml(l.display_name || l.email || 'Manager')}</div>
-        <div style="font-size:11px;color:var(--pf-ink-soft)">${l.status === 'active' ? 'Active' : 'Revoked'} ${l.accepted_at ? '· accepted' : '· invite pending'}</div>
+        <div style="font-size:11px;color:var(--pf-ink-soft)">${label}${linkedSince}</div>
       </div>
-      ${l.status === 'active' ? `<button class="pf-btn" style="padding:5px 10px;font-size:11.5px" onclick="revokeManager('${l.link_id}')">Revoke</button>` : ''}
+      ${action}
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 async function inviteManager() {
@@ -414,6 +425,19 @@ async function inviteManager() {
   if (!res.ok) { showManagerMsg(result.error || 'Could not send invite.', 'error'); return; }
   showManagerMsg(result.message, 'ok');
   document.getElementById('managerEmail').value = '';
+  await loadManagerLinks();
+  renderAccountPanel();
+}
+
+// Cancels a manager invite that hasn't been accepted yet. This is a plain
+// RLS-scoped delete rather than a serverless route -- manager_invites_creator_all
+// already grants the creator ALL on rows they own (see manager-invite.js's
+// insert), so there's no server-side logic to add here, unlike revoke
+// (which flips a status + timestamp on the resulting link row instead).
+async function cancelManagerInvite(inviteId) {
+  if (!confirm('Cancel this manager invite?')) return;
+  const { error } = await sb.from('manager_invites').delete().eq('id', inviteId);
+  if (error) { showManagerMsg('Could not cancel invite: ' + error.message, 'error'); return; }
   await loadManagerLinks();
   renderAccountPanel();
 }
@@ -438,18 +462,25 @@ async function loadManagerLinks() {
     .eq('creator_id', creator.id)
     .order('created_at', { ascending: false });
   managerLinks = (links || []).map(l => ({
-    link_id: l.id, status: l.status,
+    link_id: l.id, status: l.status, created_at: l.created_at,
     display_name: l.profiles?.display_name, email: l.profiles?.email,
     accepted_at: true,
   }));
 
+  // Was previously pushed with status: 'active', which is wrong -- an
+  // unaccepted invite has no manager_creator_links row at all yet, so it's
+  // not "active" in the same sense as a real link, and it made the Revoke
+  // button call /api/team?action=revoke-manager with a manager_invites.id
+  // that doesn't exist in manager_creator_links (404, "Manager link not
+  // found"). Tagged 'pending' so it renders and behaves distinctly (see
+  // renderManagerLinks/cancelManagerInvite).
   const { data: pendingInvites } = await sb.from('manager_invites')
     .select('id, email, accepted_at')
     .eq('creator_id', creator.id)
     .is('accepted_at', null)
     .gt('expires_at', new Date().toISOString());
   (pendingInvites || []).forEach(inv => {
-    managerLinks.push({ link_id: inv.id, status: 'active', email: inv.email, accepted_at: false });
+    managerLinks.push({ link_id: inv.id, status: 'pending', email: inv.email, accepted_at: false });
   });
 }
 
