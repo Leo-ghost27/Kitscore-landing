@@ -477,7 +477,7 @@ async function revokeManager(linkId) {
 async function loadManagerLinks() {
   const { data: links } = await sb.from('manager_creator_links')
     .select('id, status, created_at, profiles!manager_creator_links_manager_id_fkey(display_name, email)')
-    .eq('creator_id', creator.id)
+    .eq('creator_id', profile.id)
     .order('created_at', { ascending: false });
   managerLinks = (links || []).map(l => ({
     link_id: l.id, status: l.status, created_at: l.created_at,
@@ -494,7 +494,7 @@ async function loadManagerLinks() {
   // renderManagerLinks/cancelManagerInvite).
   const { data: pendingInvites } = await sb.from('manager_invites')
     .select('id, email, accepted_at')
-    .eq('creator_id', creator.id)
+    .eq('creator_id', profile.id)
     .is('accepted_at', null)
     .gt('expires_at', new Date().toISOString());
   (pendingInvites || []).forEach(inv => {
