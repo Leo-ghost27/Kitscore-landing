@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline — Kitscore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  :root{
+    --pf-blue:#2755F0; --pf-blue-deep:#0B2A6B; --pf-teal:#17B8A6;
+    --pf-ink:#0B1220; --pf-ink-soft:#5B6472; --pf-ink-faint:#9AA3B2; --pf-line:#E6E9F0;
+    --pf-radius:16px; --pf-shadow:0 1px 2px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.06);
+  }
+  body{background:var(--canvas);font-family:'Space Grotesk',sans-serif}
+  .app-main{max-width:none;padding:32px 32px 60px;width:100%}
+  .pipe-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+  .ptitle{font-family:'Fraunces',serif;font-size:24px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}
+  .psub{font-size:13.5px;color:var(--ink-soft);margin-top:4px;font-family:'Inter',sans-serif}
+  .pipe-add-btn{background:linear-gradient(135deg,var(--pf-blue),#3E63F5);color:#fff;border:none;padding:11px 20px;border-radius:10px;font-weight:600;font-size:12.5px;box-shadow:0 6px 18px rgba(39,85,240,.28);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
+  .pipe-summary{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px;font-family:'Inter',sans-serif}
+  .pipe-summary .v{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:var(--pf-ink)}
+  .pipe-summary .l{font-size:10.5px;color:var(--pf-ink-soft);text-transform:uppercase;letter-spacing:.03em}
+
+  .board{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px}
+  .col{flex:0 0 240px;display:flex;flex-direction:column;min-height:120px}
+  .col-head{display:flex;justify-content:space-between;align-items:center;padding:0 4px 10px;font-family:'Inter',sans-serif}
+  .col-title{font-size:11.5px;font-weight:700;color:var(--pf-ink-soft);text-transform:uppercase;letter-spacing:.03em}
+  .col-count{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--pf-ink-faint);background:#EEF0F5;border-radius:6px;padding:1px 6px}
+  .col-value{font-size:10.5px;color:var(--pf-ink-faint);padding:0 4px 8px;font-family:'Inter',sans-serif}
+  .col-drop{flex:1;background:rgba(230,233,240,.4);border-radius:12px;padding:8px;min-height:100px;transition:background .15s ease}
+  .col-drop.drag-over{background:rgba(39,85,240,.1);outline:2px dashed var(--pf-blue)}
+
+  .deal-card{background:#fff;border:1px solid var(--pf-line);border-radius:12px;box-shadow:var(--pf-shadow);padding:12px 13px;margin-bottom:8px;cursor:grab;font-family:'Inter',sans-serif}
+  .deal-card:active{cursor:grabbing}
+  .deal-card.dragging{opacity:.4}
+  .deal-brand{font-size:12.5px;font-weight:700;color:var(--pf-ink)}
+  .deal-creator{font-size:11px;color:var(--pf-ink-soft);margin-top:1px}
+  .deal-fee{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--pf-blue-deep);margin-top:6px;font-weight:600}
+  .deal-meta{display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:6px}
+  .deal-deadline{font-size:10.5px;color:var(--pf-ink-faint)}
+  .deal-deadline.overdue{color:#B42318;font-weight:700}
+  .deal-action{font-size:10.5px;color:var(--pf-ink-soft);margin-top:5px;line-height:1.4}
+
+  .empty-col{font-size:11px;color:var(--pf-ink-faint);text-align:center;padding:16px 4px;font-family:'Inter',sans-serif}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.4);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .modal{background:#fff;border-radius:16px;padding:26px;max-width:420px;width:100%;font-family:'Inter',sans-serif;max-height:90vh;overflow-y:auto}
+  .modal h3{font-family:'Fraunces',serif;font-size:17px;font-weight:600;margin-bottom:16px}
+  .mfield{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+  .mfield label{font-size:11.5px;font-weight:600;color:var(--pf-ink-soft)}
+  .mfield input,.mfield select,.mfield textarea{padding:9px 12px;border:1px solid var(--pf-line);border-radius:10px;font-size:13px;font-family:inherit}
+  .mfield textarea{resize:vertical;min-height:56px}
+  .modal-actions{display:flex;justify-content:space-between;align-items:center;margin-top:18px}
+  .modal-btn-cancel{background:none;border:none;color:var(--pf-ink-soft);font-size:12.5px;cursor:pointer;font-weight:600}
+  .modal-btn-save{background:linear-gradient(135deg,var(--pf-blue),#3E63F5);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:12.5px;cursor:pointer}
+  .modal-btn-delete{background:#FDECEC;color:#B42318;border:none;padding:10px 16px;border-radius:10px;font-weight:600;font-size:12.5px;cursor:pointer}
+  .msg{font-size:12px;margin-top:8px;padding:10px 12px;border-radius:8px}
+  .msg.error{background:#FDECEC;color:#B42318}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div id="sidebar-mount" class="sidebar"></div>
+  <main class="app-main">
+    <div id="content">
+      <div class="ptitle">Pipeline</div>
+      <div class="psub">Loading…</div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="nav.js?v=4"></script>
+<script>
+let profile, manager, creators = [], deals = [];
+let editingDeal = null;
+let dragDealId = null;
+
+const STAGES = [
+  ['lead', 'Lead'],
+  ['outreach_sent', 'Outreach Sent'],
+  ['negotiating', 'Negotiating'],
+  ['contract_pending', 'Contract Pending'],
+  ['in_production', 'In Production'],
+  ['awaiting_approval', 'Awaiting Approval'],
+  ['published', 'Published'],
+  ['invoiced', 'Invoiced'],
+  ['paid', 'Paid'],
+];
+
+async function load() {
+  profile = await requireRole('manager');
+  if (!profile) return;
+  renderSidebar('manager', 'pipeline');
+
+  const { data: mgrRow } = await sb.rpc('fn_ensure_manager_row');
+  manager = mgrRow || { plan: 'manager' };
+
+  await loadCreators();
+  await loadDeals();
+  render();
+}
+
+async function loadCreators() {
+  const { data } = await sb.from('manager_creator_links')
+    .select('creator_id, creators(profiles(display_name))')
+    .eq('manager_id', manager.id)
+    .eq('status', 'active');
+  creators = (data || []).map(l => ({ id: l.creator_id, name: l.creators?.profiles?.display_name || 'Creator' }));
+}
+
+async function loadDeals() {
+  const { data, error } = await sb.from('manager_deal_pipeline')
+    .select('*, creators(profiles(display_name))')
+    .eq('manager_id', manager.id)
+    .order('updated_at', { ascending: false });
+  deals = error ? [] : (data || []);
+}
+
+function fmtMoney(cents) {
+  if (cents == null) return '';
+  return '$' + (cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function fmtDeadline(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr + 'T00:00:00');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const overdue = d < today;
+  const label = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  return { label, overdue };
+}
+
+function render() {
+  if (!creators.length) {
+    document.getElementById('content').innerHTML = `
+      <div class="pipe-header"><div><div class="ptitle">Pipeline</div><div class="psub">Track deals from first outreach through payment.</div></div></div>
+      <div class="card" style="text-align:center;padding:50px 20px">
+        <div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;margin-bottom:6px">No creators linked yet</div>
+        <div style="font-size:12.5px;color:var(--pf-ink-soft)">Ask a creator to invite you from their Profile page before you can track deals for them.</div>
+      </div>`;
+    return;
+  }
+
+  const totalPipelineValue = deals.filter(d => !['paid'].includes(d.stage)).reduce((s, d) => s + (d.fee_cents || 0), 0);
+  const totalPaid = deals.filter(d => d.stage === 'paid').reduce((s, d) => s + (d.fee_cents || 0), 0);
+
+  document.getElementById('content').innerHTML = `
+    <div class="pipe-header">
+      <div>
+        <div class="ptitle">Pipeline</div>
+        <div class="psub">Track deals from first outreach through payment. Drag cards between stages.</div>
+      </div>
+      <button class="pipe-add-btn" onclick="openDealModal()">+ Add deal</button>
+    </div>
+    <div class="pipe-summary">
+      <div><div class="v">${deals.length}</div><div class="l">Total deals</div></div>
+      <div><div class="v">${fmtMoney(totalPipelineValue)}</div><div class="l">In pipeline</div></div>
+      <div><div class="v">${fmtMoney(totalPaid)}</div><div class="l">Paid</div></div>
+    </div>
+    <div class="board" id="board">
+      ${STAGES.map(([key, label]) => renderColumn(key, label)).join('')}
+    </div>
+  `;
+  attachDnd();
+}
+
+function renderColumn(stageKey, stageLabel) {
+  const colDeals = deals.filter(d => d.stage === stageKey);
+  const colValue = colDeals.reduce((s, d) => s + (d.fee_cents || 0), 0);
+  return `
+    <div class="col">
+      <div class="col-head">
+        <div class="col-title">${stageLabel}</div>
+        <div class="col-count">${colDeals.length}</div>
+      </div>
+      ${colValue ? `<div class="col-value">${fmtMoney(colValue)}</div>` : ''}
+      <div class="col-drop" data-stage="${stageKey}">
+        ${!colDeals.length ? '<div class="empty-col">No deals</div>' : colDeals.map(d => renderCard(d)).join('')}
+      </div>
+    </div>`;
+}
+
+function renderCard(d) {
+  const creatorName = d.creators?.profiles?.display_name || 'Creator';
+  const dl = fmtDeadline(d.deadline);
+  return `
+    <div class="deal-card" draggable="true" data-deal-id="${d.id}" onclick="openDealModal('${d.id}')">
+      <div class="deal-brand">${escapeHtml(d.brand_name)}</div>
+      <div class="deal-creator">${escapeHtml(creatorName)}</div>
+      <div class="deal-meta">
+        ${d.fee_cents != null ? `<div class="deal-fee">${fmtMoney(d.fee_cents)}</div>` : '<div></div>'}
+        ${dl ? `<div class="deal-deadline ${dl.overdue ? 'overdue' : ''}">${dl.label}${dl.overdue ? ' (overdue)' : ''}</div>` : ''}
+      </div>
+      ${d.next_action ? `<div class="deal-action">${escapeHtml(d.next_action)}</div>` : ''}
+    </div>`;
+}
+
+function attachDnd() {
+  document.querySelectorAll('.deal-card').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      dragDealId = card.dataset.dealId;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => card.classList.remove('dragging'));
+  });
+  document.querySelectorAll('.col-drop').forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); });
+    col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+    col.addEventListener('drop', async e => {
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      const newStage = col.dataset.stage;
+      if (!dragDealId) return;
+      const deal = deals.find(d => d.id === dragDealId);
+      if (!deal || deal.stage === newStage) return;
+      deal.stage = newStage; // optimistic
+      render();
+      const { error } = await sb.from('manager_deal_pipeline').update({ stage: newStage }).eq('id', dragDealId);
+      if (error) { await loadDeals(); render(); alert('Could not move deal: ' + error.message); }
+      dragDealId = null;
+    });
+  });
+}
+
+function openDealModal(dealId) {
+  editingDeal = dealId ? deals.find(d => d.id === dealId) : null;
+  const d = editingDeal || {};
+  document.body.insertAdjacentHTML('beforeend', `
+    <div class="modal-backdrop" id="dealModalBackdrop" onclick="if(event.target===this) closeDealModal()">
+      <div class="modal">
+        <h3>${editingDeal ? 'Edit deal' : 'Add deal'}</h3>
+        <div class="mfield"><label>Creator</label>
+          <select id="mCreator" ${editingDeal ? 'disabled' : ''}>
+            ${creators.map(c => `<option value="${c.id}" ${d.creator_id === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="mfield"><label>Brand / sponsor name</label><input id="mBrand" type="text" value="${escapeHtml(d.brand_name || '')}" placeholder="e.g. Glow Skincare Co."></div>
+        <div class="mfield"><label>Stage</label>
+          <select id="mStage">${STAGES.map(([k,l]) => `<option value="${k}" ${(d.stage || 'lead') === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
+        </div>
+        <div class="mfield"><label>Fee (£)</label><input id="mFee" type="number" min="0" step="1" value="${d.fee_cents != null ? (d.fee_cents/100) : ''}" placeholder="e.g. 1500"></div>
+        <div class="mfield"><label>Deadline</label><input id="mDeadline" type="date" value="${d.deadline || ''}"></div>
+        <div class="mfield"><label>Next action</label><input id="mNextAction" type="text" value="${escapeHtml(d.next_action || '')}" placeholder="e.g. Follow up on rate counter"></div>
+        <div class="mfield"><label>Contact name</label><input id="mContactName" type="text" value="${escapeHtml(d.contact_name || '')}"></div>
+        <div class="mfield"><label>Contact email</label><input id="mContactEmail" type="email" value="${escapeHtml(d.contact_email || '')}"></div>
+        <div class="mfield"><label>Notes</label><textarea id="mNotes">${escapeHtml(d.notes || '')}</textarea></div>
+        <div id="dealModalMsg"></div>
+        <div class="modal-actions">
+          <div>
+            <button class="modal-btn-cancel" onclick="closeDealModal()">Cancel</button>
+            ${editingDeal ? `<button class="modal-btn-delete" style="margin-left:10px" onclick="deleteDeal('${d.id}')">Delete</button>` : ''}
+          </div>
+          <button class="modal-btn-save" onclick="saveDeal()">${editingDeal ? 'Save' : 'Add deal'}</button>
+        </div>
+      </div>
+    </div>`);
+}
+
+function closeDealModal() {
+  const el = document.getElementById('dealModalBackdrop');
+  if (el) el.remove();
+  editingDeal = null;
+}
+
+async function saveDeal() {
+  const brand = document.getElementById('mBrand').value.trim();
+  if (!brand) { showDealModalMsg('Brand / sponsor name is required.'); return; }
+  const feeVal = document.getElementById('mFee').value;
+  const payload = {
+    brand_name: brand,
+    stage: document.getElementById('mStage').value,
+    fee_cents: feeVal ? Math.round(Number(feeVal) * 100) : null,
+    deadline: document.getElementById('mDeadline').value || null,
+    next_action: document.getElementById('mNextAction').value.trim() || null,
+    contact_name: document.getElementById('mContactName').value.trim() || null,
+    contact_email: document.getElementById('mContactEmail').value.trim() || null,
+    notes: document.getElementById('mNotes').value.trim() || null,
+  };
+
+  let error;
+  if (editingDeal) {
+    ({ error } = await sb.from('manager_deal_pipeline').update(payload).eq('id', editingDeal.id));
+  } else {
+    payload.creator_id = document.getElementById('mCreator').value;
+    payload.manager_id = manager.id;
+    ({ error } = await sb.from('manager_deal_pipeline').insert(payload));
+  }
+  if (error) { showDealModalMsg(error.message); return; }
+  closeDealModal();
+  await loadDeals();
+  render();
+}
+
+async function deleteDeal(id) {
+  if (!confirm('Delete this deal from the pipeline?')) return;
+  const { error } = await sb.from('manager_deal_pipeline').delete().eq('id', id);
+  if (error) { showDealModalMsg(error.message); return; }
+  closeDealModal();
+  await loadDeals();
+  render();
+}
+
+function showDealModalMsg(text) {
+  const el = document.getElementById('dealModalMsg');
+  if (el) el.innerHTML = `<div class="msg error">${escapeHtml(text)}</div>`;
+}
+
+load();
+</script>
+</body>
+</html>
