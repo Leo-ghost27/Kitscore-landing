@@ -7,34 +7,130 @@
 <title>Agency — Kitscore</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="shared.css?v=2">
 <style>
-  body{background:var(--canvas)}
+  :root{
+    --pf-blue:#2755F0; --pf-blue-deep:#0B2A6B; --pf-teal:#17B8A6;
+    --pf-ink:#0B1220; --pf-ink-soft:#5B6472; --pf-ink-faint:#9AA3B2; --pf-line:#E6E9F0;
+    --pf-radius:16px; --pf-shadow:0 1px 2px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.06);
+  }
+  body{background:var(--canvas);font-family:'Space Grotesk',sans-serif}
   .app-main{max-width:1180px;padding:40px 48px 80px}
-  .ptitle{font-size:24px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
-  .psub{font-size:14px;color:var(--ink-soft);margin-bottom:24px}
-  .card{background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,21,31,.03);padding:26px 28px;margin-bottom:20px}
-  .msg{font-size:12px;margin-top:8px;padding:10px 12px;border-radius:0}
+  .ptitle{font-family:'Fraunces',serif;font-size:24px;font-weight:600;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
+  .psub{font-size:13.5px;color:var(--ink-soft);margin-bottom:24px;font-family:'Inter',sans-serif}
+  .msg{font-size:12px;margin-top:8px;padding:10px 12px;border-radius:8px;font-family:'Inter',sans-serif}
   .msg.error{background:#FDECEC;color:#B42318}
-  .msg.ok{background:var(--green-soft,#E9F7EE);color:#137C52}
-  .agency-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:24px}
-  .agency-tab{padding:12px 18px;font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent}
-  .agency-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
-  .agency-lock-badge{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8A6D00;background:#FFF3CD;border:1px solid #F0DE9E;border-radius:3px;padding:1px 5px;margin-left:5px;vertical-align:2px}
-  .roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-  .roster-card{background:#fff;border:1px solid var(--line);padding:20px}
+  .msg.ok{background:#E9F7EE;color:#137C52}
+
+  /* Hero */
+  .hero{position:relative;background:linear-gradient(135deg,#0B2A6B 0%,#142B63 55%,#0E3350 100%);border-radius:20px;padding:32px 36px;margin-bottom:22px;color:#fff;overflow:hidden}
+  .hero-bg{position:absolute;inset:0;opacity:.08;pointer-events:none}
+  .hero-top{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;margin-bottom:26px}
+  .hero-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9DB4F0;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .hero-eyebrow::before{content:"";width:6px;height:6px;background:var(--pf-teal);border-radius:50%}
+  .hero-title{font-family:'Fraunces',serif;font-size:28px;font-weight:600;letter-spacing:-.01em;margin-bottom:8px}
+  .hero-sub{font-size:13.5px;color:#C7D2E8;max-width:440px;line-height:1.6;font-family:'Inter',sans-serif}
+  .hero-export{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:12.5px;font-weight:600;padding:9px 16px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;display:flex;align-items:center;gap:7px}
+  .hero-export:hover{background:rgba(255,255,255,.16)}
+
+  .hero-score-row{position:relative;display:flex;align-items:center;gap:28px;flex-wrap:wrap;margin-bottom:24px}
+  .hero-ring-wrap{position:relative;width:112px;height:112px;flex-shrink:0}
+  .hero-ring-wrap svg{width:112px;height:112px;transform:rotate(-90deg)}
+  .hero-ring-track{fill:none;stroke:rgba(255,255,255,.18);stroke-width:9}
+  .hero-ring-fill{fill:none;stroke:var(--pf-teal);stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)}
+  .hero-ring-num{position:absolute;top:50%;left:50%;transform:translate(-50%,calc(-50% - 10px));font-family:'Fraunces',serif;font-size:28px;font-weight:600;color:#fff}
+  .hero-ring-label{position:absolute;top:50%;left:50%;transform:translate(-50%,calc(-50% + 16px));font-size:8.5px;color:#9DB4E8;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+  .hero-badges{display:flex;flex-direction:column;gap:12px;font-family:'Inter',sans-serif}
+  .badge-row{display:flex;flex-wrap:wrap;gap:8px}
+  .badge-pill{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:7px 14px;border-radius:20px}
+  .pill-roster{background:rgba(95,216,184,.14);border:1px solid rgba(95,216,184,.3);color:#B8ECDC}
+  .pill-plan{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;text-transform:uppercase;letter-spacing:.03em}
+  .hero-formula{font-size:12px;color:#9DB4E8;max-width:440px;line-height:1.55}
+  .hero-upgrade{font-size:11.5px;color:#9DB4F0;text-decoration:none;font-weight:600;margin-top:2px;display:inline-block}
+
+  .hero-stats{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .hstat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px 16px}
+  .hstat .v{font-family:'Fraunces',serif;font-size:22px;font-weight:600}
+  .hstat .l{font-size:11px;color:#9DB4E8;margin-top:2px}
+  @media(max-width:720px){.hero-stats{grid-template-columns:repeat(2,1fr)}}
+
+  /* Tabs */
+  .mgr-tabs{display:grid;grid-template-columns:repeat(var(--tab-count,7),1fr);gap:10px;margin-bottom:20px}
+  .mgr-tab{background:#fff;border:1px solid var(--pf-line);border-radius:14px;box-shadow:var(--pf-shadow);padding:14px 8px;text-align:center;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;font-family:'Inter',sans-serif}
+  .mgr-tab:hover{transform:translateY(-2px)}
+  .mgr-tab-icon{width:30px;height:30px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;background:#F1F4FA;color:var(--pf-ink-soft);border-radius:10px}
+  .mgr-tab-icon svg{width:15px;height:15px}
+  .mgr-tab-label{font-size:11.5px;font-weight:600;color:var(--pf-ink)}
+  .mgr-tab.active{background:linear-gradient(135deg,#F0F4FF,#EAF9F6);border-color:var(--pf-blue)}
+  .mgr-tab.active .mgr-tab-icon{background:#fff;color:var(--pf-blue)}
+  .mgr-tab.active .mgr-tab-label{color:var(--pf-blue-deep)}
+  .mgr-tab-lock{display:block;margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:#8A6D00;background:#FFF3CD;border:1px solid #F0DE9E;border-radius:6px;padding:1px 5px}
+  @media(max-width:900px){.mgr-tabs{grid-template-columns:repeat(4,1fr)}}
+  @media(max-width:560px){.mgr-tabs{grid-template-columns:repeat(3,1fr)}}
+
+  /* Panels / cards */
+  .pf-card{background:#fff;border:1px solid var(--pf-line);border-radius:var(--pf-radius);padding:24px 26px;box-shadow:var(--pf-shadow);margin-bottom:16px;opacity:0;animation:panelIn .25s ease forwards}
+  @keyframes panelIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @media (prefers-reduced-motion: reduce){.pf-card{animation:none;opacity:1}}
+  .pf-card h3{font-family:'Fraunces',serif;font-size:16px;font-weight:600;margin-bottom:4px}
+  .pf-card .desc{color:var(--pf-ink-soft);font-size:12.5px;line-height:1.6;margin-bottom:16px;font-family:'Inter',sans-serif}
+  .pf-btn{border:1px solid var(--pf-line);background:#fff;color:var(--pf-ink);padding:9px 16px;border-radius:10px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-family:'Inter',sans-serif}
+  .pf-btn:hover{border-color:#C9D3E6;box-shadow:0 4px 12px rgba(11,18,32,.06)}
+  .pf-btn-save{background:linear-gradient(135deg,var(--pf-blue),#3E63F5);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:12.5px;box-shadow:0 6px 18px rgba(39,85,240,.28);cursor:pointer;font-family:'Inter',sans-serif}
+  .pf-btn-save:disabled{opacity:.6}
+  .pf-field{display:flex;flex-direction:column;gap:5px;font-family:'Inter',sans-serif}
+  .pf-field label{font-size:11.5px;font-weight:600;color:var(--pf-ink-soft)}
+  .pf-field input{padding:9px 12px;border:1px solid var(--pf-line);border-radius:10px;font-size:13px;font-family:inherit}
+
+  /* Roster grid */
+  .roster-toolbar{display:flex;justify-content:flex-end;margin-bottom:16px}
+  .roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .roster-card{background:#fff;border:1px solid var(--pf-line);border-radius:16px;padding:20px;box-shadow:var(--pf-shadow);transition:transform .15s ease,box-shadow .15s ease;font-family:'Inter',sans-serif}
+  .roster-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px -8px rgba(16,21,31,.14)}
   .roster-card-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-  .roster-avatar{width:38px;height:38px;border-radius:50%;background:var(--blue-soft,#EEF2FF);color:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
-  .roster-name{font-size:14.5px;font-weight:600;color:var(--ink)}
-  .roster-niche{font-size:12px;color:var(--ink-soft)}
-  .roster-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:12px;border-top:1px solid var(--line)}
-  .roster-card-link{display:block;text-align:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;font-weight:600;color:var(--blue);text-decoration:none}
+  .roster-avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--pf-blue),#3E63F5);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;font-family:'Fraunces',serif}
+  .roster-name{font-size:14.5px;font-weight:600}
+  .roster-niche{font-size:12px;color:var(--pf-ink-soft)}
+  .roster-score-chip{font-size:10.5px;font-weight:700;color:var(--pf-blue-deep);background:#EEF2FF;border-radius:8px;padding:1px 7px;margin-left:4px;font-family:'IBM Plex Mono',monospace}
+  .roster-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:14px;border-top:1px solid var(--pf-line)}
+  .roster-stat-num{font-family:'Fraunces',serif;font-size:19px;font-weight:600}
+  .roster-stat-label{font-size:10px;color:var(--pf-ink-faint);text-transform:uppercase;letter-spacing:.03em}
+  .roster-card-link{display:block;text-align:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--pf-line);font-size:12px;font-weight:600;color:var(--pf-blue);text-decoration:none}
   .roster-card-link:hover{text-decoration:underline}
-  .roster-card-link-disabled{color:var(--ink-faint,#9AA1AC);cursor:default}
-  .roster-stat-num{font-family:var(--font-mono);font-size:18px;font-weight:600;color:var(--ink)}
-  .roster-stat-label{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em}
-  .empty-state{text-align:center;padding:60px 20px;color:var(--ink-soft)}
+  .roster-card-link-disabled{color:var(--pf-ink-faint);cursor:default}
+  .roster-card-link-disabled:hover{text-decoration:none}
+
+  /* Trust score tab */
+  .ts-big{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .ts-big .n{font-family:'Fraunces',serif;font-size:44px;font-weight:700;color:var(--pf-blue)}
+  .ts-big .of{font-size:12.5px;color:var(--pf-ink-soft);font-family:'Inter',sans-serif}
+  .ts-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding-top:18px;border-top:1px solid var(--pf-line);margin-top:18px}
+  .ts-grid .v{font-family:'Fraunces',serif;font-size:19px;font-weight:600}
+  .ts-grid .l{font-size:10.5px;color:var(--pf-ink-faint);text-transform:uppercase;font-family:'Inter',sans-serif}
+  .ts-formula{font-size:11px;color:var(--pf-ink-faint);margin-top:18px;padding-top:14px;border-top:1px solid var(--pf-line);font-family:'Inter',sans-serif}
+  @media(max-width:560px){.ts-grid{grid-template-columns:repeat(2,1fr)}}
+
+  .stat-row{display:flex;gap:24px;margin-bottom:20px;flex-wrap:wrap;font-family:'Inter',sans-serif}
+  .stat-row .v{font-family:'Fraunces',serif;font-size:22px;font-weight:600}
+  .stat-row .l{font-size:11px;color:var(--pf-ink-soft);text-transform:uppercase}
+
+  .empty-state{text-align:center;padding:50px 20px;color:var(--pf-ink-soft);font-family:'Inter',sans-serif}
   .empty-state svg{opacity:.3;margin-bottom:12px}
+  .empty-state .t{font-size:14px;font-weight:600;color:var(--pf-ink);margin-bottom:6px;font-family:'Fraunces',serif}
+  .empty-state .s{font-size:12.5px;max-width:340px;margin:0 auto}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;font-family:'Inter',sans-serif}
+  th{text-align:left;padding:8px 6px;font-weight:600;color:var(--pf-ink-soft);border-bottom:1px solid var(--pf-line)}
+  td{padding:8px 6px;border-bottom:1px solid var(--pf-line)}
+
+  .staff-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-top:1px solid var(--pf-line);font-family:'Inter',sans-serif}
+  .staff-invite-row{display:flex;gap:8px;margin-top:16px}
+  .staff-invite-row input{flex:1;padding:10px 12px;border:1px solid var(--pf-line);border-radius:10px;font-size:12.5px;font-family:'Inter',sans-serif}
+
+  .lock-card{background:linear-gradient(135deg,#FFFBF0,#FAEEDA);border:1px solid #E8CE8F}
+  .lock-card h3{color:#8A5B0A}
+  .lock-card .desc{color:#8A6D00}
 </style>
 </head>
 <body>
@@ -54,6 +150,19 @@
 <script>
 let profile, manager, roster = [], staff = [], ledger = [], performance = [], benchmark = [], trustScore = null;
 let activeTab = 'roster';
+
+const MGR_ICONS = {
+  roster:'<circle cx="8.5" cy="8" r="3.2"/><circle cx="16.5" cy="8.5" r="2.6"/><path d="M2.3 20c0-3.4 2.8-6 6.2-6s6.2 2.6 6.2 6"/><path d="M14.8 14.2c3 .3 5.2 2.7 5.2 5.8"/>',
+  trust:'<path d="M12 2.5l7.5 3.5v5.4c0 4.6-3.2 7.5-7.5 9.1-4.3-1.6-7.5-4.5-7.5-9.1V6z"/><path d="M8.7 12l2.4 2.4 4.2-4.6"/>',
+  performance:'<path d="M4 20V13"/><path d="M10 20V7"/><path d="M16 20v-9"/><path d="M22 20H2"/>',
+  ledger:'<rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="17" cy="15" r="1.5"/>',
+  benchmark:'<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 9 9h-9z"/>',
+  branding:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>',
+  staff:'<circle cx="9" cy="8" r="3.6"/><path d="M2.4 20.5c0-3.6 3-6.1 6.6-6.1s6.6 2.5 6.6 6.1"/><path d="M18.5 8.2h4M20.5 6.2v4"/>',
+};
+function mgrIcon(name){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${MGR_ICONS[name]||''}</svg>`;
+}
 
 const AGENCY_TABS = [
   ['roster', 'Roster'],
@@ -150,18 +259,67 @@ async function loadRoster() {
 }
 
 function render() {
+  const planLabel = (manager.plan || 'manager').toUpperCase();
+  const isAgency = manager.plan === 'agency';
+  const rosterCount = roster.length;
+  const s = trustScore;
+  const score = s ? Math.round(s.score) : 0;
+  const C = 263.9;
+  const offset = s ? C - (C * Math.min(score, 100) / 100) : C;
+
   document.getElementById('content').innerHTML = `
-    <div style="display:flex;align-items:flex-start;justify-content:space-between">
-      <div>
-        <div class="ptitle">Agency</div>
-        <div class="psub">Your linked creators, in one place.</div>
+    <div class="hero">
+      <svg class="hero-bg" width="100%" height="100%" preserveAspectRatio="none"><circle cx="92%" cy="8%" r="120" fill="#3E63F5"></circle><circle cx="10%" cy="100%" r="90" fill="#17B8A6"></circle></svg>
+      <div class="hero-top">
+        <div>
+          <div class="hero-eyebrow">Manager account</div>
+          <div class="hero-title">${escapeHtml(manager.agency_name || 'Agency')}</div>
+          <div class="hero-sub">Your linked creators, in one place — real verified performance, not self-reported claims.</div>
+        </div>
+        <button class="hero-export" onclick="exportAuditTrail()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="M6 11l6 6 6-6"/><path d="M4 21h16"/></svg>
+          Export audit trail
+        </button>
       </div>
-      <button class="pf-btn" style="padding:8px 14px;font-size:12.5px" onclick="exportAuditTrail()">Export audit trail</button>
+
+      <div class="hero-score-row">
+        <div class="hero-ring-wrap">
+          <svg viewBox="0 0 100 100">
+            <circle class="hero-ring-track" cx="50" cy="50" r="42"/>
+            <circle class="hero-ring-fill" cx="50" cy="50" r="42" stroke-dasharray="${C}" stroke-dashoffset="${offset}"/>
+          </svg>
+          <div class="hero-ring-num">${s ? score : '—'}</div>
+          <div class="hero-ring-label">Manager score</div>
+        </div>
+        <div class="hero-badges">
+          <div class="badge-row">
+            <div class="badge-pill pill-plan">${escapeHtml(planLabel)} PLAN</div>
+            <div class="badge-pill pill-roster">
+              ${mgrIcon('roster')}
+              ${rosterCount} creator${rosterCount === 1 ? '' : 's'} linked
+            </div>
+          </div>
+          <div class="hero-formula">Weighted from your roster's own verified trust scores, real verified deal volume, and how long you've been linked — no self-reported claims factored in, same standard the rest of Kitscore runs on.</div>
+          ${!isAgency ? `<a href="profile-manager.html" class="hero-upgrade">Upgrade to Agency for white-label branding &amp; rate benchmarking →</a>` : ''}
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hstat"><div class="v">${rosterCount}</div><div class="l">Roster size</div></div>
+        <div class="hstat"><div class="v">${s && s.avg_creator_trust_score != null ? s.avg_creator_trust_score : '—'}</div><div class="l">Avg. creator score</div></div>
+        <div class="hstat"><div class="v">${s ? s.verified_deals : 0}</div><div class="l">Verified deals</div></div>
+        <div class="hstat"><div class="v">${s ? s.tenure_months + 'mo' : '—'}</div><div class="l">Tenure</div></div>
+      </div>
     </div>
-    <div class="agency-tabs">
+
+    <div class="mgr-tabs" style="--tab-count:${AGENCY_TABS.length}">
       ${AGENCY_TABS.map(([key, label]) => {
-        const locked = AGENCY_ONLY_TABS.has(key) && manager.plan !== 'agency';
-        return `<div class="agency-tab ${activeTab === key ? 'active' : ''}" onclick="switchTab('${key}')">${label}${locked ? ' <span class="agency-lock-badge" title="Agency plan required">Agency</span>' : ''}</div>`;
+        const locked = AGENCY_ONLY_TABS.has(key) && !isAgency;
+        return `<div class="mgr-tab ${activeTab === key ? 'active' : ''}" onclick="switchTab('${key}')">
+          <div class="mgr-tab-icon">${mgrIcon(key)}</div>
+          <div class="mgr-tab-label">${label}</div>
+          ${locked ? '<span class="mgr-tab-lock">Agency</span>' : ''}
+        </div>`;
       }).join('')}
     </div>
     <div id="tab-panel">${renderTabPanel(activeTab)}</div>
@@ -215,18 +373,18 @@ function renderTabPanel(key) {
 function renderRosterTab() {
   if (!roster.length) {
     return `
-      <div class="card">
+      <div class="pf-card">
         <div class="empty-state">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3.6"/><path d="M2.4 20.5c0-3.6 3-6.1 6.6-6.1s6.6 2.5 6.6 6.1"/></svg>
-          <div style="font-size:14px;font-weight:600;color:var(--ink);margin-bottom:6px">No creators linked yet</div>
-          <div style="font-size:12.5px;max-width:340px;margin:0 auto">Ask a creator to invite you from their Profile page — the Manager section under Account settings.</div>
+          <div class="t">No creators linked yet</div>
+          <div class="s">Ask a creator to invite you from their Profile page — the Manager section under Account settings.</div>
         </div>
       </div>`;
   }
 
   return `
-    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
-      <button class="pf-btn-save" id="scanBtn" onclick="scanRosterExclusivity()" style="width:auto;padding:9px 16px">Scan roster for exclusivity conflicts</button>
+    <div class="roster-toolbar">
+      <button class="pf-btn-save" id="scanBtn" onclick="scanRosterExclusivity()">Scan roster for exclusivity conflicts</button>
     </div>
     <div id="exclusivityResults"></div>
     <div class="roster-grid">
@@ -242,7 +400,7 @@ function renderRosterTab() {
             <div class="roster-avatar">${initial}</div>
             <div>
               <div class="roster-name">${escapeHtml(name)}</div>
-              <div class="roster-niche">${escapeHtml(r.creators?.niche || 'No niche set')}${score != null ? ` · Trust Score ${Math.round(score)}` : ''}</div>
+              <div class="roster-niche">${escapeHtml(r.creators?.niche || 'No niche set')}${score != null ? `<span class="roster-score-chip">${Math.round(score)}</span>` : ''}</div>
             </div>
           </div>
           <div class="roster-stats">
@@ -280,12 +438,12 @@ async function scanRosterExclusivity() {
     }
 
     resultsEl.innerHTML = `
-      <div class="card" style="border-color:#F0B429">
-        <div style="font-weight:600;font-size:13.5px;margin-bottom:10px">Possible exclusivity conflicts found — not legal advice, review the actual contracts</div>
+      <div class="pf-card" style="border-color:#F0B429;animation:none;opacity:1">
+        <div style="font-weight:600;font-size:13.5px;margin-bottom:10px;font-family:'Inter',sans-serif">Possible exclusivity conflicts found — not legal advice, review the actual contracts</div>
         ${result.results.map(r => `
-          <div style="padding:10px 0;border-top:1px solid var(--line)">
+          <div style="padding:10px 0;border-top:1px solid var(--pf-line);font-family:'Inter',sans-serif">
             <div style="font-weight:600;font-size:13px">${escapeHtml(r.creatorName)}</div>
-            ${r.flags.map(f => `<div style="font-size:12px;color:var(--ink-soft);margin-top:4px">${f.rationale ? escapeHtml(f.rationale) : 'Flagged from a previous scan — open this contract to review.'}</div>`).join('')}
+            ${r.flags.map(f => `<div style="font-size:12px;color:var(--pf-ink-soft);margin-top:4px">${f.rationale ? escapeHtml(f.rationale) : 'Flagged from a previous scan — open this contract to review.'}</div>`).join('')}
           </div>
         `).join('')}
       </div>`;
@@ -304,34 +462,34 @@ function renderLedgerTab() {
   const heldCents = ledger.filter(l => l.escrow_status === 'held' || l.escrow_status === 'processing').reduce((s, l) => s + (l.escrow_amount_cents || 0), 0);
 
   return `
-    <div class="card">
-      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px">Real escrow payout data across your roster — not a commission split. There's no commission-rate field in Kitscore yet, so this shows what each creator was paid, not your cut of it.</div>
-      <div style="display:flex;gap:24px;margin-bottom:20px">
-        <div><div style="font-family:var(--font-mono);font-size:20px;font-weight:600">${fmtMoney(releasedCents)}</div><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase">Released</div></div>
-        <div><div style="font-family:var(--font-mono);font-size:20px;font-weight:600">${fmtMoney(heldCents)}</div><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase">Held in escrow</div></div>
+    <div class="pf-card">
+      <div class="desc">Real escrow payout data across your roster — not a commission split. There's no commission-rate field in Kitscore yet, so this shows what each creator was paid, not your cut of it.</div>
+      <div class="stat-row">
+        <div><div class="v">${fmtMoney(releasedCents)}</div><div class="l">Released</div></div>
+        <div><div class="v">${fmtMoney(heldCents)}</div><div class="l">Held in escrow</div></div>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
-        <button class="pf-btn" style="padding:6px 12px;font-size:11.5px" onclick="exportLedger()">Export CSV</button>
+        <button class="pf-btn" onclick="exportLedger()">Export CSV</button>
       </div>
-      ${!ledger.length ? '<div style="font-size:12.5px;color:var(--ink-soft)">No contracts on record yet.</div>' : `
-      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
-        <thead><tr style="text-align:left;border-bottom:1px solid var(--line)">
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Creator</th>
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Sponsor</th>
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Contract</th>
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Amount</th>
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Status</th>
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Date</th>
+      ${!ledger.length ? '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No contracts on record yet.</div>' : `
+      <table>
+        <thead><tr>
+          <th>Creator</th>
+          <th>Sponsor</th>
+          <th>Contract</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Date</th>
         </tr></thead>
         <tbody>
           ${ledger.map(l => `
-            <tr style="border-bottom:1px solid var(--line)">
-              <td style="padding:8px 6px">${escapeHtml(l.creator_name || '—')}</td>
-              <td style="padding:8px 6px">${escapeHtml(l.sponsor_name || '—')}</td>
-              <td style="padding:8px 6px">${escapeHtml(l.title || 'Untitled')}</td>
-              <td style="padding:8px 6px">${fmtMoney(l.escrow_amount_cents)}</td>
-              <td style="padding:8px 6px;text-transform:capitalize">${escapeHtml(l.escrow_status || '')}</td>
-              <td style="padding:8px 6px;color:var(--ink-soft)">${l.released_at ? new Date(l.released_at).toLocaleDateString() : new Date(l.created_at).toLocaleDateString()}</td>
+            <tr>
+              <td>${escapeHtml(l.creator_name || '—')}</td>
+              <td>${escapeHtml(l.sponsor_name || '—')}</td>
+              <td>${escapeHtml(l.title || 'Untitled')}</td>
+              <td>${fmtMoney(l.escrow_amount_cents)}</td>
+              <td style="text-transform:capitalize">${escapeHtml(l.escrow_status || '')}</td>
+              <td style="color:var(--pf-ink-soft)">${l.released_at ? new Date(l.released_at).toLocaleDateString() : new Date(l.created_at).toLocaleDateString()}</td>
             </tr>`).join('')}
         </tbody>
       </table>`}
@@ -364,27 +522,24 @@ function exportLedger() {
 function renderTrustScoreTab() {
   if (!trustScore || trustScore.roster_size === 0) {
     return `
-      <div class="card">
-        <div style="font-size:14px;font-weight:600;margin-bottom:6px">Manager Trust Score</div>
-        <div style="font-size:12.5px;color:var(--ink-soft)">Link at least one creator to start building your score.</div>
+      <div class="pf-card">
+        <h3>Manager Trust Score</h3>
+        <div class="desc" style="margin-bottom:0">Link at least one creator to start building your score.</div>
       </div>`;
   }
 
   const s = trustScore;
   return `
-    <div class="card">
-      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px">
-        <div style="font-family:var(--font-mono);font-size:40px;font-weight:700;color:var(--blue)">${s.score}</div>
-        <div style="font-size:12.5px;color:var(--ink-soft)">out of 100</div>
+    <div class="pf-card">
+      <div class="ts-big"><div class="n">${s.score}</div><div class="of">out of 100</div></div>
+      <div class="desc" style="margin-bottom:0">Weighted from your roster's own verified trust scores, real verified deal volume, and how long you've been linked — no self-reported claims factored in, same standard the rest of Kitscore runs on.</div>
+      <div class="ts-grid">
+        <div><div class="v">${s.roster_size}</div><div class="l">Roster size</div></div>
+        <div><div class="v">${s.avg_creator_trust_score ?? '—'}</div><div class="l">Avg. creator score</div></div>
+        <div><div class="v">${s.verified_deals}</div><div class="l">Verified deals</div></div>
+        <div><div class="v">${s.tenure_months}mo</div><div class="l">Tenure</div></div>
       </div>
-      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:20px">Weighted from your roster's own verified trust scores, real verified deal volume, and how long you've been linked — no self-reported claims factored in, same standard the rest of Kitscore runs on.</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding-top:16px;border-top:1px solid var(--line)">
-        <div><div style="font-family:var(--font-mono);font-size:17px;font-weight:600">${s.roster_size}</div><div style="font-size:10.5px;color:var(--ink-soft);text-transform:uppercase">Roster size</div></div>
-        <div><div style="font-family:var(--font-mono);font-size:17px;font-weight:600">${s.avg_creator_trust_score ?? '—'}</div><div style="font-size:10.5px;color:var(--ink-soft);text-transform:uppercase">Avg. creator score</div></div>
-        <div><div style="font-family:var(--font-mono);font-size:17px;font-weight:600">${s.verified_deals}</div><div style="font-size:10.5px;color:var(--ink-soft);text-transform:uppercase">Verified deals</div></div>
-        <div><div style="font-family:var(--font-mono);font-size:17px;font-weight:600">${s.tenure_months}mo</div><div style="font-size:10.5px;color:var(--ink-soft);text-transform:uppercase">Tenure</div></div>
-      </div>
-      <div style="font-size:11px;color:var(--ink-soft);margin-top:16px;padding-top:12px;border-top:1px solid var(--line)">Formula: 50% average creator trust score + 35% verified deal volume (capped) + 15% tenure (capped at 12 months).</div>
+      <div class="ts-formula">Formula: 50% average creator trust score + 35% verified deal volume (capped) + 15% tenure (capped at 12 months).</div>
     </div>`;
 }
 
@@ -394,30 +549,30 @@ function renderPerformanceTab() {
   const totalInProgress = performance.reduce((s, p) => s + Number(p.in_progress_value_cents || 0), 0);
 
   return `
-    <div class="card">
-      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px">What you've actually delivered for your roster, backed by verified deals and real escrow data — the same proof-over-claims standard the rest of Kitscore runs on.</div>
-      <div style="display:flex;gap:24px;margin-bottom:20px">
-        <div><div style="font-family:var(--font-mono);font-size:20px;font-weight:600">${totalVerified}</div><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase">Verified deals</div></div>
-        <div><div style="font-family:var(--font-mono);font-size:20px;font-weight:600">${fmtMoney(totalEarned)}</div><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase">Earned by roster</div></div>
-        <div><div style="font-family:var(--font-mono);font-size:20px;font-weight:600">${fmtMoney(totalInProgress)}</div><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase">In progress</div></div>
+    <div class="pf-card">
+      <div class="desc">What you've actually delivered for your roster, backed by verified deals and real escrow data — the same proof-over-claims standard the rest of Kitscore runs on.</div>
+      <div class="stat-row">
+        <div><div class="v">${totalVerified}</div><div class="l">Verified deals</div></div>
+        <div><div class="v">${fmtMoney(totalEarned)}</div><div class="l">Earned by roster</div></div>
+        <div><div class="v">${fmtMoney(totalInProgress)}</div><div class="l">In progress</div></div>
       </div>
-      ${!performance.length ? '<div style="font-size:12.5px;color:var(--ink-soft)">No creators on your roster yet.</div>' : `
-      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
-        <thead><tr style="text-align:left;border-bottom:1px solid var(--line)">
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Creator</th>
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Verified deals</th>
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Earned</th>
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">In progress</th>
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Linked since</th>
+      ${!performance.length ? '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No creators on your roster yet.</div>' : `
+      <table>
+        <thead><tr>
+          <th>Creator</th>
+          <th>Verified deals</th>
+          <th>Earned</th>
+          <th>In progress</th>
+          <th>Linked since</th>
         </tr></thead>
         <tbody>
           ${performance.map(p => `
-            <tr style="border-bottom:1px solid var(--line)">
-              <td style="padding:8px 6px">${escapeHtml(p.creator_name || '—')}</td>
-              <td style="padding:8px 6px">${p.verified_deals || 0}</td>
-              <td style="padding:8px 6px">${fmtMoney(p.total_earned_cents)}</td>
-              <td style="padding:8px 6px">${p.in_progress_deals || 0} deal(s) · ${fmtMoney(p.in_progress_value_cents)}</td>
-              <td style="padding:8px 6px;color:var(--ink-soft)">${new Date(p.linked_since).toLocaleDateString()}</td>
+            <tr>
+              <td>${escapeHtml(p.creator_name || '—')}</td>
+              <td>${p.verified_deals || 0}</td>
+              <td>${fmtMoney(p.total_earned_cents)}</td>
+              <td>${p.in_progress_deals || 0} deal(s) · ${fmtMoney(p.in_progress_value_cents)}</td>
+              <td style="color:var(--pf-ink-soft)">${new Date(p.linked_since).toLocaleDateString()}</td>
             </tr>`).join('')}
         </tbody>
       </table>`}
@@ -427,33 +582,33 @@ function renderPerformanceTab() {
 function renderBenchmarkTab() {
   if (manager.plan !== 'agency') {
     return `
-      <div class="card">
-        <div style="font-size:14px;font-weight:600;margin-bottom:6px">Agency-level rate benchmark</div>
-        <div style="font-size:12.5px;color:var(--ink-soft)">This is an Agency-plan feature. See what similar deals across your whole roster typically closed for, by niche — built from your own roster's real, released escrow data.</div>
+      <div class="pf-card lock-card">
+        <h3>Agency-level rate benchmark</h3>
+        <div class="desc" style="margin-bottom:0">This is an Agency-plan feature. See what similar deals across your whole roster typically closed for, by niche — built from your own roster's real, released escrow data.</div>
       </div>`;
   }
-  if (benchmark === null) return '<div class="card"><div style="font-size:12.5px;color:var(--ink-soft)">Loading…</div></div>';
+  if (benchmark === null) return '<div class="pf-card"><div class="desc" style="margin-bottom:0">Loading…</div></div>';
 
   return `
-    <div class="card">
-      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px">Built from your own roster's real, released escrow data — not estimates. A niche only shows once at least 3 released deals exist for it, so there's never a benchmark backed by too little data to mean anything.</div>
-      ${!benchmark.length ? '<div style="font-size:12.5px;color:var(--ink-soft)">Not enough released deals yet in any single niche (minimum 3) to show a benchmark.</div>' : `
-      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
-        <thead><tr style="text-align:left;border-bottom:1px solid var(--line)">
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Niche</th>
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Sample size</th>
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Low</th>
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">Median</th>
-          <th style="padding:8px 6px;font-weight:600;color:var(--ink-soft)">High</th>
+    <div class="pf-card">
+      <div class="desc">Built from your own roster's real, released escrow data — not estimates. A niche only shows once at least 3 released deals exist for it, so there's never a benchmark backed by too little data to mean anything.</div>
+      ${!benchmark.length ? '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">Not enough released deals yet in any single niche (minimum 3) to show a benchmark.</div>' : `
+      <table>
+        <thead><tr>
+          <th>Niche</th>
+          <th>Sample size</th>
+          <th>Low</th>
+          <th>Median</th>
+          <th>High</th>
         </tr></thead>
         <tbody>
           ${benchmark.map(b => `
-            <tr style="border-bottom:1px solid var(--line)">
-              <td style="padding:8px 6px;text-transform:capitalize">${escapeHtml(b.niche || '—')}</td>
-              <td style="padding:8px 6px">${b.sample_size}</td>
-              <td style="padding:8px 6px">${fmtMoney(b.min_cents)}</td>
-              <td style="padding:8px 6px;font-weight:600">${fmtMoney(b.median_cents)}</td>
-              <td style="padding:8px 6px">${fmtMoney(b.max_cents)}</td>
+            <tr>
+              <td style="text-transform:capitalize">${escapeHtml(b.niche || '—')}</td>
+              <td>${b.sample_size}</td>
+              <td>${fmtMoney(b.min_cents)}</td>
+              <td style="font-weight:600">${fmtMoney(b.median_cents)}</td>
+              <td>${fmtMoney(b.max_cents)}</td>
             </tr>`).join('')}
         </tbody>
       </table>`}
@@ -463,22 +618,22 @@ function renderBenchmarkTab() {
 function renderBrandingTab() {
   if (manager.plan !== 'agency') {
     return `
-      <div class="card">
-        <div style="font-size:14px;font-weight:600;margin-bottom:6px">White-label branding</div>
-        <div style="font-size:12.5px;color:var(--ink-soft)">This is an Agency-plan feature. Add your own logo and name so your managed creators' Verified Media Kits carry your branding instead of Kitscore's.</div>
+      <div class="pf-card lock-card">
+        <h3>White-label branding</h3>
+        <div class="desc" style="margin-bottom:0">This is an Agency-plan feature. Add your own logo and name so your managed creators' Verified Media Kits carry your branding instead of Kitscore's.</div>
       </div>`;
   }
   return `
-    <div class="card">
-      <div style="font-size:14px;font-weight:600;margin-bottom:6px">White-label branding</div>
-      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px">Applied to your managed creators' Verified Media Kits. Leave blank and they get the normal Kitscore-branded kit — this is opt-in, not required.</div>
-      <div class="pf-form-grid" style="display:flex;flex-direction:column;gap:10px">
+    <div class="pf-card">
+      <h3>White-label branding</h3>
+      <div class="desc">Applied to your managed creators' Verified Media Kits. Leave blank and they get the normal Kitscore-branded kit — this is opt-in, not required.</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
         <div class="pf-field"><label>Agency name</label><input id="brandName" type="text" value="${escapeHtml(manager.agency_name || '')}" placeholder="Your agency name"></div>
         <div class="pf-field"><label>Logo URL</label><input id="brandLogo" type="url" value="${escapeHtml(manager.logo_url || '')}" placeholder="https://..."></div>
       </div>
-      <div class="pf-save-row" style="margin-top:14px">
-        <span class="pf-save-hint">Changes apply to future Media Kit downloads.</span>
-        <button class="pf-btn-save" style="width:auto;padding:9px 16px" onclick="saveBranding()">Save</button>
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:16px">
+        <span style="font-size:11.5px;color:var(--pf-ink-faint);margin-right:auto;font-family:'Inter',sans-serif">Changes apply to future Media Kit downloads.</span>
+        <button class="pf-btn-save" onclick="saveBranding()">Save</button>
       </div>
       <div id="brandingMsg"></div>
     </div>`;
@@ -493,29 +648,28 @@ async function saveBranding() {
   manager.agency_name = agency_name;
   manager.logo_url = logo_url;
   el.innerHTML = `<div class="msg ok">Saved.</div>`;
+  render();
 }
 
 function renderStaffTab() {
-  const activeStaff = staff.filter(s => s.accepted);
-  const pendingStaff = staff.filter(s => !s.accepted);
   return `
-    <div class="card">
-      <div style="font-size:14.5px;font-weight:600;margin-bottom:6px">Agency staff</div>
-      <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:16px">Staff you invite get the exact same roster access you have — the same creators, the same permissions. Nothing more, nothing scoped down.</div>
+    <div class="pf-card">
+      <h3>Agency staff</h3>
+      <div class="desc">Staff you invite get the exact same roster access you have — the same creators, the same permissions. Nothing more, nothing scoped down.</div>
       <div id="staffList">
-        ${!staff.length ? '<div style="font-size:12.5px;color:var(--ink-soft)">No staff yet.</div>' : staff.map(s => `
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-top:1px solid var(--line)">
+        ${!staff.length ? '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No staff yet.</div>' : staff.map(s => `
+          <div class="staff-row">
             <div>
               <div style="font-size:13px;font-weight:600">${escapeHtml(s.name || s.email)}</div>
-              <div style="font-size:11.5px;color:var(--ink-soft)">${s.accepted ? 'Active' : 'Invite pending'}</div>
+              <div style="font-size:11.5px;color:var(--pf-ink-soft)">${s.accepted ? 'Active' : 'Invite pending'}</div>
             </div>
-            ${s.accepted ? `<button class="pf-btn" style="padding:5px 10px;font-size:11.5px" onclick="revokeStaff('${s.linkId}')">Revoke</button>` : ''}
+            ${s.accepted ? `<button class="pf-btn" onclick="revokeStaff('${s.linkId}')">Revoke</button>` : ''}
           </div>
         `).join('')}
       </div>
-      <div style="display:flex;gap:8px;margin-top:16px">
-        <input id="staffEmail" type="email" placeholder="staff@example.com" style="flex:1;padding:9px 10px;border:1px solid var(--line);font-size:13px">
-        <button class="pf-btn-save" style="width:auto;padding:9px 16px" onclick="inviteStaff()">Send invite</button>
+      <div class="staff-invite-row">
+        <input id="staffEmail" type="email" placeholder="staff@example.com">
+        <button class="pf-btn-save" onclick="inviteStaff()">Send invite</button>
       </div>
       <div id="staffMsg"></div>
     </div>`;
