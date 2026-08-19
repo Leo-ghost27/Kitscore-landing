@@ -20,6 +20,7 @@
   .agency-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:24px}
   .agency-tab{padding:12px 18px;font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent}
   .agency-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .agency-lock-badge{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8A6D00;background:#FFF3CD;border:1px solid #F0DE9E;border-radius:3px;padding:1px 5px;margin-left:5px;vertical-align:2px}
   .roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
   .roster-card{background:#fff;border:1px solid var(--line);padding:20px}
   .roster-card-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
@@ -27,6 +28,9 @@
   .roster-name{font-size:14.5px;font-weight:600;color:var(--ink)}
   .roster-niche{font-size:12px;color:var(--ink-soft)}
   .roster-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:12px;border-top:1px solid var(--line)}
+  .roster-card-link{display:block;text-align:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;font-weight:600;color:var(--blue);text-decoration:none}
+  .roster-card-link:hover{text-decoration:underline}
+  .roster-card-link-disabled{color:var(--ink-faint,#9AA1AC);cursor:default}
   .roster-stat-num{font-family:var(--font-mono);font-size:18px;font-weight:600;color:var(--ink)}
   .roster-stat-label{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em}
   .empty-state{text-align:center;padding:60px 20px;color:var(--ink-soft)}
@@ -58,6 +62,14 @@ const AGENCY_TABS = [
   ['branding', 'Branding'],
   ['staff', 'Staff'],
 ];
+
+// Tabs whose content is actually gated to manager.plan === 'agency' server
+// and client-side (see renderBenchmarkTab / renderBrandingTab below).
+// NOTE: Staff sub-seats are marketed as Agency-only in profile-manager.html
+// but agency-staff-invite.js has no plan check today, so it's not included
+// here -- badging it "Agency" would be misleading while it's free either
+// way. Flagged separately; not fixed as part of this change.
+const AGENCY_ONLY_TABS = new Set(['benchmark', 'branding']);
 
 async function load() {
   profile = await requireRole('manager');
@@ -116,7 +128,7 @@ async function loadStaff() {
 
 async function loadRoster() {
   const { data: links } = await sb.from('manager_creator_links')
-    .select('creator_id, created_at, creators(niche, trust_score, plan, profiles(display_name))')
+    .select('creator_id, created_at, creators(niche, trust_score, plan, slug, profiles(display_name))')
     .eq('manager_id', profile.id)
     .eq('status', 'active');
 
@@ -145,7 +157,10 @@ function render() {
       <button class="pf-btn" style="padding:8px 14px;font-size:12.5px" onclick="exportAuditTrail()">Export audit trail</button>
     </div>
     <div class="agency-tabs">
-      ${AGENCY_TABS.map(([key, label]) => `<div class="agency-tab ${activeTab === key ? 'active' : ''}" onclick="switchTab('${key}')">${label}</div>`).join('')}
+      ${AGENCY_TABS.map(([key, label]) => {
+        const locked = AGENCY_ONLY_TABS.has(key) && manager.plan !== 'agency';
+        return `<div class="agency-tab ${activeTab === key ? 'active' : ''}" onclick="switchTab('${key}')">${label}${locked ? ' <span class="agency-lock-badge" title="Agency plan required">Agency</span>' : ''}</div>`;
+      }).join('')}
     </div>
     <div id="tab-panel">${renderTabPanel(activeTab)}</div>
   `;
@@ -217,6 +232,8 @@ function renderRosterTab() {
         const name = r.creators?.profiles?.display_name || 'Creator';
         const initial = name.trim().charAt(0).toUpperCase();
         const score = r.creators?.trust_score;
+        const slug = r.creators?.slug;
+        const kitHref = slug ? `evekit.html?slug=${encodeURIComponent(slug)}` : null;
         return `
         <div class="roster-card">
           <div class="roster-card-top">
@@ -230,6 +247,9 @@ function renderRosterTab() {
             <div><div class="roster-stat-num">${r.activeContracts}</div><div class="roster-stat-label">Active contracts</div></div>
             <div><div class="roster-stat-num">${r.pendingApplications}</div><div class="roster-stat-label">Pending briefs</div></div>
           </div>
+          ${kitHref
+            ? `<a href="${kitHref}" target="_blank" rel="noopener" class="roster-card-link">View Verified Media Kit →</a>`
+            : `<div class="roster-card-link roster-card-link-disabled">No Verified Media Kit yet</div>`}
         </div>`;
       }).join('')}
     </div>`;

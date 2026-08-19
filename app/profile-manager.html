@@ -36,7 +36,7 @@
   <div class="sidebar" id="sidebar-mount"></div>
   <div class="app-main">
     <div class="ptitle">Profile</div>
-    <div class="psub">Your own account — shown to creators on your roster and, on the Agency plan, on their EveKit media kits.</div>
+    <div class="psub">Your own account — shown to creators on your roster and, on the Agency plan, on their Verified Media Kits.</div>
     <div class="card" id="formWrap"><div class="loading">Loading…</div></div>
   </div>
 </div>
@@ -84,7 +84,7 @@ function render() {
     <div class="field">
       <label>Agency name</label>
       <input id="agencyName" value="${escapeHtml(manager.agency_name || '')}" placeholder="e.g. Eve Talent Agency">
-      <div class="field-hint">${manager.plan === 'agency' ? 'Used to white-label your managed creators\' EveKit media kits.' : 'Available on the Agency plan — set it now and it\'ll apply once you upgrade.'}</div>
+      <div class="field-hint">${manager.plan === 'agency' ? 'Used to white-label your managed creators\' Verified Media Kits.' : 'Available on the Agency plan — set it now and it\'ll apply once you upgrade.'}</div>
     </div>
     <div class="field">
       <label>Logo</label>

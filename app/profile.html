@@ -375,6 +375,7 @@ function renderAccountPanel() {
     <div class="pf-card">
       <h3>Manager</h3>
       <p class="desc">Invite your manager or agent to be linked to your account. They'll be able to submit evidence and respond to briefs on your behalf — never change your payout details or sign off on a contract for you.</p>
+      ${renderManagerConnectedBanner()}
       <div id="managerLinksList">${renderManagerLinks()}</div>
       <div class="pf-form-grid" style="margin-top:12px">
         <div class="pf-field"><label>Manager's email</label><input id="managerEmail" type="email" placeholder="manager@example.com"></div>
@@ -386,6 +387,16 @@ function renderAccountPanel() {
       <div id="managerMsg"></div>
     </div>
   `;
+}
+
+function renderManagerConnectedBanner() {
+  const active = (managerLinks || []).find(l => l.status === 'active');
+  if (!active) return '';
+  return `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--pf-green-soft,#E9F7EE);border:1px solid #BFE6CC;padding:11px 14px;margin-bottom:14px;font-size:12.5px;color:#1C7C3F;font-weight:600">
+      ${svgIcon('circle-check', { size: 16, stroke: '#1C7C3F', strokeWidth: 2 })}
+      <span>You're connected to ${escapeHtml(active.display_name || active.email || 'your manager')}. They can submit evidence and respond to briefs on your behalf.</span>
+    </div>`;
 }
 
 function renderManagerLinks() {
@@ -423,10 +434,9 @@ async function inviteManager() {
   });
   const result = await res.json();
   if (!res.ok) { showManagerMsg(result.error || 'Could not send invite.', 'error'); return; }
-  showManagerMsg(result.message, 'ok');
-  document.getElementById('managerEmail').value = '';
   await loadManagerLinks();
   renderAccountPanel();
+  showManagerMsg(result.message, 'ok');
 }
 
 // Cancels a manager invite that hasn't been accepted yet. This is a plain
@@ -443,7 +453,7 @@ async function cancelManagerInvite(inviteId) {
 }
 
 async function revokeManager(linkId) {
-  if (!confirm('Revoke this manager access? They will immediately lose access to your account.')) return;
+  if (!confirm('Revoke this manager access? They will lose access immediately. Any pending briefs or evidence they submitted that you haven\'t acted on yet will be cleared from your account — a copy is kept on file for dispute or audit purposes. Anything already accepted, verified, or attached to a signed contract is not affected.')) return;
   const { data: { session } } = await sb.auth.getSession();
   const res = await fetch('/api/team?action=revoke-manager', {
     method: 'POST',
@@ -454,6 +464,7 @@ async function revokeManager(linkId) {
   if (!res.ok) { showManagerMsg(result.error || 'Could not revoke access.', 'error'); return; }
   await loadManagerLinks();
   renderAccountPanel();
+  showManagerMsg(result.message || 'Manager access revoked.', 'ok');
 }
 
 async function loadManagerLinks() {

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roster — Kitscore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:wght@500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  body{background:var(--canvas)}
+  .app-main{max-width:1180px;padding:40px 48px 80px}
+  .ptitle{font-size:24px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
+  .psub{font-size:14px;color:var(--ink-soft);margin-bottom:18px}
+  .loading{font-size:13px;color:var(--ink-soft)}
+
+  .roster-hero{background:#fff;border:1px solid var(--blue);box-shadow:0 8px 24px -10px rgba(47,95,224,.2);padding:40px;margin-bottom:22px;position:relative;overflow:hidden;opacity:0;animation:heroIn .5s ease forwards}
+  @keyframes heroIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+  @media (prefers-reduced-motion: reduce){.roster-hero{animation:none;opacity:1}}
+  .roster-hero-inner{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap}
+  .roster-hero-eyebrow{color:var(--blue);display:flex;align-items:center;gap:8px;margin-bottom:14px;font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+  .roster-hero-eyebrow::before{content:"";width:6px;height:6px;background:var(--blue)}
+  .roster-hero h2{font-size:26px;font-weight:700;letter-spacing:-.01em;margin-bottom:10px;max-width:480px;color:var(--ink)}
+  .roster-hero p{font-size:14px;color:var(--ink-soft);max-width:440px;line-height:1.6}
+  .roster-hero-side{text-align:right;flex-shrink:0}
+  .roster-hero-btn{background:var(--blue);color:#fff;border:none;font-size:13.5px;font-weight:700;padding:12px 22px;cursor:pointer;white-space:nowrap}
+  .roster-hero-btn:hover{opacity:.92}
+  .roster-hero-linked{font-size:12.5px;color:#137C52;font-weight:600;margin-bottom:10px}
+
+  .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+  .card{background:#fff;border:1px solid var(--line);box-shadow:0 1px 2px rgba(16,21,31,.03);padding:26px 28px}
+  .feature-tile{padding:22px;position:relative;transition:transform .18s ease,box-shadow .18s ease;opacity:0;transform:translateY(10px);animation:tileIn .45s ease forwards}
+  .feature-tile:hover{transform:translateY(-3px);box-shadow:0 10px 24px -8px rgba(16,21,31,.12)}
+  .feature-tile-icon{width:34px;height:34px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;margin-bottom:14px;transition:transform .18s ease}
+  .feature-tile:hover .feature-tile-icon{transform:scale(1.08)}
+  .feature-tile-title{font-size:14px;font-weight:600;margin-bottom:7px;color:var(--ink)}
+  .feature-tile-text{font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+  .feature-tile.is-live .feature-tile-icon{background:var(--green-soft)}
+  .roster-lock-chip{position:absolute;top:18px;right:18px;font-family:var(--font-mono);font-size:9px;letter-spacing:.05em;color:var(--blue);border:1px solid var(--blue-line);padding:3px 8px;text-transform:uppercase;white-space:nowrap}
+  .roster-live-chip{position:absolute;top:18px;right:18px;font-family:var(--font-mono);font-size:9px;letter-spacing:.05em;color:#137C52;background:var(--green-soft);border:1px solid transparent;padding:3px 8px;text-transform:uppercase;white-space:nowrap;display:flex;align-items:center;gap:4px}
+  .roster-live-chip::before{content:"";width:5px;height:5px;border-radius:50%;background:#1E9E6B;animation:pulseDot 1.8s ease-in-out infinite}
+  @keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.35}}
+  .feature-section-label{font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .feature-section-label.is-live{color:#137C52}
+  @keyframes tileIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @media (prefers-reduced-motion: reduce){.feature-tile{animation:none;opacity:1;transform:none}.roster-live-chip::before{animation:none}}
+
+  .roster-bottom-cta{display:flex;justify-content:space-between;align-items:center;background:var(--blue-soft);border:1px solid var(--blue-line);padding:20px 26px;flex-wrap:wrap;gap:14px}
+  .roster-bottom-cta p{font-size:13.5px;color:#1F3E9E}
+  .roster-bottom-cta p b{color:#122B7A}
+  .roster-bottom-btn{background:var(--blue);color:#fff;border:none;font-size:13.5px;font-weight:600;padding:11px 20px;cursor:pointer;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Roster</div>
+    <div class="psub">What a linked manager or agency can do for you.</div>
+    <div id="content" class="loading">Loading…</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="icons.js?v=1"></script>
+<script src="nav.js?v=4"></script>
+<script>
+let profile, activeLink = null;
+
+async function load() {
+  profile = await requireRole('creator');
+  if (!profile) return;
+  renderSidebar('creator', 'roster');
+
+  const { data: links } = await sb.from('manager_creator_links')
+    .select('id, status, created_at, profiles!manager_creator_links_manager_id_fkey(display_name)')
+    .eq('creator_id', profile.id)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(1);
+  activeLink = (links && links[0]) || null;
+
+  render();
+}
+
+// Every one of these is real and working today for any creator with an
+// active, accepted manager link -- not a roadmap promise. See profile.html's
+// Manager section (invite/revoke) and manager_creator_links RLS grants on
+// brief_applications / evidence_uploads / contracts.
+const MANAGER_FEATURES = [
+  ['users', 'Submit on your behalf', 'Your manager can respond to briefs and submit evidence for you — they can never touch your payout details or sign a contract in your place.'],
+  ['file-check', 'Evidence handling', 'They can upload and manage platform evidence for you, so your Trust Score stays current without you doing the legwork.'],
+  ['shield-check', 'You stay in control', 'Revoke their access instantly at any time from your Profile — no approval needed on their end, and it takes effect immediately.'],
+];
+
+// Agency-tier is a plan your manager chooses, not something you buy directly
+// -- content here is what your Verified Media Kit gets automatically if
+// your linked manager is on the Agency plan specifically (see
+// profile-manager.html's Agency branding section and agency.html's
+// Branding/Rate Benchmark tabs).
+const AGENCY_FEATURES = [
+  ['layout', 'White-labeled media kit', "If your manager is Agency-tier, your Verified Media Kit can carry their agency's branding instead of Kitscore's — useful if they're the one pitching you to sponsors."],
+  ['chart-pie', 'Roster-wide rate benchmarking', "Agency managers can see real closed-deal rate ranges by niche across their whole roster — including yours — to negotiate your rate with real data, not guesses."],
+  ['file-text', 'Compliance-ready audit trail', "Agency accounts can export a dated log of every submission, approval, and sign-off — useful if a sponsorship you're part of is ever questioned."],
+];
+
+function tile([icon, title, text], i, live) {
+  return `
+    <div class="card feature-tile ${live ? 'is-live' : ''}" style="animation-delay:${i * 60}ms">
+      <div class="feature-tile-icon">${svgIcon(icon, {size:17, stroke: live ? '#137C52' : 'var(--blue)', strokeWidth:2})}</div>
+      <div class="feature-tile-title">${title}</div>
+      <div class="feature-tile-text">${text}</div>
+      <span class="${live ? 'roster-live-chip' : 'roster-lock-chip'}">${live ? 'Live' : 'Agency-tier'}</span>
+    </div>`;
+}
+
+function render() {
+  const heroSide = activeLink
+    ? `<div class="roster-hero-side">
+         <div class="roster-hero-linked">✓ Linked to ${escapeHtml(activeLink.profiles?.display_name || 'your manager')}</div>
+         <button class="roster-hero-btn" onclick="window.location.href='profile.html'">Manage connection →</button>
+       </div>`
+    : `<div class="roster-hero-side">
+         <button class="roster-hero-btn" onclick="window.location.href='profile.html'">Invite your manager →</button>
+       </div>`;
+
+  document.getElementById('content').innerHTML = `
+    <div class="roster-hero">
+      <div class="roster-hero-inner">
+        <div>
+          <div class="roster-hero-eyebrow">FOR MANAGED &amp; AGENCY-REPPED CREATORS</div>
+          <h2>Let a manager or agent work your account for you.</h2>
+          <p>Invite a manager to submit briefs and evidence on your behalf, with permissions that stop well short of your payouts and contracts. Free on any plan — no upgrade required on your end.</p>
+        </div>
+        ${heroSide}
+      </div>
+    </div>
+
+    <div class="feature-section-label is-live">Included now, free</div>
+    <div class="feature-grid">
+      ${MANAGER_FEATURES.map((f, i) => tile(f, i, true)).join('')}
+    </div>
+
+    <div class="feature-section-label">If your manager is Agency-tier</div>
+    <div class="feature-grid">
+      ${AGENCY_FEATURES.map((f, i) => tile(f, i + MANAGER_FEATURES.length, false)).join('')}
+    </div>
+
+    <div class="roster-bottom-cta">
+      <p><b>${activeLink ? 'You have an active manager link.' : 'Not linked to a manager yet.'}</b> ${activeLink ? 'Manage or revoke access any time from your Profile.' : 'Invite one from your Profile — they\'ll get an email invite valid for 14 days.'}</p>
+      <button class="roster-bottom-btn" onclick="window.location.href='profile.html'">${activeLink ? 'Go to Profile →' : 'Invite your manager →'}</button>
+    </div>`;
+}
+
+load();
+</script>
+</body>
+</html>

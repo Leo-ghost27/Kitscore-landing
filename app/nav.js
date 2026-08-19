@@ -38,6 +38,7 @@ const NAV = {
     { key: 'campaigns', href: 'campaigns.html', icon: 'campaigns', label: 'Campaigns' },
     { key: 'briefs', href: 'briefs.html', icon: 'briefs', label: 'Briefs' },
     { key: 'contracts', href: 'contracts.html', icon: 'contracts', label: 'Contracts' },
+    { key: 'roster', href: 'roster.html', icon: 'team', label: 'Roster' },
     { key: 'support', href: 'support.html', icon: 'inbox', label: 'Support' },
     { key: 'pricing-creator', href: 'pricing-creator.html', icon: 'upgrade', label: 'Upgrade' },
   ],
