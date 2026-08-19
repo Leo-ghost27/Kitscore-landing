@@ -63,6 +63,10 @@ async function load() {
 
 function render() {
   const planLabel = manager.plan === 'agency' ? 'Agency' : 'Manager';
+  const upgradeCta = manager.plan === 'agency' ? '' : `
+    <button class="cta" id="upgradeBtn" onclick="upgrade()" style="margin-top:10px;background:#111">Upgrade to Agency</button>
+    <div id="upgradeMsg"></div>
+  `;
   document.getElementById('formWrap').innerHTML = `
     <div class="psec">
       <div class="psec-title">Account</div>
@@ -75,7 +79,10 @@ function render() {
     <div class="field">
       <label>Plan</label>
       <div><span class="plan-badge">${planLabel}</span></div>
-      <div class="field-hint">Upgrades are handled by Kitscore — reach out via Support if you'd like Agency-tier features (Rate Benchmark, white-labeled branding, Staff sub-seats).</div>
+      <div class="field-hint">${manager.plan === 'agency'
+        ? 'You have full access: Rate Benchmark, white-labeled Verified Media Kits, and Staff sub-seats.'
+        : 'Rate Benchmark, white-labeled Verified Media Kits, and Staff sub-seats are Agency-tier. Everything else on Roster — linking creators, submitting on their behalf, Trust Score, Performance, Payout Ledger — is included on Manager.'}</div>
+      ${upgradeCta}
     </div>
 
     <div class="psec">
@@ -97,6 +104,48 @@ function render() {
     <button class="cta" onclick="save()">Save changes</button>
     <div id="saveMsg"></div>
   `;
+}
+
+// Mirrors pricing-creator.html's upgrade() exactly -- same checkout route,
+// same error handling shape. Backed by the 'agency' product added to
+// billing-checkout.js and stripe-webhook.js. Stays a normal button that
+// fails gracefully ("Could not start checkout: Unknown or unconfigured
+// product") until an actual Agency-tier Price is created in Stripe and
+// STRIPE_PRICE_AGENCY is set -- that price point is a business decision,
+// not something to hardcode here.
+async function upgrade() {
+  const btn = document.getElementById('upgradeBtn');
+  const msgEl = document.getElementById('upgradeMsg');
+  msgEl.innerHTML = '';
+  btn.disabled = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = 'Redirecting…';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      msgEl.innerHTML = '<div class="msg error">You need to be signed in to upgrade. Try refreshing the page.</div>';
+      btn.disabled = false; btn.textContent = originalLabel; return;
+    }
+    const res = await fetch('/api/billing?action=checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+      body: JSON.stringify({ product: 'agency' }),
+    });
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); } catch {
+      msgEl.innerHTML = `<div class="msg error">Server did not return a valid response (status ${res.status}).</div>`;
+      btn.disabled = false; btn.textContent = originalLabel; return;
+    }
+    if (!res.ok || !json.url) {
+      msgEl.innerHTML = `<div class="msg error">Could not start checkout: ${escapeHtml(json.error || 'unknown error')}</div>`;
+      btn.disabled = false; btn.textContent = originalLabel; return;
+    }
+    window.location.href = json.url;
+  } catch (err) {
+    msgEl.innerHTML = `<div class="msg error">Checkout request failed: ${escapeHtml(err.message)}</div>`;
+    btn.disabled = false; btn.textContent = originalLabel;
+  }
 }
 
 function previewLogo() {

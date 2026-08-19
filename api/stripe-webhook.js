@@ -24,13 +24,14 @@ function planFromPriceId(priceId) {
     [process.env.STRIPE_PRICE_STARTER]: 'starter',
     [process.env.STRIPE_PRICE_TEAM]: 'team',
     [process.env.STRIPE_PRICE_CREATOR_PRO]: 'creator_pro',
+    [process.env.STRIPE_PRICE_AGENCY]: 'agency',
   };
   return map[priceId] || null;
 }
 
-// Find a sponsor or creator account by their Stripe customer ID.
-// Checks both tables since either role can hold a subscription
-// (sponsors: starter/team, creators: creator_pro).
+// Find a sponsor, creator, or manager account by their Stripe customer ID.
+// Checks all three tables since any role can hold a subscription
+// (sponsors: starter/team, creators: creator_pro, managers: agency).
 async function accountByCustomerId(admin, customerId) {
   const { data: sponsor } = await admin.from('sponsors')
     .select('id, plan').eq('stripe_customer_id', customerId).maybeSingle();
@@ -39,6 +40,10 @@ async function accountByCustomerId(admin, customerId) {
   const { data: creator } = await admin.from('creators')
     .select('id, plan').eq('stripe_customer_id', customerId).maybeSingle();
   if (creator) return { ...creator, table: 'creators' };
+
+  const { data: manager } = await admin.from('managers')
+    .select('id, plan').eq('stripe_customer_id', customerId).maybeSingle();
+  if (manager) return { ...manager, table: 'managers' };
 
   return null;
 }
@@ -118,9 +123,10 @@ const handler = async (req, res) => {
         }
 
         // Persist stripe_customer_id if not already stored — to the correct
-        // table for this buyer's role, since creator_pro buyers are creators.
+        // table for this buyer's role (creator_pro buyers are creators,
+        // agency buyers are managers, everyone else is a sponsor).
         if (session.customer && profileId) {
-          const accountTable = profileRole === 'creator' ? 'creators' : 'sponsors';
+          const accountTable = profileRole === 'creator' ? 'creators' : profileRole === 'manager' ? 'managers' : 'sponsors';
           await admin.from(accountTable)
             .update({ stripe_customer_id: session.customer })
             .eq('id', profileId)
