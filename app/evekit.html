@@ -685,7 +685,8 @@ function renderKit(kit, opts) {
           <div class="rec-stat"><div class="l">Confidence rating</div><div class="v">${Math.round(Number(kit.confidence)||0)}%</div></div>
           <div class="rec-stat"><div class="l">Risk level</div><div class="v">${bsValue>=70?'Low':bsValue>=50?'Medium':'High'}</div></div>
           <div class="rec-stat"><div class="l">Campaigns verified</div><div class="v">${kit.verifiedCount||0}</div></div>
-        </div>`;
+        </div>
+        <div style="font-size:11px;color:var(--color-text-tertiary,#8A8A85);margin-top:10px;text-align:center">Auto-generated from this creator's trust score, brand safety questionnaire, and verified campaign history — not a human or AI review.</div>`;
       })()}
     </div>
 
