@@ -153,6 +153,17 @@ let profile, manager, roster = [], staff = [], ledger = [], performance = [], be
 let financials = [], sponsorResults = [], sponsorQuery = '', sponsorSearched = false;
 let activeTab = 'roster';
 
+// CRM
+let crmSelectedCreatorId = null, crmProfile = null, crmLoading = false;
+// Sponsor portal
+let portalLinks = [];
+// Reminders & templates
+let reminders = [], templates = [], templateFormOpen = false, editingTemplateId = null;
+// Analytics
+let rosterAnalytics = [], sponsorAnalytics = [], analyticsSubTab = 'creator';
+// Disputes
+let issues = [], issueFormOpen = false, issueStatusFilter = 'all';
+
 const MGR_ICONS = {
   roster:'<circle cx="8.5" cy="8" r="3.2"/><circle cx="16.5" cy="8.5" r="2.6"/><path d="M2.3 20c0-3.4 2.8-6 6.2-6s6.2 2.6 6.2 6"/><path d="M14.8 14.2c3 .3 5.2 2.7 5.2 5.8"/>',
   trust:'<path d="M12 2.5l7.5 3.5v5.4c0 4.6-3.2 7.5-7.5 9.1-4.3-1.6-7.5-4.5-7.5-9.1V6z"/><path d="M8.7 12l2.4 2.4 4.2-4.6"/>',
@@ -163,6 +174,11 @@ const MGR_ICONS = {
   benchmark:'<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 9 9h-9z"/>',
   branding:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>',
   staff:'<circle cx="9" cy="8" r="3.6"/><path d="M2.4 20.5c0-3.6 3-6.1 6.6-6.1s6.6 2.5 6.6 6.1"/><path d="M18.5 8.2h4M20.5 6.2v4"/>',
+  crm:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 14h3"/><path d="M8 17h6"/>',
+  portal:'<circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17"/><path d="M12 3a13 13 0 0 1 0 18a13 13 0 0 1 0-18"/>',
+  reminders:'<path d="M12 21a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/><path d="M18 8a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6"/>',
+  analytics:'<path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/>',
+  disputes:'<circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/>',
 };
 function mgrIcon(name){
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${MGR_ICONS[name]||''}</svg>`;
@@ -178,6 +194,11 @@ const AGENCY_TABS = [
   ['benchmark', 'Rate Benchmark'],
   ['branding', 'Branding'],
   ['staff', 'Staff'],
+  ['crm', 'Creator CRM'],
+  ['portal', 'Sponsor Portal'],
+  ['reminders', 'Reminders'],
+  ['analytics', 'Analytics'],
+  ['disputes', 'Disputes'],
 ];
 
 // Tabs whose content is actually gated to manager.plan === 'agency' server
@@ -203,7 +224,49 @@ async function load() {
   await loadBenchmark();
   await loadTrustScore();
   await loadFinancials();
+  await loadPortalLinks();
+  await loadReminders();
+  await loadTemplates();
+  await loadRosterAnalytics();
+  await loadSponsorAnalytics();
+  await loadIssues();
   render();
+}
+
+async function loadPortalLinks() {
+  const { data, error } = await sb.from('manager_portal_links')
+    .select('id, label, creator_ids, token, created_at, revoked_at')
+    .order('created_at', { ascending: false });
+  portalLinks = error ? [] : (data || []);
+}
+
+async function loadReminders() {
+  const { data, error } = await sb.rpc('fn_manager_reminders');
+  reminders = error ? [] : (data || []);
+}
+
+async function loadTemplates() {
+  const { data, error } = await sb.from('manager_message_templates')
+    .select('id, category, name, subject, body, created_at')
+    .order('created_at', { ascending: false });
+  templates = error ? [] : (data || []);
+}
+
+async function loadRosterAnalytics() {
+  const { data, error } = await sb.rpc('fn_manager_roster_analytics');
+  rosterAnalytics = error ? [] : (data || []);
+}
+
+async function loadSponsorAnalytics() {
+  const { data, error } = await sb.rpc('fn_manager_sponsor_analytics');
+  sponsorAnalytics = error ? [] : (data || []);
+}
+
+async function loadIssues() {
+  const { data, error } = await sb.from('manager_issue_log')
+    .select('id, creator_id, contract_id, sponsor_name, issue_type, description, evidence_urls, status, resolution_notes, created_at, resolved_at, profiles:creator_id(display_name)')
+    .order('created_at', { ascending: false });
+  issues = error ? [] : (data || []);
 }
 
 async function loadFinancials() {
@@ -391,6 +454,11 @@ function renderTabPanel(key) {
   if (key === 'benchmark') return renderBenchmarkTab();
   if (key === 'branding') return renderBrandingTab();
   if (key === 'staff') return renderStaffTab();
+  if (key === 'crm') return renderCrmTab();
+  if (key === 'portal') return renderPortalTab();
+  if (key === 'reminders') return renderRemindersTab();
+  if (key === 'analytics') return renderAnalyticsTab();
+  if (key === 'disputes') return renderDisputesTab();
   return '';
 }
 
@@ -880,6 +948,427 @@ function showStaffMsg(text, type) {
 
 function switchTab(key) {
   activeTab = key;
+  render();
+}
+
+/* ============================================================
+   6. Creator CRM
+   ============================================================ */
+function renderCrmTab() {
+  const list = roster.slice().sort((a, b) => (a.creators?.profiles?.display_name || '').localeCompare(b.creators?.profiles?.display_name || ''));
+  return `
+    <div class="pf-card" style="padding:0;overflow:hidden">
+      <div style="display:grid;grid-template-columns:220px 1fr;min-height:360px">
+        <div style="border-right:1px solid var(--pf-line);padding:16px 0;max-height:520px;overflow-y:auto">
+          ${!list.length ? '<div style="font-size:12px;color:var(--pf-ink-soft);padding:0 16px;font-family:\'Inter\',sans-serif">No creators on your roster yet.</div>' : list.map(r => `
+            <div onclick="selectCrmCreator('${r.creator_id}')" style="padding:10px 16px;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;${crmSelectedCreatorId === r.creator_id ? 'background:#EEF2FF;font-weight:600;color:var(--pf-blue)' : ''}">
+              ${escapeHtml(r.creators?.profiles?.display_name || 'Unnamed')}
+              <div style="font-size:11px;color:var(--pf-ink-faint);font-weight:400;text-transform:capitalize">${escapeHtml(r.creators?.niche || '')}</div>
+            </div>`).join('')}
+        </div>
+        <div style="padding:24px 26px">${renderCrmDetail()}</div>
+      </div>
+    </div>`;
+}
+
+function renderCrmDetail() {
+  if (!crmSelectedCreatorId) return `<div class="desc" style="margin-bottom:0">Select a creator on the left to see their full profile — bio, rates, past sponsors, contracts, and your private notes, all in one place.</div>`;
+  if (crmLoading || !crmProfile) return `<div class="desc" style="margin-bottom:0">Loading…</div>`;
+
+  const c = crmProfile.creator || {};
+  const n = crmProfile.notes || {};
+  const pastSponsors = crmProfile.past_sponsors || [];
+  const contracts = crmProfile.contracts || [];
+  const deliverables = crmProfile.upcoming_deliverables || [];
+
+  return `
+    <h3 style="margin-bottom:2px">${escapeHtml(c.display_name || 'Unnamed')}</h3>
+    <div style="font-size:12px;color:var(--pf-ink-soft);text-transform:capitalize;margin-bottom:14px;font-family:'Inter',sans-serif">${escapeHtml(c.niche || '—')}${c.location ? ' · ' + escapeHtml(c.location) : ''} · Trust ${c.trust_score ?? '—'}</div>
+    ${c.bio ? `<div style="font-size:12.5px;color:var(--pf-ink-soft);line-height:1.6;margin-bottom:16px;font-family:'Inter',sans-serif">${escapeHtml(c.bio)}</div>` : ''}
+    <div style="font-size:12px;margin-bottom:18px;font-family:'Inter',sans-serif"><strong>Availability:</strong> ${escapeHtml(c.availability_status || 'not set')}${c.availability_note ? ' — ' + escapeHtml(c.availability_note) : ''}${c.availability_until ? ' (until ' + new Date(c.availability_until).toLocaleDateString() + ')' : ''}</div>
+
+    <div style="font-weight:600;font-size:12.5px;margin-bottom:8px;font-family:'Inter',sans-serif">Rate card (manager-only)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="pf-field"><label>Sponsored post</label><input id="crmRatePost" type="number" min="0" step="1" value="${n.rate_sponsored_post_cents != null ? (n.rate_sponsored_post_cents / 100) : ''}" placeholder="$"></div>
+      <div class="pf-field"><label>Story</label><input id="crmRateStory" type="number" min="0" step="1" value="${n.rate_story_cents != null ? (n.rate_story_cents / 100) : ''}" placeholder="$"></div>
+      <div class="pf-field"><label>Video</label><input id="crmRateVideo" type="number" min="0" step="1" value="${n.rate_video_cents != null ? (n.rate_video_cents / 100) : ''}" placeholder="$"></div>
+    </div>
+    <div class="pf-field" style="margin-bottom:10px"><label>Other rate notes</label><input id="crmRateNotes" type="text" value="${escapeHtml(n.rate_notes || '')}" placeholder="e.g. bundle discounts, usage rights add-on"></div>
+    <div class="pf-field" style="margin-bottom:10px"><label>Private notes (visible only to you)</label><textarea id="crmPrivateNotes" rows="3" placeholder="Anything worth remembering for pitches or planning">${escapeHtml(n.private_notes || '')}</textarea></div>
+    <div style="display:flex;justify-content:flex-end"><button class="pf-btn-save" onclick="saveCrmNotes()">Save</button></div>
+    <div id="crmMsg"></div>
+
+    <div style="font-weight:600;font-size:12.5px;margin:20px 0 8px;font-family:'Inter',sans-serif">Past sponsors</div>
+    ${!pastSponsors.length ? '<div style="font-size:12px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No completed deals on record yet.</div>' : `
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px">
+      ${pastSponsors.map(s => `<span class="badge-pill" style="background:#F3F5FA;color:var(--pf-ink-soft);border:1px solid var(--pf-line)">${escapeHtml(s.company_name)} · ${s.deals_count}</span>`).join('')}
+    </div>`}
+
+    <div style="font-weight:600;font-size:12.5px;margin:20px 0 8px;font-family:'Inter',sans-serif">Contracts</div>
+    ${!contracts.length ? '<div style="font-size:12px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No contracts yet.</div>' : `
+    <table><thead><tr><th>Sponsor</th><th>Title</th><th>Status</th><th>Amount</th></tr></thead><tbody>
+      ${contracts.map(ct => `<tr><td>${escapeHtml(ct.sponsor_name || '—')}</td><td>${escapeHtml(ct.title || 'Untitled')}</td><td style="text-transform:capitalize">${escapeHtml(ct.status || '')}</td><td>${fmtMoney(ct.escrow_amount_cents)}</td></tr>`).join('')}
+    </tbody></table>`}
+
+    <div style="font-weight:600;font-size:12.5px;margin:20px 0 8px;font-family:'Inter',sans-serif">Upcoming / open deliverables</div>
+    ${!deliverables.length ? '<div style="font-size:12px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">Nothing outstanding.</div>' : deliverables.map(d => `
+      <div style="padding:8px 0;border-top:1px solid var(--pf-line);font-size:12.5px;font-family:'Inter',sans-serif;display:flex;justify-content:space-between">
+        <span>${escapeHtml(d.description || 'Deliverable')} <span style="color:var(--pf-ink-faint)">— ${escapeHtml(d.contract_title || '')}</span></span>
+        <span style="color:var(--pf-ink-soft)">${d.due_date ? fmtDeadline(d.due_date) : '—'}</span>
+      </div>`).join('')}
+  `;
+}
+
+async function selectCrmCreator(creatorId) {
+  crmSelectedCreatorId = creatorId;
+  crmProfile = null;
+  crmLoading = true;
+  render();
+  const { data, error } = await sb.rpc('fn_manager_creator_profile', { p_creator_id: creatorId });
+  crmLoading = false;
+  crmProfile = error ? { creator: {}, notes: {}, past_sponsors: [], contracts: [], upcoming_deliverables: [] } : data;
+  render();
+}
+
+async function saveCrmNotes() {
+  const toCents = (v) => (v === '' || v == null) ? null : Math.round(parseFloat(v) * 100);
+  const row = {
+    manager_id: manager.id,
+    creator_id: crmSelectedCreatorId,
+    rate_sponsored_post_cents: toCents(document.getElementById('crmRatePost').value),
+    rate_story_cents: toCents(document.getElementById('crmRateStory').value),
+    rate_video_cents: toCents(document.getElementById('crmRateVideo').value),
+    rate_notes: document.getElementById('crmRateNotes').value.trim() || null,
+    private_notes: document.getElementById('crmPrivateNotes').value.trim() || null,
+  };
+  const { error } = await sb.from('manager_creator_notes').upsert(row, { onConflict: 'manager_id,creator_id' });
+  const el = document.getElementById('crmMsg');
+  if (error) { el.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  crmProfile.notes = row;
+  el.innerHTML = `<div class="msg ok">Saved.</div>`;
+}
+
+/* ============================================================
+   7. Sponsor-facing portal
+   ============================================================ */
+function renderPortalTab() {
+  return `
+    <div class="pf-card">
+      <h3>Sponsor-facing portal</h3>
+      <div class="desc">Generate a shareable link showing only the creators you pick — their profile, campaigns, and deliverable status. No login needed on their end, no dollar figures shown, and nothing outside the creators you selected. Revoke a link any time.</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+        <div class="pf-field"><label>Label (e.g. sponsor or campaign name)</label><input id="portalLabel" type="text" placeholder="Acme Corp — Q3 launch"></div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--pf-ink-soft);display:block;margin-bottom:6px;font-family:'Inter',sans-serif">Creators to include</label>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            ${roster.map(r => `
+              <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-family:'Inter',sans-serif;border:1px solid var(--pf-line);border-radius:8px;padding:6px 10px">
+                <input type="checkbox" class="portalCreatorCheck" value="${r.creator_id}"> ${escapeHtml(r.creators?.profiles?.display_name || 'Unnamed')}
+              </label>`).join('') || '<span style="font-size:12px;color:var(--pf-ink-soft)">No creators on your roster yet.</span>'}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end"><button class="pf-btn-save" onclick="createPortalLink()">Generate link</button></div>
+      <div id="portalMsg"></div>
+    </div>
+    <div class="pf-card">
+      <h3>Active links</h3>
+      ${!portalLinks.length ? '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No portal links yet.</div>' : portalLinks.map(l => `
+        <div style="padding:12px 0;border-top:1px solid var(--pf-line);display:flex;justify-content:space-between;align-items:center;gap:12px;font-family:'Inter',sans-serif">
+          <div>
+            <div style="font-size:13px;font-weight:600">${escapeHtml(l.label)} ${l.revoked_at ? '<span style="color:#B42318;font-weight:600;font-size:11px">(revoked)</span>' : ''}</div>
+            <div style="font-size:11.5px;color:var(--pf-ink-soft)">${l.creator_ids.length} creator(s) · created ${new Date(l.created_at).toLocaleDateString()}</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            ${!l.revoked_at ? `<button class="pf-btn" onclick="copyPortalLink('${l.token}')">Copy link</button><button class="pf-btn" style="color:#B42318" onclick="revokePortalLink('${l.id}')">Revoke</button>` : ''}
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+async function createPortalLink() {
+  const label = document.getElementById('portalLabel').value.trim();
+  const creatorIds = Array.from(document.querySelectorAll('.portalCreatorCheck:checked')).map(el => el.value);
+  const el = document.getElementById('portalMsg');
+  if (!label) { el.innerHTML = `<div class="msg error">Add a label.</div>`; return; }
+  if (!creatorIds.length) { el.innerHTML = `<div class="msg error">Pick at least one creator.</div>`; return; }
+  const { error } = await sb.from('manager_portal_links').insert({ manager_id: manager.id, label, creator_ids: creatorIds });
+  if (error) { el.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  el.innerHTML = `<div class="msg ok">Link created.</div>`;
+  document.getElementById('portalLabel').value = '';
+  await loadPortalLinks();
+  render();
+}
+
+function copyPortalLink(token) {
+  const url = `${window.location.origin}/portal.html?token=${token}`;
+  navigator.clipboard.writeText(url);
+  const el = document.getElementById('portalMsg');
+  if (el) el.innerHTML = `<div class="msg ok">Link copied to clipboard.</div>`;
+}
+
+async function revokePortalLink(id) {
+  if (!confirm('Revoke this portal link? It will stop working immediately.')) return;
+  await sb.from('manager_portal_links').update({ revoked_at: new Date().toISOString() }).eq('id', id);
+  await loadPortalLinks();
+  render();
+}
+
+/* ============================================================
+   8. Automated reminders & templates
+   ============================================================ */
+const REMINDER_LABELS = { deliverable: 'Deliverable', approval: 'Awaiting approval', invoice: 'Invoice', payment: 'Payment' };
+const SEVERITY_COLOR = { overdue: '#B42318', action_needed: '#B42318', upcoming: '#B26B00', pending: '#B26B00' };
+
+function renderRemindersTab() {
+  return `
+    <div class="pf-card">
+      <h3>Action items</h3>
+      <div class="desc">Auto-surfaced from your roster's real deadlines, approvals, and invoices — nothing is emailed on your behalf, this just keeps everything that needs attention in one place.</div>
+      ${!reminders.length ? '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">Nothing needs attention right now.</div>' : reminders.map(r => `
+        <div style="padding:10px 0;border-top:1px solid var(--pf-line);display:flex;justify-content:space-between;gap:12px;font-family:'Inter',sans-serif">
+          <div>
+            <span class="badge-pill" style="background:#F3F5FA;color:${SEVERITY_COLOR[r.severity] || 'var(--pf-ink-soft)'};border:1px solid var(--pf-line);padding:3px 9px;font-size:10.5px;margin-right:8px">${REMINDER_LABELS[r.reminder_type] || r.reminder_type}</span>
+            <span style="font-size:12.5px">${escapeHtml(r.detail || '')} <span style="color:var(--pf-ink-faint)">— ${escapeHtml(r.creator_name || '')}</span></span>
+          </div>
+          <div style="font-size:11.5px;color:${SEVERITY_COLOR[r.severity] || 'var(--pf-ink-soft)'};white-space:nowrap">${r.due_date ? fmtDeadline(r.due_date) : ''}</div>
+        </div>`).join('')}
+    </div>
+    <div class="pf-card">
+      <h3>Message templates</h3>
+      <div class="desc">Reusable text for outreach, revision requests, and late-payment notices. Copy and paste into email or DMs.</div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="pf-btn" onclick="openTemplateForm()">${templateFormOpen ? 'Cancel' : '+ New template'}</button></div>
+      ${templateFormOpen ? renderTemplateForm() : ''}
+      ${!templates.length ? '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No templates yet.</div>' : templates.map(t => `
+        <div style="padding:12px 0;border-top:1px solid var(--pf-line);font-family:'Inter',sans-serif">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <span style="font-weight:600;font-size:13px">${escapeHtml(t.name)}</span>
+              <span class="badge-pill" style="background:#F3F5FA;color:var(--pf-ink-soft);border:1px solid var(--pf-line);padding:2px 8px;font-size:10px;margin-left:8px;text-transform:capitalize">${escapeHtml(t.category.replace('_', ' '))}</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="pf-btn" onclick="copyTemplate('${t.id}')">Copy</button>
+              <button class="pf-btn" onclick="openTemplateForm('${t.id}')">Edit</button>
+              <button class="pf-btn" style="color:#B42318" onclick="deleteTemplate('${t.id}')">Delete</button>
+            </div>
+          </div>
+          ${t.subject ? `<div style="font-size:11.5px;color:var(--pf-ink-soft);margin-top:6px">Subject: ${escapeHtml(t.subject)}</div>` : ''}
+          <div style="font-size:12px;color:var(--pf-ink-soft);margin-top:4px;white-space:pre-wrap">${escapeHtml(t.body)}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderTemplateForm() {
+  const t = editingTemplateId ? templates.find(x => x.id === editingTemplateId) : null;
+  return `
+    <div class="pf-card" style="background:#F8F9FC;box-shadow:none;border:1px solid var(--pf-line);animation:none;opacity:1">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="pf-field"><label>Name</label><input id="tplName" type="text" value="${escapeHtml(t?.name || '')}" placeholder="e.g. Late payment notice"></div>
+        <div class="pf-field"><label>Category</label>
+          <select id="tplCategory">
+            ${['outreach', 'revision_request', 'late_payment', 'deadline_reminder', 'approval_request', 'other'].map(c => `<option value="${c}" ${t?.category === c ? 'selected' : ''}>${c.replace('_', ' ')}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="pf-field" style="margin-bottom:10px"><label>Subject (optional)</label><input id="tplSubject" type="text" value="${escapeHtml(t?.subject || '')}"></div>
+      <div class="pf-field" style="margin-bottom:10px"><label>Body</label><textarea id="tplBody" rows="5">${escapeHtml(t?.body || '')}</textarea></div>
+      <div style="display:flex;justify-content:flex-end"><button class="pf-btn-save" onclick="saveTemplate()">${t ? 'Save changes' : 'Create'}</button></div>
+      <div id="tplMsg"></div>
+    </div>`;
+}
+
+function openTemplateForm(id) {
+  if (id) {
+    editingTemplateId = id;
+    templateFormOpen = true;
+  } else if (templateFormOpen && !editingTemplateId) {
+    templateFormOpen = false;
+  } else {
+    editingTemplateId = null;
+    templateFormOpen = true;
+  }
+  render();
+}
+
+async function saveTemplate() {
+  const row = {
+    manager_id: manager.id,
+    name: document.getElementById('tplName').value.trim(),
+    category: document.getElementById('tplCategory').value,
+    subject: document.getElementById('tplSubject').value.trim() || null,
+    body: document.getElementById('tplBody').value.trim(),
+  };
+  const el = document.getElementById('tplMsg');
+  if (!row.name || !row.body) { el.innerHTML = `<div class="msg error">Name and body are required.</div>`; return; }
+  const { error } = editingTemplateId
+    ? await sb.from('manager_message_templates').update(row).eq('id', editingTemplateId)
+    : await sb.from('manager_message_templates').insert(row);
+  if (error) { el.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  templateFormOpen = false;
+  editingTemplateId = null;
+  await loadTemplates();
+  render();
+}
+
+function copyTemplate(id) {
+  const t = templates.find(x => x.id === id);
+  if (!t) return;
+  navigator.clipboard.writeText((t.subject ? `Subject: ${t.subject}\n\n` : '') + t.body);
+}
+
+async function deleteTemplate(id) {
+  if (!confirm('Delete this template?')) return;
+  await sb.from('manager_message_templates').delete().eq('id', id);
+  await loadTemplates();
+  render();
+}
+
+/* ============================================================
+   9. Roster performance analytics
+   ============================================================ */
+function renderAnalyticsTab() {
+  return `
+    <div class="pf-card">
+      <h3>Roster performance analytics</h3>
+      <div class="desc">Real revenue, delivery, and repeat-booking data from your roster's signed contracts. Trust and reliability scores stand in for audience engagement here — Kitscore doesn't track a per-deal engagement figure.</div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        ${['creator', 'sponsor', 'campaign'].map(k => `<button class="pf-btn${analyticsSubTab === k ? ' active' : ''}" style="${analyticsSubTab === k ? 'background:var(--pf-blue);color:#fff;border-color:var(--pf-blue)' : ''}" onclick="setAnalyticsSubTab('${k}')">By ${k}</button>`).join('')}
+      </div>
+      ${analyticsSubTab === 'creator' ? renderAnalyticsByCreator() : ''}
+      ${analyticsSubTab === 'sponsor' ? renderAnalyticsBySponsor() : ''}
+      ${analyticsSubTab === 'campaign' ? renderAnalyticsByCampaign() : ''}
+    </div>`;
+}
+
+function setAnalyticsSubTab(k) { analyticsSubTab = k; render(); }
+
+function renderAnalyticsByCreator() {
+  if (!rosterAnalytics.length) return '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No verified deals on your roster yet.</div>';
+  const topId = rosterAnalytics[0]?.creator_id;
+  return `
+    <table><thead><tr><th>Creator</th><th>Verified deals</th><th>Revenue</th><th>On-time rate</th><th>Repeat sponsors</th><th>Trust</th><th>Reliability</th></tr></thead><tbody>
+      ${rosterAnalytics.map(r => `
+        <tr>
+          <td>${escapeHtml(r.creator_name)} ${r.creator_id === topId ? '<span class="badge-pill" style="background:#FFF4D9;color:#8A5A00;border:1px solid #F0D590;padding:2px 8px;font-size:10px;margin-left:6px">Top performer</span>' : ''}</td>
+          <td>${r.verified_deals}</td>
+          <td>${fmtMoney(r.total_revenue_cents)}</td>
+          <td>${r.on_time_rate != null ? r.on_time_rate + '%' : '—'}</td>
+          <td>${r.repeat_bookings}</td>
+          <td>${r.trust_score ?? '—'}</td>
+          <td>${r.reliability_score ?? '—'}</td>
+        </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function renderAnalyticsBySponsor() {
+  if (!sponsorAnalytics.length) return '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No verified deals with sponsors yet.</div>';
+  return `
+    <table><thead><tr><th>Sponsor</th><th>Deals</th><th>Revenue</th><th>Creators worked with</th></tr></thead><tbody>
+      ${sponsorAnalytics.map(s => `<tr><td>${escapeHtml(s.sponsor_name)}</td><td>${s.deals_count}</td><td>${fmtMoney(s.total_revenue_cents)}</td><td>${s.creators_worked_with}</td></tr>`).join('')}
+    </tbody></table>`;
+}
+
+function renderAnalyticsByCampaign() {
+  if (!financials.length) return '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No campaigns on record yet.</div>';
+  return `
+    <table><thead><tr><th>Campaign</th><th>Creator</th><th>Sponsor</th><th>Status</th></tr></thead><tbody>
+      ${financials.map(f => `<tr><td>${escapeHtml(f.title || 'Untitled')}</td><td>${escapeHtml(f.creator_name || '—')}</td><td>${escapeHtml(f.sponsor_name || '—')}</td><td style="text-transform:capitalize">${escapeHtml(f.status || '')}</td></tr>`).join('')}
+    </tbody></table>`;
+}
+
+/* ============================================================
+   10. Dispute & issue management
+   ============================================================ */
+const ISSUE_TYPE_LABELS = { late_payment: 'Late payment', excessive_revisions: 'Excessive revisions', missed_deadline: 'Missed deadline', communication: 'Communication', scope_dispute: 'Scope dispute', other: 'Other' };
+const ISSUE_STATUS_COLOR = { open: '#B26B00', investigating: '#2755F0', resolved: '#137C52', escalated: '#B42318' };
+
+function renderDisputesTab() {
+  const filtered = issueStatusFilter === 'all' ? issues : issues.filter(i => i.status === issueStatusFilter);
+  return `
+    <div class="pf-card">
+      <h3>Dispute & issue log</h3>
+      <div class="desc">Your own tracking log for issues with sponsors — late payments, excessive revisions, missed deadlines. This is separate from Kitscore's formal escrow dispute process, which only the creator or sponsor on a contract can open directly from that contract's page.</div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="pf-btn" onclick="openIssueForm()">${issueFormOpen ? 'Cancel' : '+ Log an issue'}</button></div>
+      ${issueFormOpen ? renderIssueForm() : ''}
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        ${['all', 'open', 'investigating', 'resolved', 'escalated'].map(s => `<button class="pf-btn" style="${issueStatusFilter === s ? 'background:var(--pf-blue);color:#fff;border-color:var(--pf-blue)' : ''};text-transform:capitalize" onclick="setIssueFilter('${s}')">${s}</button>`).join('')}
+      </div>
+      ${!filtered.length ? '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No issues logged.</div>' : filtered.map(i => `
+        <div style="padding:12px 0;border-top:1px solid var(--pf-line);font-family:'Inter',sans-serif">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+            <div>
+              <span class="badge-pill" style="background:#F3F5FA;color:${ISSUE_STATUS_COLOR[i.status]};border:1px solid var(--pf-line);padding:3px 9px;font-size:10.5px;text-transform:capitalize">${i.status}</span>
+              <span style="font-weight:600;font-size:13px;margin-left:8px">${ISSUE_TYPE_LABELS[i.issue_type] || i.issue_type}</span>
+              <span style="font-size:12px;color:var(--pf-ink-faint)"> — ${escapeHtml(i.profiles?.display_name || '')} × ${escapeHtml(i.sponsor_name)}</span>
+            </div>
+            <span style="font-size:11px;color:var(--pf-ink-faint);white-space:nowrap">${new Date(i.created_at).toLocaleDateString()}</span>
+          </div>
+          <div style="font-size:12.5px;color:var(--pf-ink-soft);margin-top:6px">${escapeHtml(i.description)}</div>
+          ${i.evidence_urls && i.evidence_urls.length ? `<div style="font-size:11.5px;margin-top:6px">${i.evidence_urls.map(u => `<a href="${escapeHtml(u)}" target="_blank" rel="noopener" style="color:var(--pf-blue);margin-right:10px">Evidence ↗</a>`).join('')}</div>` : ''}
+          ${i.resolution_notes ? `<div style="font-size:12px;color:var(--pf-ink-soft);margin-top:6px;font-style:italic">Resolution: ${escapeHtml(i.resolution_notes)}</div>` : ''}
+          ${i.status !== 'resolved' ? `
+          <div style="display:flex;gap:8px;margin-top:8px">
+            ${i.status !== 'investigating' ? `<button class="pf-btn" onclick="setIssueStatus('${i.id}','investigating')">Mark investigating</button>` : ''}
+            ${i.status !== 'escalated' ? `<button class="pf-btn" onclick="setIssueStatus('${i.id}','escalated')">Escalate</button>` : ''}
+            <button class="pf-btn" onclick="resolveIssue('${i.id}')">Mark resolved</button>
+          </div>` : ''}
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderIssueForm() {
+  return `
+    <div class="pf-card" style="background:#F8F9FC;box-shadow:none;border:1px solid var(--pf-line);animation:none;opacity:1">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="pf-field"><label>Creator</label>
+          <select id="issueCreator">${roster.map(r => `<option value="${r.creator_id}">${escapeHtml(r.creators?.profiles?.display_name || 'Unnamed')}</option>`).join('')}</select>
+        </div>
+        <div class="pf-field"><label>Sponsor name</label><input id="issueSponsor" type="text" placeholder="Sponsor / brand"></div>
+      </div>
+      <div class="pf-field" style="margin-bottom:10px"><label>Issue type</label>
+        <select id="issueType">${Object.entries(ISSUE_TYPE_LABELS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
+      </div>
+      <div class="pf-field" style="margin-bottom:10px"><label>Description</label><textarea id="issueDesc" rows="3"></textarea></div>
+      <div class="pf-field" style="margin-bottom:10px"><label>Evidence URL (optional)</label><input id="issueEvidence" type="url" placeholder="Link to screenshot, email, etc."></div>
+      <div style="display:flex;justify-content:flex-end"><button class="pf-btn-save" onclick="createIssue()">Log issue</button></div>
+      <div id="issueMsg"></div>
+    </div>`;
+}
+
+function openIssueForm() { issueFormOpen = !issueFormOpen; render(); }
+function setIssueFilter(s) { issueStatusFilter = s; render(); }
+
+async function createIssue() {
+  const el = document.getElementById('issueMsg');
+  const sponsor_name = document.getElementById('issueSponsor').value.trim();
+  const description = document.getElementById('issueDesc').value.trim();
+  if (!sponsor_name || !description) { el.innerHTML = `<div class="msg error">Sponsor name and description are required.</div>`; return; }
+  const evidence = document.getElementById('issueEvidence').value.trim();
+  const row = {
+    manager_id: manager.id,
+    creator_id: document.getElementById('issueCreator').value,
+    sponsor_name,
+    issue_type: document.getElementById('issueType').value,
+    description,
+    evidence_urls: evidence ? [evidence] : [],
+  };
+  const { error } = await sb.from('manager_issue_log').insert(row);
+  if (error) { el.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  issueFormOpen = false;
+  await loadIssues();
+  render();
+}
+
+async function setIssueStatus(id, status) {
+  await sb.from('manager_issue_log').update({ status }).eq('id', id);
+  await loadIssues();
+  render();
+}
+
+async function resolveIssue(id) {
+  const resolution_notes = prompt('Resolution notes (optional):') || null;
+  await sb.from('manager_issue_log').update({ status: 'resolved', resolution_notes, resolved_at: new Date().toISOString() }).eq('id', id);
+  await loadIssues();
   render();
 }
 
