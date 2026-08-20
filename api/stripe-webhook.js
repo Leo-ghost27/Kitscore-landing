@@ -24,6 +24,7 @@ function planFromPriceId(priceId) {
     [process.env.STRIPE_PRICE_STARTER]: 'starter',
     [process.env.STRIPE_PRICE_TEAM]: 'team',
     [process.env.STRIPE_PRICE_CREATOR_PRO]: 'creator_pro',
+    [process.env.STRIPE_PRICE_MANAGER]: 'manager',
     [process.env.STRIPE_PRICE_AGENCY]: 'agency',
   };
   return map[priceId] || null;
@@ -194,6 +195,21 @@ const handler = async (req, res) => {
             .update({ plan: product, subscription_status: 'active' }).eq('id', profileId);
         } else if (product === 'creator_pro') {
           await admin.from('creators').update({ plan: 'pro' }).eq('id', profileId);
+        } else if (product === 'manager' || product === 'agency') {
+          // Previously missing entirely -- 'agency' checkouts completed
+          // without ever writing plan/subscription_status to managers,
+          // so the upgrade button worked in Stripe but silently did
+          // nothing in the app. subscription.status here reflects
+          // whether billing-checkout.js granted a trial ('trialing') or
+          // not ('active'); trial_used is set unconditionally so a
+          // cancel-and-resubscribe doesn't get a second free trial.
+          const sub = session.subscription ? await stripe.subscriptions.retrieve(session.subscription) : null;
+          await admin.from('managers').update({
+            plan: product,
+            subscription_status: sub ? sub.status : 'active',
+            trial_used: true,
+            trial_ends_at: sub?.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
+          }).eq('id', profileId);
         }
         break;
       }
@@ -207,13 +223,20 @@ const handler = async (req, res) => {
         if (!account) break;
 
         const plan = await planFromSubscription(sub);
-        const status = sub.status; // active | past_due | canceled | unpaid etc.
+        const status = sub.status; // active | past_due | canceled | unpaid | trialing etc.
 
         const update = {};
-        if (account.table === 'sponsors') update.subscription_status = status;
+        // Managers track subscription_status the same way sponsors do --
+        // it's what the workspace paywall gate checks (trialing/active =
+        // unlocked, anything else = locked), independent of which plan
+        // (manager vs agency) they're nominally on.
+        if (account.table === 'sponsors' || account.table === 'managers') update.subscription_status = status;
         if (plan) update.plan = plan;
-        // If Stripe shows cancelled or unpaid, downgrade to free
-        if (status === 'canceled' || status === 'unpaid') update.plan = 'free';
+        // If Stripe shows cancelled or unpaid, downgrade to free -- but
+        // 'free' isn't a real manager plan (managers are always 'manager'
+        // or 'agency'), so leave a manager's plan alone here and let
+        // subscription_status='canceled'/'unpaid' do the actual locking.
+        if ((status === 'canceled' || status === 'unpaid') && account.table !== 'managers') update.plan = 'free';
 
         await admin.from(account.table).update(update).eq('id', account.id);
         break;
@@ -227,8 +250,10 @@ const handler = async (req, res) => {
         const account = await accountByCustomerId(admin, sub.customer);
         if (!account) break;
 
-        const update = { plan: 'free' };
-        if (account.table === 'sponsors') update.subscription_status = 'cancelled';
+        const update = {};
+        if (account.table === 'sponsors') { update.plan = 'free'; update.subscription_status = 'cancelled'; }
+        else if (account.table === 'managers') { update.subscription_status = 'cancelled'; } // plan stays manager/agency, gate locks on status
+        else { update.plan = 'free'; }
         await admin.from(account.table).update(update).eq('id', account.id);
         break;
       }
