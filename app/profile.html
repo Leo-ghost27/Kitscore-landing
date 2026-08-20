@@ -365,12 +365,12 @@ function renderAccountPanel() {
       <h3>Profile details</h3>
       <p class="desc">This is how sponsors and Kitscore identify you — it doesn't appear on your public trust link.</p>
       <div class="pf-form-grid">
-        <div class="pf-field"><label>Display name</label><input id="displayName" value="${escapeHtml(profile.display_name || '')}" oninput="renderAccountPanel()"></div>
-        <div class="pf-field"><label>Niche</label><input id="niche" value="${escapeHtml(creator.niche || '')}" oninput="renderAccountPanel()"></div>
+        <div class="pf-field"><label>Display name</label><input id="displayName" value="${escapeHtml(profile.display_name || '')}"></div>
+        <div class="pf-field"><label>Niche</label><input id="niche" value="${escapeHtml(creator.niche || '')}"></div>
       </div>
       <div class="pf-form-grid">
-        <div class="pf-field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}" oninput="renderAccountPanel()"></div>
-        <div class="pf-field"><label>Business email <span class="opt">— used for deal notifications</span></label><input id="businessEmail" type="email" value="${escapeHtml(creator.business_email || '')}" oninput="renderAccountPanel()"></div>
+        <div class="pf-field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}"></div>
+        <div class="pf-field"><label>Business email <span class="opt">— used for deal notifications</span></label><input id="businessEmail" type="email" value="${escapeHtml(creator.business_email || '')}"></div>
       </div>
       <div class="pf-save-row">
         <span class="pf-save-hint">Changes apply to your account, not your public profile.</span>
