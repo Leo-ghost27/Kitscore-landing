@@ -2301,16 +2301,6 @@ function renderToolsTab() {
         </div>
       </div>`}
     </div>
-
-    <!-- ── Personalized improvement tips already exist for real on the
-         Score tab (id="improve-score", ranked by your actual lowest
-         components) -- this card used to duplicate that with 3 static,
-         identical-for-everyone tips. Removed the duplicate, pointing
-         here instead so there's exactly one place this advice lives. ── -->
-    <div class="card" style="margin-bottom:0;background:var(--color-background-secondary);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 18px">
-      <span style="font-size:12.5px;color:var(--color-text-secondary)">Want to raise your score? Your personalized, ranked improvement list is on the Score tab.</span>
-      <button onclick="switchTab('score');setTimeout(()=>document.getElementById('improve-score')?.scrollIntoView({behavior:'smooth',block:'start'}),50)" style="background:#2563EB;color:#fff;border:none;padding:8px 14px;font-size:12px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;white-space:nowrap;border-radius:6px">See what to improve →</button>
-    </div>
   `;
 }
 
