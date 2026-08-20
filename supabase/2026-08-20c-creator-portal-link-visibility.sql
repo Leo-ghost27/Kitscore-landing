@@ -7,7 +7,8 @@
 -- RLS intentionally has no creator-read policy (a creator shouldn't be
 -- able to read the token, or see which other creators were bundled into
 -- the same link), so this is a narrow SECURITY DEFINER count function
--- scoped to the caller's own auth.uid() rather than a table-level grant.
+-- scoped to the caller's own profile row (via fn_current_profile_id())
+-- rather than a table-level grant.
 -- Applied live via the Supabase MCP apply_migration tool; this file is
 -- the git record.
 
@@ -20,7 +21,7 @@ SET search_path TO 'public'
 AS $$
   SELECT count(*)::integer
   FROM manager_portal_links
-  WHERE auth.uid() = ANY(creator_ids)
+  WHERE fn_current_profile_id() = ANY(creator_ids)
     AND revoked_at IS NULL
     AND (expires_at IS NULL OR expires_at > now());
 $$;
