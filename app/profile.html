@@ -233,6 +233,11 @@ async function load() {
   if (!profile) return;
   renderSidebar('creator', 'profile');
 
+  // Same lazy-expiry as directory.html -- clears a past-due
+  // availability_until before this creator's own row is read, so they
+  // see (and can't accidentally re-save) a stale status.
+  try { await sb.rpc('fn_expire_stale_availability'); } catch (e) { console.error('availability expiry check failed:', e.message); }
+
   const [{ data: c }, { data: email }, { data: plats }, { data: contracts }] = await Promise.all([
     sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images, available_for, causes, profile_views, stripe_connect_account_id, stripe_connect_charges_enabled, stripe_connect_payouts_enabled, stripe_connect_details_submitted, cover_pattern, cover_tags, cover_spotlight_stat, avatar_shape, trust_score, confidence, availability_status, availability_note, availability_until').eq('id', profile.id).single(),
     sb.rpc('fn_get_my_business_email'),
