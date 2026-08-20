@@ -119,6 +119,8 @@ async function load() {
     if (!isCreatorPro) {
       const { data: gatedCount } = await sb.rpc('fn_count_pro_gated_briefs');
       renderEarlyAccessBanner(gatedCount || 0);
+    } else {
+      renderProEarlyAccessNote();
     }
     await loadOpenBriefs();
   } else {
@@ -335,6 +337,14 @@ function renderEarlyAccessBanner(gatedCount) {
         <b>${gatedCount} new brief${gatedCount===1?'':'s'}</b> posted in the last 24 hours — Pro creators see these as soon as they're posted.
       </div>
       <a href="pricing-creator.html" class="cta" style="white-space:nowrap;text-decoration:none;font-size:12px;padding:7px 14px">Upgrade to Pro</a>
+    </div>`;
+}
+
+function renderProEarlyAccessNote() {
+  const el = document.getElementById('earlyAccessBanner');
+  el.innerHTML = `
+    <div style="font-size:11px;color:#5B4FCF;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:5px">
+      ✓ Pro: you're seeing every brief the moment it's posted — free creators wait 24 hours
     </div>`;
 }
 

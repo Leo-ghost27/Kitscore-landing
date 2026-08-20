@@ -293,6 +293,7 @@ function renderHero() {
         </select>
         <input id="availUntil" type="date" value="${creator.availability_until||''}" style="display:${creator.availability_status?'inline-block':'none'}" onchange="saveAvailability()">
         <span id="availMsg"></span>
+        ${creator.availability_status==='open' ? `<div style="width:100%;font-size:10.5px;color:#8FD6C8;margin-top:4px">✓ You're first in sponsor searches and featured in the directory spotlight</div>` : ''}
         ` : `<a href="pricing-creator.html" style="color:#8FD6C8;font-size:11px;font-weight:600;text-decoration:none">+ Set availability status — Pro</a>`}
       </div>
     </div>
