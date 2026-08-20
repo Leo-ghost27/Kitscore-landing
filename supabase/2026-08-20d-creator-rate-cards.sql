@@ -29,8 +29,8 @@ ALTER TABLE creator_rate_cards ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "creators manage own rate card" ON creator_rate_cards
   FOR ALL
-  USING (creator_id = auth.uid())
-  WITH CHECK (creator_id = auth.uid());
+  USING (creator_id = fn_current_profile_id())
+  WITH CHECK (creator_id = fn_current_profile_id());
 
 CREATE POLICY "admins manage all rate cards" ON creator_rate_cards
   FOR ALL
