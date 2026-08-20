@@ -52,6 +52,17 @@
       <div class="sec">Sponsor reports</div>
       <div id="report-list" class="loading">Loading…</div>
     </div>
+    <div class="card">
+      <div class="sec">Manager-reported issues</div>
+      <div style="font-size:11px;color:var(--color-text-tertiary);margin:-4px 0 10px">Raised by managers/agencies about a sponsor on <code>manager_issue_log</code> — they aren't a party to the contract so can't file a formal dispute themselves. Not auto-surfaced anywhere else; this is the only queue for it.</div>
+      <div id="issue-list" class="loading">Loading…</div>
+    </div>
+    <div class="card">
+      <div class="sec">Sponsor portal links</div>
+      <div style="font-size:11px;color:var(--color-text-tertiary);margin:-4px 0 10px">Unauthenticated, token-based links managers share with sponsors. Normally self-service (the manager revokes their own), but a leaked or misused link needs a kill switch that doesn't depend on that manager being reachable.</div>
+      <input id="portal-search" placeholder="Search by agency or label…" style="width:100%;margin-bottom:10px;font-size:12px;padding:7px 10px;border:0.5px solid var(--color-border-tertiary);box-sizing:border-box" oninput="renderPortalLinks()">
+      <div id="portal-list" class="loading">Loading…</div>
+    </div>
   </div>
 </div>
 
@@ -83,6 +94,8 @@ async function load() {
   campaigns = data || [];
   render();
   loadReports();
+  loadIssues();
+  loadPortalLinks();
 }
 
 async function render() {
@@ -247,6 +260,160 @@ async function resolveReport(id, outcome) {
   msgEl.innerHTML = '<div class="msg ok">Resolved.</div>';
   reports = reports.filter(r => r.id !== id);
   renderReports();
+}
+
+const ISSUE_TYPE_LABEL = {
+  late_payment: 'Late payment', excessive_revisions: 'Excessive revisions',
+  missed_deadline: 'Missed deadline', communication: 'Communication',
+  scope_dispute: 'Scope dispute', other: 'Other',
+};
+
+let issues = [];
+
+async function loadIssues() {
+  const listEl = document.getElementById('issue-list');
+  // admins bypass "managers manage their own issue log" via the
+  // separate "admins manage all issue logs" policy -- same dual-policy
+  // shape as manager_portal_links below.
+  const { data, error } = await sb.from('manager_issue_log')
+    .select('*, managers!inner(agency_name), creators!inner(id, profiles!inner(display_name))')
+    .in('status', ['open', 'investigating'])
+    .order('created_at', { ascending: true });
+
+  if (error) { listEl.textContent = 'Could not load: ' + error.message; return; }
+  issues = data || [];
+  renderIssues();
+}
+
+function renderIssues() {
+  const listEl = document.getElementById('issue-list');
+  if (!issues.length) {
+    listEl.innerHTML = '<div class="empty">No open manager-reported issues.</div>';
+    return;
+  }
+
+  listEl.innerHTML = issues.map(i => {
+    const age = daysSince(i.created_at);
+    return `
+    <div class="row-item">
+      <div class="row-top">
+        <div class="row-main">
+          <span class="fname">${escapeHtml(i.managers?.agency_name || 'Unknown manager')} → ${escapeHtml(i.sponsor_name)}</span>
+          <span class="row-meta">re: ${escapeHtml(i.creators?.profiles?.display_name || 'Unknown creator')}${i.status === 'investigating' ? ' · already marked investigating' : ''}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="outcome-tag">${ISSUE_TYPE_LABEL[i.issue_type] || i.issue_type}</span>
+          <span class="age-tag">${age !== null ? age + 'd old' : ''}</span>
+          <button class="btn-toggle" onclick="toggleIssueArb('${i.id}')">Review</button>
+        </div>
+      </div>
+      <div class="dispute-reason-note">${svgIcon('alert-triangle',{size:12})} ${escapeHtml(i.description)}</div>
+      ${i.evidence_urls?.length ? `<div class="row-meta">${i.evidence_urls.length} evidence link(s) attached</div>` : ''}
+      <div class="arb-panel" id="issue-arb-${i.id}">
+        <textarea id="issue-note-${i.id}" placeholder="Required: resolution notes (logged permanently, visible to the manager)"></textarea>
+        <div class="arb-actions">
+          <button class="btn-verify" onclick="resolveIssue('${i.id}','resolved')">Mark resolved</button>
+          <button class="btn-toggle" onclick="resolveIssue('${i.id}','escalated')">Escalate</button>
+          <button class="btn-cancel" onclick="resolveIssue('${i.id}','investigating')">Mark investigating</button>
+        </div>
+        <div id="issue-msg-${i.id}"></div>
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+function toggleIssueArb(id) {
+  document.getElementById(`issue-arb-${id}`).classList.toggle('open');
+}
+
+async function resolveIssue(id, outcome) {
+  const note = document.getElementById(`issue-note-${id}`).value.trim();
+  const msgEl = document.getElementById(`issue-msg-${id}`);
+  if (!note) { msgEl.innerHTML = '<div class="msg error">Give resolution notes.</div>'; return; }
+
+  const payload = { status: outcome, resolution_notes: note };
+  if (outcome === 'resolved') payload.resolved_at = new Date().toISOString();
+
+  const { error } = await sb.from('manager_issue_log').update(payload).eq('id', id);
+  if (error) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+
+  const { error: logError } = await sb.from('admin_actions').insert({
+    admin_id: profile.id,
+    action_type: `manager_issue_${outcome}`,
+    target_table: 'manager_issue_log',
+    target_id: id,
+    note,
+  });
+  if (logError) console.error('admin_actions log failed:', logError.message);
+
+  msgEl.innerHTML = '<div class="msg ok">Saved.</div>';
+  if (outcome === 'resolved') { issues = issues.filter(i => i.id !== id); renderIssues(); }
+  else { const i = issues.find(x => x.id === id); if (i) i.status = outcome; renderIssues(); }
+}
+
+let portalLinks = [];
+
+async function loadPortalLinks() {
+  const listEl = document.getElementById('portal-list');
+  const { data, error } = await sb.from('manager_portal_links')
+    .select('*, managers!inner(agency_name)')
+    .order('created_at', { ascending: false });
+
+  if (error) { listEl.textContent = 'Could not load: ' + error.message; return; }
+  portalLinks = data || [];
+  renderPortalLinks();
+}
+
+function renderPortalLinks() {
+  const listEl = document.getElementById('portal-list');
+  const q = (document.getElementById('portal-search').value || '').toLowerCase();
+  const filtered = portalLinks.filter(l =>
+    !q || l.managers?.agency_name?.toLowerCase().includes(q) || l.label?.toLowerCase().includes(q));
+
+  if (!filtered.length) {
+    listEl.innerHTML = '<div class="empty">No portal links match.</div>';
+    return;
+  }
+
+  listEl.innerHTML = filtered.slice(0, 50).map(l => `
+    <div class="row-item">
+      <div class="row-top">
+        <div class="row-main">
+          <span class="fname">${escapeHtml(l.label)}</span>
+          <span class="row-meta">${escapeHtml(l.managers?.agency_name || 'Unknown manager')} · ${l.creator_ids?.length || 0} creator(s) · created ${daysSince(l.created_at)}d ago</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${l.revoked_at
+            ? `<span class="outcome-tag">Revoked</span>`
+            : `<button class="btn-reject" onclick="revokePortalLink('${l.id}')">Revoke</button>`}
+        </div>
+      </div>
+      <div id="portal-msg-${l.id}"></div>
+    </div>
+  `).join('');
+}
+
+async function revokePortalLink(id) {
+  const msgEl = document.getElementById(`portal-msg-${id}`);
+  // admins bypass "managers manage their own portal links" via the
+  // separate "admins manage all portal links" policy -- so this works
+  // even if the owning manager's account is compromised or unresponsive.
+  const { error } = await sb.from('manager_portal_links').update({ revoked_at: new Date().toISOString() }).eq('id', id);
+  if (error) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+
+  const { error: logError } = await sb.from('admin_actions').insert({
+    admin_id: profile.id,
+    action_type: 'manager_portal_link_revoked',
+    target_table: 'manager_portal_links',
+    target_id: id,
+    note: 'Revoked by admin',
+  });
+  if (logError) console.error('admin_actions log failed:', logError.message);
+
+  const l = portalLinks.find(x => x.id === id);
+  if (l) l.revoked_at = new Date().toISOString();
+  renderPortalLinks();
 }
 
 load();
