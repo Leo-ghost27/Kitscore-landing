@@ -66,6 +66,15 @@
   .mgr-tab.active .mgr-tab-icon{background:#fff;color:var(--pf-blue)}
   .mgr-tab.active .mgr-tab-label{color:var(--pf-blue-deep)}
   .mgr-tab-lock{display:block;margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.04em;text-transform:uppercase;color:#8A6D00;background:#FFF3CD;border:1px solid #F0DE9E;border-radius:6px;padding:1px 5px}
+  .mgr-tab.locked{opacity:.6}
+  .mgr-tab.locked:hover{opacity:.85}
+  .mgr-tab-lock-icon{display:inline-flex;vertical-align:-2px;margin-left:4px;color:#B26B00}
+  .mgr-sections{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .mgr-section-btn{padding:9px 18px;border-radius:11px;border:1px solid var(--pf-line);background:#fff;font-size:12.5px;font-weight:600;color:var(--pf-ink-soft);cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s ease,color .15s ease}
+  .mgr-section-btn:hover{color:var(--pf-ink)}
+  .mgr-section-btn.active{background:var(--pf-blue-deep);color:#fff;border-color:var(--pf-blue-deep)}
+  .hstat.clickable{cursor:pointer;transition:background .15s ease,transform .15s ease}
+  .hstat.clickable:hover{background:rgba(255,255,255,.14);transform:translateY(-1px)}
   @media(max-width:900px){.mgr-tabs{grid-template-columns:repeat(4,1fr)}}
   @media(max-width:560px){.mgr-tabs{grid-template-columns:repeat(3,1fr)}}
 
@@ -201,13 +210,41 @@ const AGENCY_TABS = [
   ['disputes', 'Disputes'],
 ];
 
-// Tabs whose content is actually gated to manager.plan === 'agency' server
-// and client-side (see renderBenchmarkTab / renderBrandingTab below).
-// NOTE: Staff sub-seats are marketed as Agency-only in profile-manager.html
-// but agency-staff-invite.js has no plan check today, so it's not included
-// here -- badging it "Agency" would be misleading while it's free either
-// way. Flagged separately; not fixed as part of this change.
-const AGENCY_ONLY_TABS = new Set(['benchmark', 'branding']);
+// Tabs gated to manager.plan === 'agency'. Manager tier ($49/mo, capped at
+// 5 active roster links -- enforced for real via RLS on
+// manager_creator_links, not just client-side) covers day-to-day work on
+// a small roster: Roster, Trust Score, Performance, Payout Ledger,
+// Pipeline, Creator CRM, Reminders, Disputes. Agency tier ($149/mo,
+// unlimited roster) adds the scale/team/client-facing layer: Finances,
+// Sponsors, Rate Benchmark, Branding, Staff, Sponsor Portal, Analytics.
+//
+// NOTE ON ENFORCEMENT: benchmark/branding were already client-side-only
+// gates (RLS still lets a Manager-plan account call fn_manager_rate_benchmark
+// or update managers.agency_name/logo_url directly). Staff sub-seat
+// invites now check manager.plan server-side as of this change
+// (agency-staff-invite.js) -- that was the one with a real free-tier
+// abuse path (unlimited free seats). Finances/Sponsors/Portal/Analytics
+// are UI-gated the same way benchmark/branding always have been; making
+// all of these RLS/RPC-enforced too is a reasonable next step once
+// Stripe plan sync is wired up, not done here.
+const AGENCY_ONLY_TABS = new Set(['finances', 'sponsors', 'benchmark', 'branding', 'staff', 'portal', 'analytics']);
+
+// Grouped sub-nav: fixes the old single-row 14-tab strip being cramped
+// and unordered. Grouping is by workflow, not by plan tier -- Manager and
+// Agency tabs sit side by side within a section (locked ones just show
+// the lock treatment below), since hiding the grouping logic behind plan
+// tier would make the nav reshuffle on upgrade, which is more confusing
+// than a couple of locked tabs in the right place.
+const TAB_SECTIONS = [
+  { key: 'roster_ops', label: 'Roster Ops', tabs: ['roster', 'trust', 'performance', 'crm', 'reminders', 'disputes'] },
+  { key: 'finance', label: 'Finance', tabs: ['ledger', 'finances'] },
+  { key: 'growth', label: 'Growth', tabs: ['sponsors', 'benchmark', 'analytics', 'portal', 'branding'] },
+  { key: 'team', label: 'Team', tabs: ['staff'] },
+];
+function sectionForTab(tabKey) {
+  return TAB_SECTIONS.find(s => s.tabs.includes(tabKey))?.key || TAB_SECTIONS[0].key;
+}
+let activeSection = sectionForTab(activeTab);
 
 async function load() {
   profile = await requireRole('manager');
@@ -390,20 +427,24 @@ function render() {
       </div>
 
       <div class="hero-stats">
-        <div class="hstat"><div class="v">${rosterCount}</div><div class="l">Roster size</div></div>
-        <div class="hstat"><div class="v">${s && s.avg_creator_trust_score != null ? s.avg_creator_trust_score : '—'}</div><div class="l">Avg. creator score</div></div>
-        <div class="hstat"><div class="v">${s ? s.verified_deals : 0}</div><div class="l">Verified deals</div></div>
-        <div class="hstat"><div class="v">${s ? s.tenure_months + 'mo' : '—'}</div><div class="l">Tenure</div></div>
+        <div class="hstat clickable" onclick="switchTab('roster')"><div class="v">${rosterCount}</div><div class="l">Roster size</div></div>
+        <div class="hstat clickable" onclick="switchTab('trust')"><div class="v">${s && s.avg_creator_trust_score != null ? s.avg_creator_trust_score : '—'}</div><div class="l">Avg. creator score</div></div>
+        <div class="hstat clickable" onclick="switchTab('performance')"><div class="v">${s ? s.verified_deals : 0}</div><div class="l">Verified deals</div></div>
+        <div class="hstat clickable" onclick="switchTab('trust')"><div class="v">${s && s.tenure_months != null ? s.tenure_months + 'mo' : '—'}</div><div class="l">Tenure</div></div>
       </div>
     </div>
 
-    <div class="mgr-tabs" style="--tab-count:${AGENCY_TABS.length}">
-      ${AGENCY_TABS.map(([key, label]) => {
+    <div class="mgr-sections">
+      ${TAB_SECTIONS.map(sec => `<button class="mgr-section-btn ${activeSection === sec.key ? 'active' : ''}" onclick="switchSection('${sec.key}')">${sec.label}</button>`).join('')}
+    </div>
+
+    <div class="mgr-tabs" style="--tab-count:${TAB_SECTIONS.find(s => s.key === activeSection).tabs.length}">
+      ${TAB_SECTIONS.find(s => s.key === activeSection).tabs.map(key => {
+        const label = AGENCY_TABS.find(([k]) => k === key)[1];
         const locked = AGENCY_ONLY_TABS.has(key) && !isAgency;
-        return `<div class="mgr-tab ${activeTab === key ? 'active' : ''}" onclick="switchTab('${key}')">
+        return `<div class="mgr-tab ${activeTab === key ? 'active' : ''} ${locked ? 'locked' : ''}" onclick="switchTab('${key}')">
           <div class="mgr-tab-icon">${mgrIcon(key)}</div>
-          <div class="mgr-tab-label">${label}</div>
-          ${locked ? '<span class="mgr-tab-lock">Agency</span>' : ''}
+          <div class="mgr-tab-label">${label}${locked ? '<span class="mgr-tab-lock-icon" title="Agency plan">' + lockIconSvg() + '</span>' : ''}</div>
         </div>`;
       }).join('')}
     </div>
@@ -640,6 +681,13 @@ function exportLedger() {
 }
 
 function renderFinancesTab() {
+  if (manager.plan !== 'agency') {
+    return `
+      <div class="pf-card lock-card">
+        <h3>Commission & invoice tracking</h3>
+        <div class="desc" style="margin-bottom:0">This is an Agency-plan feature. Track commission owed per deal and invoice status across your whole roster — the kind of financial ops that matter once you're managing more than a handful of creators.</div>
+      </div>`;
+  }
   const now = new Date();
   const thisMonth = financials.filter(f => f.created_at && new Date(f.created_at).getMonth() === now.getMonth() && new Date(f.created_at).getFullYear() === now.getFullYear());
   const invoicedCents = financials.filter(f => f.invoice_status === 'invoiced').reduce((s, f) => s + (f.commission_cents || 0), 0);
@@ -714,6 +762,13 @@ async function updateFinancials(contractId, field, value) {
 }
 
 function renderSponsorsTab() {
+  if (manager.plan !== 'agency') {
+    return `
+      <div class="pf-card lock-card">
+        <h3>Sponsor lookup</h3>
+        <div class="desc" style="margin-bottom:0">This is an Agency-plan feature. Look up a sponsor's history across the whole roster before you sign — useful once you're fielding deals across several creators, not just your own.</div>
+      </div>`;
+  }
   return `
     <div class="pf-card">
       <h3>Sponsor risk &amp; trust lookup</h3>
@@ -773,7 +828,7 @@ function renderTrustScoreTab() {
         <div><div class="v">${s.roster_size}</div><div class="l">Roster size</div></div>
         <div><div class="v">${s.avg_creator_trust_score ?? '—'}</div><div class="l">Avg. creator score</div></div>
         <div><div class="v">${s.verified_deals}</div><div class="l">Verified deals</div></div>
-        <div><div class="v">${s.tenure_months}mo</div><div class="l">Tenure</div></div>
+        <div><div class="v">${s.tenure_months != null ? s.tenure_months + 'mo' : '—'}</div><div class="l">Tenure</div></div>
       </div>
       <div class="ts-formula">Formula: 50% average creator trust score + 35% verified deal volume (capped) + 15% tenure (capped at 12 months).</div>
     </div>`;
@@ -888,6 +943,13 @@ async function saveBranding() {
 }
 
 function renderStaffTab() {
+  if (manager.plan !== 'agency') {
+    return `
+      <div class="pf-card lock-card">
+        <h3>Agency staff</h3>
+        <div class="desc" style="margin-bottom:0">This is an Agency-plan feature. Invite staff who get the same roster access you have — useful once you're a team, not a solo manager.</div>
+      </div>`;
+  }
   return `
     <div class="pf-card">
       <h3>Agency staff</h3>
@@ -946,9 +1008,21 @@ function showStaffMsg(text, type) {
   if (el) el.innerHTML = `<div class="msg ${type}">${escapeHtml(text)}</div>`;
 }
 
+function switchSection(key) {
+  activeSection = key;
+  const sec = TAB_SECTIONS.find(s => s.key === key);
+  if (sec && !sec.tabs.includes(activeTab)) activeTab = sec.tabs[0];
+  render();
+}
+
 function switchTab(key) {
   activeTab = key;
+  activeSection = sectionForTab(key);
   render();
+}
+
+function lockIconSvg() {
+  return '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 }
 
 /* ============================================================
@@ -1052,6 +1126,13 @@ async function saveCrmNotes() {
    7. Sponsor-facing portal
    ============================================================ */
 function renderPortalTab() {
+  if (manager.plan !== 'agency') {
+    return `
+      <div class="pf-card lock-card">
+        <h3>Sponsor-facing portal</h3>
+        <div class="desc" style="margin-bottom:0">This is an Agency-plan feature. A branded, shareable link where a sponsor can see selected creators' campaigns and deliverables without a login — the kind of client-facing polish that justifies Agency pricing.</div>
+      </div>`;
+  }
   return `
     <div class="pf-card">
       <h3>Sponsor-facing portal</h3>
@@ -1227,6 +1308,13 @@ async function deleteTemplate(id) {
    9. Roster performance analytics
    ============================================================ */
 function renderAnalyticsTab() {
+  if (manager.plan !== 'agency') {
+    return `
+      <div class="pf-card lock-card">
+        <h3>Roster performance analytics</h3>
+        <div class="desc" style="margin-bottom:0">This is an Agency-plan feature. Revenue, on-time delivery, and repeat-booking breakdowns by creator, sponsor, and campaign — built for optimizing a bigger roster and proving ROI to sponsors.</div>
+      </div>`;
+  }
   return `
     <div class="pf-card">
       <h3>Roster performance analytics</h3>
