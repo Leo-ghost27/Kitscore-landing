@@ -164,6 +164,12 @@ async function load() {
   renderSidebar('sponsor', 'directory');
   renderUsageBanner();
 
+  // Best-effort: clears any availability_status whose availability_until
+  // has passed before this sponsor's query runs, so a stale "Open for
+  // work · through <past date>" badge never renders. Non-blocking on
+  // failure -- worst case a stale badge shows until the next load.
+  try { await sb.rpc('fn_expire_stale_availability'); } catch (e) { console.error('availability expiry check failed:', e.message); }
+
   const { data: rows, error } = await sb.from('creators').select('id, niche, location, trust_score, confidence, badge_tier, updated_at, reliability_score, repeat_sponsor_rate, founding_cohort, availability_status, availability_until, profiles!inner(display_name)').eq('is_test', false);
   if (error) { document.getElementById('content').textContent = 'Could not load creators: ' + error.message; return; }
 

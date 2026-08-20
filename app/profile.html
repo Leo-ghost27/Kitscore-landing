@@ -150,7 +150,7 @@
 <script src="icons.js?v=2"></script>
 <script src="nav.js?v=3"></script>
 <script>
-let profile, creator, platforms = [], payoutHistory = [], managerLinks = [];
+let profile, creator, platforms = [], payoutHistory = [], managerLinks = [], activePortalLinkCount = 0;
 
 const PLATFORM_META = {
   youtube: { label: 'YouTube', color: '#FF3B30', icon: '<path d="M22 8.4a2.9 2.9 0 0 0-2-2C18.2 6 12 6 12 6s-6.2 0-8 .4a2.9 2.9 0 0 0-2 2A31 31 0 0 0 1.6 12 31 31 0 0 0 2 15.6a2.9 2.9 0 0 0 2 2c1.8.4 8 .4 8 .4s6.2 0 8-.4a2.9 2.9 0 0 0 2-2A31 31 0 0 0 22.4 12 31 31 0 0 0 22 8.4zM9.8 15V9l5.4 3z"/>' },
@@ -233,6 +233,11 @@ async function load() {
   if (!profile) return;
   renderSidebar('creator', 'profile');
 
+  // Same lazy-expiry as directory.html -- clears a past-due
+  // availability_until before this creator's own row is read, so they
+  // see (and can't accidentally re-save) a stale status.
+  try { await sb.rpc('fn_expire_stale_availability'); } catch (e) { console.error('availability expiry check failed:', e.message); }
+
   const [{ data: c }, { data: email }, { data: plats }, { data: contracts }] = await Promise.all([
     sb.from('creators').select('niche, location, founding_cohort, bio, slug, plan, avatar_url, gallery_images, available_for, causes, profile_views, stripe_connect_account_id, stripe_connect_charges_enabled, stripe_connect_payouts_enabled, stripe_connect_details_submitted, cover_pattern, cover_tags, cover_spotlight_stat, avatar_shape, trust_score, confidence, availability_status, availability_note, availability_until').eq('id', profile.id).single(),
     sb.rpc('fn_get_my_business_email'),
@@ -288,6 +293,7 @@ function renderHero() {
         </select>
         <input id="availUntil" type="date" value="${creator.availability_until||''}" style="display:${creator.availability_status?'inline-block':'none'}" onchange="saveAvailability()">
         <span id="availMsg"></span>
+        ${creator.availability_status==='open' ? `<div style="width:100%;font-size:10.5px;color:#8FD6C8;margin-top:4px">✓ You're first in sponsor searches and featured in the directory spotlight</div>` : ''}
         ` : `<a href="pricing-creator.html" style="color:#8FD6C8;font-size:11px;font-weight:600;text-decoration:none">+ Set availability status — Pro</a>`}
       </div>
     </div>
@@ -398,7 +404,8 @@ function renderManagerActionRow() {
           ${escapeHtml(active.display_name || active.email || 'Manager')} is linked
         </button>
         <button class="pf-btn-save" style="background:#B42318;box-shadow:none" onclick="revokeManager('${active.link_id}')">Revoke access</button>
-      </div>`;
+      </div>
+      ${activePortalLinkCount > 0 ? `<div style="font-size:11.5px;color:var(--pf-ink-soft);margin-top:8px">${activePortalLinkCount} active sponsor portal ${activePortalLinkCount === 1 ? 'link includes' : 'links include'} you — a shareable, no-login view your manager sent to a sponsor. Ask your manager if you'd like to know more.</div>` : ''}`;
   }
   return `
     <div class="pf-form-grid" style="margin-top:12px">
@@ -500,6 +507,13 @@ async function loadManagerLinks() {
   (pendingInvites || []).forEach(inv => {
     managerLinks.push({ link_id: inv.id, status: 'pending', email: inv.email, accepted_at: false });
   });
+
+  // Count-only visibility into any active sponsor portal links that include
+  // this creator -- see fn_creator_active_portal_link_count(). No label,
+  // token, or manager detail; just a number so a link isn't invisible to
+  // the person it's actually about.
+  const { data: count } = await sb.rpc('fn_creator_active_portal_link_count');
+  activePortalLinkCount = count || 0;
 }
 
 function showManagerMsg(text, type) {

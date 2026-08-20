@@ -68,6 +68,7 @@
     <div class="ptitle">Briefs</div>
     <div class="psub" id="psub">Open sponsorship opportunities — apply directly instead of waiting to be found.</div>
     <div id="formArea"></div>
+    <div id="earlyAccessBanner"></div>
     <div class="card" id="list"><div class="loading">Loading…</div></div>
     <div class="hw-grid">
       <div class="hw-step">
@@ -115,6 +116,12 @@ async function load() {
     const { data: c } = await sb.from('creators').select('plan').eq('id', profile.id).maybeSingle();
     isCreatorPro = c?.plan === 'pro';
     document.getElementById('formArea').innerHTML = '';
+    if (!isCreatorPro) {
+      const { data: gatedCount } = await sb.rpc('fn_count_pro_gated_briefs');
+      renderEarlyAccessBanner(gatedCount || 0);
+    } else {
+      renderProEarlyAccessNote();
+    }
     await loadOpenBriefs();
   } else {
     document.getElementById('list').innerHTML = '<div class="empty">Briefs are available to creator and sponsor accounts.</div>';
@@ -317,6 +324,30 @@ async function downloadPitchEvidence(applicationId) {
 }
 
 // ── Creator: browse and apply ──────────────────────────────────────────────
+// Non-Pro creators: tells them briefs exist without showing details --
+// the count comes from fn_count_pro_gated_briefs(), which is the same
+// server-side boundary that actually hides the rows (RLS), so this
+// banner can never over- or under-claim relative to what's really gated.
+function renderEarlyAccessBanner(gatedCount) {
+  const el = document.getElementById('earlyAccessBanner');
+  if (!gatedCount) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#F5F3FF;border:1px solid #DDD6FE;margin-bottom:12px">
+      <div style="font-size:12.5px;color:#4C1D95">
+        <b>${gatedCount} new brief${gatedCount===1?'':'s'}</b> posted in the last 24 hours — Pro creators see these as soon as they're posted.
+      </div>
+      <a href="pricing-creator.html" class="cta" style="white-space:nowrap;text-decoration:none;font-size:12px;padding:7px 14px">Upgrade to Pro</a>
+    </div>`;
+}
+
+function renderProEarlyAccessNote() {
+  const el = document.getElementById('earlyAccessBanner');
+  el.innerHTML = `
+    <div style="font-size:11px;color:#5B4FCF;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:5px">
+      ✓ Pro: you're seeing every brief the moment it's posted — free creators wait 24 hours
+    </div>`;
+}
+
 async function loadOpenBriefs() {
   const listEl = document.getElementById('list');
   const [{ data: myApps }, { data: myReports }] = await Promise.all([

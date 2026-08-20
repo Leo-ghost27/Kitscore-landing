@@ -17,8 +17,6 @@
   }
   body{background:var(--canvas);font-family:'Space Grotesk',sans-serif}
   .app-main{max-width:1180px;padding:40px 48px 80px}
-  .ptitle{font-family:'Fraunces',serif;font-size:24px;font-weight:600;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
-  .psub{font-size:13.5px;color:var(--ink-soft);margin-bottom:24px;font-family:'Inter',sans-serif}
   .msg{font-size:12px;margin-top:8px;padding:10px 12px;border-radius:8px;font-family:'Inter',sans-serif}
   .msg.error{background:#FDECEC;color:#B42318}
   .msg.ok{background:#E9F7EE;color:#137C52}
@@ -35,27 +33,53 @@
   .pf-field input,.pf-field select,.pf-field textarea{padding:9px 12px;border:1px solid var(--pf-line);border-radius:10px;font-size:13px;font-family:inherit}
   .pf-field textarea{resize:vertical;min-height:56px}
 
-  .stat-row{display:flex;gap:24px;margin-bottom:20px;flex-wrap:wrap;font-family:'Inter',sans-serif}
-  .stat-row .v{font-family:'Fraunces',serif;font-size:22px;font-weight:600}
-  .stat-row .l{font-size:11px;color:var(--pf-ink-soft);text-transform:uppercase}
-
   .empty-state{text-align:center;padding:50px 20px;color:var(--pf-ink-soft);font-family:'Inter',sans-serif}
   .empty-state svg{opacity:.3;margin-bottom:12px}
   .empty-state .t{font-size:14px;font-weight:600;color:var(--pf-ink);margin-bottom:6px;font-family:'Fraunces',serif}
   .empty-state .s{font-size:12.5px;max-width:340px;margin:0 auto}
 
-  .pipe-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
-  .pipe-header .ptitle,.pipe-header .psub{margin-bottom:0}
+  /* Hero -- matches app/agency.html's hero banner for visual parity across
+     the manager workspace. Pipeline has no "score" concept, so this is a
+     simplified variant: eyebrow/title/subtitle + add-deal action + the
+     3 summary stats as translucent tiles, no score ring. */
+  .hero{position:relative;background:linear-gradient(135deg,#0B2A6B 0%,#142B63 55%,#0E3350 100%);border-radius:20px;padding:32px 36px;margin-bottom:22px;color:#fff;overflow:hidden}
+  .hero-bg{position:absolute;inset:0;opacity:.08;pointer-events:none}
+  .hero-top{position:relative;display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;margin-bottom:24px}
+  .hero-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9DB4F0;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .hero-eyebrow::before{content:"";width:6px;height:6px;background:var(--pf-teal);border-radius:50%}
+  .hero-title{font-family:'Fraunces',serif;font-size:28px;font-weight:600;letter-spacing:-.01em;margin-bottom:8px}
+  .hero-sub{font-size:13.5px;color:#C7D2E8;max-width:440px;line-height:1.6;font-family:'Inter',sans-serif}
+  .hero-add-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:12.5px;font-weight:600;padding:10px 18px;border-radius:10px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;display:flex;align-items:center;gap:7px}
+  .hero-add-btn:hover{background:rgba(255,255,255,.16)}
+  .hero-stats{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .hstat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px 16px}
+  .hstat .v{font-family:'Fraunces',serif;font-size:22px;font-weight:600}
+  .hstat .l{font-size:11px;color:#9DB4E8;margin-top:2px;font-family:'Inter',sans-serif}
+  @media(max-width:640px){.hero-stats{grid-template-columns:1fr}}
 
   /* Board -- Kanban-specific, styled to sit alongside the roster-card
      language (Fraunces values, IBM Plex Mono chips, same radius/shadow) */
-  .board{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px}
+  .board-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-family:'Inter',sans-serif}
+  .board-nav-label{font-size:11px;font-weight:600;color:var(--pf-ink-soft)}
+  .board-nav-btns{display:flex;gap:6px}
+  .board-nav-btn{width:30px;height:30px;border-radius:50%;background:#fff;border:1px solid var(--pf-line);box-shadow:var(--pf-shadow);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--pf-ink-soft);font-size:15px;transition:background .15s ease,color .15s ease}
+  .board-nav-btn:hover:not(:disabled){background:var(--pf-blue-deep);color:#fff;border-color:var(--pf-blue-deep)}
+  .board-nav-btn:disabled{opacity:.35;cursor:default}
+  .board-wrap{position:relative}
+  .board-fade{position:absolute;top:0;bottom:16px;width:56px;pointer-events:none;opacity:0;transition:opacity .2s ease}
+  .board-fade-left{left:0;background:linear-gradient(to right,var(--canvas),rgba(245,246,249,0))}
+  .board-fade-right{right:0;background:linear-gradient(to left,var(--canvas),rgba(245,246,249,0))}
+  .board-dots{margin-top:12px;display:flex;gap:3px;justify-content:center}
+  .board-dot{width:18px;height:3px;border-radius:2px;background:#D8DDE8;transition:background .2s ease;cursor:pointer}
+  .board-dot.active{background:var(--pf-blue-deep)}
+  .board{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none}
+  .board::-webkit-scrollbar{display:none}
   .col{flex:0 0 240px;display:flex;flex-direction:column;min-height:120px}
   .col-head{display:flex;justify-content:space-between;align-items:center;padding:0 4px 8px;font-family:'Inter',sans-serif}
   .col-title{font-size:10.5px;font-weight:700;color:var(--pf-ink-faint);text-transform:uppercase;letter-spacing:.03em}
   .col-count{font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;color:var(--pf-blue-deep);background:#EEF2FF;border-radius:8px;padding:1px 7px}
   .col-value{font-size:10.5px;color:var(--pf-ink-faint);padding:0 4px 8px;font-family:'IBM Plex Mono',monospace}
-  .col-drop{flex:1;background:rgba(230,233,240,.4);border-radius:12px;padding:8px;min-height:100px;transition:background .15s ease}
+  .col-drop{flex:1;background:#F8F9FC;border:1px solid var(--pf-line);box-shadow:var(--pf-shadow);border-radius:var(--pf-radius);padding:8px;min-height:100px;transition:background .15s ease,box-shadow .15s ease}
   .col-drop.drag-over{background:rgba(39,85,240,.1);outline:2px dashed var(--pf-blue)}
 
   .deal-card{background:#fff;border:1px solid var(--pf-line);border-radius:var(--pf-radius);box-shadow:var(--pf-shadow);padding:14px 15px;margin-bottom:8px;cursor:grab;font-family:'Inter',sans-serif;transition:transform .15s ease,box-shadow .15s ease}
@@ -70,6 +94,9 @@
   .deal-deadline.overdue{color:#B42318;font-weight:700}
   .deal-action{font-size:10.5px;color:var(--pf-ink-soft);margin-top:6px;line-height:1.4}
   .deal-linked{font-size:10px;font-weight:700;color:var(--pf-teal);background:rgba(23,184,166,.1);border-radius:8px;padding:2px 8px;display:inline-block;margin-top:6px}
+
+  .badge-pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px}
+  .pill-overdue{background:#FDECEC;color:#B42318;border:1px solid #F6C9C3}
 
   .empty-col{font-size:11px;color:var(--pf-ink-faint);text-align:center;padding:16px 4px;font-family:'Inter',sans-serif}
 
@@ -93,8 +120,8 @@
   <div id="sidebar-mount" class="sidebar"></div>
   <main class="app-main">
     <div id="content">
-      <div class="ptitle">Pipeline</div>
-      <div class="psub">Loading…</div>
+      <div style="font-family:'Fraunces',serif;font-size:24px;font-weight:600;color:var(--ink)">Pipeline</div>
+      <div style="font-size:13.5px;color:var(--ink-soft);margin-top:4px;font-family:'Inter',sans-serif">Loading…</div>
     </div>
   </main>
 </div>
@@ -165,9 +192,7 @@ function fmtDeadline(dateStr) {
 function render() {
   if (!creators.length) {
     document.getElementById('content').innerHTML = `
-      <div class="pipe-header" style="margin-bottom:20px">
-        <div><div class="ptitle">Pipeline</div><div class="psub" style="margin-bottom:0">Track deals from first outreach through payment.</div></div>
-      </div>
+      ${renderHero(0, 0, 0)}
       <div class="pf-card">
         <div class="empty-state">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3.6"/><path d="M2.4 20.5c0-3.6 3-6.1 6.6-6.1s6.6 2.5 6.6 6.1"/></svg>
@@ -182,23 +207,48 @@ function render() {
   const totalPaid = deals.filter(d => d.stage === 'paid').reduce((s, d) => s + (d.fee_cents || 0), 0);
 
   document.getElementById('content').innerHTML = `
-    <div class="pipe-header" style="margin-bottom:20px">
-      <div>
-        <div class="ptitle">Pipeline</div>
-        <div class="psub" style="margin-bottom:0">Track deals from first outreach through payment. Drag cards between stages.</div>
+    ${renderHero(deals.length, totalPipelineValue, totalPaid)}
+    <div class="board-nav">
+      <div class="board-nav-label">${STAGES.length} stages — ${STAGES[0][1]} through ${STAGES[STAGES.length - 1][1]}</div>
+      <div class="board-nav-btns">
+        <button class="board-nav-btn" id="boardPrev" onclick="scrollBoard(-1)">‹</button>
+        <button class="board-nav-btn" id="boardNext" onclick="scrollBoard(1)">›</button>
       </div>
-      <button class="pf-btn-save" onclick="openDealModal()">+ Add deal</button>
     </div>
-    <div class="stat-row">
-      <div><div class="v">${deals.length}</div><div class="l">Total deals</div></div>
-      <div><div class="v">${fmtMoney(totalPipelineValue)}</div><div class="l">In pipeline</div></div>
-      <div><div class="v">${fmtMoney(totalPaid)}</div><div class="l">Paid</div></div>
+    <div class="board-wrap">
+      <div class="board" id="board">
+        ${STAGES.map(([key, label]) => renderColumn(key, label)).join('')}
+      </div>
+      <div class="board-fade board-fade-left" id="boardFadeLeft"></div>
+      <div class="board-fade board-fade-right" id="boardFadeRight"></div>
     </div>
-    <div class="board" id="board">
-      ${STAGES.map(([key, label]) => renderColumn(key, label)).join('')}
-    </div>
+    <div class="board-dots" id="boardDots"></div>
   `;
   attachDnd();
+  setupBoardNav();
+}
+
+function renderHero(dealCount, pipelineValue, paidValue) {
+  return `
+    <div class="hero">
+      <svg class="hero-bg" width="100%" height="100%" preserveAspectRatio="none"><circle cx="92%" cy="8%" r="120" fill="#3E63F5"></circle><circle cx="10%" cy="100%" r="90" fill="#17B8A6"></circle></svg>
+      <div class="hero-top">
+        <div>
+          <div class="hero-eyebrow">Manager account</div>
+          <div class="hero-title">Pipeline</div>
+          <div class="hero-sub">Track deals from first outreach through payment. Drag cards between stages.</div>
+        </div>
+        <button class="hero-add-btn" onclick="openDealModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Add deal
+        </button>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><div class="v">${dealCount}</div><div class="l">Total deals</div></div>
+        <div class="hstat"><div class="v">${fmtMoney(pipelineValue) || '$0'}</div><div class="l">In pipeline</div></div>
+        <div class="hstat"><div class="v">${fmtMoney(paidValue) || '$0'}</div><div class="l">Paid</div></div>
+      </div>
+    </div>`;
 }
 
 function renderColumn(stageKey, stageLabel) {
@@ -230,7 +280,7 @@ function renderCard(d) {
       ${linkChip}
       <div class="deal-meta">
         ${d.fee_cents != null ? `<div class="deal-fee">${fmtMoney(d.fee_cents)}</div>` : '<div></div>'}
-        ${dl ? `<div class="deal-deadline ${dl.overdue ? 'overdue' : ''}">${dl.label}${dl.overdue ? ' (overdue)' : ''}</div>` : ''}
+        ${dl ? `<div class="deal-deadline ${dl.overdue ? 'overdue' : ''}">${dl.overdue ? '<span class="badge-pill pill-overdue">Overdue</span> ' : ''}${dl.label}</div>` : ''}
       </div>
       ${d.next_action ? `<div class="deal-action">${escapeHtml(d.next_action)}</div>` : ''}
     </div>`;
@@ -280,6 +330,49 @@ function attachDnd() {
       dragDealId = null;
     });
   });
+}
+
+function scrollBoard(direction) {
+  const board = document.getElementById('board');
+  if (!board) return;
+  // Scroll by roughly one viewport's worth of columns, not a fixed
+  // column width -- keeps the arrow feeling like "next page" of stages
+  // regardless of how many columns happen to fit at the current width.
+  board.scrollBy({ left: direction * board.clientWidth * 0.85, behavior: 'smooth' });
+}
+
+function setupBoardNav() {
+  const board = document.getElementById('board');
+  const fadeLeft = document.getElementById('boardFadeLeft');
+  const fadeRight = document.getElementById('boardFadeRight');
+  const prevBtn = document.getElementById('boardPrev');
+  const nextBtn = document.getElementById('boardNext');
+  const dotsEl = document.getElementById('boardDots');
+  if (!board) return;
+
+  const pageCount = Math.max(1, Math.ceil(board.scrollWidth / board.clientWidth));
+  dotsEl.innerHTML = Array.from({ length: pageCount }, (_, i) => `<div class="board-dot" data-page="${i}"></div>`).join('');
+  const dots = Array.from(dotsEl.children);
+  dots.forEach((d, i) => d.addEventListener('click', () => {
+    const maxScroll = board.scrollWidth - board.clientWidth;
+    board.scrollTo({ left: (maxScroll / (pageCount - 1 || 1)) * i, behavior: 'smooth' });
+  }));
+
+  function update() {
+    const maxScroll = board.scrollWidth - board.clientWidth;
+    const atStart = board.scrollLeft <= 4;
+    const atEnd = board.scrollLeft >= maxScroll - 4;
+    fadeLeft.style.opacity = atStart ? '0' : '1';
+    fadeRight.style.opacity = atEnd ? '0' : '1';
+    prevBtn.disabled = atStart;
+    nextBtn.disabled = atEnd;
+    const activePage = maxScroll > 0 ? Math.round((board.scrollLeft / maxScroll) * (pageCount - 1)) : 0;
+    dots.forEach((d, i) => d.classList.toggle('active', i === activePage));
+  }
+
+  board.addEventListener('scroll', update);
+  window.addEventListener('resize', update);
+  update();
 }
 
 function openDealModal(dealId) {
