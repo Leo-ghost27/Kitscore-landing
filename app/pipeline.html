@@ -59,13 +59,27 @@
 
   /* Board -- Kanban-specific, styled to sit alongside the roster-card
      language (Fraunces values, IBM Plex Mono chips, same radius/shadow) */
-  .board{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px}
+  .board-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-family:'Inter',sans-serif}
+  .board-nav-label{font-size:11px;font-weight:600;color:var(--pf-ink-soft)}
+  .board-nav-btns{display:flex;gap:6px}
+  .board-nav-btn{width:30px;height:30px;border-radius:50%;background:#fff;border:1px solid var(--pf-line);box-shadow:var(--pf-shadow);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--pf-ink-soft);font-size:15px;transition:background .15s ease,color .15s ease}
+  .board-nav-btn:hover:not(:disabled){background:var(--pf-blue-deep);color:#fff;border-color:var(--pf-blue-deep)}
+  .board-nav-btn:disabled{opacity:.35;cursor:default}
+  .board-wrap{position:relative}
+  .board-fade{position:absolute;top:0;bottom:16px;width:56px;pointer-events:none;opacity:0;transition:opacity .2s ease}
+  .board-fade-left{left:0;background:linear-gradient(to right,var(--canvas),rgba(245,246,249,0))}
+  .board-fade-right{right:0;background:linear-gradient(to left,var(--canvas),rgba(245,246,249,0))}
+  .board-dots{margin-top:12px;display:flex;gap:3px;justify-content:center}
+  .board-dot{width:18px;height:3px;border-radius:2px;background:#D8DDE8;transition:background .2s ease;cursor:pointer}
+  .board-dot.active{background:var(--pf-blue-deep)}
+  .board{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none}
+  .board::-webkit-scrollbar{display:none}
   .col{flex:0 0 240px;display:flex;flex-direction:column;min-height:120px}
   .col-head{display:flex;justify-content:space-between;align-items:center;padding:0 4px 8px;font-family:'Inter',sans-serif}
   .col-title{font-size:10.5px;font-weight:700;color:var(--pf-ink-faint);text-transform:uppercase;letter-spacing:.03em}
   .col-count{font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;color:var(--pf-blue-deep);background:#EEF2FF;border-radius:8px;padding:1px 7px}
   .col-value{font-size:10.5px;color:var(--pf-ink-faint);padding:0 4px 8px;font-family:'IBM Plex Mono',monospace}
-  .col-drop{flex:1;background:rgba(230,233,240,.4);border-radius:12px;padding:8px;min-height:100px;transition:background .15s ease}
+  .col-drop{flex:1;background:#F8F9FC;border:1px solid var(--pf-line);box-shadow:var(--pf-shadow);border-radius:var(--pf-radius);padding:8px;min-height:100px;transition:background .15s ease,box-shadow .15s ease}
   .col-drop.drag-over{background:rgba(39,85,240,.1);outline:2px dashed var(--pf-blue)}
 
   .deal-card{background:#fff;border:1px solid var(--pf-line);border-radius:var(--pf-radius);box-shadow:var(--pf-shadow);padding:14px 15px;margin-bottom:8px;cursor:grab;font-family:'Inter',sans-serif;transition:transform .15s ease,box-shadow .15s ease}
@@ -194,11 +208,24 @@ function render() {
 
   document.getElementById('content').innerHTML = `
     ${renderHero(deals.length, totalPipelineValue, totalPaid)}
-    <div class="board" id="board">
-      ${STAGES.map(([key, label]) => renderColumn(key, label)).join('')}
+    <div class="board-nav">
+      <div class="board-nav-label">${STAGES.length} stages — ${STAGES[0][1]} through ${STAGES[STAGES.length - 1][1]}</div>
+      <div class="board-nav-btns">
+        <button class="board-nav-btn" id="boardPrev" onclick="scrollBoard(-1)">‹</button>
+        <button class="board-nav-btn" id="boardNext" onclick="scrollBoard(1)">›</button>
+      </div>
     </div>
+    <div class="board-wrap">
+      <div class="board" id="board">
+        ${STAGES.map(([key, label]) => renderColumn(key, label)).join('')}
+      </div>
+      <div class="board-fade board-fade-left" id="boardFadeLeft"></div>
+      <div class="board-fade board-fade-right" id="boardFadeRight"></div>
+    </div>
+    <div class="board-dots" id="boardDots"></div>
   `;
   attachDnd();
+  setupBoardNav();
 }
 
 function renderHero(dealCount, pipelineValue, paidValue) {
@@ -303,6 +330,49 @@ function attachDnd() {
       dragDealId = null;
     });
   });
+}
+
+function scrollBoard(direction) {
+  const board = document.getElementById('board');
+  if (!board) return;
+  // Scroll by roughly one viewport's worth of columns, not a fixed
+  // column width -- keeps the arrow feeling like "next page" of stages
+  // regardless of how many columns happen to fit at the current width.
+  board.scrollBy({ left: direction * board.clientWidth * 0.85, behavior: 'smooth' });
+}
+
+function setupBoardNav() {
+  const board = document.getElementById('board');
+  const fadeLeft = document.getElementById('boardFadeLeft');
+  const fadeRight = document.getElementById('boardFadeRight');
+  const prevBtn = document.getElementById('boardPrev');
+  const nextBtn = document.getElementById('boardNext');
+  const dotsEl = document.getElementById('boardDots');
+  if (!board) return;
+
+  const pageCount = Math.max(1, Math.ceil(board.scrollWidth / board.clientWidth));
+  dotsEl.innerHTML = Array.from({ length: pageCount }, (_, i) => `<div class="board-dot" data-page="${i}"></div>`).join('');
+  const dots = Array.from(dotsEl.children);
+  dots.forEach((d, i) => d.addEventListener('click', () => {
+    const maxScroll = board.scrollWidth - board.clientWidth;
+    board.scrollTo({ left: (maxScroll / (pageCount - 1 || 1)) * i, behavior: 'smooth' });
+  }));
+
+  function update() {
+    const maxScroll = board.scrollWidth - board.clientWidth;
+    const atStart = board.scrollLeft <= 4;
+    const atEnd = board.scrollLeft >= maxScroll - 4;
+    fadeLeft.style.opacity = atStart ? '0' : '1';
+    fadeRight.style.opacity = atEnd ? '0' : '1';
+    prevBtn.disabled = atStart;
+    nextBtn.disabled = atEnd;
+    const activePage = maxScroll > 0 ? Math.round((board.scrollLeft / maxScroll) * (pageCount - 1)) : 0;
+    dots.forEach((d, i) => d.classList.toggle('active', i === activePage));
+  }
+
+  board.addEventListener('scroll', update);
+  window.addEventListener('resize', update);
+  update();
 }
 
 function openDealModal(dealId) {
