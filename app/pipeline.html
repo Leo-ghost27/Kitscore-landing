@@ -16,51 +16,70 @@
     --pf-radius:16px; --pf-shadow:0 1px 2px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.06);
   }
   body{background:var(--canvas);font-family:'Space Grotesk',sans-serif}
-  .app-main{max-width:none;padding:32px 32px 60px;width:100%}
-  .pipe-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:20px}
-  .ptitle{font-family:'Fraunces',serif;font-size:24px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}
-  .psub{font-size:13.5px;color:var(--ink-soft);margin-top:4px;font-family:'Inter',sans-serif}
-  .pipe-add-btn{background:linear-gradient(135deg,var(--pf-blue),#3E63F5);color:#fff;border:none;padding:11px 20px;border-radius:10px;font-weight:600;font-size:12.5px;box-shadow:0 6px 18px rgba(39,85,240,.28);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
-  .pipe-summary{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px;font-family:'Inter',sans-serif}
-  .pipe-summary .v{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:var(--pf-ink)}
-  .pipe-summary .l{font-size:10.5px;color:var(--pf-ink-soft);text-transform:uppercase;letter-spacing:.03em}
+  .app-main{max-width:1180px;padding:40px 48px 80px}
+  .ptitle{font-family:'Fraunces',serif;font-size:24px;font-weight:600;letter-spacing:-.01em;color:var(--ink);margin-bottom:6px}
+  .psub{font-size:13.5px;color:var(--ink-soft);margin-bottom:24px;font-family:'Inter',sans-serif}
+  .msg{font-size:12px;margin-top:8px;padding:10px 12px;border-radius:8px;font-family:'Inter',sans-serif}
+  .msg.error{background:#FDECEC;color:#B42318}
+  .msg.ok{background:#E9F7EE;color:#137C52}
 
+  .pf-card{background:#fff;border:1px solid var(--pf-line);border-radius:var(--pf-radius);padding:24px 26px;box-shadow:var(--pf-shadow);margin-bottom:16px;opacity:0;animation:panelIn .25s ease forwards}
+  @keyframes panelIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @media (prefers-reduced-motion: reduce){.pf-card{animation:none;opacity:1}}
+  .pf-card h3{font-family:'Fraunces',serif;font-size:16px;font-weight:600;margin-bottom:4px}
+  .pf-card .desc{color:var(--pf-ink-soft);font-size:12.5px;line-height:1.6;margin-bottom:16px;font-family:'Inter',sans-serif}
+  .pf-btn-save{background:linear-gradient(135deg,var(--pf-blue),#3E63F5);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:12.5px;box-shadow:0 6px 18px rgba(39,85,240,.28);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
+  .pf-btn-save:disabled{opacity:.6}
+  .pf-field{display:flex;flex-direction:column;gap:5px;font-family:'Inter',sans-serif;margin-bottom:12px}
+  .pf-field label{font-size:11.5px;font-weight:600;color:var(--pf-ink-soft)}
+  .pf-field input,.pf-field select,.pf-field textarea{padding:9px 12px;border:1px solid var(--pf-line);border-radius:10px;font-size:13px;font-family:inherit}
+  .pf-field textarea{resize:vertical;min-height:56px}
+
+  .stat-row{display:flex;gap:24px;margin-bottom:20px;flex-wrap:wrap;font-family:'Inter',sans-serif}
+  .stat-row .v{font-family:'Fraunces',serif;font-size:22px;font-weight:600}
+  .stat-row .l{font-size:11px;color:var(--pf-ink-soft);text-transform:uppercase}
+
+  .empty-state{text-align:center;padding:50px 20px;color:var(--pf-ink-soft);font-family:'Inter',sans-serif}
+  .empty-state svg{opacity:.3;margin-bottom:12px}
+  .empty-state .t{font-size:14px;font-weight:600;color:var(--pf-ink);margin-bottom:6px;font-family:'Fraunces',serif}
+  .empty-state .s{font-size:12.5px;max-width:340px;margin:0 auto}
+
+  .pipe-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .pipe-header .ptitle,.pipe-header .psub{margin-bottom:0}
+
+  /* Board -- Kanban-specific, styled to sit alongside the roster-card
+     language (Fraunces values, IBM Plex Mono chips, same radius/shadow) */
   .board{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px}
   .col{flex:0 0 240px;display:flex;flex-direction:column;min-height:120px}
-  .col-head{display:flex;justify-content:space-between;align-items:center;padding:0 4px 10px;font-family:'Inter',sans-serif}
-  .col-title{font-size:11.5px;font-weight:700;color:var(--pf-ink-soft);text-transform:uppercase;letter-spacing:.03em}
-  .col-count{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--pf-ink-faint);background:#EEF0F5;border-radius:6px;padding:1px 6px}
-  .col-value{font-size:10.5px;color:var(--pf-ink-faint);padding:0 4px 8px;font-family:'Inter',sans-serif}
+  .col-head{display:flex;justify-content:space-between;align-items:center;padding:0 4px 8px;font-family:'Inter',sans-serif}
+  .col-title{font-size:10.5px;font-weight:700;color:var(--pf-ink-faint);text-transform:uppercase;letter-spacing:.03em}
+  .col-count{font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:700;color:var(--pf-blue-deep);background:#EEF2FF;border-radius:8px;padding:1px 7px}
+  .col-value{font-size:10.5px;color:var(--pf-ink-faint);padding:0 4px 8px;font-family:'IBM Plex Mono',monospace}
   .col-drop{flex:1;background:rgba(230,233,240,.4);border-radius:12px;padding:8px;min-height:100px;transition:background .15s ease}
   .col-drop.drag-over{background:rgba(39,85,240,.1);outline:2px dashed var(--pf-blue)}
 
-  .deal-card{background:#fff;border:1px solid var(--pf-line);border-radius:12px;box-shadow:var(--pf-shadow);padding:12px 13px;margin-bottom:8px;cursor:grab;font-family:'Inter',sans-serif}
+  .deal-card{background:#fff;border:1px solid var(--pf-line);border-radius:var(--pf-radius);box-shadow:var(--pf-shadow);padding:14px 15px;margin-bottom:8px;cursor:grab;font-family:'Inter',sans-serif;transition:transform .15s ease,box-shadow .15s ease}
+  .deal-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px -8px rgba(16,21,31,.14)}
   .deal-card:active{cursor:grabbing}
   .deal-card.dragging{opacity:.4}
-  .deal-brand{font-size:12.5px;font-weight:700;color:var(--pf-ink)}
-  .deal-creator{font-size:11px;color:var(--pf-ink-soft);margin-top:1px}
-  .deal-fee{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--pf-blue-deep);margin-top:6px;font-weight:600}
-  .deal-meta{display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:6px}
+  .deal-brand{font-size:13px;font-weight:600;color:var(--pf-ink);font-family:'Fraunces',serif}
+  .deal-creator{font-size:11.5px;color:var(--pf-ink-soft);margin-top:1px}
+  .deal-fee{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--pf-blue-deep);margin-top:8px;font-weight:600}
+  .deal-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:6px;padding-top:8px;border-top:1px solid var(--pf-line)}
   .deal-deadline{font-size:10.5px;color:var(--pf-ink-faint)}
   .deal-deadline.overdue{color:#B42318;font-weight:700}
-  .deal-action{font-size:10.5px;color:var(--pf-ink-soft);margin-top:5px;line-height:1.4}
-  .deal-linked{font-size:10px;font-weight:700;color:var(--pf-teal);background:rgba(23,184,166,.1);border-radius:6px;padding:2px 7px;display:inline-block;margin-top:5px}
+  .deal-action{font-size:10.5px;color:var(--pf-ink-soft);margin-top:6px;line-height:1.4}
+  .deal-linked{font-size:10px;font-weight:700;color:var(--pf-teal);background:rgba(23,184,166,.1);border-radius:8px;padding:2px 8px;display:inline-block;margin-top:6px}
 
   .empty-col{font-size:11px;color:var(--pf-ink-faint);text-align:center;padding:16px 4px;font-family:'Inter',sans-serif}
 
   .modal-backdrop{position:fixed;inset:0;background:rgba(11,18,32,.4);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
-  .modal{background:#fff;border-radius:16px;padding:26px;max-width:420px;width:100%;font-family:'Inter',sans-serif;max-height:90vh;overflow-y:auto}
+  .modal{background:#fff;border-radius:var(--pf-radius);padding:26px;max-width:420px;width:100%;font-family:'Inter',sans-serif;max-height:90vh;overflow-y:auto;box-shadow:var(--pf-shadow)}
   .modal h3{font-family:'Fraunces',serif;font-size:17px;font-weight:600;margin-bottom:16px}
-  .mfield{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
-  .mfield label{font-size:11.5px;font-weight:600;color:var(--pf-ink-soft)}
-  .mfield input,.mfield select,.mfield textarea{padding:9px 12px;border:1px solid var(--pf-line);border-radius:10px;font-size:13px;font-family:inherit}
-  .mfield textarea{resize:vertical;min-height:56px}
   .modal-actions{display:flex;justify-content:space-between;align-items:center;margin-top:18px}
   .modal-btn-cancel{background:none;border:none;color:var(--pf-ink-soft);font-size:12.5px;cursor:pointer;font-weight:600}
-  .modal-btn-save{background:linear-gradient(135deg,var(--pf-blue),#3E63F5);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:600;font-size:12.5px;cursor:pointer}
   .modal-btn-delete{background:#FDECEC;color:#B42318;border:none;padding:10px 16px;border-radius:10px;font-weight:600;font-size:12.5px;cursor:pointer}
-  .msg{font-size:12px;margin-top:8px;padding:10px 12px;border-radius:8px}
-  .msg.error{background:#FDECEC;color:#B42318}
+
   .link-box{border:1px solid var(--pf-line);border-radius:12px;padding:12px 14px;margin-bottom:14px;background:#F8F9FC}
   .link-box-title{font-size:11.5px;font-weight:700;color:var(--pf-ink-soft);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px}
   .linked-contract-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -146,10 +165,15 @@ function fmtDeadline(dateStr) {
 function render() {
   if (!creators.length) {
     document.getElementById('content').innerHTML = `
-      <div class="pipe-header"><div><div class="ptitle">Pipeline</div><div class="psub">Track deals from first outreach through payment.</div></div></div>
-      <div class="card" style="text-align:center;padding:50px 20px">
-        <div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;margin-bottom:6px">No creators linked yet</div>
-        <div style="font-size:12.5px;color:var(--pf-ink-soft)">Ask a creator to invite you from their Profile page before you can track deals for them.</div>
+      <div class="pipe-header" style="margin-bottom:20px">
+        <div><div class="ptitle">Pipeline</div><div class="psub" style="margin-bottom:0">Track deals from first outreach through payment.</div></div>
+      </div>
+      <div class="pf-card">
+        <div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3.6"/><path d="M2.4 20.5c0-3.6 3-6.1 6.6-6.1s6.6 2.5 6.6 6.1"/></svg>
+          <div class="t">No creators linked yet</div>
+          <div class="s">Ask a creator to invite you from their Profile page — the Manager section under Account settings — before you can track deals for them.</div>
+        </div>
       </div>`;
     return;
   }
@@ -158,14 +182,14 @@ function render() {
   const totalPaid = deals.filter(d => d.stage === 'paid').reduce((s, d) => s + (d.fee_cents || 0), 0);
 
   document.getElementById('content').innerHTML = `
-    <div class="pipe-header">
+    <div class="pipe-header" style="margin-bottom:20px">
       <div>
         <div class="ptitle">Pipeline</div>
-        <div class="psub">Track deals from first outreach through payment. Drag cards between stages.</div>
+        <div class="psub" style="margin-bottom:0">Track deals from first outreach through payment. Drag cards between stages.</div>
       </div>
-      <button class="pipe-add-btn" onclick="openDealModal()">+ Add deal</button>
+      <button class="pf-btn-save" onclick="openDealModal()">+ Add deal</button>
     </div>
-    <div class="pipe-summary">
+    <div class="stat-row">
       <div><div class="v">${deals.length}</div><div class="l">Total deals</div></div>
       <div><div class="v">${fmtMoney(totalPipelineValue)}</div><div class="l">In pipeline</div></div>
       <div><div class="v">${fmtMoney(totalPaid)}</div><div class="l">Paid</div></div>
@@ -266,28 +290,28 @@ function openDealModal(dealId) {
       <div class="modal">
         <h3>${editingDeal ? 'Edit deal' : 'Add deal'}</h3>
         ${editingDeal ? `<div id="linkSection">${renderLinkSection(d)}</div>` : ''}
-        <div class="mfield"><label>Creator</label>
+        <div class="pf-field"><label>Creator</label>
           <select id="mCreator" ${editingDeal ? 'disabled' : ''}>
             ${creators.map(c => `<option value="${c.id}" ${d.creator_id === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
           </select>
         </div>
-        <div class="mfield"><label>Brand / sponsor name</label><input id="mBrand" type="text" value="${escapeHtml(d.brand_name || '')}" placeholder="e.g. Glow Skincare Co."></div>
-        <div class="mfield"><label>Stage</label>
+        <div class="pf-field"><label>Brand / sponsor name</label><input id="mBrand" type="text" value="${escapeHtml(d.brand_name || '')}" placeholder="e.g. Glow Skincare Co."></div>
+        <div class="pf-field"><label>Stage</label>
           <select id="mStage">${STAGES.map(([k,l]) => `<option value="${k}" ${(d.stage || 'lead') === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
         </div>
-        <div class="mfield"><label>Fee (£)</label><input id="mFee" type="number" min="0" step="1" value="${d.fee_cents != null ? (d.fee_cents/100) : ''}" placeholder="e.g. 1500"></div>
-        <div class="mfield"><label>Deadline</label><input id="mDeadline" type="date" value="${d.deadline || ''}"></div>
-        <div class="mfield"><label>Next action</label><input id="mNextAction" type="text" value="${escapeHtml(d.next_action || '')}" placeholder="e.g. Follow up on rate counter"></div>
-        <div class="mfield"><label>Contact name</label><input id="mContactName" type="text" value="${escapeHtml(d.contact_name || '')}"></div>
-        <div class="mfield"><label>Contact email</label><input id="mContactEmail" type="email" value="${escapeHtml(d.contact_email || '')}"></div>
-        <div class="mfield"><label>Notes</label><textarea id="mNotes">${escapeHtml(d.notes || '')}</textarea></div>
+        <div class="pf-field"><label>Fee (£)</label><input id="mFee" type="number" min="0" step="1" value="${d.fee_cents != null ? (d.fee_cents/100) : ''}" placeholder="e.g. 1500"></div>
+        <div class="pf-field"><label>Deadline</label><input id="mDeadline" type="date" value="${d.deadline || ''}"></div>
+        <div class="pf-field"><label>Next action</label><input id="mNextAction" type="text" value="${escapeHtml(d.next_action || '')}" placeholder="e.g. Follow up on rate counter"></div>
+        <div class="pf-field"><label>Contact name</label><input id="mContactName" type="text" value="${escapeHtml(d.contact_name || '')}"></div>
+        <div class="pf-field"><label>Contact email</label><input id="mContactEmail" type="email" value="${escapeHtml(d.contact_email || '')}"></div>
+        <div class="pf-field"><label>Notes</label><textarea id="mNotes">${escapeHtml(d.notes || '')}</textarea></div>
         <div id="dealModalMsg"></div>
         <div class="modal-actions">
           <div>
             <button class="modal-btn-cancel" onclick="closeDealModal()">Cancel</button>
             ${editingDeal ? `<button class="modal-btn-delete" style="margin-left:10px" onclick="deleteDeal('${d.id}')">Delete</button>` : ''}
           </div>
-          <button class="modal-btn-save" onclick="saveDeal()">${editingDeal ? 'Save' : 'Add deal'}</button>
+          <button class="pf-btn-save" onclick="saveDeal()">${editingDeal ? 'Save' : 'Add deal'}</button>
         </div>
       </div>
     </div>`);
