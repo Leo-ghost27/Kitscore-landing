@@ -45,6 +45,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js?v=2"></script>
 <script src="nav.js?v=4"></script>
+<script src="manager-billing.js?v=1"></script>
 <script>
 let profile, manager;
 
@@ -64,11 +65,38 @@ async function load() {
 
 function render() {
   const planLabel = manager.plan === 'agency' ? 'Agency' : 'Manager';
-  const upgradeCta = manager.plan === 'agency' ? '' : `
-    <button class="cta" id="upgradeBtn" onclick="upgrade()" style="margin-top:10px;background:#111">Upgrade to Agency</button>
+  const hasAccess = managerHasAccess(manager);
+  const trialDaysLeft = managerTrialDaysLeft(manager);
+
+  // Billing state banner -- shown above everything else since it
+  // determines whether the rest of the workspace (Roster, Pipeline) is
+  // even reachable right now. This page itself always stays open.
+  let billingBanner = '';
+  if (!hasAccess) {
+    const trialAvailable = !manager.trial_used;
+    billingBanner = `
+      <div class="psec"><div class="psec-title">Billing</div></div>
+      <div class="field" style="background:#F8F9FC;border-radius:12px;padding:16px">
+        <div style="font-weight:600;font-size:13px;margin-bottom:6px">${trialAvailable ? 'Start your 14-day free trial' : 'Your subscription is inactive'}</div>
+        <div class="field-hint" style="margin-bottom:12px">${trialAvailable
+          ? 'Your Roster and Pipeline are locked until you start your trial. No card charged for 14 days.'
+          : 'Reactivate to get back into your Roster, Pipeline, and everything else on your workspace.'}</div>
+        <button class="cta" id="trialBtn" onclick="startManagerCheckout('manager', document.getElementById('trialBtn'), document.getElementById('trialMsg'))">${trialAvailable ? 'Start free trial' : 'Reactivate — $49/mo'}</button>
+        <div id="trialMsg"></div>
+      </div>`;
+  } else if (manager.subscription_status === 'trialing' && trialDaysLeft !== null) {
+    billingBanner = `
+      <div class="field" style="background:#EEF2FF;border-radius:12px;padding:12px 16px;margin-bottom:20px;font-size:12.5px;color:var(--pf-blue-deep,#0B2A6B)">
+        ${trialDaysLeft === 0 ? 'Your free trial ends today.' : `${trialDaysLeft} day${trialDaysLeft === 1 ? '' : 's'} left in your free trial.`} Billing starts automatically after — cancel any time from here.
+      </div>`;
+  }
+
+  const upgradeCta = (manager.plan === 'agency' || !hasAccess) ? '' : `
+    <button class="cta" id="upgradeBtn" onclick="startManagerCheckout('agency', document.getElementById('upgradeBtn'), document.getElementById('upgradeMsg'))" style="margin-top:10px;background:#111">Upgrade to Agency</button>
     <div id="upgradeMsg"></div>
   `;
   document.getElementById('formWrap').innerHTML = `
+    ${billingBanner}
     <div class="psec">
       <div class="psec-title">Account</div>
     </div>
@@ -79,10 +107,10 @@ function render() {
     </div>
     <div class="field">
       <label>Plan</label>
-      <div><span class="plan-badge">${planLabel}</span></div>
+      <div><span class="plan-badge">${planLabel}</span>${!hasAccess ? ' <span style="color:#B42318;font-size:11px;font-weight:600">· inactive</span>' : ''}</div>
       <div class="field-hint">${manager.plan === 'agency'
-        ? 'You have full access: Rate Benchmark, white-labeled Verified Media Kits, and Staff sub-seats.'
-        : 'Rate Benchmark, white-labeled Verified Media Kits, and Staff sub-seats are Agency-tier. Everything else on Roster — linking creators, submitting on their behalf, Trust Score, Performance, Payout Ledger — is included on Manager.'}</div>
+        ? 'You have full access: Finances, Sponsors, Rate Benchmark, white-labeled Verified Media Kits, Sponsor Portal, Analytics, and Staff sub-seats.'
+        : 'Finances, Sponsors, Rate Benchmark, white-labeled Verified Media Kits, Sponsor Portal, Analytics, and Staff sub-seats are Agency-tier. Everything else — Roster, Pipeline, linking creators, submitting on their behalf, Trust Score, Performance, Payout Ledger, Creator CRM, Reminders, Disputes — is included on Manager.'}</div>
       ${upgradeCta}
     </div>
 
@@ -105,48 +133,6 @@ function render() {
     <button class="cta" onclick="save()">Save changes</button>
     <div id="saveMsg"></div>
   `;
-}
-
-// Mirrors pricing-creator.html's upgrade() exactly -- same checkout route,
-// same error handling shape. Backed by the 'agency' product added to
-// billing-checkout.js and stripe-webhook.js. Stays a normal button that
-// fails gracefully ("Could not start checkout: Unknown or unconfigured
-// product") until an actual Agency-tier Price is created in Stripe and
-// STRIPE_PRICE_AGENCY is set -- that price point is a business decision,
-// not something to hardcode here.
-async function upgrade() {
-  const btn = document.getElementById('upgradeBtn');
-  const msgEl = document.getElementById('upgradeMsg');
-  msgEl.innerHTML = '';
-  btn.disabled = true;
-  const originalLabel = btn.textContent;
-  btn.textContent = 'Redirecting…';
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-      msgEl.innerHTML = '<div class="msg error">You need to be signed in to upgrade. Try refreshing the page.</div>';
-      btn.disabled = false; btn.textContent = originalLabel; return;
-    }
-    const res = await fetch('/api/billing?action=checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-      body: JSON.stringify({ product: 'agency' }),
-    });
-    const text = await res.text();
-    let json;
-    try { json = JSON.parse(text); } catch {
-      msgEl.innerHTML = `<div class="msg error">Server did not return a valid response (status ${res.status}).</div>`;
-      btn.disabled = false; btn.textContent = originalLabel; return;
-    }
-    if (!res.ok || !json.url) {
-      msgEl.innerHTML = `<div class="msg error">Could not start checkout: ${escapeHtml(json.error || 'unknown error')}</div>`;
-      btn.disabled = false; btn.textContent = originalLabel; return;
-    }
-    window.location.href = json.url;
-  } catch (err) {
-    msgEl.innerHTML = `<div class="msg error">Checkout request failed: ${escapeHtml(err.message)}</div>`;
-    btn.disabled = false; btn.textContent = originalLabel;
-  }
 }
 
 function previewLogo() {
