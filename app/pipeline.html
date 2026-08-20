@@ -44,6 +44,7 @@
   .deal-deadline{font-size:10.5px;color:var(--pf-ink-faint)}
   .deal-deadline.overdue{color:#B42318;font-weight:700}
   .deal-action{font-size:10.5px;color:var(--pf-ink-soft);margin-top:5px;line-height:1.4}
+  .deal-linked{font-size:10px;font-weight:700;color:var(--pf-teal);background:rgba(23,184,166,.1);border-radius:6px;padding:2px 7px;display:inline-block;margin-top:5px}
 
   .empty-col{font-size:11px;color:var(--pf-ink-faint);text-align:center;padding:16px 4px;font-family:'Inter',sans-serif}
 
@@ -60,6 +61,12 @@
   .modal-btn-delete{background:#FDECEC;color:#B42318;border:none;padding:10px 16px;border-radius:10px;font-weight:600;font-size:12.5px;cursor:pointer}
   .msg{font-size:12px;margin-top:8px;padding:10px 12px;border-radius:8px}
   .msg.error{background:#FDECEC;color:#B42318}
+  .link-box{border:1px solid var(--pf-line);border-radius:12px;padding:12px 14px;margin-bottom:14px;background:#F8F9FC}
+  .link-box-title{font-size:11.5px;font-weight:700;color:var(--pf-ink-soft);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px}
+  .linked-contract-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .linked-contract-status{font-size:12px;font-weight:600;color:var(--pf-teal)}
+  .link-unlink-btn{background:none;border:none;color:var(--pf-ink-soft);font-size:11.5px;font-weight:600;cursor:pointer;text-decoration:underline}
+  .link-sync-btn{background:#fff;border:1px solid var(--pf-line);color:var(--pf-blue-deep);font-size:11px;font-weight:600;cursor:pointer;padding:6px 10px;border-radius:8px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -116,7 +123,7 @@ async function loadCreators() {
 
 async function loadDeals() {
   const { data, error } = await sb.from('manager_deal_pipeline')
-    .select('*, creators(profiles(display_name))')
+    .select('*, creators(profiles(display_name)), contracts(status, escrow_status, escrow_amount_cents, deliverable_submitted_at, released_at)')
     .eq('manager_id', manager.id)
     .order('updated_at', { ascending: false });
   deals = error ? [] : (data || []);
@@ -189,16 +196,38 @@ function renderColumn(stageKey, stageLabel) {
 function renderCard(d) {
   const creatorName = d.creators?.profiles?.display_name || 'Creator';
   const dl = fmtDeadline(d.deadline);
+  const linkChip = d.contract_id
+    ? `<div class="deal-linked">🔗 ${contractStatusLabel(d.contracts)}</div>`
+    : '';
   return `
     <div class="deal-card" draggable="true" data-deal-id="${d.id}" onclick="openDealModal('${d.id}')">
       <div class="deal-brand">${escapeHtml(d.brand_name)}</div>
       <div class="deal-creator">${escapeHtml(creatorName)}</div>
+      ${linkChip}
       <div class="deal-meta">
         ${d.fee_cents != null ? `<div class="deal-fee">${fmtMoney(d.fee_cents)}</div>` : '<div></div>'}
         ${dl ? `<div class="deal-deadline ${dl.overdue ? 'overdue' : ''}">${dl.label}${dl.overdue ? ' (overdue)' : ''}</div>` : ''}
       </div>
       ${d.next_action ? `<div class="deal-action">${escapeHtml(d.next_action)}</div>` : ''}
     </div>`;
+}
+
+function contractStatusLabel(c) {
+  if (!c) return 'Linked contract';
+  if (c.released_at) return 'Paid out';
+  if (c.deliverable_submitted_at) return 'Awaiting approval';
+  if (c.escrow_status === 'held') return 'In production';
+  if (c.status === 'fully_signed') return 'Signed, escrow pending';
+  return c.status ? c.status.replace(/_/g, ' ') : 'Linked';
+}
+
+function suggestedStageFor(c) {
+  if (!c) return null;
+  if (c.released_at) return 'paid';
+  if (c.deliverable_submitted_at) return 'awaiting_approval';
+  if (c.escrow_status === 'held') return 'in_production';
+  if (c.status === 'fully_signed') return 'contract_pending';
+  return null;
 }
 
 function attachDnd() {
@@ -236,6 +265,7 @@ function openDealModal(dealId) {
     <div class="modal-backdrop" id="dealModalBackdrop" onclick="if(event.target===this) closeDealModal()">
       <div class="modal">
         <h3>${editingDeal ? 'Edit deal' : 'Add deal'}</h3>
+        ${editingDeal ? `<div id="linkSection">${renderLinkSection(d)}</div>` : ''}
         <div class="mfield"><label>Creator</label>
           <select id="mCreator" ${editingDeal ? 'disabled' : ''}>
             ${creators.map(c => `<option value="${c.id}" ${d.creator_id === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
@@ -261,6 +291,79 @@ function openDealModal(dealId) {
         </div>
       </div>
     </div>`);
+  if (editingDeal && !editingDeal.contract_id) {
+    loadLinkPicker(editingDeal.id, editingDeal.creator_id);
+  }
+}
+
+function renderLinkSection(d) {
+  if (d.contract_id) {
+    const c = d.contracts;
+    const suggested = suggestedStageFor(c);
+    return `
+      <div class="link-box">
+        <div class="link-box-title">Linked contract</div>
+        <div class="linked-contract-row">
+          <div>
+            <div class="linked-contract-status">${contractStatusLabel(c)}</div>
+            ${c?.escrow_amount_cents != null ? `<div style="font-size:11px;color:var(--pf-ink-soft);margin-top:2px">${fmtMoney(c.escrow_amount_cents)} escrow</div>` : ''}
+          </div>
+          <button class="link-unlink-btn" onclick="unlinkContract('${d.id}')">Unlink</button>
+        </div>
+        ${suggested && suggested !== d.stage ? `<button class="link-sync-btn" onclick="syncStageFromContract('${d.id}', '${suggested}')">Sync pipeline stage to match contract →</button>` : ''}
+      </div>`;
+  }
+  return `
+    <div class="link-box" id="linkPickerBox">
+      <div class="link-box-title">Link to an existing contract</div>
+      <div style="font-size:11px;color:var(--pf-ink-soft)">Loading this creator's contracts…</div>
+    </div>`;
+}
+
+async function loadLinkPicker(dealId, creatorId) {
+  const { data, error } = await sb.rpc('fn_manager_linkable_contracts', { p_creator_id: creatorId });
+  const box = document.getElementById('linkPickerBox');
+  if (!box) return; // modal closed before this resolved
+  if (error) { box.innerHTML = `<div class="link-box-title">Link to an existing contract</div><div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  const available = (data || []).filter(c => !c.already_linked_to_deal_id);
+  if (!available.length) {
+    box.innerHTML = `<div class="link-box-title">Link to an existing contract</div><div style="font-size:11.5px;color:var(--pf-ink-soft)">No unlinked contracts found for this creator yet. Once the sponsor sends a contract, it'll show up here to link.</div>`;
+    return;
+  }
+  box.innerHTML = `
+    <div class="link-box-title">Link to an existing contract</div>
+    <select id="contractPicker" style="width:100%;padding:9px 12px;border:1px solid var(--pf-line);border-radius:10px;font-size:12.5px;font-family:'Inter',sans-serif;margin-bottom:8px">
+      ${available.map(c => `<option value="${c.contract_id}">${escapeHtml(c.title)} — ${c.status.replace(/_/g,' ')}${c.escrow_amount_cents != null ? ` (${fmtMoney(c.escrow_amount_cents)})` : ''}</option>`).join('')}
+    </select>
+    <button class="link-sync-btn" onclick="linkContract('${dealId}', document.getElementById('contractPicker').value)">Link contract</button>`;
+}
+
+async function linkContract(dealId, contractId) {
+  const { error } = await sb.from('manager_deal_pipeline').update({ contract_id: contractId }).eq('id', dealId);
+  if (error) { showDealModalMsg(error.message); return; }
+  await loadDeals();
+  editingDeal = deals.find(d => d.id === dealId);
+  const section = document.getElementById('linkSection');
+  if (section) section.innerHTML = renderLinkSection(editingDeal);
+  render();
+}
+
+async function unlinkContract(dealId) {
+  const { error } = await sb.from('manager_deal_pipeline').update({ contract_id: null }).eq('id', dealId);
+  if (error) { showDealModalMsg(error.message); return; }
+  await loadDeals();
+  editingDeal = deals.find(d => d.id === dealId);
+  const section = document.getElementById('linkSection');
+  if (section) { section.innerHTML = renderLinkSection(editingDeal); loadLinkPicker(dealId, editingDeal.creator_id); }
+  render();
+}
+
+async function syncStageFromContract(dealId, newStage) {
+  const { error } = await sb.from('manager_deal_pipeline').update({ stage: newStage }).eq('id', dealId);
+  if (error) { showDealModalMsg(error.message); return; }
+  closeDealModal();
+  await loadDeals();
+  render();
 }
 
 function closeDealModal() {
