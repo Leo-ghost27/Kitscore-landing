@@ -272,7 +272,7 @@ async function load() {
 
 async function loadPortalLinks() {
   const { data, error } = await sb.from('manager_portal_links')
-    .select('id, label, creator_ids, token, created_at, revoked_at')
+    .select('id, label, creator_ids, token, created_at, revoked_at, expires_at')
     .order('created_at', { ascending: false });
   portalLinks = error ? [] : (data || []);
 }
@@ -1139,6 +1139,7 @@ function renderPortalTab() {
       <div class="desc">Generate a shareable link showing only the creators you pick — their profile, campaigns, and deliverable status. No login needed on their end, no dollar figures shown, and nothing outside the creators you selected. Revoke a link any time.</div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
         <div class="pf-field"><label>Label (e.g. sponsor or campaign name)</label><input id="portalLabel" type="text" placeholder="Acme Corp — Q3 launch"></div>
+        <div class="pf-field"><label>Expires (optional)</label><input id="portalExpiry" type="date" min="${new Date().toISOString().slice(0,10)}"><div style="font-size:11px;color:var(--pf-ink-soft);margin-top:4px;font-family:'Inter',sans-serif">Leave blank for a link that never expires. Expired links stop working automatically, same as a manual revoke.</div></div>
         <div>
           <label style="font-size:11px;font-weight:600;color:var(--pf-ink-soft);display:block;margin-bottom:6px;font-family:'Inter',sans-serif">Creators to include</label>
           <div style="display:flex;flex-wrap:wrap;gap:10px">
@@ -1154,16 +1155,22 @@ function renderPortalTab() {
     </div>
     <div class="pf-card">
       <h3>Active links</h3>
-      ${!portalLinks.length ? '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No portal links yet.</div>' : portalLinks.map(l => `
+      ${!portalLinks.length ? '<div style="font-size:12.5px;color:var(--pf-ink-soft);font-family:\'Inter\',sans-serif">No portal links yet.</div>' : portalLinks.map(l => {
+        const isExpired = l.expires_at && new Date(l.expires_at) <= new Date();
+        const isDead = l.revoked_at || isExpired;
+        const statusLabel = l.revoked_at ? '(revoked)' : isExpired ? '(expired)' : '';
+        const expiryLine = l.expires_at ? `expires ${new Date(l.expires_at).toLocaleDateString()}` : 'no expiry';
+        return `
         <div style="padding:12px 0;border-top:1px solid var(--pf-line);display:flex;justify-content:space-between;align-items:center;gap:12px;font-family:'Inter',sans-serif">
           <div>
-            <div style="font-size:13px;font-weight:600">${escapeHtml(l.label)} ${l.revoked_at ? '<span style="color:#B42318;font-weight:600;font-size:11px">(revoked)</span>' : ''}</div>
-            <div style="font-size:11.5px;color:var(--pf-ink-soft)">${l.creator_ids.length} creator(s) · created ${new Date(l.created_at).toLocaleDateString()}</div>
+            <div style="font-size:13px;font-weight:600">${escapeHtml(l.label)} ${statusLabel ? `<span style="color:#B42318;font-weight:600;font-size:11px">${statusLabel}</span>` : ''}</div>
+            <div style="font-size:11.5px;color:var(--pf-ink-soft)">${l.creator_ids.length} creator(s) · created ${new Date(l.created_at).toLocaleDateString()} · ${expiryLine}</div>
           </div>
           <div style="display:flex;gap:8px;flex-shrink:0">
-            ${!l.revoked_at ? `<button class="pf-btn" onclick="copyPortalLink('${l.token}')">Copy link</button><button class="pf-btn" style="color:#B42318" onclick="revokePortalLink('${l.id}')">Revoke</button>` : ''}
+            ${!isDead ? `<button class="pf-btn" onclick="copyPortalLink('${l.token}')">Copy link</button><button class="pf-btn" style="color:#B42318" onclick="revokePortalLink('${l.id}')">Revoke</button>` : ''}
           </div>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
     </div>`;
 }
 
@@ -1173,10 +1180,13 @@ async function createPortalLink() {
   const el = document.getElementById('portalMsg');
   if (!label) { el.innerHTML = `<div class="msg error">Add a label.</div>`; return; }
   if (!creatorIds.length) { el.innerHTML = `<div class="msg error">Pick at least one creator.</div>`; return; }
-  const { error } = await sb.from('manager_portal_links').insert({ manager_id: manager.id, label, creator_ids: creatorIds });
+  const expiryInput = document.getElementById('portalExpiry').value;
+  const expiresAt = expiryInput ? new Date(expiryInput + 'T23:59:59').toISOString() : null;
+  const { error } = await sb.from('manager_portal_links').insert({ manager_id: manager.id, label, creator_ids: creatorIds, expires_at: expiresAt });
   if (error) { el.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
   el.innerHTML = `<div class="msg ok">Link created.</div>`;
   document.getElementById('portalLabel').value = '';
+  document.getElementById('portalExpiry').value = '';
   await loadPortalLinks();
   render();
 }
