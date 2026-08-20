@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creator portal — Kitscore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/app/shared.css?v=2">
+<style>
+  body{background:var(--color-background-tertiary);min-height:100vh;padding:40px 20px;font-family:'Inter',sans-serif}
+  .wrap{max-width:640px;margin:0 auto}
+  .kitscore-logo{font-size:15px;font-weight:700;color:var(--ink,#0F1B2E);margin-bottom:6px;text-align:center}
+  .kitscore-logo span{color:#2563EB}
+  .portal-label{text-align:center;font-size:12.5px;color:var(--color-text-secondary);margin-bottom:26px}
+  .portal-agency{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px}
+  .portal-agency img{height:20px;border-radius:4px}
+  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:24px;margin-bottom:18px}
+  .name{font-size:17px;font-weight:700;color:var(--ink,#0F1B2E)}
+  .meta{font-size:12px;color:var(--color-text-secondary);text-transform:capitalize;margin-bottom:10px}
+  .bio{font-size:12.5px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:16px}
+  .campaign{border-top:0.5px solid var(--color-border-tertiary);padding-top:12px;margin-top:12px}
+  .campaign-title{font-size:13px;font-weight:600;color:var(--ink,#0F1B2E)}
+  .campaign-meta{font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:8px;text-transform:capitalize}
+  .deliverable{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;color:var(--color-text-secondary)}
+  .status-pill{font-size:10px;font-weight:600;padding:2px 9px;border-radius:12px;text-transform:capitalize}
+  .status-approved,.status-completed{background:#E9F7EE;color:#137C52}
+  .status-submitted{background:#FFF4D9;color:#8A5A00}
+  .status-pending,.status-draft{background:#F3F5FA;color:var(--color-text-secondary)}
+  .loading, .notfound{text-align:center;padding:60px 20px;color:var(--color-text-secondary);font-size:13px}
+  .footer-note{text-align:center;font-size:11px;color:var(--color-text-tertiary);margin-top:20px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="kitscore-logo">Kit<span>score</span></div>
+    <div id="content" class="loading">Loading…</div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/app/supabase-client.js?v=2"></script>
+<script>
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const contentEl = document.getElementById('content');
+
+  if (!token) {
+    contentEl.innerHTML = `<div class="notfound">Missing portal link.</div>`;
+    return;
+  }
+
+  const { data, error } = await sb.rpc('fn_manager_portal_view', { p_token: token });
+
+  if (error || !data) {
+    contentEl.innerHTML = `<div class="notfound">This portal link doesn't exist or has been revoked. Ask the person who shared it for a fresh link.</div>`;
+    return;
+  }
+
+  const creators = data.creators || [];
+
+  contentEl.innerHTML = `
+    ${data.agency_name ? `<div class="portal-agency">${data.logo_url ? `<img src="${escapeHtml(data.logo_url)}">` : ''}<span style="font-size:12.5px;font-weight:600;color:var(--color-text-secondary)">${escapeHtml(data.agency_name)}</span></div>` : ''}
+    <div class="portal-label">${escapeHtml(data.label || 'Shared creator portal')}</div>
+    ${!creators.length ? '<div class="notfound">No creators are attached to this link.</div>' : creators.map(c => `
+      <div class="card">
+        <div class="name">${escapeHtml(c.display_name)}</div>
+        ${c.niche ? `<div class="meta">${escapeHtml(c.niche)}</div>` : ''}
+        ${c.bio ? `<div class="bio">${escapeHtml(c.bio)}</div>` : ''}
+        ${!(c.campaigns || []).length ? '<div style="font-size:12px;color:var(--color-text-tertiary)">No active campaigns to show yet.</div>' : (c.campaigns || []).map(camp => `
+          <div class="campaign">
+            <div class="campaign-title">${escapeHtml(camp.title || 'Untitled campaign')}</div>
+            <div class="campaign-meta">${escapeHtml(camp.sponsor_name || '')} · ${escapeHtml(camp.status || '')}</div>
+            ${(camp.deliverables || []).map(d => `
+              <div class="deliverable">
+                <span>${escapeHtml(d.description || 'Deliverable')}${d.due_date ? ' — due ' + new Date(d.due_date).toLocaleDateString() : ''}</span>
+                <span class="status-pill status-${escapeHtml(d.content_status || 'pending')}">${escapeHtml((d.content_status || 'pending').replace('_', ' '))}</span>
+              </div>`).join('')}
+          </div>`).join('')}
+      </div>`).join('')}
+    <div class="footer-note">Shared privately via Kitscore. Deal terms and payments aren't shown here — reach out to your usual contact for those.</div>
+  `;
+}
+
+init();
+</script>
+</body>
+</html>
