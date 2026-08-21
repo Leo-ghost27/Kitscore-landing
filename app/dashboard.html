@@ -699,7 +699,7 @@ async function load() {
   const nicheBenchmarks = {};
   if (engagementPlatforms.length) {
     const results = await Promise.all(engagementPlatforms.map(p =>
-      sb.rpc('fn_niche_peer_percentile', { p_creator_id: profile.id, p_platform: p })
+      sb.rpc('fn_niche_peer_percentile', { p_creator_id: profile.id, p_component_key: `engagement_quality_${p}` })
     ));
     engagementPlatforms.forEach((p, i) => {
       const row = results[i].data && results[i].data[0];
@@ -999,13 +999,23 @@ async function loadPeerPercentiles() {
   const platforms = Object.keys(dash.compMap || {})
     .filter(k => k.startsWith('engagement_quality_'))
     .map(k => k.replace('engagement_quality_', ''));
-  if (!platforms.length) return;
+  const calls = platforms.map(platform => ({ key: `engagement_quality_${platform}`, platform }));
 
-  const results = await Promise.all(platforms.map(async platform => {
-    const { data, error } = await sb.rpc('fn_niche_peer_percentile', { p_creator_id: profile.id, p_platform: platform });
-    if (error) { console.error(`Could not load peer percentile for ${platform}:`, error.message); return null; }
+  // Audience authenticity is the one metric beyond engagement quality
+  // worth peer-benchmarking here -- fake-follower detection is the
+  // baseline trust check sponsors/the industry weigh most (see
+  // 2026-08-21-... migration). Kept to just this one deliberately,
+  // not a full benchmarking suite -- free tier already offers plenty.
+  if (dash.compMap && dash.compMap['audience_authenticity']) {
+    calls.push({ key: 'audience_authenticity', platform: null });
+  }
+  if (!calls.length) return;
+
+  const results = await Promise.all(calls.map(async ({ key, platform }) => {
+    const { data, error } = await sb.rpc('fn_niche_peer_percentile', { p_creator_id: profile.id, p_component_key: key });
+    if (error) { console.error(`Could not load peer percentile for ${key}:`, error.message); return null; }
     const row = data && data[0];
-    return row ? { platform, percentile: row.percentile, cohortSize: row.cohort_size, niche: row.niche } : null;
+    return row ? { key, platform, percentile: row.percentile, cohortSize: row.cohort_size, niche: row.niche } : null;
   }));
   dash.peerPercentiles = results.filter(Boolean);
 
@@ -1020,19 +1030,22 @@ async function loadPeerPercentiles() {
 
 function peerPercentileHtml() {
   if (!dash.peerPercentiles || !dash.peerPercentiles.length) return '';
-  const PLATFORM_LABEL = { youtube:'YouTube', tiktok:'TikTok', twitch:'Twitch', instagram:'Instagram' };
+  const PLATFORM_LABEL = { youtube:'YouTube', tiktok:'TikTok', twitch:'Twitch', instagram:'Instagram', discord:'Discord' };
   return `
     <div class="card">
       <div class="sec">How you compare <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— real peers in your niche on Kitscore, for context. Doesn't affect your score.</span></div>
       ${dash.peerPercentiles.map(p => {
-        const label = PLATFORM_LABEL[p.platform] || p.platform;
+        const isAuth = p.key === 'audience_authenticity';
+        const label = isAuth ? 'Audience authenticity' : (PLATFORM_LABEL[p.platform] || p.platform);
         if (p.percentile == null) {
+          const cohortDesc = isAuth ? `creators with audience authenticity data in your ${escapeHtml(p.niche)} niche` : `verified ${escapeHtml(label)} creators in your ${escapeHtml(p.niche)} niche`;
           return `<div style="font-size:12.5px;color:var(--color-text-secondary);padding:6px 0">
-            <strong>${escapeHtml(label)}:</strong> Not enough data yet — fewer than 5 verified ${escapeHtml(label)} creators in your ${escapeHtml(p.niche)} niche
+            <strong>${escapeHtml(label)}:</strong> Not enough data yet — fewer than 5 other ${cohortDesc}
           </div>`;
         }
+        const cohortDesc = isAuth ? `${p.cohortSize} ${escapeHtml(p.niche)}-niche creators with audience data on Kitscore` : `${p.cohortSize} verified ${escapeHtml(p.niche)}-niche creators on Kitscore`;
         return `<div style="font-size:12.5px;color:var(--color-text-secondary);padding:6px 0">
-          <strong>${escapeHtml(label)}:</strong> ${p.percentile}th percentile among ${p.cohortSize} verified ${escapeHtml(p.niche)}-niche creators on Kitscore
+          <strong>${escapeHtml(label)}:</strong> ${p.percentile}th percentile among ${cohortDesc}
         </div>`;
       }).join('')}
     </div>`;
@@ -1756,7 +1769,7 @@ function renderProfileTab() {
         <div>
           <div style="font-size:13.5px;font-weight:600;color:var(--ink,#0F1B2E)">Your Verified Media Kit</div>
           <div id="evekit-link-text" style="font-family:var(--font-mono,monospace);font-size:11px;color:#5B4FCF;margin-top:3px;word-break:break-all">kitscore.co/media-kit/${creator.slug||''}</div>
-          <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Bio, rate card, platform stats, and verified highlights in one page — the asset you send to a brand cold. Free for every creator, PDF included. Edit it on the <a href="javascript:switchTab('mediakit')" style="color:#5B4FCF;font-weight:600">Verified media kit tab →</a></div>
+          <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Bio, platform stats, and verified highlights in one page — the asset you send to a brand cold. Free for every creator, PDF included. Edit it on the <a href="javascript:switchTab('mediakit')" style="color:#5B4FCF;font-weight:600">Verified media kit tab →</a>. Your rate card shows here too — set it in <a href="profile.html" style="color:#5B4FCF;font-weight:600">Profile → Account Setup →</a>.</div>
           ${creator.plan==='pro'
             ? `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">${creator.profile_views||0} view${creator.profile_views===1?'':'s'} so far</div>`
             : `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Free for everyone. Pro adds a view counter: <a href="pricing-creator.html" style="color:#5B4FCF">see who's opened it →</a></div>`}
@@ -2300,16 +2313,6 @@ function renderToolsTab() {
           <a href="pricing-creator.html" class="upgrade-link" style="border:1px solid #D5DAE3;border-radius:4px;padding:6px 12px;background:#fff">Upgrade to Pro to track your outreach →</a>
         </div>
       </div>`}
-    </div>
-
-    <!-- ── Personalized improvement tips already exist for real on the
-         Score tab (id="improve-score", ranked by your actual lowest
-         components) -- this card used to duplicate that with 3 static,
-         identical-for-everyone tips. Removed the duplicate, pointing
-         here instead so there's exactly one place this advice lives. ── -->
-    <div class="card" style="margin-bottom:0;background:var(--color-background-secondary);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 18px">
-      <span style="font-size:12.5px;color:var(--color-text-secondary)">Want to raise your score? Your personalized, ranked improvement list is on the Score tab.</span>
-      <button onclick="switchTab('score');setTimeout(()=>document.getElementById('improve-score')?.scrollIntoView({behavior:'smooth',block:'start'}),50)" style="background:#2563EB;color:#fff;border:none;padding:8px 14px;font-size:12px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;white-space:nowrap;border-radius:6px">See what to improve →</button>
     </div>
   `;
 }

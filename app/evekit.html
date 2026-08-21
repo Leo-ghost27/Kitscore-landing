@@ -372,6 +372,14 @@ function detectCurrency() {
 
 let KIT = null; // normalized data for the currently-rendered kit
 
+// Kept in sync with profile.html's copy -- small, static lookup, not worth
+// a shared-fetch round trip for a handful of label strings.
+const RATE_DELIVERABLE_LABELS = {
+  instagram_post: 'Instagram Post', instagram_story: 'Instagram Story', instagram_reel: 'Instagram Reel',
+  tiktok_video: 'TikTok Video', youtube_integration: 'YouTube Integration', youtube_dedicated: 'YouTube Dedicated Video',
+  twitch_mention: 'Twitch Stream Mention',
+};
+
 function ringSvg(score) {
   const r = 40, circ = 2*Math.PI*r;
   const pct = Math.min(score||0, 100)/100;
@@ -546,6 +554,15 @@ function renderKit(kit, opts) {
 
     <div class="card">
       <div class="card-title">Platforms &amp; estimated rate card <span>estimate</span></div>
+      ${kit.rateCard?.length ? `
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:600;color:#1C7C3F;margin-bottom:8px;text-transform:uppercase;letter-spacing:.02em">Creator's stated rate</div>
+        ${kit.rateCard.map(r => `
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid #F0EFE9">
+            <span>${escapeHtml(r.deliverable_type === 'custom' ? r.custom_label : (RATE_DELIVERABLE_LABELS[r.deliverable_type] || r.deliverable_type))}</span>
+            <span style="font-weight:600">$${(r.price_cents / 100).toLocaleString()}</span>
+          </div>`).join('')}
+      </div>` : ''}
       <div class="rate-box">
         <div class="rate-range" id="ek-rate-range">—</div>
         <div class="rate-note" id="ek-rate-note"></div>
@@ -668,7 +685,8 @@ function renderKit(kit, opts) {
           <div class="rec-stat"><div class="l">Confidence rating</div><div class="v">${Math.round(Number(kit.confidence)||0)}%</div></div>
           <div class="rec-stat"><div class="l">Risk level</div><div class="v">${bsValue>=70?'Low':bsValue>=50?'Medium':'High'}</div></div>
           <div class="rec-stat"><div class="l">Campaigns verified</div><div class="v">${kit.verifiedCount||0}</div></div>
-        </div>`;
+        </div>
+        <div style="font-size:11px;color:var(--color-text-tertiary,#8A8A85);margin-top:10px;text-align:center">Auto-generated from this creator's trust score, brand safety questionnaire, and verified campaign history — not a human or AI review.</div>`;
       })()}
     </div>
 
@@ -726,7 +744,7 @@ function copyContactEmail(email) {
 
 // ── Owner (authenticated, dashboard) mode ───────────────────────────────
 async function loadOwnerKit(profile) {
-  const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }, { data: audience }, { data: collabs }, { data: press }, { data: scoreComponents }, { data: bsAnswers }, { data: evidenceRows }] = await Promise.all([
+  const [{ data: c }, { data: campaigns }, { data: platformConnections }, { data: businessEmail }, { data: audience }, { data: collabs }, { data: press }, { data: scoreComponents }, { data: bsAnswers }, { data: evidenceRows }, { data: rateCardRows }] = await Promise.all([
     sb.from('creators').select('niche,location,trust_score,confidence,badge_tier,founding_cohort,reliability_score,repeat_sponsor_rate,would_hire_again_pct,bio,slug,plan,profile_views,avatar_url,gallery_images,available_for,causes,theme,cover_pattern,cover_tags,cover_spotlight_stat,avatar_shape').eq('id', profile.id).single(),
     sb.from('campaigns').select('name,objective,creator_confirmed,sponsor_confirmed,created_at,communication_rating,professionalism_rating,deliverable_quality_rating,would_hire_again').eq('creator_id', profile.id).order('created_at',{ascending:false}),
     sb.rpc('fn_creator_platform_summary', { p_creator_id: profile.id }),
@@ -737,6 +755,7 @@ async function loadOwnerKit(profile) {
     sb.from('score_components').select('component_key,label,value,status').eq('creator_id', profile.id),
     sb.from('brand_safety_answers').select('question_key,answer').eq('creator_id', profile.id),
     sb.from('evidence_uploads').select('file_name,evidence_type,platform,status,uploaded_at').eq('creator_id', profile.id).neq('status','rejected').order('uploaded_at',{ascending:false}),
+    sb.from('creator_rate_cards').select('deliverable_type,custom_label,price_cents').eq('creator_id', profile.id).order('sort_order').order('created_at'),
   ]);
 
   const verified = (campaigns||[]).filter(x=>x.creator_confirmed&&x.sponsor_confirmed);
@@ -773,6 +792,7 @@ async function loadOwnerKit(profile) {
     verifiedSince,
     scoreComponents: scoreComponents || [], brandSafetyAnswers: bsAnswers || [], evidence: evidenceRows || [],
     reputationRatings,
+    rateCard: rateCardRows || [],
   };
 
   const link = `https://kitscore.co/media-kit/${c.slug || ''}`;
@@ -859,6 +879,7 @@ async function loadPublicKit(slug) {
     scoreComponents: row.score_components || [], brandSafetyAnswers: row.brand_safety_answers || [], evidence: row.evidence || [],
     wouldHireAgainPct: row.would_hire_again_pct, repeatSponsorRate: row.repeat_sponsor_rate,
     reputationRatings: row.reputation_ratings || {},
+    rateCard: row.rate_card || [],
   };
   renderKit(kit, { isOwner: false, slug });
 

@@ -150,7 +150,7 @@
 <script src="icons.js?v=2"></script>
 <script src="nav.js?v=3"></script>
 <script>
-let profile, creator, platforms = [], payoutHistory = [], managerLinks = [], activePortalLinkCount = 0;
+let profile, creator, platforms = [], payoutHistory = [], managerLinks = [], activePortalLinkCount = 0, rateCard = [];
 
 const PLATFORM_META = {
   youtube: { label: 'YouTube', color: '#FF3B30', icon: '<path d="M22 8.4a2.9 2.9 0 0 0-2-2C18.2 6 12 6 12 6s-6.2 0-8 .4a2.9 2.9 0 0 0-2 2A31 31 0 0 0 1.6 12 31 31 0 0 0 2 15.6a2.9 2.9 0 0 0 2 2c1.8.4 8 .4 8 .4s6.2 0 8-.4a2.9 2.9 0 0 0 2-2A31 31 0 0 0 22.4 12 31 31 0 0 0 22 8.4zM9.8 15V9l5.4 3z"/>' },
@@ -248,6 +248,7 @@ async function load() {
   platforms = plats || [];
   payoutHistory = contracts || [];
   await loadManagerLinks();
+  await loadRateCard();
 
   renderHero();
   renderAccountPanel();
@@ -364,12 +365,12 @@ function renderAccountPanel() {
       <h3>Profile details</h3>
       <p class="desc">This is how sponsors and Kitscore identify you — it doesn't appear on your public trust link.</p>
       <div class="pf-form-grid">
-        <div class="pf-field"><label>Display name</label><input id="displayName" value="${escapeHtml(profile.display_name || '')}" oninput="renderAccountPanel()"></div>
-        <div class="pf-field"><label>Niche</label><input id="niche" value="${escapeHtml(creator.niche || '')}" oninput="renderAccountPanel()"></div>
+        <div class="pf-field"><label>Display name</label><input id="displayName" value="${escapeHtml(profile.display_name || '')}"></div>
+        <div class="pf-field"><label>Niche</label><input id="niche" value="${escapeHtml(creator.niche || '')}"></div>
       </div>
       <div class="pf-form-grid">
-        <div class="pf-field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}" oninput="renderAccountPanel()"></div>
-        <div class="pf-field"><label>Business email <span class="opt">— used for deal notifications</span></label><input id="businessEmail" type="email" value="${escapeHtml(creator.business_email || '')}" oninput="renderAccountPanel()"></div>
+        <div class="pf-field"><label>Location</label><input id="location" value="${escapeHtml(creator.location || '')}"></div>
+        <div class="pf-field"><label>Business email <span class="opt">— used for deal notifications</span></label><input id="businessEmail" type="email" value="${escapeHtml(creator.business_email || '')}"></div>
       </div>
       <div class="pf-save-row">
         <span class="pf-save-hint">Changes apply to your account, not your public profile.</span>
@@ -384,6 +385,36 @@ function renderAccountPanel() {
       <div id="managerLinksList">${renderManagerLinks()}</div>
       ${renderManagerActionRow()}
       <div id="managerMsg"></div>
+    </div>
+
+    <div class="pf-card">
+      <h3>Rate card</h3>
+      <p class="desc">What you charge, by deliverable type. Shown to sponsors on your Verified Media Kit next to our auto-estimate, clearly labeled as your own stated rate.</p>
+      <div id="rateCardList">${renderRateCard()}</div>
+      <div class="pf-form-grid" style="margin-top:12px">
+        <div class="pf-field">
+          <label>Deliverable</label>
+          <select id="rateDeliverableType" onchange="document.getElementById('rateCustomLabelField').style.display = this.value === 'custom' ? '' : 'none'">
+            <option value="instagram_post">Instagram Post</option>
+            <option value="instagram_story">Instagram Story</option>
+            <option value="instagram_reel">Instagram Reel</option>
+            <option value="tiktok_video">TikTok Video</option>
+            <option value="youtube_integration">YouTube Integration</option>
+            <option value="youtube_dedicated">YouTube Dedicated Video</option>
+            <option value="twitch_mention">Twitch Stream Mention</option>
+            <option value="custom">Custom…</option>
+          </select>
+        </div>
+        <div class="pf-field"><label>Price (USD)</label><input id="ratePrice" type="number" min="1" step="1" placeholder="500"></div>
+      </div>
+      <div class="pf-field" id="rateCustomLabelField" style="display:none;max-width:280px">
+        <label>Custom deliverable name</label><input id="rateCustomLabel" placeholder="e.g. Unboxing video">
+      </div>
+      <div class="pf-save-row">
+        <span class="pf-save-hint">Add as many deliverable types as you offer.</span>
+        <button class="pf-btn-add" onclick="addRateCardEntry()">+ Add rate</button>
+      </div>
+      <div id="rateCardMsg"></div>
     </div>
   `;
 }
@@ -435,6 +466,63 @@ function renderManagerLinks() {
     </div>
   `;
   }).join('');
+}
+
+const RATE_DELIVERABLE_LABELS = {
+  instagram_post: 'Instagram Post', instagram_story: 'Instagram Story', instagram_reel: 'Instagram Reel',
+  tiktok_video: 'TikTok Video', youtube_integration: 'YouTube Integration', youtube_dedicated: 'YouTube Dedicated Video',
+  twitch_mention: 'Twitch Stream Mention',
+};
+
+async function loadRateCard() {
+  const { data } = await sb.from('creator_rate_cards')
+    .select('id, deliverable_type, custom_label, price_cents')
+    .eq('creator_id', profile.id)
+    .order('sort_order').order('created_at');
+  rateCard = data || [];
+}
+
+function renderRateCard() {
+  if (!rateCard.length) return `<div style="font-size:12.5px;color:var(--pf-ink-soft)">No rates added yet — sponsors will only see our benchmark estimate until you do.</div>`;
+  return rateCard.map(r => {
+    const label = r.deliverable_type === 'custom' ? r.custom_label : RATE_DELIVERABLE_LABELS[r.deliverable_type] || r.deliverable_type;
+    return `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--pf-line,#EEE)">
+      <div style="font-size:12.5px;font-weight:600">${escapeHtml(label)}</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:12.5px;color:var(--pf-ink-soft)">$${(r.price_cents / 100).toLocaleString()}</div>
+        <button class="pf-btn" style="padding:5px 10px;font-size:11.5px" onclick="deleteRateCardEntry('${r.id}')">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function addRateCardEntry() {
+  const deliverableType = document.getElementById('rateDeliverableType').value;
+  const customLabel = document.getElementById('rateCustomLabel').value.trim();
+  const priceEl = document.getElementById('ratePrice');
+  const price = parseFloat(priceEl.value);
+  const el = document.getElementById('rateCardMsg');
+  if (deliverableType === 'custom' && !customLabel) { el.innerHTML = `<div class="msg error">Enter a name for the custom deliverable.</div>`; return; }
+  if (!price || price <= 0) { el.innerHTML = `<div class="msg error">Enter a price greater than $0.</div>`; return; }
+  const { error } = await sb.from('creator_rate_cards').insert({
+    creator_id: profile.id, deliverable_type: deliverableType,
+    custom_label: deliverableType === 'custom' ? customLabel : null,
+    price_cents: Math.round(price * 100),
+  });
+  if (error) { el.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  el.innerHTML = `<div class="msg ok">Rate added.</div>`;
+  priceEl.value = '';
+  document.getElementById('rateCustomLabel').value = '';
+  await loadRateCard();
+  document.getElementById('rateCardList').innerHTML = renderRateCard();
+}
+
+async function deleteRateCardEntry(id) {
+  const { error } = await sb.from('creator_rate_cards').delete().eq('id', id);
+  if (error) { document.getElementById('rateCardMsg').innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  await loadRateCard();
+  document.getElementById('rateCardList').innerHTML = renderRateCard();
 }
 
 async function inviteManager() {
