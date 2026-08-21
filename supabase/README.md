@@ -32,3 +32,41 @@ been reflected anywhere you'd see it. Diff your intended change against
 that, not against a spec or memory of an earlier version.** This is
 the single highest-leverage check to prevent silent regressions when
 more than one session may be touching the schema.
+
+## Before granting/revoking table privileges: check INSERT *and* UPDATE, not just one
+
+On 2026-08-21, `profiles`/`sponsors`/`creators` were each found with a
+live role/plan/reliability-score self-escalation hole: RLS policies
+checked row ownership (`id = fn_current_profile_id()`) but not which
+*columns* a client could set, and the underlying column-level GRANTs
+were wide open underneath. Several passes fixed this piecemeal and each
+one only checked one command:
+
+- One session fixed `managers`/`sponsors`/`creators` **UPDATE** but
+  never checked **INSERT** on the same tables — INSERT was left with
+  the identical hole (e.g. a self-inserted `sponsors` row could set
+  `plan`, `reliability_score`, `restricted_at`, `stripe_customer_id`
+  directly).
+- A separate fix that *did* correctly revoke all INSERT on `creators`
+  didn't first grep the actual client code — `supabase-client.js`'s
+  `createProfile()` genuinely calls `sb.from('creators').insert({id})`
+  as a live fallback (the "Finish setting up your account" screen).
+  Revoking it outright silently broke that path with no visible error,
+  since the insert's error isn't checked client-side.
+- The most severe version of this bug was on `profiles.role` itself,
+  reachable two ways at once: a direct client INSERT/UPDATE, *and*
+  `handle_new_auth_user()` (a `SECURITY DEFINER` trigger, bypasses RLS
+  entirely) casting `role` straight from client-controlled signup
+  metadata with no allowlist. Fixing the table grant alone does not
+  close a `SECURITY DEFINER` function reading the same column from
+  attacker-controlled input — check both.
+
+**When touching column privileges on any table with a self-serve
+row (one where a user's own `id`/`auth_user_id` ties them to a row
+they can write): check INSERT and UPDATE together, not just whichever
+one prompted the review. Grep every client-side `.insert()`/`.update()`
+call on that table before revoking a column, not just the ones you
+already know about — an assumption that "nothing writes this column"
+is itself the thing to verify, not state. And check for any
+`SECURITY DEFINER` function or trigger that writes the same table from
+client-influenced input; a grant/RLS fix does not cover that path.**
