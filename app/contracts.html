@@ -566,7 +566,12 @@ async function checkSponsorReliability() {
 
   const row = data && data[0];
   const nudge = `<div style="font-size:12px;background:var(--color-background-secondary);border:1px solid var(--color-border);border-radius:8px;padding:10px 12px;line-height:1.5">
-    <strong>No track record on Kitscore yet.</strong> Consider funding through milestone-based escrow instead of one lump sum, and running the contract clause scan before you sign — protection that doesn't depend on knowing this sponsor's history.
+    <strong>No track record on Kitscore yet.</strong> A couple of things worth doing since there's nothing to check them against:
+    <ul style="margin:6px 0 4px;padding-left:18px">
+      <li>Propose <strong>milestone-based escrow</strong> below instead of one lump sum, so funds only release as deliverables are actually approved.</li>
+      <li>Once this contract exists, Kitscore automatically checks it for one-sided liability language (FTC disclosure risk dumped entirely on you) and a "fake ambassador" mismatch — a real posting workload with only a discount code or affiliate link as pay, no real fee. No need to click anything; you'll see the result on this contract before you sign.</li>
+    </ul>
+    If this sponsor ghosts you or never books after all this discussion, report it once the contract exists — you'll see "Report an issue with this sponsor" on it — and that's what builds the track record the next creator will see.
   </div>`;
 
   if (!row) { el.innerHTML = nudge; return; }
@@ -738,6 +743,69 @@ function clauseScanHtml(c) {
       </div>`;
   }
   return `<div id="clause-scan-${c.id}" style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">✓ No one-sided liability language or pay/scope mismatch found in this contract's terms (automated check, not legal advice)</div>`;
+}
+
+// ── Creator-side: report a sponsor from a real contract, not just a brief ──
+// sponsor_reports already fed fn_sponsor_reliability from briefs.html's
+// report flow, but only for reports tied to an open brief -- a creator
+// who brought their own deal (no brief involved) had no way to report
+// ghosting at all, even though related_brief_id has always been nullable
+// on this table. This is the same insert, just reachable from a contract
+// (sponsor_id/creator_id are already on the row) instead of requiring a
+// brief to attach to.
+const reportedContractIds = new Set();
+
+function sponsorReportHtml(c) {
+  if (profile.role !== 'creator') return '';
+  if (c.status === 'draft' || c.status === 'void') return '';
+  if (reportedContractIds.has(c.id)) {
+    return `<div style="font-size:11px;color:var(--ink-faint);margin-top:8px">Report submitted — pending review</div>`;
+  }
+  return `
+    <button class="toggle-link" style="margin-top:8px;color:#B42318" onclick="toggleSponsorReportForm('${c.id}')">Report an issue with this sponsor</button>
+    <div id="sponsor-report-panel-${c.id}" style="display:none;margin-top:8px;padding:12px;border:1px solid var(--line,#EEE);border-radius:8px">
+      <div class="field"><label>What happened?</label>
+        <select id="sponsor-report-outcome-${c.id}">
+          <option value="ghosted_after_delivery">I delivered, but the sponsor went silent — no payment, no response</option>
+          <option value="never_booked_after_discussion">We agreed to this deal but it never actually went through</option>
+          <option value="paid_late">Paid, but significantly later than agreed</option>
+          <option value="other">Something else</option>
+        </select>
+      </div>
+      <div class="field"><label>Details</label>
+        <textarea id="sponsor-report-notes-${c.id}" placeholder="What happened, and when"></textarea>
+      </div>
+      <div style="font-size:11px;color:var(--ink-faint);margin-bottom:10px">Reports are reviewed by our team before they affect this sponsor's public reliability score — this isn't published immediately.</div>
+      <button class="cta" onclick="submitContractSponsorReport('${c.id}')">Submit report</button>
+      <div id="sponsor-report-msg-${c.id}"></div>
+    </div>`;
+}
+
+function toggleSponsorReportForm(contractId) {
+  const el = document.getElementById('sponsor-report-panel-' + contractId);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitContractSponsorReport(contractId) {
+  const outcome = document.getElementById('sponsor-report-outcome-' + contractId).value;
+  const notes = document.getElementById('sponsor-report-notes-' + contractId).value.trim();
+  const msgEl = document.getElementById('sponsor-report-msg-' + contractId);
+
+  const { data: contractRow } = await sb.from('contracts').select('sponsor_id').eq('id', contractId).maybeSingle();
+  if (!contractRow) { msgEl.innerHTML = '<div class="msg error">Could not find this contract.</div>'; return; }
+
+  const { error } = await sb.from('sponsor_reports').insert({
+    creator_id: profile.id,
+    sponsor_id: contractRow.sponsor_id,
+    related_brief_id: null,
+    outcome,
+    notes: notes || null,
+  });
+
+  if (error) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+  reportedContractIds.add(contractId);
+  msgEl.innerHTML = '<div class="msg ok">Report submitted — our team will review it.</div>';
+  document.getElementById('sponsor-report-panel-' + contractId).innerHTML = '<div style="font-size:11px;color:var(--ink-faint)">Report submitted — pending review</div>';
 }
 
 // ── Exclusivity Conflict Checker — creator-only, Pro-gated, per-contract,
@@ -1004,6 +1072,7 @@ async function loadContracts() {
       ${clauseScanHtml(c)}
       ${exclusivityCheckHtml(c)}
       ${contentReviewHtml(c)}
+      ${sponsorReportHtml(c)}
       ${creatorNotReady ? `<div class="msg error">This creator hasn't finished setting up their payout account yet — funding is disabled until they do.</div>` : ''}
       ${c.deliverable_submitted_at ? `<div class="signed-line">✓ Deliverable submitted ${new Date(c.deliverable_submitted_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}${c.deliverable_notes ? ' — ' + escapeHtml(c.deliverable_notes) : ''}</div>` : ''}
       ${c.sponsor_signed_at ? `<div class="signed-line">✓ Signed by sponsor (${escapeHtml(c.sponsor_signature_name||'')}) — ${new Date(c.sponsor_signed_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
