@@ -258,7 +258,9 @@ async function openDetail(id) {
         ? `<button class="btn-resolve" onclick="resolveProblem('${c.id}')">Mark resolved</button>`
         : `<button class="btn-flag" onclick="flagProblem('${c.id}')">Flag a problem</button>`}
       ${hasEscrow ? `<a class="btn-escrow-link" href="admin-escrow.html">Open in Escrow Oversight</a>` : ''}
+      ${c.status === 'void' ? `<button class="btn-flag" onclick="deleteVoidedContract('${c.id}')">Delete this contract</button>` : ''}
     </div>
+    ${c.status === 'void' ? `<div style="font-size:10.5px;color:var(--color-text-tertiary);margin-top:2px">Permanent -- removes the contract record entirely, not just its status. The note above is required and gets kept in the admin action log along with a snapshot of what was deleted.</div>` : ''}
     <div id="action-msg"></div>
 
     ${pastActions && pastActions.length ? `
@@ -347,6 +349,19 @@ async function resolveProblem(contractId) {
   });
 
   msgEl.innerHTML = '<div class="msg ok">Resolved.</div>';
+  closeModal();
+  load();
+}
+
+async function deleteVoidedContract(contractId) {
+  const note = document.getElementById('admin-note').value.trim();
+  const msgEl = document.getElementById('action-msg');
+  if (!note) { msgEl.innerHTML = '<div class="msg error">A note is required.</div>'; return; }
+  if (!confirm('Permanently delete this contract? This removes the record entirely and cannot be undone.')) return;
+
+  const { error } = await sb.rpc('fn_admin_delete_voided_contract', { p_contract_id: contractId, p_note: note });
+  if (error) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`; return; }
+
   closeModal();
   load();
 }
