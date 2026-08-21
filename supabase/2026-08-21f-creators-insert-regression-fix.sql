@@ -1,0 +1,23 @@
+-- creators_insert_regression_fix
+--
+-- 2026-08-21b-creators-column-privilege-fix.sql revoked ALL insert on
+-- creators from authenticated/anon, reasoning that no client code calls
+-- sb.from('creators').insert(...). That's incorrect: supabase-client.js's
+-- createProfile() does exactly that (`insert({ id: profile.id })`), and
+-- it's the live fallback behind auth.html's "Finish setting up your
+-- account" screen (confirmed present in production HTML) -- reachable
+-- for any account that gets a session without role/display_name in its
+-- signup metadata (OAuth signups, accounts created directly via
+-- Supabase, etc.), not just a theoretical path.
+--
+-- With INSERT fully revoked, that call now fails with permission denied.
+-- The failure isn't checked/surfaced client-side, so a creator going
+-- through this path silently ends up with a profiles row and no
+-- matching creators row -- breaks their account with no visible error.
+--
+-- Fix: restore INSERT on exactly the one column createProfile() ever
+-- sets. creators_insert_own's WITH CHECK (id = fn_current_profile_id())
+-- already fully restricts this to a user's own row, so this is a
+-- correctness fix, not a reopened security gap.
+
+GRANT INSERT (id) ON public.creators TO authenticated;

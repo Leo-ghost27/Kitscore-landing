@@ -133,18 +133,15 @@ async function acceptWithLogin() {
 }
 
 async function joinTeam(profile) {
-  // Mark invite as accepted
-  await sb.from('team_invites').update({ accepted_at: new Date().toISOString() }).eq('id', invite.id);
-
-  // Add to team_members if not already there
-  const { error } = await sb.from('team_members').upsert(
-    { team_id: invite.team_id, sponsor_id: profile.id, role: 'member' },
-    { onConflict: 'team_id,sponsor_id', ignoreDuplicates: true }
-  );
+  // Was 3 raw client writes (team_invites.accepted_at, team_members
+  // upsert, sponsors.plan = 'team') -- moved server-side into
+  // fn_accept_team_invite() because the last of those three depended on
+  // sponsors.plan being directly client-writable, which it no longer is
+  // (see 2026-08-20-followup-sponsors-column-privilege-fix.sql). The RPC
+  // re-validates the invite itself rather than trusting this page already
+  // did, and does all three writes atomically.
+  const { error } = await sb.rpc('fn_accept_team_invite', { p_invite_id: invite.id });
   if (error) { showError('Could not join team: ' + error.message); return; }
-
-  // Upgrade plan to team
-  await sb.from('sponsors').update({ plan: 'team' }).eq('id', profile.id);
 
   document.getElementById('card').innerHTML = `
     <h1>You're in! 🎉</h1>
