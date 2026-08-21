@@ -242,7 +242,7 @@ async function openDetail(id) {
           ${(c.clause_scan_concerns||[]).map(t => `<div style="font-style:italic;font-size:11px;margin-top:4px">"${escapeHtml(t)}"</div>`).join('')}
         </div>
         <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-top:4px">Both parties saw this flag directly on the contract already -- this is the same result, not a separate admin-only check. Not legal advice.</div>
-      ` : `<div style="font-size:11.5px;color:var(--color-text-tertiary)">No one-sided indemnification language found (automated check, not legal advice).</div>`}
+      ` : `<div style="font-size:11.5px;color:var(--color-text-tertiary)">No one-sided indemnification, pay/scope mismatch, or undisclosed usage-rights scope found (automated check, not legal advice).</div>`}
     ` : ''}
 
     ${c.disputed_at ? `
