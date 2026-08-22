@@ -267,7 +267,7 @@ async function sendReset() {
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-loader"></i>Sending…';
   const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://www.kitscore.co/app/auth.html?reset=true'
+    redirectTo: 'https://www.kitscore.co/app/auth?reset=true'
   });
   if (error) {
     showMsg(error.message, 'error');
@@ -346,7 +346,7 @@ async function submitForm() {
   const { data, error } = await sb.auth.signUp({
     email, password,
     options: {
-      emailRedirectTo: 'https://www.kitscore.co/app/auth.html',
+      emailRedirectTo: 'https://www.kitscore.co/app/auth',
       data: { role, display_name: displayName }
     }
   });

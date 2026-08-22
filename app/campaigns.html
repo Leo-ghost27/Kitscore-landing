@@ -102,7 +102,7 @@ let profile;
 
 async function load() {
   profile = await getCurrentProfile();
-  if (!profile) { window.location.href = 'auth.html'; return; }
+  if (!profile) { window.location.href = 'auth'; return; }
   renderSidebar(profile.role, 'campaigns');
 
   if (profile.role === 'sponsor') {

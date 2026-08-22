@@ -167,7 +167,7 @@ async function load() {
   document.getElementById('export-row').innerHTML = allEvidenceItems.length ? (
     creatorPlan === 'pro'
       ? `<button class="link-btn" onclick="exportEvidenceCsv()">Export evidence log — analytics &amp; chain of custody (CSV) →</button>`
-      : `<span style="font-size:11px;color:var(--color-text-tertiary)">Evidence export with analytics &amp; chain of custody is a Pro feature. <a href="pricing-creator.html" style="color:#2563EB;font-weight:600;text-decoration:none">Upgrade →</a></span>`
+      : `<span style="font-size:11px;color:var(--color-text-tertiary)">Evidence export with analytics &amp; chain of custody is a Pro feature. <a href="pricing-creator" style="color:#2563EB;font-weight:600;text-decoration:none">Upgrade →</a></span>`
   ) : '';
 
   document.getElementById('list').innerHTML = (items && items.length) ? items.map((e,i) => `

@@ -811,7 +811,7 @@ function renderDashboardShell() {
             <p class="encourage" style="color:#C7D2E8;margin-top:8px">${verifiedCount>=1
               ? `Confidence reflects your verified components and ${verifiedCount} confirmed campaign${verifiedCount===1?'':'s'}.`
               : `Confidence today is based on your verified components alone. Confirming your first campaign raises it further.`}</p>
-            ${creator.plan==='free'?`<a href="pricing-creator.html" class="upgrade-link" style="color:#9DB4F0">Upgrade to Pro →</a>`:''}
+            ${creator.plan==='free'?`<a href="pricing-creator" class="upgrade-link" style="color:#9DB4F0">Upgrade to Pro →</a>`:''}
           </div>
         </div>
       </div>
@@ -914,10 +914,10 @@ function renderOverviewTab() {
                 <span style="font-size:12px;color:var(--color-text-secondary)">${ss.label}</span>
               </div>`).join('')}
             </div>
-            <button onclick="${!brandSafetyStep.done ? "switchTab('evidence');setTimeout(()=>document.getElementById('brand-safety')?.scrollIntoView({behavior:'smooth'}),50)" : "window.location.href='campaigns.html?invite=1'"}" style="margin:10px 0 0 28px;background:#2563EB;color:#fff;border:none;padding:7px 14px;font-size:12px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;border-radius:6px">Continue →</button>
+            <button onclick="${!brandSafetyStep.done ? "switchTab('evidence');setTimeout(()=>document.getElementById('brand-safety')?.scrollIntoView({behavior:'smooth'}),50)" : "window.location.href='campaigns?invite=1'"}" style="margin:10px 0 0 28px;background:#2563EB;color:#fff;border:none;padding:7px 14px;font-size:12px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;border-radius:6px">Continue →</button>
             ` : `
             <div style="font-size:12px;color:var(--color-text-secondary);margin:2px 0 10px 28px">${st.key==='claim' ? 'Set your niche and location so sponsors can find you.' : 'Screenshots and deliverables from past campaigns back up what you claim.'}</div>
-            <button onclick="${st.key==='claim' ? "window.location.href='profile.html'" : "switchTab('evidence')"}" style="margin:0 0 0 28px;background:#2563EB;color:#fff;border:none;padding:7px 14px;font-size:12px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;border-radius:6px">Continue →</button>
+            <button onclick="${st.key==='claim' ? "window.location.href='profile'" : "switchTab('evidence')"}" style="margin:0 0 0 28px;background:#2563EB;color:#fff;border:none;padding:7px 14px;font-size:12px;font-weight:600;font-family:var(--font-family-base);cursor:pointer;border-radius:6px">Continue →</button>
             `}
           </div>`;
         }
@@ -928,7 +928,7 @@ function renderOverviewTab() {
         </div>`;
       }).join('')}
 
-      <div class="step-row ${hasScore?'done':'pending'}" style="padding:6px 0;${hasScore?'':'opacity:0.55'}${hasScore?';cursor:pointer':''}" ${hasScore?`onclick="window.location.href='briefs.html'"`:''}>
+      <div class="step-row ${hasScore?'done':'pending'}" style="padding:6px 0;${hasScore?'':'opacity:0.55'}${hasScore?';cursor:pointer':''}" ${hasScore?`onclick="window.location.href='briefs'"`:''}>
         <div class="step-dot ${hasScore?'dot-done':'dot-pending'}">${hasScore?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'}</div>
         <span class="step-label">Get your next sponsor</span>
         ${hasScore?'<span class="step-next">Browse briefs ↗</span>':''}
@@ -979,7 +979,7 @@ function creatorInterestHtml() {
     <div class="card">
       <div class="sec">Sponsor interest <span style="font-weight:400;text-transform:none;color:var(--color-text-tertiary)">— Pro</span></div>
       <div style="font-size:13px;font-weight:600;color:var(--color-text-primary)">${countLine}</div>
-      <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">You're not just a data point to them. Pro shows you exactly which companies, so you know who to reach out to first. <a href="pricing-creator.html" class="upgrade-link">Upgrade to Pro →</a></div>
+      <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">You're not just a data point to them. Pro shows you exactly which companies, so you know who to reach out to first. <a href="pricing-creator" class="upgrade-link">Upgrade to Pro →</a></div>
     </div>`;
   }
 
@@ -1125,7 +1125,7 @@ function renderScoreTab() {
         ✓ Improves sponsor confidence &nbsp;·&nbsp;
         ✓ Improves directory ranking
       </div>
-      <a href="campaigns.html" style="font-size:12px;font-weight:500;color:#2563EB;text-decoration:none;display:inline-block;margin-top:8px">Manage campaigns →</a>
+      <a href="campaigns" style="font-size:12px;font-weight:500;color:#2563EB;text-decoration:none;display:inline-block;margin-top:8px">Manage campaigns →</a>
     </div>
 
     <!-- ── Audience authenticity / engagement quality breakdown ── -->
@@ -1165,7 +1165,7 @@ function renderScoreTab() {
           </div>
         </div>
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-          <a href="pricing-creator.html" class="upgrade-link" style="border:1px solid #D5DAE3;border-radius:4px;padding:6px 12px;background:#fff">Upgrade to Pro to see your reputation stats →</a>
+          <a href="pricing-creator" class="upgrade-link" style="border:1px solid #D5DAE3;border-radius:4px;padding:6px 12px;background:#fff">Upgrade to Pro to see your reputation stats →</a>
         </div>
       </div>
       <div style="font-size:10.5px;color:var(--color-text-tertiary);margin-top:6px">Your reliability score is still shown publicly on your shareable profile — this unlocks the private breakdown.</div>
@@ -1176,7 +1176,7 @@ function renderScoreTab() {
     <div class="card" id="score-breakdown">
       <div class="sec" style="display:flex;justify-content:space-between;align-items:center">
         <span>Score breakdown <svg class="info-ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Each component is weighted. Live verified data scores highest."><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
-        <a href="/methodology.html" target="_blank" style="font-weight:400;text-transform:none;font-size:11px;color:#2563EB;text-decoration:none">How this is calculated →</a>
+        <a href="/methodology" target="_blank" style="font-weight:400;text-transform:none;font-size:11px;color:#2563EB;text-decoration:none">How this is calculated →</a>
       </div>
       ${hasScore?ALL_COMPONENTS.flatMap(ac=>
         resolveAllComponents(ac, compMap).map(({comp, matchedKey})=>{
@@ -1198,7 +1198,7 @@ function renderScoreTab() {
         <div class="es-icon">📊</div>
         <div class="es-title">No score components yet</div>
         <div class="es-body">Upload evidence and complete your brand safety questionnaire to start building your trust score.</div>
-        <a href="evidence.html">Upload evidence →</a>
+        <a href="evidence">Upload evidence →</a>
       </div>`}
     </div>
 
@@ -1231,7 +1231,7 @@ function renderScoreTab() {
           ${renderScoreHistorySvg(SAMPLE_HISTORY_PREVIEW, true)}
           <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,0.72);gap:8px">
             <div style="font-size:12.5px;font-weight:600;color:var(--color-text-primary)">See your trend over time</div>
-            <a href="pricing-creator.html" class="upgrade-link" style="border:1px solid #D5DAE3;border-radius:4px;padding:6px 12px">Upgrade to Pro →</a>
+            <a href="pricing-creator" class="upgrade-link" style="border:1px solid #D5DAE3;border-radius:4px;padding:6px 12px">Upgrade to Pro →</a>
           </div>
         </div>`}
     </div>
@@ -1746,7 +1746,7 @@ function renderProfileTab() {
           <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
             <div style="font-size:12.5px;font-weight:600;color:var(--color-text-primary)">Unlock profile analytics</div>
             <div style="font-size:11px;color:var(--color-text-tertiary);max-width:220px">See your total view count with Kitscore Pro.</div>
-            <a href="pricing-creator.html" style="font-size:11.5px;font-weight:600;color:#5B4FCF;text-decoration:none;margin-top:2px">Upgrade to Pro →</a>
+            <a href="pricing-creator" style="font-size:11.5px;font-weight:600;color:#5B4FCF;text-decoration:none;margin-top:2px">Upgrade to Pro →</a>
           </div>
         </div>
       `}
@@ -1769,13 +1769,13 @@ function renderProfileTab() {
         <div>
           <div style="font-size:13.5px;font-weight:600;color:var(--ink,#0F1B2E)">Your Verified Media Kit</div>
           <div id="evekit-link-text" style="font-family:var(--font-mono,monospace);font-size:11px;color:#5B4FCF;margin-top:3px;word-break:break-all">kitscore.co/media-kit/${creator.slug||''}</div>
-          <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Bio, platform stats, and verified highlights in one page — the asset you send to a brand cold. Free for every creator, PDF included. Edit it on the <a href="javascript:switchTab('mediakit')" style="color:#5B4FCF;font-weight:600">Verified media kit tab →</a>. Your rate card shows here too — set it in <a href="profile.html" style="color:#5B4FCF;font-weight:600">Profile → Account Setup →</a>.</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary);margin-top:4px">Bio, platform stats, and verified highlights in one page — the asset you send to a brand cold. Free for every creator, PDF included. Edit it on the <a href="javascript:switchTab('mediakit')" style="color:#5B4FCF;font-weight:600">Verified media kit tab →</a>. Your rate card shows here too — set it in <a href="profile" style="color:#5B4FCF;font-weight:600">Profile → Account Setup →</a>.</div>
           ${creator.plan==='pro'
             ? `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">${creator.profile_views||0} view${creator.profile_views===1?'':'s'} so far</div>`
-            : `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Free for everyone. Pro adds a view counter: <a href="pricing-creator.html" style="color:#5B4FCF">see who's opened it →</a></div>`}
+            : `<div style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Free for everyone. Pro adds a view counter: <a href="pricing-creator" style="color:#5B4FCF">see who's opened it →</a></div>`}
         </div>
         <div style="display:flex;gap:8px;flex-shrink:0">
-          <a href="evekit.html" style="text-decoration:none"><button class="confirm-btn" style="background:#5B4FCF;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer">Open Media Kit</button></a>
+          <a href="evekit" style="text-decoration:none"><button class="confirm-btn" style="background:#5B4FCF;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer">Open Media Kit</button></a>
           <button class="confirm-btn" style="background:#fff;color:#5B4FCF;border:1px solid #DCD6FA;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer" onclick="copyEveKitLinkFromProfile()">Copy link</button>
         </div>
       </div>
@@ -2039,7 +2039,7 @@ function renderEvidenceTab() {
       <div style="font-size:11.5px;color:var(--color-text-tertiary);margin-bottom:12px;line-height:1.6">A timestamped record of the disclosure and brand-safety checks above, plus any contract clause scans on file — the kind of thing a sponsor's legal or compliance team might ask for. <b>This is not a legal certification</b> that you are FTC compliant, and Kitscore is not a law firm — it's a record of automated checks and their outcomes, not a guarantee.</div>
       ${creator.plan === 'pro'
         ? `<button class="confirm-btn" id="complianceDlBtn" style="background:#2563EB;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer" onclick="downloadComplianceCertificate()">Download PDF</button>`
-        : `<a href="pricing-creator.html" class="confirm-btn" style="display:inline-block;text-decoration:none;background:#2563EB;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer">Download PDF <span style="font-size:9.5px;font-weight:700;background:rgba(255,255,255,0.25);padding:1px 6px;border-radius:8px;margin-left:2px;vertical-align:1px">PRO</span></a>`}
+        : `<a href="pricing-creator" class="confirm-btn" style="display:inline-block;text-decoration:none;background:#2563EB;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer">Download PDF <span style="font-size:9.5px;font-weight:700;background:rgba(255,255,255,0.25);padding:1px 6px;border-radius:8px;margin-left:2px;vertical-align:1px">PRO</span></a>`}
       <div id="complianceMsg" style="font-size:11px;margin-top:8px"></div>
     </div>
 
@@ -2310,7 +2310,7 @@ function renderToolsTab() {
           <div style="border:1px solid var(--color-border-tertiary);border-radius:8px;padding:10px 12px"><div style="font-size:13px;font-weight:600">Another Brand</div><div style="font-size:11px;color:var(--color-text-tertiary)">Negotiating</div></div>
         </div>
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-          <a href="pricing-creator.html" class="upgrade-link" style="border:1px solid #D5DAE3;border-radius:4px;padding:6px 12px;background:#fff">Upgrade to Pro to track your outreach →</a>
+          <a href="pricing-creator" class="upgrade-link" style="border:1px solid #D5DAE3;border-radius:4px;padding:6px 12px;background:#fff">Upgrade to Pro to track your outreach →</a>
         </div>
       </div>`}
     </div>
@@ -3110,7 +3110,7 @@ async function loadRealPricingBenchmark() {
 
 async function signOut(){
   await sb.auth.signOut();
-  window.location.href='auth.html';
+  window.location.href='auth';
 }
 
 // If we're landing back from the YouTube OAuth redirect, jump straight to

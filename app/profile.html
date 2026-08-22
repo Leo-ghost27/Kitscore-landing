@@ -295,7 +295,7 @@ function renderHero() {
         <input id="availUntil" type="date" value="${creator.availability_until||''}" style="display:${creator.availability_status?'inline-block':'none'}" onchange="saveAvailability()">
         <span id="availMsg"></span>
         ${creator.availability_status==='open' ? `<div style="width:100%;font-size:10.5px;color:#8FD6C8;margin-top:4px">✓ You're first in sponsor searches and featured in the directory spotlight</div>` : ''}
-        ` : `<a href="pricing-creator.html" style="color:#8FD6C8;font-size:11px;font-weight:600;text-decoration:none">+ Set availability status — Pro</a>`}
+        ` : `<a href="pricing-creator" style="color:#8FD6C8;font-size:11px;font-weight:600;text-decoration:none">+ Set availability status — Pro</a>`}
       </div>
     </div>
     <div class="pf-score-card">
@@ -357,7 +357,7 @@ function renderAccountPanel() {
     <div class="pf-card" style="background:var(--pf-line, #F6F8FB);border-color:transparent">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
         <span style="font-size:12.5px;color:var(--pf-ink-soft)">Looking to edit your bio, photos, past brands, press mentions, trust link, or badge?</span>
-        <a href="dashboard.html" style="font-size:12.5px;font-weight:600;color:var(--pf-blue);text-decoration:none;white-space:nowrap">Go to Dashboard →</a>
+        <a href="dashboard" style="font-size:12.5px;font-weight:600;color:var(--pf-blue);text-decoration:none;white-space:nowrap">Go to Dashboard →</a>
       </div>
     </div>
 

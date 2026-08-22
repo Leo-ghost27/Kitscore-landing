@@ -438,7 +438,7 @@ function render() {
             </div>
           </div>
           <div class="hero-formula">Weighted from your roster's own verified trust scores, real verified deal volume, and how long you've been linked — no self-reported claims factored in, same standard the rest of Kitscore runs on.</div>
-          ${!isAgency ? `<a href="profile-manager.html" class="hero-upgrade">Upgrade to Agency for white-label branding &amp; rate benchmarking →</a>` : ''}
+          ${!isAgency ? `<a href="profile-manager" class="hero-upgrade">Upgrade to Agency for white-label branding &amp; rate benchmarking →</a>` : ''}
         </div>
       </div>
 
@@ -1255,7 +1255,7 @@ async function createPortalLink() {
 }
 
 function copyPortalLink(token) {
-  const url = `${window.location.origin}/portal.html?token=${token}`;
+  const url = `${window.location.origin}/portal?token=${token}`;
   navigator.clipboard.writeText(url);
   const el = document.getElementById('portalMsg');
   if (el) el.innerHTML = `<div class="msg ok">Link copied to clipboard.</div>`;

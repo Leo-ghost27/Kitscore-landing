@@ -233,7 +233,7 @@ async function renderCompare() {
   document.getElementById('result').innerHTML = `
     <div class="cmp-table" style="grid-template-columns:repeat(${cols}, 1fr)">
       <div class="cmp-cell cmp-head">Metric</div>
-      ${results.map(r => `<div class="cmp-cell cmp-head"><a href="evaluate.html?creator=${r.creator.id}" style="color:inherit;text-decoration:none">${escapeHtml(r.creator.profiles.display_name)} ↗</a></div>`).join('')}
+      ${results.map(r => `<div class="cmp-cell cmp-head"><a href="evaluate?creator=${r.creator.id}" style="color:inherit;text-decoration:none">${escapeHtml(r.creator.profiles.display_name)} ↗</a></div>`).join('')}
       ${metricRows.map(([label, getter, isComponent]) => {
         const components = results.map(getter);
         const values = components.map(c => c?.value ?? null);

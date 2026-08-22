@@ -121,7 +121,7 @@ function render() {
     </div>` : '';
 
   if (!savedList || savedList.length === 0) {
-    document.getElementById('content').innerHTML = `${progressHtml}<div class="card-list"><div class="empty-tip">No saved creators yet. <a href="directory.html">Browse the directory →</a></div></div>`;
+    document.getElementById('content').innerHTML = `${progressHtml}<div class="card-list"><div class="empty-tip">No saved creators yet. <a href="directory">Browse the directory →</a></div></div>`;
     return;
   }
 
@@ -148,7 +148,7 @@ function render() {
         <div class="pbar-val">${c.trust_score}</div>
         ${delta !== 0 ? `<div class="score-delta ${delta > 0 ? 'up' : 'down'}">${delta > 0 ? '▲' : '▼'} ${Math.abs(delta)} since saved</div>` : ''}
       </div>
-      <span class="wl-link" onclick="window.location.href='evaluate.html?creator=${c.id}'" style="cursor:pointer">View →</span>
+      <span class="wl-link" onclick="window.location.href='evaluate?creator=${c.id}'" style="cursor:pointer">View →</span>
       <button class="remove-btn" onclick="event.stopPropagation(); remove('${c.id}')" title="Remove from watchlist">×</button>
     </div>
   `; }).join('')}</div>`;

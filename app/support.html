@@ -84,7 +84,7 @@ const STATUS_LABEL = { open: 'Open', in_progress: 'In progress', resolved: 'Reso
 
 async function load() {
   profile = await getCurrentProfile();
-  if (!profile) { window.location.href = 'auth.html'; return; }
+  if (!profile) { window.location.href = 'auth'; return; }
   renderSidebar(profile.role, 'support');
   await loadTickets();
 }

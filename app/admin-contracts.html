@@ -257,7 +257,7 @@ async function openDetail(id) {
       ${flagged
         ? `<button class="btn-resolve" onclick="resolveProblem('${c.id}')">Mark resolved</button>`
         : `<button class="btn-flag" onclick="flagProblem('${c.id}')">Flag a problem</button>`}
-      ${hasEscrow ? `<a class="btn-escrow-link" href="admin-escrow.html">Open in Escrow Oversight</a>` : ''}
+      ${hasEscrow ? `<a class="btn-escrow-link" href="admin-escrow">Open in Escrow Oversight</a>` : ''}
       ${c.status === 'void' ? `<button class="btn-flag" onclick="deleteVoidedContract('${c.id}')">Delete this contract</button>` : ''}
     </div>
     ${c.status === 'void' ? `<div style="font-size:10.5px;color:var(--color-text-tertiary);margin-top:2px">Permanent -- removes the contract record entirely, not just its status. The note above is required and gets kept in the admin action log along with a snapshot of what was deleted.</div>` : ''}

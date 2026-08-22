@@ -176,7 +176,7 @@
 <script>
 const AUD_GENDER_LABEL = { female: 'Female', male: 'Male', other: 'Other' };
 
-// ── Brand safety questionnaire config ── mirrors app/dashboard.html's
+// ── Brand safety questionnaire config ── mirrors app/dashboard's
 // QUESTIONS array exactly (same keys, same option order). opts[0] is
 // always the safe/pass answer, opts[1] is a caution, opts[2] is a flag —
 // same convention dashboard.html relies on when writing answers.
@@ -701,7 +701,7 @@ function renderKit(kit, opts) {
 
     ${opts.isOwner ? '' : `
     <div class="cta-band">
-      <a href="/for-creators.html">Get your own free Verified Media Kit from Kitscore →</a>
+      <a href="/for-creators">Get your own free Verified Media Kit from Kitscore →</a>
     </div>`}
     <div class="footer-note">Your Verified Media Kit is a pitch document built from your verified Kitscore data. For a quick trust check instead, see the <a href="/p/${encodeURIComponent(opts.slug||'')}" style="color:#5B4FCF">verification link</a>.</div>
   `;
@@ -804,11 +804,11 @@ async function loadOwnerKit(profile) {
       </div>
     </div>
     ${c.plan === 'pro' ? `<div style="font-size:11.5px;color:#6B6B67;margin:-10px 0 16px">${c.profile_views || 0} view${c.profile_views===1?'':'s'} so far</div>`
-      : `<div style="font-size:11.5px;color:#6B6B67;margin:-10px 0 16px">Want to know how many brands have opened this? <a href="pricing-creator.html" style="color:#2563EB">View analytics is a Pro perk →</a></div>`}
+      : `<div style="font-size:11.5px;color:#6B6B67;margin:-10px 0 16px">Want to know how many brands have opened this? <a href="pricing-creator" style="color:#2563EB">View analytics is a Pro perk →</a></div>`}
   `;
 
   document.getElementById('topbarActions').innerHTML = `
-    <button class="tb-btn ghost" onclick="window.location.href='dashboard.html'">← Dashboard</button>
+    <button class="tb-btn ghost" onclick="window.location.href='dashboard'">← Dashboard</button>
     ${themePickerHtml(kit.theme)}
     <button class="tb-btn" id="dlBtn" onclick="downloadEveKitPdf()">Download PDF</button>
   `;
@@ -862,7 +862,7 @@ async function loadPublicKit(slug) {
     document.getElementById('content').innerHTML = `<div class="notfound">This Verified Media Kit doesn't exist or isn't public.</div>`;
     return;
   }
-  document.getElementById('topbarActions').innerHTML = `<a href="/for-creators.html" class="tb-btn">Get your own free Verified Media Kit</a>`;
+  document.getElementById('topbarActions').innerHTML = `<a href="/for-creators" class="tb-btn">Get your own free Verified Media Kit</a>`;
   const kit = {
     displayName: row.display_name, bio: row.bio, niche: row.niche, location: row.location,
     businessEmail: row.business_email, trustScore: row.trust_score, confidence: row.confidence,
@@ -899,9 +899,9 @@ async function init() {
   // No slug in the URL: this is the owner opening their own EveKit from
   // the dashboard. Require a signed-in creator session.
   const { data: { user } } = await sb.auth.getUser();
-  if (!user) { window.location.href = 'auth.html'; return; }
+  if (!user) { window.location.href = 'auth'; return; }
   const { data: profile, error } = await sb.rpc('fn_get_my_profile');
-  if (error || !profile || profile.role !== 'creator') { window.location.href = 'auth.html'; return; }
+  if (error || !profile || profile.role !== 'creator') { window.location.href = 'auth'; return; }
   await loadOwnerKit(profile);
 }
 

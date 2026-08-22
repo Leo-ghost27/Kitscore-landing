@@ -156,7 +156,7 @@ async function load() {
       document.getElementById('content').innerHTML = `
         <div class="upgrade-banner">
           <strong>You've been invited to join ${escapeHtml(myInvite.teams?.name || 'a team')} on Kitscore.</strong>
-          <div style="margin-top:8px"><a href="accept-invite.html?token=${encodeURIComponent(myInvite.token)}">Accept invite →</a></div>
+          <div style="margin-top:8px"><a href="accept-invite?token=${encodeURIComponent(myInvite.token)}">Accept invite →</a></div>
         </div>`;
       return;
     }
@@ -200,7 +200,7 @@ async function load() {
             <div class="amt">$299</div>
             <div class="per">/ month</div>
             <div style="font-size:11.5px;font-weight:600;color:#1F3E9E;margin-bottom:8px">14-day free trial</div>
-            <button class="team-hero-btn" onclick="window.location.href='pricing.html'">Start free trial →</button>
+            <button class="team-hero-btn" onclick="window.location.href='pricing'">Start free trial →</button>
           </div>
         </div>
       </div>
@@ -214,7 +214,7 @@ async function load() {
       </div>
       <div class="team-bottom-cta">
         <p><b>150 evaluations/mo included.</b> Everything in Starter, plus roles, approvals, and white-labeling above — more shipping soon.</p>
-        <button class="team-bottom-btn" onclick="window.location.href='pricing.html'">Start 14-day free trial →</button>
+        <button class="team-bottom-btn" onclick="window.location.href='pricing'">Start 14-day free trial →</button>
       </div>`;
     return;
   }
@@ -452,7 +452,7 @@ function teamTrialDaysLeft(billing) {
   return Math.max(0, Math.ceil(ms / 86400000));
 }
 
-// Mirrors app/pricing.html's plan tiers (Free/On Demand pay-per-report,
+// Mirrors app/pricing's plan tiers (Free/On Demand pay-per-report,
 // Starter $99/mo · 25 evals, Team $299/mo · 150 evals). Per pricing.html's
 // own sync note, keep these three in lockstep by hand -- there's no shared
 // source of truth yet. Free/on-demand has no monthly allowance, so quota

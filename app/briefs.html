@@ -105,7 +105,7 @@ let isCreatorPro = false;
 
 async function load() {
   profile = await getCurrentProfile();
-  if (!profile) { window.location.href = 'auth.html'; return; }
+  if (!profile) { window.location.href = 'auth'; return; }
   renderSidebar(profile.role, 'briefs');
 
   if (profile.role === 'sponsor') {
@@ -259,7 +259,7 @@ async function loadSponsorBriefs() {
               <button class="cta-outline" onclick="updateApplication('${a.id}','accepted')">Accept</button>
               <button class="cta-outline" onclick="updateApplication('${a.id}','rejected')">Reject</button>
             ` : a.status==='accepted' ? `
-              <a class="cta-outline" style="text-decoration:none;display:inline-block" href="contracts.html?creator=${a.creator_id}&brief_application=${a.id}">Draft contract</a>
+              <a class="cta-outline" style="text-decoration:none;display:inline-block" href="contracts?creator=${a.creator_id}&brief_application=${a.id}">Draft contract</a>
             ` : ''}
           </div>
         </div>`).join('')}</div>` : ''}
@@ -336,7 +336,7 @@ function renderEarlyAccessBanner(gatedCount) {
       <div style="font-size:12.5px;color:#4C1D95">
         <b>${gatedCount} new brief${gatedCount===1?'':'s'}</b> posted in the last 24 hours — Pro creators see these as soon as they're posted.
       </div>
-      <a href="pricing-creator.html" class="cta" style="white-space:nowrap;text-decoration:none;font-size:12px;padding:7px 14px">Upgrade to Pro</a>
+      <a href="pricing-creator" class="cta" style="white-space:nowrap;text-decoration:none;font-size:12px;padding:7px 14px">Upgrade to Pro</a>
     </div>`;
 }
 
@@ -421,7 +421,7 @@ async function loadOpenBriefs() {
         <textarea id="pitch-${b.id}" placeholder="Why you're a fit for this brief"></textarea>
         ${isCreatorPro
           ? `<button type="button" class="toggle-link" style="margin-top:4px" onclick="draftPitch('${b.id}')" id="draft-btn-${b.id}">✨ Draft with AI</button>`
-          : `<a href="pricing-creator.html" class="toggle-link" style="margin-top:4px;display:inline-block">✨ Draft with AI <span style="font-size:9.5px;font-weight:700;background:#EDE9FE;color:#5B4FCF;padding:1px 6px;border-radius:8px;margin-left:2px;vertical-align:1px">PRO</span></a>`}
+          : `<a href="pricing-creator" class="toggle-link" style="margin-top:4px;display:inline-block">✨ Draft with AI <span style="font-size:9.5px;font-weight:700;background:#EDE9FE;color:#5B4FCF;padding:1px 6px;border-radius:8px;margin-left:2px;vertical-align:1px">PRO</span></a>`}
         <div id="draft-msg-${b.id}"></div>
       </div>
       <div class="field"><label>Proposed rate <span style="color:var(--color-text-tertiary)">(optional)</span></label>
@@ -440,7 +440,7 @@ async function loadOpenBriefs() {
       </div>
       ${isCreatorPro
         ? `<button type="button" class="toggle-link" onclick="draftCounterOffer('${myApp?.id||''}','${b.id}')" id="counter-draft-btn-${b.id}">✨ Draft counter-offer with AI</button>`
-        : `<a href="pricing-creator.html" class="toggle-link" style="display:inline-block">✨ Draft counter-offer with AI <span style="font-size:9.5px;font-weight:700;background:#EDE9FE;color:#5B4FCF;padding:1px 6px;border-radius:8px;margin-left:2px;vertical-align:1px">PRO</span></a>`}
+        : `<a href="pricing-creator" class="toggle-link" style="display:inline-block">✨ Draft counter-offer with AI <span style="font-size:9.5px;font-weight:700;background:#EDE9FE;color:#5B4FCF;padding:1px 6px;border-radius:8px;margin-left:2px;vertical-align:1px">PRO</span></a>`}
       <div id="counter-msg-${b.id}"></div>
       <div class="field" id="counter-result-wrap-${b.id}" style="display:none;margin-top:10px">
         <label>Drafted message</label>
@@ -515,7 +515,7 @@ async function draftPitch(briefId) {
     const result = await res.json();
 
     if (res.status === 403 && result.upgradeRequired) {
-      msgEl.innerHTML = `<div class="msg" style="font-size:11.5px">Pitch Assistant is a Pro feature — <a href="pricing-creator.html" style="color:#2563EB">upgrade to Pro</a> to draft pitches with AI.</div>`;
+      msgEl.innerHTML = `<div class="msg" style="font-size:11.5px">Pitch Assistant is a Pro feature — <a href="pricing-creator" style="color:#2563EB">upgrade to Pro</a> to draft pitches with AI.</div>`;
     } else if (!res.ok || result.notRun) {
       msgEl.innerHTML = `<div class="msg error">Could not draft a pitch right now.</div>`;
     } else {
@@ -558,7 +558,7 @@ async function draftCounterOffer(applicationId, briefId) {
     const result = await res.json();
 
     if (res.status === 403 && result.upgradeRequired) {
-      msgEl.innerHTML = `<div class="msg" style="font-size:11.5px">Counter-Offer Assist is a Pro feature — <a href="pricing-creator.html" style="color:#2563EB">upgrade to Pro</a> to draft counter-offers with AI.</div>`;
+      msgEl.innerHTML = `<div class="msg" style="font-size:11.5px">Counter-Offer Assist is a Pro feature — <a href="pricing-creator" style="color:#2563EB">upgrade to Pro</a> to draft counter-offers with AI.</div>`;
     } else if (!res.ok || result.notRun) {
       msgEl.innerHTML = `<div class="msg error">${escapeHtml(result.error || 'Could not draft a counter-offer right now.')}</div>`;
     } else {

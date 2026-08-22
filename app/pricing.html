@@ -46,7 +46,7 @@
 <div class="app-shell">
   <div class="sidebar" id="sidebar-mount"></div>
   <div class="app-main">
-    <button class="back" onclick="window.location.href='directory.html'">&larr; Back to directory</button>
+    <button class="back" onclick="window.location.href='directory'">&larr; Back to directory</button>
     <div id="banner"></div>
     <div id="currentPlanBanner"></div>
     <div id="plansWrap" class="g3" style="grid-template-columns:1fr 1fr 1fr 1fr">Loading…</div>
@@ -67,9 +67,9 @@
     const product = params.get('product') || '';
     document.getElementById('banner').innerHTML = '<div class="banner">Subscription started — thank you! Redirecting you now…</div>';
     setTimeout(() => {
-      if (product === 'team') window.location.href = 'team.html?checkout=success';
-      else if (product === 'starter') window.location.href = 'directory.html';
-      else if (product === 'creator_pro') window.location.href = 'dashboard.html';
+      if (product === 'team') window.location.href = 'team?checkout=success';
+      else if (product === 'starter') window.location.href = 'directory';
+      else if (product === 'creator_pro') window.location.href = 'dashboard';
     }, 1500);
   }
 
@@ -112,7 +112,7 @@
         <li>Post open briefs, sign contracts &amp; pay through Kitscore Escrow</li>
         <li>No subscription required</li>
       </ul>
-      <button class="btn-outline" onclick="window.location.href='directory.html'">Browse directory</button>
+      <button class="btn-outline" onclick="window.location.href='directory'">Browse directory</button>
     </div>
     <div class="plan ${plan==='starter' ? 'is-current' : ''}">
       <h3>Starter</h3>

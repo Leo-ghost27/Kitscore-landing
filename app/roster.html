@@ -120,10 +120,10 @@ function render() {
   const heroSide = activeLink
     ? `<div class="roster-hero-side">
          <div class="roster-hero-linked">✓ Linked to ${escapeHtml(activeLink.profiles?.display_name || 'your manager')}</div>
-         <button class="roster-hero-btn" onclick="window.location.href='profile.html'">Manage connection →</button>
+         <button class="roster-hero-btn" onclick="window.location.href='profile'">Manage connection →</button>
        </div>`
     : `<div class="roster-hero-side">
-         <button class="roster-hero-btn" onclick="window.location.href='profile.html'">Invite your manager →</button>
+         <button class="roster-hero-btn" onclick="window.location.href='profile'">Invite your manager →</button>
        </div>`;
 
   document.getElementById('content').innerHTML = `
@@ -150,7 +150,7 @@ function render() {
 
     <div class="roster-bottom-cta">
       <p><b>${activeLink ? 'You have an active manager link.' : 'Not linked to a manager yet.'}</b> ${activeLink ? 'Manage or revoke access any time from your Profile.' : 'Invite one from your Profile — they\'ll get an email invite valid for 14 days.'}</p>
-      <button class="roster-bottom-btn" onclick="window.location.href='profile.html'">${activeLink ? 'Go to Profile →' : 'Invite your manager →'}</button>
+      <button class="roster-bottom-btn" onclick="window.location.href='profile'">${activeLink ? 'Go to Profile →' : 'Invite your manager →'}</button>
     </div>`;
 }
 
