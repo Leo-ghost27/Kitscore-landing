@@ -36,6 +36,13 @@
     <div class="ptitle">Audit Log</div>
     <div class="psub">Paper trail for escrow and contract changes — every dispute, resolution, and escrow status change, with who (or what system) made it. Also emailed weekly as an exception report.</div>
     <div class="card">
+      <div class="filters" id="table-filters">
+        <button data-table="contracts" class="active">Escrow & Contracts</button>
+        <button data-table="campaigns,score_components">Trust & Reputation</button>
+        <button data-table="profiles,managers,sponsors,teams">Privilege Changes</button>
+        <button data-table="creators_payout">Payout Integrity</button>
+        <button data-table="__admin_actions__">Admin Actions</button>
+      </div>
       <div class="filters" id="filters">
         <button data-days="7" class="active">Last 7 days</button>
         <button data-days="30">Last 30 days</button>
@@ -52,11 +59,21 @@
 <script src="nav.js?v=4"></script>
 <script>
 let activeDays = 7;
+let activeTable = 'contracts';
 
 async function load() {
   const profile = await requireRole('admin');
   if (!profile) return;
   renderSidebar('admin', 'admin-audit-log');
+
+  document.querySelectorAll('#table-filters button').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#table-filters button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeTable = btn.dataset.table;
+      fetchAndRender();
+    };
+  });
 
   document.querySelectorAll('#filters button').forEach(btn => {
     btn.onclick = () => {
@@ -71,12 +88,59 @@ async function load() {
 }
 
 async function fetchAndRender() {
+  if (activeTable === '__admin_actions__') return fetchAndRenderAdminActions();
+
   const listEl = document.getElementById('list');
   const msgEl = document.getElementById('msg');
   listEl.innerHTML = '<div class="loading">Loading…</div>';
   msgEl.innerHTML = '';
 
-  const { data, error } = await sb.rpc('fn_admin_audit_log', { p_days: activeDays, p_table_name: 'contracts' });
+  // Multi-table tabs (e.g. "campaigns,score_components") call the RPC
+  // once per table and merge client-side -- fn_admin_audit_log takes a
+  // single table_name, not a list, so this keeps the RPC's signature
+  // simple rather than adding array support for a UI-only convenience.
+  const tables = activeTable.split(',');
+  const results = await Promise.all(tables.map(t => sb.rpc('fn_admin_audit_log', { p_days: activeDays, p_table_name: t })));
+
+  const error = results.find(r => r.error)?.error;
+  if (error) {
+    listEl.innerHTML = '';
+    msgEl.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`;
+    return;
+  }
+
+  const data = results.flatMap(r => r.data || []).sort((a, b) => new Date(b.occurred_at) - new Date(a.occurred_at));
+
+  if (!data.length) {
+    listEl.innerHTML = '<div class="empty">No events in this window.</div>';
+    return;
+  }
+
+  listEl.innerHTML = data.map(row => `
+    <div class="row-item">
+      <div class="row-top">
+        <span><b>${escapeHtml(row.table_name)}</b> ${row.action === 'insert' ? 'created' : 'updated'} — ${new Date(row.occurred_at).toLocaleString()}</span>
+      </div>
+      <div class="row-cols">${(row.changed_columns || []).map(c => `<span class="col-tag">${escapeHtml(c)}</span>`).join('')}</div>
+      <div class="row-actor">By: ${escapeHtml(row.actor_name || (row.db_role === 'service_role' ? 'System / API' : row.actor_role || 'unknown'))}</div>
+      ${row.old_values || row.new_values ? `<div class="row-diff">${escapeHtml(JSON.stringify(row.old_values || {}))} → ${escapeHtml(JSON.stringify(row.new_values || {}))}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+async function fetchAndRenderAdminActions() {
+  const listEl = document.getElementById('list');
+  const msgEl = document.getElementById('msg');
+  listEl.innerHTML = '<div class="loading">Loading…</div>';
+  msgEl.innerHTML = '';
+
+  const since = new Date(Date.now() - activeDays * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await sb.from('admin_actions')
+    .select('action_type, target_table, target_id, note, created_at, profiles:admin_id(display_name)')
+    .gte('created_at', since)
+    .order('created_at', { ascending: false })
+    .limit(500);
+
   if (error) {
     listEl.innerHTML = '';
     msgEl.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`;
@@ -84,18 +148,17 @@ async function fetchAndRender() {
   }
 
   if (!data || !data.length) {
-    listEl.innerHTML = '<div class="empty">No contract events in this window.</div>';
+    listEl.innerHTML = '<div class="empty">No admin actions in this window.</div>';
     return;
   }
 
   listEl.innerHTML = data.map(row => `
     <div class="row-item">
       <div class="row-top">
-        <span><b>${row.action === 'insert' ? 'Contract created' : 'Contract updated'}</b> — ${new Date(row.occurred_at).toLocaleString()}</span>
+        <span><b>${escapeHtml(row.action_type)}</b> on ${escapeHtml(row.target_table)} #${escapeHtml(String(row.target_id).slice(0, 8))} — ${new Date(row.created_at).toLocaleString()}</span>
       </div>
-      <div class="row-cols">${(row.changed_columns || []).map(c => `<span class="col-tag">${escapeHtml(c)}</span>`).join('')}</div>
-      <div class="row-actor">By: ${escapeHtml(row.actor_name || (row.db_role === 'service_role' ? 'System / API' : row.actor_role || 'unknown'))}</div>
-      ${row.old_values || row.new_values ? `<div class="row-diff">${escapeHtml(JSON.stringify(row.old_values || {}))} → ${escapeHtml(JSON.stringify(row.new_values || {}))}</div>` : ''}
+      <div class="row-actor">By: ${escapeHtml(row.profiles?.display_name || 'unknown admin')}</div>
+      ${row.note ? `<div class="row-diff">${escapeHtml(row.note)}</div>` : ''}
     </div>
   `).join('');
 }
