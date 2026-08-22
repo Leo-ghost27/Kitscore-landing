@@ -159,7 +159,7 @@
 <script src="nav.js?v=4"></script>
 <script src="manager-billing.js?v=1"></script>
 <script>
-let profile, manager, roster = [], staff = [], ledger = [], performance = [], benchmark = [], trustScore = null;
+let profile, manager, roster = [], pendingRosterInvites = [], staff = [], ledger = [], performance = [], benchmark = [], trustScore = null;
 let financials = [], sponsorResults = [], sponsorQuery = '', sponsorSearched = false;
 let activeTab = 'roster';
 
@@ -371,6 +371,16 @@ async function loadRoster() {
 
   roster = links || [];
 
+  // Same pending-invite pattern as loadStaff() below: fetch unaccepted,
+  // unexpired invites this manager has sent, so they show up in the
+  // roster view rather than silently disappearing until accepted.
+  const { data: pendingInvites } = await sb.from('roster_invites')
+    .select('id, email')
+    .eq('manager_id', profile.id)
+    .is('accepted_at', null)
+    .gt('expires_at', new Date().toISOString());
+  pendingRosterInvites = pendingInvites || [];
+
   // Command center stats -- one RPC call for the whole roster (deadlines,
   // overdue deliverables, revenue this month) instead of the old N+1
   // Promise.all of per-creator count queries.
@@ -531,9 +541,22 @@ function renderRosterTab() {
       <div><div class="v" style="${totalOverdue ? 'color:#B42318' : ''}">${totalOverdue}</div><div class="l">Overdue deliverables</div></div>
       <div><div class="v">${soonestDeadline ? fmtDeadline(soonestDeadline) : '—'}</div><div class="l">Next deadline</div></div>
     </div>
-    <div class="roster-toolbar">
+    <div class="roster-toolbar" style="justify-content:space-between">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="inviteCreatorEmail" type="email" placeholder="creator@email.com" style="font-size:12.5px;padding:8px 10px;border:1px solid var(--pf-line);border-radius:8px;width:200px">
+        <button class="pf-btn-save" onclick="inviteCreator()">Invite a creator</button>
+      </div>
       <button class="pf-btn-save" id="scanBtn" onclick="scanRosterExclusivity()">Scan roster for exclusivity conflicts</button>
     </div>
+    <div id="inviteCreatorMsg"></div>
+    ${pendingRosterInvites.length ? `
+    <div style="margin-bottom:16px;font-size:12px;color:var(--pf-ink-soft)">
+      ${pendingRosterInvites.map(inv => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--pf-line)">
+          <span>${escapeHtml(inv.email)} — invited, not yet accepted</span>
+          <a href="#" onclick="cancelRosterInvite('${inv.id}');return false" style="color:#B42318;font-size:11px">Cancel</a>
+        </div>`).join('')}
+    </div>` : ''}
     <div id="exclusivityResults"></div>
     <div class="roster-grid">
       ${roster.map(r => {
@@ -618,6 +641,40 @@ async function scanRosterExclusivity() {
     btn.disabled = false;
     btn.textContent = 'Scan roster for exclusivity conflicts';
   }
+}
+
+async function inviteCreator() {
+  const emailEl = document.getElementById('inviteCreatorEmail');
+  const email = emailEl.value.trim();
+  const msgEl = document.getElementById('inviteCreatorMsg');
+  if (!email) { msgEl.innerHTML = '<div class="msg error">Enter the creator\'s email.</div>'; return; }
+
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch('/api/team?action=invite-roster', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ email }),
+  });
+  const result = await res.json();
+  if (!res.ok) { msgEl.innerHTML = `<div class="msg error">${escapeHtml(result.error || 'Could not send invite.')}</div>`; return; }
+
+  emailEl.value = '';
+  msgEl.innerHTML = `<div class="msg ok">${escapeHtml(result.message)}</div>`;
+  await loadRoster();
+  render();
+}
+
+// Same RLS-scoped direct delete as profile.html's cancelManagerInvite --
+// roster_invites_manager_all already grants the manager ALL on rows
+// they own, so no server route is needed for cancelling a pending
+// invite (only accepting one goes through a route, since that's what
+// actually creates the roster link).
+async function cancelRosterInvite(inviteId) {
+  if (!confirm('Cancel this invite?')) return;
+  const { error } = await sb.from('roster_invites').delete().eq('id', inviteId);
+  if (error) { alert('Could not cancel invite: ' + error.message); return; }
+  await loadRoster();
+  render();
 }
 
 function fmtMoney(cents) {

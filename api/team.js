@@ -1,4 +1,4 @@
-// POST /api/team?action=invite | ?action=request-approval | ?action=review-approval | ?action=invite-manager | ?action=revoke-manager | ?action=scan-roster-exclusivity | ?action=invite-staff | ?action=revoke-staff
+// POST /api/team?action=invite | ?action=request-approval | ?action=review-approval | ?action=invite-manager | ?action=revoke-manager | ?action=scan-roster-exclusivity | ?action=invite-staff | ?action=revoke-staff | ?action=invite-roster
 // Merges the old standalone /api/invite-team-member, /api/request-approval,
 // and /api/review-approval routes -- all three are small sponsor-team
 // endpoints that were eating separate function slots for no benefit.
@@ -21,6 +21,14 @@
 // entire roster access (see fn_is_active_manager_for), not a separate
 // per-creator grant. See lib/handlers/agency-staff-invite.js and
 // lib/handlers/agency-staff-revoke.js.
+//
+// invite-roster added 2026-08-22, same slot reasoning -- the reverse of
+// invite-manager: a manager invites a creator onto their roster, needed
+// to make self-serve manager signup (same date) actually useful.
+// Cancelling a pending roster invite doesn't need a server route, same
+// as manager_invites -- roster_invites_manager_all already grants the
+// manager ALL on rows they own, so profile-side pages can just delete
+// the row directly. See lib/handlers/roster-invite.js.
 const handleInvite = require('../lib/handlers/team-invite');
 const handleRequestApproval = require('../lib/handlers/team-request-approval');
 const handleReviewApproval = require('../lib/handlers/team-review-approval');
@@ -29,6 +37,7 @@ const handleManagerRevoke = require('../lib/handlers/manager-revoke');
 const handleScanRosterExclusivity = require('../lib/handlers/scan-roster-exclusivity');
 const handleAgencyStaffInvite = require('../lib/handlers/agency-staff-invite');
 const handleAgencyStaffRevoke = require('../lib/handlers/agency-staff-revoke');
+const handleRosterInvite = require('../lib/handlers/roster-invite');
 
 module.exports = async (req, res) => {
   const action = req.query?.action;
@@ -41,6 +50,7 @@ module.exports = async (req, res) => {
   if (action === 'scan-roster-exclusivity') return handleScanRosterExclusivity(req, res);
   if (action === 'invite-staff') return handleAgencyStaffInvite(req, res);
   if (action === 'revoke-staff') return handleAgencyStaffRevoke(req, res);
+  if (action === 'invite-roster') return handleRosterInvite(req, res);
 
-  return res.status(400).json({ error: 'Unknown or missing action. Use ?action=invite, ?action=request-approval, ?action=review-approval, ?action=invite-manager, ?action=revoke-manager, ?action=scan-roster-exclusivity, ?action=invite-staff, or ?action=revoke-staff.' });
+  return res.status(400).json({ error: 'Unknown or missing action. Use ?action=invite, ?action=request-approval, ?action=review-approval, ?action=invite-manager, ?action=revoke-manager, ?action=scan-roster-exclusivity, ?action=invite-staff, ?action=revoke-staff, or ?action=invite-roster.' });
 };
