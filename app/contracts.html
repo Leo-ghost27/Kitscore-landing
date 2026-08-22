@@ -569,7 +569,7 @@ async function checkSponsorReliability() {
     <strong>No track record on Kitscore yet.</strong> A couple of things worth doing since there's nothing to check them against:
     <ul style="margin:6px 0 4px;padding-left:18px">
       <li>Propose <strong>milestone-based escrow</strong> below instead of one lump sum, so funds only release as deliverables are actually approved.</li>
-      <li>Once this contract exists, Kitscore automatically checks it for one-sided liability language (FTC disclosure risk dumped entirely on you) and a "fake ambassador" mismatch — a real posting workload with only a discount code or affiliate link as pay, no real fee. No need to click anything; you'll see the result on this contract before you sign.</li>
+      <li>Once this contract exists, Kitscore automatically checks it for one-sided liability language (FTC disclosure risk dumped entirely on you), a "fake ambassador" mismatch — a real posting workload with only a discount code or affiliate link as pay, no real fee — and undisclosed usage-rights scope like a perpetual, worldwide, or paid-ad-usage grant with nothing in the contract to suggest you knew or were paid for it. No need to click anything; you'll see the result on this contract before you sign.</li>
     </ul>
     If this sponsor ghosts you or never books after all this discussion, report it once the contract exists — you'll see "Report an issue with this sponsor" on it — and that's what builds the track record the next creator will see.
   </div>`;
@@ -731,7 +731,7 @@ function clauseScanHtml(c) {
   if (c.status === 'draft' || c.status === 'void') return '';
 
   if (!c.clause_scanned_at) {
-    return `<div id="clause-scan-${c.id}" style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Checking contract terms for one-sided language and pay/scope mismatches…</div>`;
+    return `<div id="clause-scan-${c.id}" style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">Checking contract terms for one-sided language, pay/scope mismatches, and undisclosed usage-rights scope…</div>`;
   }
   if (c.clause_scan_flagged) {
     return `
@@ -742,7 +742,7 @@ function clauseScanHtml(c) {
         <div style="font-size:10.5px;margin-top:4px">This isn't legal advice — it's a pattern flag worth having a lawyer look at, especially before signing.</div>
       </div>`;
   }
-  return `<div id="clause-scan-${c.id}" style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">✓ No one-sided liability language or pay/scope mismatch found in this contract's terms (automated check, not legal advice)</div>`;
+  return `<div id="clause-scan-${c.id}" style="font-size:11px;color:var(--color-text-tertiary);margin-top:6px">✓ No one-sided liability language, pay/scope mismatch, or undisclosed usage-rights scope found in this contract's terms (automated check, not legal advice)</div>`;
 }
 
 // ── Creator-side: report a sponsor from a real contract, not just a brief ──
