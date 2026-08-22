@@ -310,7 +310,16 @@ const handler = async (req, res) => {
         const update = {};
         if (account.table === 'sponsors') { update.plan = 'free'; update.subscription_status = 'cancelled'; }
         else if (account.table === 'managers') { update.subscription_status = 'cancelled'; } // plan stays manager/agency, gate locks on status
-        else { update.plan = 'free'; }
+        else {
+          // creators: founding-cohort creators get Pro for free (first
+          // 100, see fn_set_founding_cohort) independent of any Stripe
+          // subscription. If one of them ALSO independently paid for
+          // Pro and cancels, they keep their founding-cohort Pro rather
+          // than being downgraded to free -- only a non-founding
+          // creator's cancellation actually drops them to free.
+          const { data: row } = await admin.from('creators').select('founding_cohort').eq('id', account.id).maybeSingle();
+          update.plan = row?.founding_cohort ? 'pro' : 'free';
+        }
         await admin.from(account.table).update(update).eq('id', account.id);
         break;
       }
