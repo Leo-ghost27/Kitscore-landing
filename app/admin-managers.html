@@ -11,6 +11,9 @@
 <link rel="stylesheet" href="shared.css?v=2">
 <style>
   .ptitle{font-size:16px;font-weight:500;margin-bottom:16px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:11px;color:var(--color-text-secondary);margin:-8px 0 16px;padding:10px 12px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}
+  .legend-item{display:flex;align-items:center;gap:6px}
+  .legend .status-tag{margin-left:0}
   .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
   .sec{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
   .search-row{display:flex;gap:8px;margin-bottom:14px}
@@ -70,6 +73,12 @@
   <div class="sidebar" id="sidebar-mount"></div>
   <div class="app-main">
     <div class="ptitle">Managers</div>
+    <div class="legend">
+      <span class="legend-item"><span class="status-tag status-active">active</span> paid and current — full access</span>
+      <span class="legend-item"><span class="status-tag status-trialing">trialing</span> in the 14-day free trial — full access until it ends</span>
+      <span class="legend-item"><span class="status-tag status-inactive">inactive</span> no trial started and no subscription — locked out of paid manager features until they start one</span>
+      <span class="legend-item"><span class="status-tag status-cancelled">cancelled / past_due / unpaid</span> lost access — cancelled, or a payment failed and hasn't been fixed</span>
+    </div>
     <div class="card">
       <div class="sec">Search</div>
       <div class="search-row">
