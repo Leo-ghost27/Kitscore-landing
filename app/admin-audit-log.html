@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit Log — Kitscore Admin</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="shared.css?v=2">
+<style>
+  .ptitle{font-size:16px;font-weight:500;margin-bottom:4px}
+  .psub{font-size:12px;color:var(--color-text-secondary);margin-bottom:16px}
+  .card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px;margin-bottom:14px}
+  .filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .filters button{font-size:11px;padding:6px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:20px;background:none;cursor:pointer;color:var(--color-text-secondary)}
+  .filters button.active{background:#2563EB;color:#fff;border-color:#2563EB}
+  .row-item{padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px}
+  .row-item:last-child{border-bottom:none}
+  .row-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:4px}
+  .row-cols{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+  .col-tag{font-size:10px;padding:2px 7px;border-radius:8px;background:#F4F5F7;color:#374151}
+  .row-actor{font-size:11px;color:var(--color-text-tertiary)}
+  .row-diff{font-family:monospace;font-size:11px;color:var(--color-text-secondary);background:#FAFAFA;border-radius:6px;padding:6px 8px;margin-top:4px;white-space:pre-wrap;word-break:break-word}
+  .loading{font-size:12px;color:var(--color-text-secondary);padding:10px 0}
+  .empty{font-size:12px;color:var(--color-text-secondary);padding:20px 0;text-align:center}
+  .msg{font-size:11px;margin-top:8px;padding:8px;border-radius:0}
+  .msg.error{background:#FDECEC;color:#B42318}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="sidebar" id="sidebar-mount"></div>
+  <div class="app-main">
+    <div class="ptitle">Audit Log</div>
+    <div class="psub">Paper trail for escrow and contract changes — every dispute, resolution, and escrow status change, with who (or what system) made it. Also emailed weekly as an exception report.</div>
+    <div class="card">
+      <div class="filters" id="filters">
+        <button data-days="7" class="active">Last 7 days</button>
+        <button data-days="30">Last 30 days</button>
+        <button data-days="90">Last 90 days</button>
+      </div>
+      <div id="list" class="loading">Loading…</div>
+      <div id="msg"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js?v=2"></script>
+<script src="nav.js?v=4"></script>
+<script>
+let activeDays = 7;
+
+async function load() {
+  const profile = await requireRole('admin');
+  if (!profile) return;
+  renderSidebar('admin', 'admin-audit-log');
+
+  document.querySelectorAll('#filters button').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#filters button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeDays = parseInt(btn.dataset.days, 10);
+      fetchAndRender();
+    };
+  });
+
+  await fetchAndRender();
+}
+
+async function fetchAndRender() {
+  const listEl = document.getElementById('list');
+  const msgEl = document.getElementById('msg');
+  listEl.innerHTML = '<div class="loading">Loading…</div>';
+  msgEl.innerHTML = '';
+
+  const { data, error } = await sb.rpc('fn_admin_audit_log', { p_days: activeDays, p_table_name: 'contracts' });
+  if (error) {
+    listEl.innerHTML = '';
+    msgEl.innerHTML = `<div class="msg error">${escapeHtml(error.message)}</div>`;
+    return;
+  }
+
+  if (!data || !data.length) {
+    listEl.innerHTML = '<div class="empty">No contract events in this window.</div>';
+    return;
+  }
+
+  listEl.innerHTML = data.map(row => `
+    <div class="row-item">
+      <div class="row-top">
+        <span><b>${row.action === 'insert' ? 'Contract created' : 'Contract updated'}</b> — ${new Date(row.occurred_at).toLocaleString()}</span>
+      </div>
+      <div class="row-cols">${(row.changed_columns || []).map(c => `<span class="col-tag">${escapeHtml(c)}</span>`).join('')}</div>
+      <div class="row-actor">By: ${escapeHtml(row.actor_name || (row.db_role === 'service_role' ? 'System / API' : row.actor_role || 'unknown'))}</div>
+      ${row.old_values || row.new_values ? `<div class="row-diff">${escapeHtml(JSON.stringify(row.old_values || {}))} → ${escapeHtml(JSON.stringify(row.new_values || {}))}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+load();
+</script>
+</body>
+</html>

@@ -73,6 +73,7 @@ const NAV = {
     { key: 'admin-escrow', href: 'admin-escrow.html', icon: 'contracts', label: 'Escrow Oversight' },
     { key: 'admin-refunds', href: 'admin-refunds.html', icon: 'contracts', label: 'Refund Issuance' },
     { key: 'admin-disputes', href: 'admin-disputes.html', icon: 'alert-triangle', label: 'Dispute Arbitration' },
+    { key: 'admin-audit-log', href: 'admin-audit-log.html', icon: 'contracts', label: 'Audit Log' },
     { key: 'admin-revenue', href: 'admin-revenue.html', icon: 'revenue', label: 'Revenue' },
     { key: 'admin-support', href: 'admin-support.html', icon: 'inbox', label: 'Support Inbox' },
     { key: 'admin-system', href: 'admin-system.html', icon: 'settings', label: 'System Health' },

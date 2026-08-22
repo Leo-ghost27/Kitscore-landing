@@ -29,7 +29,8 @@
     { "path": "/api/cron?job=discord-poll", "schedule": "0 7 * * *" },
     { "path": "/api/cron?job=health-check", "schedule": "0 8 * * *" },
     { "path": "/api/cron?job=escrow-stuck-nudge", "schedule": "0 10 * * *" },
-    { "path": "/api/cron?job=repitch-nudges", "schedule": "0 9 * * 3" }
+    { "path": "/api/cron?job=repitch-nudges", "schedule": "0 9 * * 3" },
+    { "path": "/api/cron?job=audit-exception-report", "schedule": "0 9 * * 1" }
   ],
   "headers": [
     {

@@ -1,4 +1,12 @@
-// GET /api/cron?job=evidence-nudges | ?job=twitch-validate | ?job=youtube-resync | ?job=tiktok-resync | ?job=discord-poll | ?job=health-check | ?job=escrow-stuck-nudge | ?job=repitch-nudges
+// GET /api/cron?job=evidence-nudges | ?job=twitch-validate | ?job=youtube-resync | ?job=tiktok-resync | ?job=discord-poll | ?job=health-check | ?job=escrow-stuck-nudge | ?job=repitch-nudges | ?job=audit-exception-report
+//
+// audit-exception-report (added 2026-08-21) is a weekly paper-trail
+// digest for escrow/contract activity -- see lib/handlers/cron-audit-
+// exception-report.js and the audit_log table it reads
+// (2026-08-21-followup-audit-log-and-contract-trigger.sql). Unlike
+// health-check, this always sends, not just over-threshold -- it's a
+// governance report meant to be reviewed on a cadence, not an alert.
+// Still the same dispatcher, still no new Vercel Hobby function slot.
 //
 // health-check (added 2026-07-31) closes the "found by accident" gap:
 // aggregates client_failures, notification_failures, and stale (never-
@@ -49,6 +57,7 @@ const handleDiscordPoll = require('../lib/handlers/cron-discord-poll');
 const handleHealthCheck = require('../lib/handlers/cron-health-check');
 const handleEscrowStuckNudge = require('../lib/handlers/cron-escrow-stuck-nudge');
 const handleRepitchNudges = require('../lib/handlers/cron-repitch-nudges');
+const handleAuditExceptionReport = require('../lib/handlers/cron-audit-exception-report');
 
 module.exports = async (req, res) => {
   const authHeader = req.headers['authorization'] || '';
@@ -69,6 +78,7 @@ module.exports = async (req, res) => {
   if (job === 'health-check') return handleHealthCheck(req, res);
   if (job === 'escrow-stuck-nudge') return handleEscrowStuckNudge(req, res);
   if (job === 'repitch-nudges') return handleRepitchNudges(req, res);
+  if (job === 'audit-exception-report') return handleAuditExceptionReport(req, res);
 
-  return res.status(400).json({ error: 'Unknown or missing job. Use ?job=evidence-nudges, ?job=twitch-validate, ?job=youtube-resync, ?job=tiktok-resync, ?job=discord-poll, ?job=health-check, ?job=escrow-stuck-nudge, or ?job=repitch-nudges.' });
+  return res.status(400).json({ error: 'Unknown or missing job. Use ?job=evidence-nudges, ?job=twitch-validate, ?job=youtube-resync, ?job=tiktok-resync, ?job=discord-poll, ?job=health-check, ?job=escrow-stuck-nudge, ?job=repitch-nudges, or ?job=audit-exception-report.' });
 };
