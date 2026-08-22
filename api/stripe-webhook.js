@@ -1,9 +1,19 @@
 // POST /api/stripe-webhook
 // Verifies Stripe signature then routes events. This is the only code path
 // that mutates billing state — never trust client-reported plan changes.
+//
+// Requires these event types enabled on the Stripe webhook endpoint
+// (Dashboard → Developers → Webhooks): checkout.session.completed,
+// customer.subscription.trial_will_end, customer.subscription.updated,
+// customer.subscription.deleted, charge.refunded, invoice.paid,
+// invoice.payment_failed, account.updated. trial_will_end specifically
+// was added 2026-08-21 alongside the Team trial and is easy to miss
+// enabling since it's not fired by anything else this app does --
+// without it, the handler below is dead code and terms.html's "we'll
+// email a reminder" claim silently becomes false again.
 const Stripe = require('stripe');
 const { adminClient } = require('../lib/supabase-admin');
-const { sendEmail, sponsorReceiptEmail, reportReadyEmail, refundConfirmationEmail, escrowFundedEmail } = require('../lib/email');
+const { sendEmail, sponsorReceiptEmail, reportReadyEmail, refundConfirmationEmail, escrowFundedEmail, trialEndingEmail } = require('../lib/email');
 const { deriveVerdict, fallbackSummary, fetchCreatorBriefData } = require('../lib/ai-brief');
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -191,8 +201,28 @@ const handler = async (req, res) => {
             }
           }
         } else if (product === 'starter' || product === 'team') {
-          await admin.from('sponsors')
-            .update({ plan: product, subscription_status: 'active' }).eq('id', profileId);
+          // Team offers a 14-day trial to any new signup (2026-08-21
+          // product decision -- nudge sponsors toward Team over On
+          // Demand/Starter); Starter never has and still doesn't.
+          // subscription_status reflects whether billing-checkout.js
+          // granted a trial ('trialing') or not ('active') for Team,
+          // same pattern as manager/agency below; trial_used is set
+          // unconditionally on every Team checkout (not just trialing
+          // ones) so a cancel-and-resubscribe doesn't get a second free
+          // trial. Starter keeps its original unconditional 'active' --
+          // it has no trial concept to get wrong.
+          if (product === 'team') {
+            const sub = session.subscription ? await stripe.subscriptions.retrieve(session.subscription) : null;
+            await admin.from('sponsors').update({
+              plan: product,
+              subscription_status: sub ? sub.status : 'active',
+              trial_used: true,
+              trial_ends_at: sub?.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
+            }).eq('id', profileId);
+          } else {
+            await admin.from('sponsors')
+              .update({ plan: product, subscription_status: 'active' }).eq('id', profileId);
+          }
         } else if (product === 'creator_pro') {
           await admin.from('creators').update({ plan: 'pro' }).eq('id', profileId);
         } else if (product === 'manager' || product === 'agency') {
@@ -211,6 +241,33 @@ const handler = async (req, res) => {
             trial_ends_at: sub?.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
           }).eq('id', profileId);
         }
+        break;
+      }
+
+      // ── customer.subscription.trial_will_end ────────────────────────────────
+      // Fires 3 days before a trialing subscription converts to paid (Stripe's
+      // default timing). Covers both Team ($299/mo) and Manager ($49/mo)
+      // trials -- the only two products with trialDays set. Added alongside
+      // the Team trial itself: promising "we'll email a reminder" in
+      // terms.html without this existing would have been a false claim, and
+      // Manager's trial had the same silent-auto-charge gap (only an in-app
+      // countdown, nothing proactive) even before Team existed.
+      case 'customer.subscription.trial_will_end': {
+        const sub = event.data.object;
+        const account = await accountByCustomerId(admin, sub.customer);
+        if (!account || (account.table !== 'sponsors' && account.table !== 'managers')) break;
+
+        const { data: profile } = await admin.from('profiles').select('email').eq('id', account.id).maybeSingle();
+        if (!profile?.email) break;
+
+        const plan = await planFromSubscription(sub);
+        const planLabel = { team: 'Team', manager: 'Manager', agency: 'Agency' }[plan] || 'subscription';
+        const priceLabel = { team: '$299/mo', manager: '$49/mo', agency: '$149/mo' }[plan] || 'the plan price';
+        const endDate = sub.trial_end
+          ? new Date(sub.trial_end * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+          : 'soon';
+
+        await sendEmail({ to: profile.email, ...trialEndingEmail({ planLabel, price: priceLabel, endDate }) });
         break;
       }
 
