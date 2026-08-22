@@ -439,9 +439,18 @@ function renderTabPanel(key) {
 
 const BILLING_STATUS_STYLE = {
   active: { label: 'Active', bg: 'var(--green-soft)', fg: '#137C52' },
+  trialing: { label: 'Free trial', bg: '#EEF2FF', fg: '#1F3E9E' },
   past_due: { label: 'Past due', bg: '#FFF7ED', fg: '#8A4B0A' },
   cancelled: { label: 'Cancelled', bg: '#FDECEC', fg: '#B42318' },
 };
+
+// Mirrors profile-manager.html's managerTrialDaysLeft() -- same
+// once-a-day-precision countdown, same source (trial_ends_at).
+function teamTrialDaysLeft(billing) {
+  if (!billing?.trial_ends_at) return null;
+  const ms = new Date(billing.trial_ends_at) - new Date();
+  return Math.max(0, Math.ceil(ms / 86400000));
+}
 
 // Mirrors app/pricing.html's plan tiers (Free/On Demand pay-per-report,
 // Starter $99/mo · 25 evals, Team $299/mo · 150 evals). Per pricing.html's
@@ -465,8 +474,13 @@ function renderBillingTab() {
   const used = b.evals_used_this_period || 0;
   const pct = planInfo.quota ? Math.min(100, Math.round((used / planInfo.quota) * 100)) : 0;
   const since = b.period_start ? new Date(b.period_start).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : null;
+  const trialDaysLeft = teamTrialDaysLeft(b);
 
   return `
+    ${b.subscription_status === 'trialing' && trialDaysLeft !== null ? `
+    <div class="card" style="background:#EEF2FF;border:none;font-size:12.5px;color:#0B2A6B">
+      ${trialDaysLeft === 0 ? 'Your free trial ends today.' : `${trialDaysLeft} day${trialDaysLeft === 1 ? '' : 's'} left in your free trial.`} Billing starts automatically after — cancel any time below, at no charge, before then.
+    </div>` : ''}
     <div class="card">
       <div class="sec">Plan &amp; status</div>
       <div class="row-item">
