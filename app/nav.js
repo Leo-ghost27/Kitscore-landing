@@ -68,6 +68,7 @@ const NAV = {
     { key: 'admin-signups', href: 'admin-signups.html', icon: 'users', label: 'Signups' },
     { key: 'admin-directory', href: 'admin-directory.html', icon: 'directory', label: 'Directory' },
     { key: 'admin-sponsors', href: 'admin-sponsors.html', icon: 'building', label: 'Sponsors' },
+    { key: 'admin-managers', href: 'admin-managers.html', icon: 'building', label: 'Managers' },
     { key: 'admin-contracts', href: 'admin-contracts.html', icon: 'contracts', label: 'Contracts Oversight' },
     { key: 'admin-escrow', href: 'admin-escrow.html', icon: 'contracts', label: 'Escrow Oversight' },
     { key: 'admin-refunds', href: 'admin-refunds.html', icon: 'contracts', label: 'Refund Issuance' },
